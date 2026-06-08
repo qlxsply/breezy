@@ -1,0 +1,192 @@
+/* /src/styles/theme.css */
+
+/* 主题变量：后续可扩展暗黑模式、品牌换肤等 */
+:root {
+  --primary-color: #3b82f6;
+  --success-color: #10b981;
+  --status-bar-height: 36px;
+  --app-header-height: 56px;
+  --el-color-primary: #3b82f6;
+  --el-color-primary-dark-2: #2563eb;
+  --el-color-primary-light-3: #60a5fa;
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #dbeafe;
+  --el-color-primary-light-9: #eff6ff;
+  --el-border-radius-base: 10px;
+  --el-font-family: "Inter", system-ui, -apple-system, sans-serif;
+
+  --bg-color: #fcfcfc;
+  --card-bg: #ffffff;
+
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+
+  --border-color: #e2e8f0;
+  --highlight-bg: #f1f5f9;
+
+  --scrollbar-size: 6px;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-track: transparent;
+}
+
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow: hidden; /* 与原实现一致：主滚动在内容区内 */
+}
+
+#app {
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.app-shell {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.toolbar-wrap {
+  --toolbar-min-height: 80px;
+  display: grid;
+  align-items: stretch;
+  grid-template-columns: minmax(calc(var(--toolbar-min-height) * 1.618), max-content) 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.toolbar-card {
+  min-height: var(--toolbar-min-height);
+  height: 100%;
+}
+
+.toolbar-card .el-card__body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.toolbar-actions {
+  flex: 0 1 auto;
+  min-width: calc(var(--toolbar-min-height) * 1.618);
+  width: fit-content;
+  --el-card-border-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.toolbar-filters {
+  flex: 1 1 420px;
+}
+
+.actions-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.filters {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.toolbar-filters .el-form-item {
+  margin-bottom: 0;
+}
+
+.filter-item .el-form-item__content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.filter-control {
+  width: 220px;
+}
+
+.filter-actions .el-form-item__content {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pagination {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cell-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.action-buttons .el-button {
+  margin-left: 0;
+}
+
+/* 全局滚动条（含横向）统一样式 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}

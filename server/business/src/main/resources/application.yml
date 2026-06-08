@@ -1,0 +1,46 @@
+server:
+  tomcat:
+    max-swallow-size: -1
+
+spring:
+  profiles:
+    active: ${env.active}
+  application:
+    name: breezy
+  jackson:
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  liquibase:
+    enabled: false
+
+decorator:
+  datasource:
+    p6spy:
+      # 是否 开启 SQL 监听与日志输出
+      enable-logging: true
+      # 是否 按多行输出 SQL
+      multiline: false
+      # 日志输出方式
+      logging: slf4j
+      # 自定义输出格式（可选）；设置后会使用 CustomLineFormat
+      log-format: "time:%(executionTime)ms | %(category) | %(sqlSingleLine)"
+      # 排除类别（可选）：减少噪音
+      exclude-categories: "info,debug,result,commit,resultset"
+
+framework:
+  async-event:
+    enabled: true
+    mode: IN_MEMORY
+    context:
+      new-span-on-consume: true
+    in-memory:
+      engine: DISRUPTOR
+      disruptor:
+        ring-buffer-size: 8192
+        producer-type: MULTI
+        wait-strategy: BLOCKING
+        consumer-threads: 1
+        shutdown-timeout-ms: 5000

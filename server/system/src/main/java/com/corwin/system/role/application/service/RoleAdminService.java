@@ -1,0 +1,123 @@
+package com.corwin.system.role.application.service;
+
+import com.corwin.framework.error.BaseError;
+import com.corwin.framework.error.BizAssert;
+import com.corwin.framework.error.BizException;
+import com.corwin.framework.web.auth.AuthPrincipal;
+import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.system.auth.application.service.InternalPermissionSessionService;
+import com.corwin.system.resource.application.service.ApiPermissionCache;
+import com.corwin.system.role.application.command.CreateRoleCommand;
+import com.corwin.system.role.application.command.UpdateRoleCommand;
+import com.corwin.system.role.domain.model.Role;
+import com.corwin.system.role.domain.repo.RoleFunctionRepository;
+import com.corwin.system.role.domain.repo.RoleMenuRepository;
+import com.corwin.system.role.domain.repo.RoleRepository;
+import com.corwin.system.user.domain.model.UserRole;
+import com.corwin.system.user.domain.repo.UserRoleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * @author Corwin 2026/1/23
+ */
+@Service
+@RequiredArgsConstructor
+public class RoleAdminService {
+
+    private final RoleRepository roleRepository;
+    private final RoleMenuRepository roleMenuRepository;
+    private final RoleFunctionRepository roleFunctionRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final ApiPermissionCache apiPermissionCache;
+    private final InternalPermissionSessionService internalPermissionSessionService;
+
+    public List<Role> list() {
+        return roleRepository.findAllByOrderByIdAsc();
+    }
+
+    public Role get(Long id) {
+        return roleRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    }
+
+    @Transactional
+    public Role create(CreateRoleCommand cmd) {
+        String code = normalizeCode(cmd.code());
+        BizAssert.state(!roleRepository.existsByCode(code), BaseError.CONFLICT);
+        String name = normalizeName(cmd.name());
+        boolean enabled = cmd.enabled() == null || cmd.enabled();
+        Role role = new Role(code, name, null, false, operatorId());
+        if (!enabled) {
+            role.disable(operatorId());
+        }
+        return roleRepository.save(role);
+    }
+
+    @Transactional
+    public Role update(Long id, UpdateRoleCommand cmd) {
+        Role role = get(id);
+        String code = normalizeCode(cmd.code());
+        if (!role.getCode().equals(code) && roleRepository.existsByCode(code)) {
+            BizAssert.fail(BaseError.CONFLICT);
+        }
+        String name = normalizeName(cmd.name());
+        boolean enabled = cmd.enabled() == null ? role.isEnabled() : cmd.enabled();
+        role.update(code, name, null, operatorId());
+        if (enabled) {
+            role.enable(operatorId());
+        } else {
+            role.disable(operatorId());
+        }
+        return roleRepository.save(role);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Role role = get(id);
+        List<Long> affectedUserIds = userRoleRepository.findByRoleId(id).stream()
+                .map(UserRole::getUserId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        roleRepository.delete(role);
+        roleMenuRepository.deleteByRoleId(id);
+        roleFunctionRepository.deleteByRoleId(id);
+        userRoleRepository.deleteByRoleId(id);
+        apiPermissionCache.clearAll();
+        internalPermissionSessionService.kickOutActiveSessions(affectedUserIds, operatorName());
+    }
+
+    private String normalizeCode(String code) {
+        BizAssert.notBlank(code, BaseError.MISSING_PARAMETER);
+        return code.trim();
+    }
+
+    private String normalizeName(String name) {
+        BizAssert.notBlank(name, BaseError.MISSING_PARAMETER);
+        return name.trim();
+    }
+
+    private Long operatorId() {
+        AuthPrincipal principal = CtxUtil.getPrincipal();
+        Long operatorId = principal == null ? null : principal.userId();
+        BizAssert.notNull(operatorId, BaseError.FORBIDDEN);
+        return operatorId;
+    }
+
+    private String operatorName() {
+        AuthPrincipal principal = CtxUtil.getPrincipal();
+        if (principal == null) {
+            return "system";
+        }
+        String username = principal.username();
+        if (username == null || username.isBlank()) {
+            Long userId = principal.userId();
+            return userId == null ? "system" : String.valueOf(userId);
+        }
+        return username;
+    }
+}

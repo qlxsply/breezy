@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="resources.xsd">
+
+    <directory code="overview-root" name="概览" icon="overview" sortNo="10" visible="true">
+        <menus>
+            <menu code="workbench-center"
+                  name="工作台"
+                  path="/admin"
+                  component="pages/AdminPlaceholderPage.vue"
+                  icon="dashboard"
+                  sortNo="10"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="workbench-view" name="查看工作台" sortNo="10" visible="true"/>
+                </buttons>
+            </menu>
+        </menus>
+    </directory>
+
+    <directory code="platform-root" name="平台管理" icon="platform" sortNo="20" visible="true">
+        <menus>
+            <menu code="config-center"
+                  name="系统配置"
+                  path="/admin/configs"
+                  component="pages/ConfigsAdminPage.vue"
+                  icon="settings"
+                  sortNo="10"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="config-system-view" name="查看配置" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="cfg.view"/>
+                        </permissions>
+                    </button>
+                    <button code="config-system-edit" name="编辑配置" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="cfg.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="config-system-preview-push" name="推送配置预览" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="cfg.preview.push"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="api-center"
+                  name="接口管理"
+                  path="/admin/apis"
+                  component="pages/ApisAdminPage.vue"
+                  icon="link"
+                  sortNo="20"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="api-manage-view" name="查看接口" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="api.view"/>
+                        </permissions>
+                    </button>
+                    <button code="api-manage-publish" name="发布接口" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="api.pub"/>
+                        </permissions>
+                    </button>
+                    <button code="api-manage-disable" name="停用接口" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="api.off"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="dict-center"
+                  name="数据字典"
+                  path="/admin/dicts"
+                  component="pages/DictAdminPage.vue"
+                  icon="book"
+                  sortNo="30"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="dict-manage-view" name="查看字典" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="dict.view"/>
+                        </permissions>
+                    </button>
+                    <button code="dict-manage-edit" name="维护字典" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="dict.edit"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="system-file-center"
+                  name="系统文件"
+                  path="/admin/system-files"
+                  component="pages/SystemFilesPage.vue"
+                  icon="folder"
+                  sortNo="40"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="system-file-admin-view" name="查看逻辑文件" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="sfl.view"/>
+                        </permissions>
+                    </button>
+                    <button code="system-file-preview" name="预览逻辑文件" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="sfl.preview"/>
+                        </permissions>
+                    </button>
+                    <button code="system-file-download" name="下载逻辑文件" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="sfl.download"/>
+                        </permissions>
+                    </button>
+                    <button code="system-file-physical-view" name="查看物理文件" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="sfl.phys.view"/>
+                        </permissions>
+                    </button>
+                    <button code="system-file-reference-view" name="查看引用关系" sortNo="50" visible="true">
+                        <permissions>
+                            <permission code="sfl.ref.view"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="diagnostic-center"
+                  name="诊断工具"
+                  path="/admin/diagnostic"
+                  component="pages/DiagnosticPage.vue"
+                  icon="monitor"
+                  sortNo="50"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="diagnostic-view" name="查看诊断" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="diag.view"/>
+                        </permissions>
+                    </button>
+                    <button code="diagnostic-start" name="启动诊断" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="diag.start"/>
+                        </permissions>
+                    </button>
+                    <button code="diagnostic-edit" name="调整诊断配置" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="diag.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="diagnostic-stop" name="停止诊断" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="diag.stop"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="method-stat-center"
+                  name="方法统计"
+                  path="/admin/method-stat"
+                  component="pages/MethodStatPage.vue"
+                  icon="chart"
+                  sortNo="90"
+                  visible="false"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="method-stat-switch-view" name="查看统计开关" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="mst.switch.view"/>
+                        </permissions>
+                    </button>
+                    <button code="method-stat-switch-edit" name="维护统计开关" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="mst.switch.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="method-stat-view" name="查看统计数据" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="mst.stat.view"/>
+                        </permissions>
+                    </button>
+                    <button code="method-stat-clear" name="清理统计数据" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="mst.stat.clear"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+        </menus>
+    </directory>
+
+    <directory code="permission-root" name="权限中心" icon="shield" sortNo="30" visible="true">
+        <menus>
+            <menu code="user-center"
+                  name="账号管理"
+                  path="/admin/users"
+                  component="pages/UsersAdminPage.vue"
+                  icon="users"
+                  sortNo="10"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="user-manage-view" name="查看账号" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="usr.view"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-create" name="创建账号" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="usr.add"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-edit" name="维护用户状态" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="usr.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-reset-password" name="重置账号密码" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="usr.pwd.reset"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-role-view" name="查看用户角色" sortNo="50" visible="true">
+                        <permissions>
+                            <permission code="usr.role.view"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-role-edit" name="维护用户角色" sortNo="60" visible="true">
+                        <permissions>
+                            <permission code="usr.perm.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-delete" name="删除账号" sortNo="80" visible="true">
+                        <permissions>
+                            <permission code="usr.del"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="role-center"
+                  name="角色管理"
+                  path="/admin/roles"
+                  component="pages/RolesAdminPage.vue"
+                  icon="role"
+                  sortNo="20"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="role-manage-view" name="查看角色" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="rol.view"/>
+                        </permissions>
+                    </button>
+                    <button code="role-manage-create" name="新增角色" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="rol.add"/>
+                        </permissions>
+                    </button>
+                    <button code="role-manage-edit" name="维护角色" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="rol.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="role-manage-delete" name="删除角色" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="rol.del"/>
+                        </permissions>
+                    </button>
+                    <button code="role-manage-permission-view" name="查看角色权限" sortNo="50" visible="true">
+                        <permissions>
+                            <permission code="rol.perm.view"/>
+                        </permissions>
+                    </button>
+                    <button code="role-manage-permission-edit" name="维护角色权限" sortNo="60" visible="true">
+                        <permissions>
+                            <permission code="rol.perm.edit"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="permission-policy-center"
+                  name="权限策略"
+                  path="/admin/permission-policies"
+                  component="pages/AdminPlaceholderPage.vue"
+                  icon="policy"
+                  sortNo="30"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="permission-policy-view" name="查看权限策略" sortNo="10" visible="true"/>
+                </buttons>
+            </menu>
+
+            <menu code="login-log-center"
+                  name="登录日志"
+                  path="/admin/login-logs"
+                  component="pages/LoginLogsPage.vue"
+                  icon="history"
+                  sortNo="40"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="login-log-view" name="查看登录日志" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="log.view"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="audit-log-center"
+                  name="审计日志"
+                  path="/admin/audit-logs"
+                  component="pages/AuditLogsPage.vue"
+                  icon="audit"
+                  sortNo="50"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="audit-log-view" name="查看审计日志" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="audit.log.view"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+        </menus>
+    </directory>
+
+    <directory code="customer-root" name="用户中心" icon="customer" sortNo="40" visible="true">
+        <menus>
+            <menu code="web-user-center"
+                  name="用户管理"
+                  path="/admin/web-users"
+                  component="pages/WebUsersAdminPage.vue"
+                  icon="customer-user"
+                  sortNo="10"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="web-user-manage-view" name="查看用户" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="usr.view"/>
+                        </permissions>
+                    </button>
+                    <button code="web-user-manage-edit" name="维护用户" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="usr.edit"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="web-user-stats-center"
+                  name="用户分组"
+                  path="/admin/web-user-stats"
+                  component="pages/WebUserGroupsPage.vue"
+                  icon="customer-chart"
+                  sortNo="20"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="web-user-stats-view" name="查看用户分组" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="nfm.view"/>
+                        </permissions>
+                    </button>
+                    <button code="web-user-stats-edit" name="维护用户分组" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="nfm.user.save"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
+            <menu code="normal-feature-center"
+                  name="功能配置"
+                  path="/admin/normal-features"
+                  component="pages/NormalFeatureAdminPage.vue"
+                  icon="spark"
+                  sortNo="30"
+                  visible="true"
+                  defaultEntry="true">
+                <buttons>
+                    <button code="normal-feature-view" name="查看功能" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="nfm.view"/>
+                        </permissions>
+                    </button>
+                    <button code="normal-feature-default-save" name="维护默认功能" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="nfm.default.save"/>
+                        </permissions>
+                    </button>
+                    <button code="normal-feature-user-view" name="查看用户功能授权" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="nfm.user.view"/>
+                        </permissions>
+                    </button>
+                    <button code="normal-feature-user-save" name="维护用户功能授权" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="nfm.user.save"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+        </menus>
+    </directory>
+
+</resources>

@@ -1,0 +1,42 @@
+{
+    "instant": {
+        "$resolver": "timestamp",
+        "pattern": {
+            "format": "yyyy-MM-dd HH:mm:ss.SSS",
+            "timeZone": "Asia/Shanghai"
+        }
+    },
+    "traceId": {
+        "$resolver": "mdc",
+        "key": "traceId"
+    },
+    "spanId": {
+        "$resolver": "mdc",
+        "key": "spanId"
+    },
+    "level": {
+        "$resolver": "level",
+        "field": "name"
+    },
+    "thread": {
+        "$resolver": "thread",
+        "field": "name"
+    },
+    "logger": {
+        "$resolver": "logger",
+        "field": "name"
+    },
+    "message": {
+        "$resolver": "message",
+        "stringified": true
+    },
+    "exception": {
+        "$resolver": "exception",
+        "field": "stackTrace",
+        "stackTrace": {
+            "stringified": false
+        }
+    },
+    "app": "${APP_NAME}",
+    "env": "${APP_ENV}"
+}

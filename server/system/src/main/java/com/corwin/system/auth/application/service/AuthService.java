@@ -1,0 +1,168 @@
+package com.corwin.system.auth.application.service;
+
+import com.corwin.framework.constant.UserType;
+import com.corwin.framework.error.BizAssert;
+import com.corwin.framework.error.BizException;
+import com.corwin.framework.json.Json;
+import com.corwin.framework.util.HighDate;
+import com.corwin.framework.web.auth.AuthPrincipal;
+import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.system.auth.application.command.ChangePasswordCommand;
+import com.corwin.system.auth.application.command.LoginCommand;
+import com.corwin.system.auth.application.error.AuthError;
+import com.corwin.system.auth.application.view.AuthUserView;
+import com.corwin.system.auth.application.view.LoginView;
+import com.corwin.system.auth.domain.model.LoginSession;
+import com.corwin.system.auth.domain.model.SessionStatus;
+import com.corwin.system.auth.domain.repo.LoginSessionRepository;
+import com.corwin.system.auth.infrastructure.security.AuthPrincipalAuthenticator;
+import com.corwin.system.auth.infrastructure.security.OpaqueTokenService;
+import com.corwin.system.auth.published.SecurityContextService;
+import com.corwin.system.resource.application.service.PermissionService;
+import com.corwin.system.user.domain.model.DefaultUser;
+import com.corwin.system.user.domain.model.User;
+import com.corwin.system.user.domain.model.UserStatus;
+import com.corwin.system.user.domain.repo.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * @author Corwin 2026/1/22
+ */
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordPolicyService passwordPolicyService;
+    private final LoginLogService loginLogService;
+    private final LoginSessionRepository loginSessionRepository;
+    private final PermissionService permissionService;
+    private final AuthConfigService authConfigService;
+    private final OpaqueTokenService opaqueTokenService;
+    private final AuthPrincipalAuthenticator authPrincipalAuthenticator;
+    private final SecurityContextService securityContextService;
+
+    public LoginView login(LoginCommand cmd) {
+        BizAssert.notNull(cmd, AuthError.BAD_CREDENTIALS);
+        String account = cmd.account();
+        try {
+            BizAssert.notBlank(cmd.account(), AuthError.BAD_CREDENTIALS);
+            BizAssert.notBlank(cmd.password(), AuthError.BAD_CREDENTIALS);
+
+            account = cmd.account().trim();
+            User user = userRepository.findByUsername(account)
+                    .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+            BizAssert.state(!DefaultUser.isSystemUser(user.getId()), AuthError.FORBIDDEN);
+            BizAssert.state(user.getUserType() == UserType.INTERNAL, AuthError.FORBIDDEN);
+            BizAssert.state(user.getUserStatus() == UserStatus.ENABLED, AuthError.USER_DISABLED);
+            if (!BCrypt.checkpw(cmd.password(), user.getPasswordHash())) {
+                BizAssert.fail(AuthError.BAD_CREDENTIALS);
+            }
+
+            if (authConfigService.internalSingleLoginEnabled()) {
+                kickOutActiveSessions(user);
+            }
+
+            Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.INTERNAL);
+            String rawToken = opaqueTokenService.generateToken();
+            String tokenHash = opaqueTokenService.hash(rawToken);
+            Instant now = HighDate.mockInstant();
+            Instant expiresAt = now.plus(authConfigService.internalSessionTtl());
+
+            LoginSession session = new LoginSession(user.getId(), newTokenId(), tokenHash,
+                    com.corwin.framework.web.ctx.CtxUtil.getClientIp(), currentUserAgent(),
+                    Json.toStr(permissionCodes.stream().toList()), "[]", "[]", expiresAt, user.getUsername());
+            loginSessionRepository.save(session);
+
+            AuthPrincipal principal = new AuthPrincipal(user.getId(), user.getUsername(), user.getUserType(),
+                    DefaultUser.isAdmin(user.getId()), permissionCodes);
+            authPrincipalAuthenticator.cacheSession(tokenHash, principal, Duration.between(now, expiresAt));
+
+            loginLogService.logLoginSuccess(user);
+            return new LoginView(rawToken, toAuthView(user, user.getUserType()));
+        } catch (RuntimeException ex) {
+            loginLogService.logLoginFailure(account, ex.getMessage());
+            throw ex;
+        }
+    }
+
+    public AuthUserView currentUser() {
+        return securityContextService.currentOptional().flatMap(principal -> userRepository.findById(principal.userId())
+                .map(user -> toAuthView(user, principal.userType()))).orElse(null);
+    }
+
+    public boolean changePassword(ChangePasswordCommand cmd) {
+        BizAssert.notBlank(cmd.oldPassword(), AuthError.BAD_CREDENTIALS);
+        passwordPolicyService.validate(cmd.newPassword());
+
+        AuthPrincipal principal = securityContextService.current();
+        User user = userRepository.findById(principal.userId())
+                .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+        if (!BCrypt.checkpw(cmd.oldPassword(), user.getPasswordHash())) {
+            BizAssert.fail(AuthError.BAD_CREDENTIALS);
+        }
+        user.updatePassword(BCrypt.hashpw(cmd.newPassword(), BCrypt.gensalt()), "bcrypt", principal.username());
+        user.markMustChangePassword(false, principal.username());
+        userRepository.save(user);
+        return true;
+    }
+
+    public boolean logout() {
+        AuthPrincipal principal = securityContextService.current();
+        String tokenHash = CtxUtil.getTokenHash();
+        if (tokenHash == null || tokenHash.isBlank()) {
+            loginLogService.logLogoutFailure(principal.userId(), principal.username(), "logout without token");
+            return true;
+        }
+
+        loginSessionRepository.findByTokenHash(tokenHash).ifPresent(session -> {
+            session.revoke(principal.username());
+            loginSessionRepository.save(session);
+        });
+        authPrincipalAuthenticator.evictSession(tokenHash);
+        loginLogService.logLogoutSuccess(principal.userId(), principal.username());
+        return true;
+    }
+
+    private void kickOutActiveSessions(User user) {
+        List<LoginSession> activeSessions = loginSessionRepository.findByUserIdAndSessionStatus(user.getId(),
+                SessionStatus.ACTIVE);
+        for (LoginSession session : activeSessions) {
+            session.kickOut(user.getUsername());
+            loginSessionRepository.save(session);
+            authPrincipalAuthenticator.evictSession(session.getTokenHash());
+        }
+    }
+
+    private AuthUserView toAuthView(User user, UserType userType) {
+        return new AuthUserView(user.getId(), user.getUsername(), userType, user.isMustChangePassword());
+    }
+
+    private String currentUserAgent() {
+        HttpServletRequest request = currentRequest();
+        return request == null ? null : request.getHeader("User-Agent");
+    }
+
+    private HttpServletRequest currentRequest() {
+        var attrs = RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof ServletRequestAttributes servletRequestAttributes) {
+            return servletRequestAttributes.getRequest();
+        }
+        return null;
+    }
+
+    private String newTokenId() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+}

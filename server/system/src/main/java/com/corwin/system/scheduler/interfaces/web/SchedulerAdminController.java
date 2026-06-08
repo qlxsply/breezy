@@ -1,0 +1,114 @@
+package com.corwin.system.scheduler.interfaces.web;
+
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.system.auth.published.Authorize;
+import com.corwin.framework.constant.UserType;
+import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.system.scheduler.application.service.SchedulerCommandAppService;
+import com.corwin.system.scheduler.application.service.SchedulerQueryAppService;
+import com.corwin.system.scheduler.application.view.SchedulerJobDetailView;
+import com.corwin.system.scheduler.application.view.SchedulerJobExecutionView;
+import com.corwin.system.scheduler.application.view.SchedulerJobView;
+import com.corwin.system.resource.published.ApiMeta;
+import com.corwin.system.resource.published.ApiModuleCode;
+import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobDetailRes;
+import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobExecutionRes;
+import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobRes;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 閸斻劍鈧椒鎹㈤崝锛勵吀閻炲棙甯堕崚璺烘珤閵? *
+ * @author Corwin 2026/4/15
+ */
+@ApiMeta(module = ApiModuleCode.SYSTEM)
+@RestController
+@RequestMapping("/api/admin/scheduler/jobs")
+@RequiredArgsConstructor
+public class SchedulerAdminController {
+
+    private final SchedulerQueryAppService queryAppService;
+    private final SchedulerCommandAppService commandAppService;
+
+    @GetMapping
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    public ApiResponse<List<SchedulerJobRes>> list() {
+        return ApiResponse.ok(queryAppService.listJobs().stream().map(SchedulerAdminController::toRes).toList());
+    }
+
+    @GetMapping("/{jobId}")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    public ApiResponse<SchedulerJobDetailRes> detail(@PathVariable String jobId) {
+        return ApiResponse.ok(toDetailRes(queryAppService.getJob(jobId)));
+    }
+
+    @GetMapping("/{jobId}/executions")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    public ApiResponse<PageData<SchedulerJobExecutionRes>> executions(@PathVariable String jobId,
+            @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "20") int pageSize) {
+        PageData<SchedulerJobExecutionView> page = queryAppService.pageExecutions(jobId,
+                PageSpec.of(pageNo, pageSize, List.of()));
+        return ApiResponse.ok(PageData.of(page.pageNo(), page.pageSize(), page.totalElements(),
+                page.elements().stream().map(SchedulerAdminController::toExecutionRes).toList()));
+    }
+
+    @PostMapping("/{jobId}/pause")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.pause"})
+    public ApiResponse<Boolean> pause(@PathVariable String jobId) {
+        commandAppService.pauseRequested(jobId);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/{jobId}/resume")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.resume"})
+    public ApiResponse<Boolean> resume(@PathVariable String jobId) {
+        commandAppService.resumeRequested(jobId);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/{jobId}/cancel")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.cancel"})
+    public ApiResponse<Boolean> cancel(@PathVariable String jobId) {
+        commandAppService.cancelRequested(jobId);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/{jobId}/trigger")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.trigger"})
+    public ApiResponse<Boolean> trigger(@PathVariable String jobId) {
+        commandAppService.triggerNow(jobId);
+        return ApiResponse.ok(true);
+    }
+
+    @DeleteMapping("/{jobId}")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.delete"})
+    public ApiResponse<Boolean> delete(@PathVariable String jobId) {
+        commandAppService.deleteRequested(jobId);
+        return ApiResponse.ok(true);
+    }
+
+    private static SchedulerJobRes toRes(SchedulerJobView view) {
+        return new SchedulerJobRes(view.jobId(), view.namespace(), view.name(), view.jobType(), view.handlerKey(),
+                view.scheduleRuleType(), view.enabled(), view.allowConcurrent(), view.remark(), view.status(),
+                view.nextFireTime(), view.lastFireTime(), view.lastSuccessTime(), view.lastFailureTime(),
+                view.lastErrorMessage(), view.updatedAt());
+    }
+
+    private static SchedulerJobDetailRes toDetailRes(SchedulerJobDetailView view) {
+        return new SchedulerJobDetailRes(view.jobId(), view.namespace(), view.name(), view.source(), view.jobType(),
+                view.handlerKey(), view.scheduleRuleType(), view.payloadType(), view.enabled(), view.deleted(),
+                view.allowConcurrent(), view.versionNo(), view.remark(), view.status(), view.nextFireTime(),
+                view.lastFireTime(), view.lastSuccessTime(), view.lastFailureTime(), view.consecutiveFailures(),
+                view.lastErrorMessage(), view.lastDurationMs(), view.currentExecutionId(), view.createdAt(),
+                view.updatedAt());
+    }
+
+    private static SchedulerJobExecutionRes toExecutionRes(SchedulerJobExecutionView view) {
+        return new SchedulerJobExecutionRes(view.executionId(), view.jobId(), view.scheduledTime(), view.startTime(),
+                view.endTime(), view.result(), view.durationMs(), view.triggerType(), view.resultCode(),
+                view.resultMessage(), view.errorMessage());
+    }
+}

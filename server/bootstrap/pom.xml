@@ -1,0 +1,185 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.corwin</groupId>
+        <artifactId>server</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>bootstrap</artifactId>
+    <packaging>jar</packaging>
+    <name>bootstrap</name>
+
+    <properties>
+        <spring.boot.main-class>com.corwin.Bootstrap</spring.boot.main-class>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.corwin</groupId>
+            <artifactId>framework</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.corwin</groupId>
+            <artifactId>system</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.corwin</groupId>
+            <artifactId>business</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-spring-boot</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-layout-template-json</artifactId>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-core</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>${spring.boot.main-class}</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.yml</include>
+                    <include>application.yaml</include>
+                    <include>application.properties</include>
+                    <include>application-*.yml</include>
+                    <include>application-*.yaml</include>
+                    <include>application-*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>bootstarp/resources.xml</include>
+                    <include>bootstarp/resources.xsd</include>
+                    <include>bootstarp/normal-features.xml</include>
+                    <include>bootstarp/normal-features.xsd</include>
+                    <include>bootstarp/dictionaries.xml</include>
+                    <include>bootstarp/dictionaries.xsd</include>
+                    <include>bootstarp/sql/mysql/**</include>
+                    <include>bootstarp/sql/pgsql/**</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.xsd</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <excludes>
+                    <exclude>application.yml</exclude>
+                    <exclude>application.yaml</exclude>
+                    <exclude>application.properties</exclude>
+                    <exclude>application-*.yml</exclude>
+                    <exclude>application-*.yaml</exclude>
+                    <exclude>application-*.properties</exclude>
+                    <exclude>bootstarp/sql/h2/**</exclude>
+                    <exclude>bootstarp/sql/mysql/crud/**</exclude>
+                    <exclude>bootstarp/sql/mysql/schema/**</exclude>
+                    <exclude>bootstarp/sql/oracle/**</exclude>
+                    <exclude>bootstarp/sql/postgresql/**</exclude>
+                    <exclude>bootstarp/sql/sqlserver/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
+</project>

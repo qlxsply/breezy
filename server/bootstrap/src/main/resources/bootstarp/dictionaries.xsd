@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:simpleType name="DictValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="STRING"/>
+            <xs:enumeration value="NUMBER"/>
+            <xs:enumeration value="BOOLEAN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DictStructureType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="FLAT"/>
+            <xs:enumeration value="TREE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="DictionaryNode">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string"/>
+            <xs:element name="code" type="xs:string"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="enumClass" type="xs:string"/>
+            <xs:element name="valueType" type="DictValueType"/>
+            <xs:element name="structureType" type="DictStructureType"/>
+            <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="dictionaries">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="dictionary" type="DictionaryNode" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

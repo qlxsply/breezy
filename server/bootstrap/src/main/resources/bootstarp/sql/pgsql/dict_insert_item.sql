@@ -1,0 +1,40 @@
+insert into sys_dict_item
+(
+    id,
+    dict_type_id,
+    parent_item_id,
+    item_code,
+    item_label,
+    item_value,
+    sort_no,
+    enabled,
+    is_default,
+    tag_color,
+    tag_type,
+    extra_json,
+    description,
+    created_at,
+    created_by,
+    updated_at,
+    updated_by
+)
+values
+(
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    current_timestamp,
+    ?,
+    current_timestamp,
+    ?
+)

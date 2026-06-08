@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="60">
+
+    <Properties>
+        <Property name="LOG_DIR">${sys:log.dir:-logs}</Property>
+        <Property name="APP_NAME">${sys:app.name:-${spring:spring.application.name:-app}}</Property>
+        <Property name="APP_ENV">${spring:spring.profiles.active:-unknown}</Property>
+        <Property name="CONSOLE_PATTERN">%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} [%style{%-16X{traceId}-%-8X{spanId}}{magenta}] [%style{%t}{blue}] %highlight{%-5level} %style{%logger{36}}{green} | %msg%n</Property>
+        <Property name="FILE_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-16X{traceId}-%-8X{spanId}] [%t] %-5level %logger{36} | %msg%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout disableAnsi="false" noConsoleNoAnsi="false" pattern="${CONSOLE_PATTERN}"/>
+        </Console>
+
+        <RollingFile name="FILE_PLAIN"
+                     fileName="${LOG_DIR}/${APP_NAME}.log"
+                     filePattern="${LOG_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz">
+            <PatternLayout pattern="${FILE_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <RollingFile name="FILE_JSON"
+                     fileName="${LOG_DIR}/${APP_NAME}.json"
+                     filePattern="${LOG_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.%i.json.gz">
+            <JsonTemplateLayout eventTemplateUri="classpath:log4j2/json-template.json"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+    </Appenders>
+
+    <SpringProfile name="dev">
+        <Loggers>
+            <Root level="INFO">
+                <AppenderRef ref="CONSOLE"/>
+                <AppenderRef ref="FILE_PLAIN"/>
+                <AppenderRef ref="FILE_JSON"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+    <SpringProfile name="corwin">
+        <Loggers>
+            <Root level="INFO">
+                <AppenderRef ref="CONSOLE"/>
+                <AppenderRef ref="FILE_PLAIN"/>
+                <AppenderRef ref="FILE_JSON"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+    <SpringProfile name="test">
+        <Loggers>
+            <Root level="INFO">
+                <AppenderRef ref="FILE_PLAIN"/>
+                <AppenderRef ref="FILE_JSON"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+    <SpringProfile name="prod">
+        <Loggers>
+            <Root level="INFO">
+                <AppenderRef ref="FILE_PLAIN"/>
+                <AppenderRef ref="FILE_JSON"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+    <SpringProfile name="default">
+        <Loggers>
+            <Root level="INFO">
+                <AppenderRef ref="CONSOLE"/>
+                <AppenderRef ref="FILE_PLAIN"/>
+                <AppenderRef ref="FILE_JSON"/>
+            </Root>
+        </Loggers>
+    </SpringProfile>
+
+</Configuration>

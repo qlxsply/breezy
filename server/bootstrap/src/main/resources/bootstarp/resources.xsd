@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <!-- API 权限码引用。只允许挂在 button 下 -->
+    <xs:complexType name="PermissionRefType">
+        <xs:attribute name="code" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!-- 权限码集合。button 可选配置 -->
+    <xs:complexType name="PermissionsType">
+        <xs:sequence>
+            <xs:element name="permission" type="PermissionRefType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- 按钮资源：最低层级资源，不允许再有子项 -->
+    <xs:complexType name="ButtonType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="permissions" type="PermissionsType" minOccurs="0"/>
+        </xs:sequence>
+
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="sortNo" type="xs:int" use="required"/>
+        <xs:attribute name="visible" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <!-- 按钮集合。只能出现在 menu 下 -->
+    <xs:complexType name="ButtonsType">
+        <xs:sequence>
+            <xs:element name="button" type="ButtonType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- 菜单资源：
+         1. 可以有子菜单
+         2. 可以有按钮
+         3. path/component 可选
+         4. 是否是页面由 path/component 是否存在判断
+         5. menu 不允许直接配置 permission
+    -->
+    <xs:complexType name="MenuType">
+        <xs:sequence>
+            <xs:element name="remark" type="xs:string" minOccurs="0"/>
+
+            <xs:element name="menus" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="menu" type="MenuType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="buttons" type="ButtonsType" minOccurs="0"/>
+        </xs:sequence>
+
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="path" type="xs:string" use="optional"/>
+        <xs:attribute name="component" type="xs:string" use="optional"/>
+        <xs:attribute name="icon" type="xs:string" use="optional"/>
+        <xs:attribute name="sortNo" type="xs:int" use="required"/>
+        <xs:attribute name="visible" type="xs:boolean" use="optional"/>
+        <xs:attribute name="defaultEntry" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <!-- 目录资源：
+         1. 可以有子目录
+         2. 可以有菜单
+         3. 不允许有按钮
+         4. 不允许配置 permission
+    -->
+    <xs:complexType name="DirectoryType">
+        <xs:sequence>
+            <xs:element name="remark" type="xs:string" minOccurs="0"/>
+
+            <xs:element name="directories" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="directory" type="DirectoryType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="menus" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="menu" type="MenuType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="icon" type="xs:string" use="optional"/>
+        <xs:attribute name="sortNo" type="xs:int" use="required"/>
+        <xs:attribute name="visible" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+    <!-- 根节点 -->
+    <xs:element name="resources">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="1" maxOccurs="unbounded">
+                    <xs:element name="directory" type="DirectoryType"/>
+                    <xs:element name="menu" type="MenuType"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
