@@ -1,6 +1,9 @@
-const TOKEN_KEY = "breezy:admin:auth:token";
-const SHARED_TOKEN_KEY = "breezy:auth:token";
-const SHARED_SCOPE_KEY = "breezy:auth:scope";
+// /src/utils/authStorage.ts
+
+const TOKEN_KEY = "breezy:auth:token";
+const SCOPE_KEY = "breezy:auth:scope";
+
+export type AuthScope = "internal" | "external";
 
 export function getAuthToken(): string {
   if (typeof window === "undefined") return "";
@@ -12,23 +15,19 @@ export function setAuthToken(token: string): void {
   window.localStorage.setItem(TOKEN_KEY, token);
 }
 
+export function getAuthScope(): AuthScope {
+  if (typeof window === "undefined") return "external";
+  const value = window.localStorage.getItem(SCOPE_KEY);
+  return value === "internal" ? "internal" : "external";
+}
+
+export function setAuthScope(scope: AuthScope): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SCOPE_KEY, scope);
+}
+
 export function clearAuthToken(): void {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(TOKEN_KEY);
-}
-
-export function syncSharedAuthToken(token: string): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(SHARED_TOKEN_KEY, token);
-}
-
-export function syncSharedAuthScope(scope: "internal" | "external"): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(SHARED_SCOPE_KEY, scope);
-}
-
-export function clearSharedAuth(): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(SHARED_TOKEN_KEY);
-  window.localStorage.removeItem(SHARED_SCOPE_KEY);
+  window.localStorage.removeItem(SCOPE_KEY);
 }

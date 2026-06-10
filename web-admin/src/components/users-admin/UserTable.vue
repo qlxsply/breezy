@@ -1,3 +1,4 @@
+<!-- /src/components/users-admin/UserTable.vue -->
 <template>
   <bz-table
     v-loading="loading"
@@ -104,9 +105,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import type { UserEntry } from "@admin/types/user-admin";
-import { formatDateTime } from "@shared/utils/formatter";
+import type { UserEntry } from "../../types/user-admin";
+import { formatDateTime } from "../../utils/formatter";
+import AdminActionBar from "../admin/AdminActionBar.vue";
 
 interface UserTypeMeta {
   label: string;

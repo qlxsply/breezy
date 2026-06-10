@@ -154,9 +154,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import type { ApiEntry } from "@admin/types/api-admin";
+import type { AdminActionItem } from "../../types/admin-action";
+import type { ApiEntry } from "../../types/api-admin";
+import AdminActionBar from "../admin/AdminActionBar.vue";
 
 const props = defineProps<{
   rows: ApiEntry[];

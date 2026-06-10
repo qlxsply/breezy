@@ -1,0 +1,119 @@
+/* /src/styles/list-page.css */
+
+.list-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-page-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.list-page-actions-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.list-page-actions-main .bz-button + .bz-button,
+.list-page-actions-main .el-button + .el-button {
+  margin-left: 0;
+}
+
+.list-page-query-card {
+  border: 1px solid var(--border-color);
+}
+
+.list-page-query-card .bz-card__body,
+.list-page-query-card .el-card__body {
+  padding: 14px 16px;
+}
+
+.list-page-filter-form {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.list-page-filter-item {
+  margin-bottom: 0;
+}
+
+.list-page-filter-item .bz-form-item__content,
+.list-page-filter-item .el-form-item__content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.list-page-filter-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.list-page-filter-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.list-page-filter-control {
+  width: 220px;
+}
+
+.list-page-filter-actions {
+  margin-bottom: 0;
+}
+
+.list-page-filter-actions .bz-form-item__content,
+.list-page-filter-actions .el-form-item__content {
+  display: inline-flex;
+  align-items: center;
+}
+
+.list-page-sort-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.list-page-result-card .bz-card__body,
+.list-page-result-card .el-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-page-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.list-page-pagination-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .list-page-filter-control {
+    width: min(320px, 100%);
+  }
+
+  .list-page-pagination {
+    justify-content: flex-start;
+  }
+}

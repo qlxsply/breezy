@@ -1,12 +1,13 @@
-import { get, post, put } from "@admin/api/http";
+// /src/api/configs.ts
 import type {
   ClientIpMode,
   ConfigClientIpPreviewRes,
   ConfigItem,
   ConfigTimeOffsetPreviewRes,
   ConfigType,
-} from "@admin/types/config-admin";
-import type { PageResult } from "@admin/types/page";
+} from "../types/config-admin";
+import type { PageResult } from "../types/page";
+import { get, post, put } from "./http";
 
 const BASE = "/sys/configs";
 

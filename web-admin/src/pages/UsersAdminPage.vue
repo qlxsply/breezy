@@ -1,3 +1,4 @@
+<!-- /src/pages/UsersAdminPage.vue -->
 <template>
   <div class="admin-page">
     <div class="content">
@@ -240,8 +241,10 @@
 </template>
 
 <script setup lang="ts">
-import { batchListDictOptions } from "@admin/api/dicts";
-import { listRoles } from "@admin/api/roles";
+import { computed, onMounted, ref } from "vue";
+
+import { batchListDictOptions } from "../api/dicts";
+import { listRoles } from "../api/roles";
 import {
   createUser,
   deleteUser,
@@ -250,19 +253,18 @@ import {
   resetUserPassword,
   updateUser,
   updateUserRoles,
-} from "@admin/api/users";
-import PasswordResetDialog from "@admin/components/users-admin/PasswordResetDialog.vue";
-import UserFormDialog from "@admin/components/users-admin/UserFormDialog.vue";
-import UserRoleDialog from "@admin/components/users-admin/UserRoleDialog.vue";
-import UserTable from "@admin/components/users-admin/UserTable.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { DictItem } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
-import type { RoleEntry } from "@admin/types/role-admin";
-import type { UserEntry, UserStatus } from "@admin/types/user-admin";
-import { bzConfirm } from "@shared/utils/confirm";
-import { message } from "@shared/utils/message";
-import { computed, onMounted, ref } from "vue";
+} from "../api/users";
+import PasswordResetDialog from "../components/users-admin/PasswordResetDialog.vue";
+import UserFormDialog from "../components/users-admin/UserFormDialog.vue";
+import UserRoleDialog from "../components/users-admin/UserRoleDialog.vue";
+import UserTable from "../components/users-admin/UserTable.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { DictItem } from "../types/dict-admin";
+import type { PageResult } from "../types/page";
+import type { RoleEntry } from "../types/role-admin";
+import type { UserEntry, UserStatus } from "../types/user-admin";
+import { bzConfirm } from "../utils/confirm";
+import { message } from "../utils/message";
 
 const loading = ref(false);
 const rows = ref<UserEntry[]>([]);
@@ -300,15 +302,15 @@ const roleList = ref<RoleEntry[]>([]);
 const roleSelected = ref<string[]>([]);
 const roleLoading = ref(false);
 
-const canCreate = computed(() => hasAdminResourceCodeAccess("user-manage-create"));
-const canEdit = computed(() => hasAdminResourceCodeAccess("user-manage-edit"));
-const canToggle = computed(() => hasAdminResourceCodeAccess("user-manage-edit"));
-const canReset = computed(() => hasAdminResourceCodeAccess("user-manage-reset-password"));
-const canRoleEdit = computed(() => hasAdminResourceCodeAccess("user-manage-role-edit"));
+const canCreate = computed(() => hasResourceCodeAccess("user-manage-create"));
+const canEdit = computed(() => hasResourceCodeAccess("user-manage-edit"));
+const canToggle = computed(() => hasResourceCodeAccess("user-manage-edit"));
+const canReset = computed(() => hasResourceCodeAccess("user-manage-reset-password"));
+const canRoleEdit = computed(() => hasResourceCodeAccess("user-manage-role-edit"));
 const canRoles = computed(
-  () => canRoleEdit.value || hasAdminResourceCodeAccess("user-manage-role-view"),
+  () => canRoleEdit.value || hasResourceCodeAccess("user-manage-role-view"),
 );
-const canDelete = computed(() => hasAdminResourceCodeAccess("user-manage-delete"));
+const canDelete = computed(() => hasResourceCodeAccess("user-manage-delete"));
 
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);

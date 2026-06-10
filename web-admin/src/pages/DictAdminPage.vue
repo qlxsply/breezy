@@ -758,6 +758,9 @@
 </template>
 
 <script setup lang="ts">
+import type { CSSProperties } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+
 import {
   batchListDictOptions,
   createDictType,
@@ -767,11 +770,11 @@ import {
   listDictTypes,
   updateDictType,
   updateDictTypeStatus,
-} from "@admin/api/dicts";
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import AdminEntityDrawer from "@admin/components/admin/AdminEntityDrawer.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
+} from "../api/dicts";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
+import AdminEntityDrawer from "../components/admin/AdminEntityDrawer.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
 import type {
   DictItem,
   DictOption,
@@ -779,11 +782,9 @@ import type {
   DictStructureType,
   DictTypeItem,
   DictValueType,
-} from "@admin/types/dict-admin";
-import { bzConfirm } from "@shared/utils/confirm";
-import { message } from "@shared/utils/message";
-import type { CSSProperties } from "vue";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+} from "../types/dict-admin";
+import { bzConfirm } from "../utils/confirm";
+import { message } from "../utils/message";
 
 type OptionCode =
   | "DICT_VALUE_TYPE"
@@ -880,8 +881,8 @@ const dragState = reactive({
   sorting: false,
 });
 
-const canView = computed(() => hasAdminResourceCodeAccess("dict-manage-view"));
-const canEdit = computed(() => hasAdminResourceCodeAccess("dict-manage-edit"));
+const canView = computed(() => hasResourceCodeAccess("dict-manage-view"));
+const canEdit = computed(() => hasResourceCodeAccess("dict-manage-edit"));
 const isDetailMode = computed(() => typeDrawer.mode === "detail");
 const isEditMode = computed(() => typeDrawer.mode === "edit");
 const isEditableMode = computed(
@@ -930,7 +931,7 @@ const currentItems = computed(() => (isEditableMode.value ? itemDraftRows.value 
 const drawerTitle = computed(() => {
   if (typeDrawer.mode === "create") return "新增字典";
   if (typeDrawer.mode === "edit") return "编辑字典";
-  return "字典详情";
+  return `字典详情`;
 });
 const drawerWidth = computed(() => (isDetailMode.value ? "960px" : "1080px"));
 const isTreeType = computed(() => typeForm.structureType === "TREE");
@@ -1747,6 +1748,12 @@ function isValidNumberLiteral(value: string): boolean {
   color: #0f172a;
 }
 
+.dict-drawer-section__tip {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
 .dict-drawer-section__actions {
   display: flex;
   align-items: center;
@@ -1802,6 +1809,23 @@ function isValidNumberLiteral(value: string): boolean {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 14px;
   margin: 4px 0 8px;
+}
+
+.dict-summary-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dict-items-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .dict-item-editor-card {
@@ -1887,6 +1911,13 @@ function isValidNumberLiteral(value: string): boolean {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.dict-item-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 .dict-item-label-tags {

@@ -1,12 +1,12 @@
-import { API_BASE_URL, get } from "@admin/api/http";
 import type {
   PhysicalFileDetail,
   StorageListQuery,
   StorageSortBy,
   StorageSortOrder,
   SystemFileItem,
-} from "@admin/types/file-storage";
-import { getAuthToken } from "@admin/utils/authStorage";
+} from "../types/file-storage";
+import { getAuthToken } from "../utils/authStorage";
+import { API_BASE_URL, get } from "./http";
 
 const BASE = "/sys/files";
 
@@ -44,6 +44,10 @@ export function getLogicalFilePhysicalDetail(logicalFileId: string): Promise<Phy
   );
 }
 
+export function getSystemFileMeta(fileId: string): Promise<SystemFileItem> {
+  return get<SystemFileItem>(`${BASE}/meta/${encodeURIComponent(fileId)}`);
+}
+
 export function listPhysicalFileLogicalRefs(
   physicalFileId: string,
   keyword?: string,
@@ -74,9 +78,7 @@ export async function fetchSystemFileView(fileId: string): Promise<Blob> {
 }
 
 function parseFileNameFromContentDisposition(contentDisposition: string): string | undefined {
-  if (!contentDisposition) {
-    return undefined;
-  }
+  if (!contentDisposition) return undefined;
 
   const filenameStar = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
   if (filenameStar?.[1]) {

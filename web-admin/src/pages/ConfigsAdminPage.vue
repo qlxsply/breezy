@@ -774,25 +774,23 @@
 
 <script setup lang="ts">
 // <script setup> + TS：顶层即 setup()。
-import {
-  listConfigs,
-  previewClientIp,
-  previewTimeOffset,
-  updateConfigValue,
-} from "@admin/api/configs";
-import { batchListDictOptions, listDictOptions } from "@admin/api/dicts";
-import { previewMsgPush } from "@admin/api/sse";
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+
+import { listConfigs, previewClientIp, previewTimeOffset, updateConfigValue } from "../api/configs";
+import { batchListDictOptions, listDictOptions } from "../api/dicts";
+import { previewMsgPush } from "../api/sse";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
 import type {
   ClientIpMode,
   ConfigClientIpPreviewRes,
   ConfigItem,
   ConfigTimeOffsetPreviewRes,
-} from "@admin/types/config-admin";
-import type { DictItem, DictOption } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
+} from "../types/config-admin";
+import type { DictItem, DictOption } from "../types/dict-admin";
+import type { PageResult } from "../types/page";
+import { message } from "../utils/message";
 import {
   resolveUserConfigLabel,
   resolveUserDateFormatCode,
@@ -802,9 +800,7 @@ import {
   USER_DATE_TIME_FORMAT_OPTIONS,
   USER_DECIMAL_FORMAT_OPTIONS,
   USER_TIME_ZONE_OPTIONS,
-} from "@admin/utils/user-config-options";
-import { message } from "@shared/utils/message";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+} from "../utils/user-config-options";
 
 interface MsgTypeConfigModel {
   msgType: string;
@@ -893,8 +889,8 @@ const editor = reactive<ConfigEditorState>({
   previewLoading: false,
 });
 
-const canUpdate = computed(() => hasAdminResourceCodeAccess("config-system-edit"));
-const canPreviewPush = computed(() => hasAdminResourceCodeAccess("config-system-preview-push"));
+const canUpdate = computed(() => hasResourceCodeAccess("config-system-edit"));
+const canPreviewPush = computed(() => hasResourceCodeAccess("config-system-preview-push"));
 const editorValidationError = computed(() => validateCurrentEditor());
 const canSaveEditor = computed(
   () => canUpdate.value && !saving.value && !editorValidationError.value,
@@ -1153,10 +1149,7 @@ function toDictLabelMap(items?: DictItem[]): Record<string, string> {
 }
 
 function toDictOptions(items?: DictItem[]): DictOption[] {
-  return (items || []).map((item) => ({
-    label: item.itemLabel,
-    value: item.itemCode || item.itemValue,
-  }));
+  return (items || []).map((item) => ({ label: item.itemLabel, value: item.itemCode || item.itemValue }));
 }
 
 function toStaticDictOptions(items: Array<{ label: string; code: string }>): DictOption[] {
@@ -1185,7 +1178,7 @@ async function loadMsgConfigOptions() {
     const priorities = await listDictOptions("MSG_PRIORITY");
     msgTypeOptions.value = types.map((t) => ({ label: t.itemLabel, value: t.itemValue }));
     msgPriorityOptions.value = priorities.map((p) => ({ label: p.itemLabel, value: p.itemValue }));
-  } catch (_error) {
+  } catch (error) {
     message.error("消息配置字典项加载失败");
   }
 }

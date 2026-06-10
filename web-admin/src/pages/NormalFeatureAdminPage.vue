@@ -281,11 +281,6 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import { bzConfirm } from "@shared/utils/confirm";
-import { message } from "@shared/utils/message";
 import { computed, onMounted, ref } from "vue";
 
 import {
@@ -293,9 +288,14 @@ import {
   pageNormalFeatures,
   updateNormalFeatureStatus,
 } from "../api/normal-features";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
 import AdminEntityDrawer from "../components/admin/AdminEntityDrawer.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
 import type { NormalFeatureEntry } from "../types/normal-feature";
 import type { PageResult } from "../types/page";
+import { bzConfirm } from "../utils/confirm";
+import { message } from "../utils/message";
 
 const loading = ref(false);
 const rows = ref<NormalFeatureEntry[]>([]);
@@ -320,8 +320,8 @@ const pageNo = ref(1);
 const pageSize = ref(10);
 const pageSizeOptions = [10, 20, 30, 50, 100] as const;
 
-const canView = computed(() => hasAdminResourceCodeAccess("normal-feature-view"));
-const canToggle = computed(() => hasAdminResourceCodeAccess("normal-feature-default-save"));
+const canView = computed(() => hasResourceCodeAccess("normal-feature-view"));
+const canToggle = computed(() => hasResourceCodeAccess("normal-feature-default-save"));
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);
 const isLastPage = computed(() => pageNo.value >= totalPages.value);
@@ -431,9 +431,8 @@ async function toggleStatus(row: NormalFeatureEntry) {
   await updateNormalFeatureStatus(row.id, nextEnabled);
   message.success(nextEnabled ? "已启用" : "已停用");
   await reload();
-  if (detailOpen.value && detail.value?.id === row.id) {
+  if (detailOpen.value && detail.value?.id === row.id)
     detail.value = await getNormalFeature(row.id);
-  }
 }
 </script>
 

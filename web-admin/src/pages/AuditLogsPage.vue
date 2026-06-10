@@ -556,21 +556,22 @@
 </template>
 
 <script setup lang="ts">
-import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
-import { batchListDictOptions } from "@admin/api/dicts";
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import AdminEntityDrawer from "@admin/components/admin/AdminEntityDrawer.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
-import type { DictItem } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
+import { computed, onMounted, ref } from "vue";
+
+import { getAuditLog, pageAuditLogs } from "../api/audit-logs";
+import { batchListDictOptions } from "../api/dicts";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
+import AdminEntityDrawer from "../components/admin/AdminEntityDrawer.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
+import type { AuditLevel, AuditLogEntry } from "../types/audit-log";
+import type { DictItem } from "../types/dict-admin";
+import type { PageResult } from "../types/page";
 import {
   dateTimeInputToEpochMillisString,
   dateTimeInputToNextMinuteEpochMillisString,
   formatDateTime,
-} from "@shared/utils/formatter";
-import { computed, onMounted, ref } from "vue";
+} from "../utils/formatter";
 
 type DictMeta = { label: string; tagType?: string | null };
 
@@ -632,7 +633,7 @@ const auditResourceOptions = computed(() => toOptions(auditResourceMetaMap.value
 const auditActionOptions = computed(() => toOptions(auditActionMetaMap.value));
 const auditLevelOptions = computed(() => toOptions(auditLevelMetaMap.value));
 
-const canView = computed(() => hasAdminResourceCodeAccess("audit-log-view"));
+const canView = computed(() => hasResourceCodeAccess("audit-log-view"));
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);
 const isLastPage = computed(() => pageNo.value >= totalPages.value);
@@ -787,9 +788,8 @@ function goToPage(nextPage: number) {
 
 function handlePageSizeSelect(event: Event) {
   const nextPageSize = Number((event.target as HTMLSelectElement).value);
-  if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === pageSize.value) {
+  if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === pageSize.value)
     return;
-  }
   pageSize.value = nextPageSize;
   pageNo.value = 1;
   void reload();

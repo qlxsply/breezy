@@ -102,8 +102,9 @@
 </template>
 
 <script setup lang="ts">
-import type { RoleGrantResourceEntry } from "@admin/types/role-admin";
 import { computed } from "vue";
+
+import type { RoleGrantResourceEntry } from "../../types/role-admin";
 
 type DiffStatus = "added" | "removed";
 

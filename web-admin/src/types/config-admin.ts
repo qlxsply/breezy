@@ -1,3 +1,5 @@
+// /src/types/config-admin.ts
+
 export type ConfigType = "STR" | "INT" | "LONG" | "BOOL" | "DEC" | "STR_LIST" | "STR_SET";
 export type ConfigScope = "FRAMEWORK" | "SYSTEM" | "BUSINESS";
 export type ConfigLevel = "SYSTEM" | "USER";

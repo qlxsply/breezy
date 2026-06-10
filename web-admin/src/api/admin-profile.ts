@@ -1,5 +1,5 @@
-import { get, put } from "@admin/api/http";
-import type { LoginEvent } from "@admin/types/login-log";
+import type { LoginEvent } from "../types/login-log";
+import { get, put } from "./http";
 
 export interface AdminProfileLoginActivityEntry {
   id: string;
@@ -25,6 +25,14 @@ export interface AdminProfileEntry {
 
 interface AdminProfilePayload extends AdminProfileEntry {}
 
+export function getAdminProfile(): Promise<AdminProfileEntry> {
+  return get<AdminProfilePayload>("/admin/profile");
+}
+
+export function updateAdminProfile(nickname: string): Promise<AdminProfileEntry> {
+  return put<AdminProfilePayload>("/admin/profile", { nickname });
+}
+
 export interface AdminProfileLoginActivityPageResult {
   pageNo: number;
   pageSize: number;
@@ -32,14 +40,6 @@ export interface AdminProfileLoginActivityPageResult {
   totalPages: number;
   totalElements: number;
   elements: AdminProfileLoginActivityEntry[];
-}
-
-export function getAdminProfile(): Promise<AdminProfileEntry> {
-  return get<AdminProfilePayload>("/admin/profile");
-}
-
-export function updateAdminProfile(nickname: string): Promise<AdminProfileEntry> {
-  return put<AdminProfilePayload>("/admin/profile", { nickname });
 }
 
 export function pageAdminProfileLoginActivities(params: {

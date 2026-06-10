@@ -244,13 +244,14 @@
 </template>
 
 <script setup lang="ts">
-import { disableApi, listApis, publishApi } from "@admin/api/apis";
-import { batchListDictOptions } from "@admin/api/dicts";
-import ApiTable from "@admin/components/apis-admin/ApiTable.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { ApiEntry } from "@admin/types/api-admin";
-import type { DictItem } from "@admin/types/dict-admin";
 import { computed, onMounted, ref } from "vue";
+
+import { disableApi, listApis, publishApi } from "../api/apis";
+import { batchListDictOptions } from "../api/dicts";
+import ApiTable from "../components/apis-admin/ApiTable.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { ApiEntry } from "../types/api-admin";
+import type { DictItem } from "../types/dict-admin";
 
 const API_DICT_CODES = ["API_METHOD", "API_PROTOCOL", "API_ACCESS_TYPE"] as const;
 
@@ -279,8 +280,8 @@ const methodLabelMap = ref<Record<string, string>>({});
 const protocolLabelMap = ref<Record<string, string>>({});
 const accessTypeLabelMap = ref<Record<string, string>>({});
 
-const canPublish = computed(() => hasAdminResourceCodeAccess("api-manage-publish"));
-const canDisable = computed(() => hasAdminResourceCodeAccess("api-manage-disable"));
+const canPublish = computed(() => hasResourceCodeAccess("api-manage-publish"));
+const canDisable = computed(() => hasResourceCodeAccess("api-manage-disable"));
 const moduleOptions = computed(() =>
   Array.from(
     new Set(

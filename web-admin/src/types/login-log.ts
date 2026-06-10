@@ -1,3 +1,5 @@
+// /src/types/login-log.ts
+
 export type LoginEvent = "LOGIN_SUCCESS" | "LOGIN_FAILURE" | "LOGOUT";
 
 export interface LoginLogEntry {

@@ -382,8 +382,6 @@
 </template>
 
 <script setup lang="ts">
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import { message } from "@shared/utils/message";
 import { computed, onMounted, reactive, ref } from "vue";
 
 import {
@@ -396,6 +394,7 @@ import {
   updateMethodStatGlobalSwitch,
   updateMethodStatMethodSwitch,
 } from "../api/method-stat";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
 import type {
   MethodStatMatchMode,
   MethodStatSortBy,
@@ -403,6 +402,7 @@ import type {
   MethodStatStatsItem,
 } from "../types/method-stat";
 import type { PageResult } from "../types/page";
+import { message } from "../utils/message";
 
 interface MethodSwitchRow {
   key: string;
@@ -473,10 +473,10 @@ const sortOptions: Array<{ label: string; value: MethodStatSortBy }> = [
   { label: "唯一Key", value: "KEY" },
 ];
 
-const canStatsView = computed(() => hasAdminResourceCodeAccess("method-stat-view"));
-const canSwitchView = computed(() => hasAdminResourceCodeAccess("method-stat-switch-view"));
-const canSwitchEdit = computed(() => hasAdminResourceCodeAccess("method-stat-switch-edit"));
-const canStatClear = computed(() => hasAdminResourceCodeAccess("method-stat-clear"));
+const canStatsView = computed(() => hasResourceCodeAccess("method-stat-view"));
+const canSwitchView = computed(() => hasResourceCodeAccess("method-stat-switch-view"));
+const canSwitchEdit = computed(() => hasResourceCodeAccess("method-stat-switch-edit"));
+const canStatClear = computed(() => hasResourceCodeAccess("method-stat-clear"));
 
 const statsTotalPages = computed(() => {
   if (filters.statsPageSize <= 0) {
@@ -793,6 +793,10 @@ function formatSuccessRate(success: number, total: number): string {
   box-sizing: border-box;
 }
 
+.tabs {
+  margin-top: -4px;
+}
+
 .list-page-actions-side {
   display: inline-flex;
   align-items: center;
@@ -802,6 +806,17 @@ function formatSuccessRate(success: number, total: number): string {
 .switch-label {
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.queue-metric {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.action-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
 }
 
 .sort-field-item {
@@ -820,9 +835,36 @@ function formatSuccessRate(success: number, total: number): string {
   width: 120px;
 }
 
+.method-name {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .method-display {
   font-weight: 600;
   line-height: 1.4;
+}
+
+.minor-text {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.method-signature {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switch-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .metric-line {

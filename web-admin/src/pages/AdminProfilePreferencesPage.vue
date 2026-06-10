@@ -2,10 +2,7 @@
   <div class="admin-page">
     <div class="content">
       <div class="admin-page-stack">
-        <bz-card
-          class="admin-panel admin-table-card"
-          shadow="never"
-        >
+        <bz-card class="admin-panel admin-table-card" shadow="never">
           <template #header>
             <div class="admin-table-header">
               <div class="admin-table-title">偏好设置</div>
@@ -16,101 +13,37 @@
             <div class="preferences-head">
               <div class="preferences-title">个性化显示设置</div>
               <div class="preferences-actions">
-                <bz-button
-                  v-if="editing"
-                  :disabled="saving"
-                  @click="cancelEdit"
-                  >取消</bz-button
-                >
-                <bz-button
-                  :type="editing ? 'primary' : 'default'"
-                  :loading="saving"
-                  @click="editing ? submit() : startEdit()"
-                >
+                <bz-button v-if="editing" :disabled="saving" @click="cancelEdit">取消</bz-button>
+                <bz-button :type="editing ? 'primary' : 'default'" :loading="saving" @click="editing ? submit() : startEdit()">
                   {{ editing ? "确认" : "编辑" }}
                 </bz-button>
               </div>
             </div>
 
-            <bz-form
-              label-position="top"
-              class="preferences-grid"
-            >
+            <bz-form label-position="top" class="preferences-grid">
               <bz-form-item label="时区">
-                <bz-select
-                  v-if="editing"
-                  v-model="form.USER_TIME_ZONE"
-                >
-                  <bz-option
-                    v-for="option in timeZoneOptions"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
-                  />
+                <bz-select v-if="editing" v-model="form.USER_TIME_ZONE">
+                  <bz-option v-for="option in timeZoneOptions" :key="option.value" :label="option.label" :value="option.value" />
                 </bz-select>
-                <div
-                  v-else
-                  class="preferences-value"
-                >
-                  {{ currentLabels.timeZone }}
-                </div>
+                <div v-else class="preferences-value">{{ currentLabels.timeZone }}</div>
               </bz-form-item>
               <bz-form-item label="日期时间格式">
-                <bz-select
-                  v-if="editing"
-                  v-model="form.USER_DATE_TIME_FORMAT"
-                >
-                  <bz-option
-                    v-for="option in dateTimeFormatOptions"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
-                  />
+                <bz-select v-if="editing" v-model="form.USER_DATE_TIME_FORMAT">
+                  <bz-option v-for="option in dateTimeFormatOptions" :key="option.value" :label="option.label" :value="option.value" />
                 </bz-select>
-                <div
-                  v-else
-                  class="preferences-value"
-                >
-                  {{ currentLabels.dateTime }}
-                </div>
+                <div v-else class="preferences-value">{{ currentLabels.dateTime }}</div>
               </bz-form-item>
               <bz-form-item label="日期格式">
-                <bz-select
-                  v-if="editing"
-                  v-model="form.USER_DATE_FORMAT"
-                >
-                  <bz-option
-                    v-for="option in dateFormatOptions"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
-                  />
+                <bz-select v-if="editing" v-model="form.USER_DATE_FORMAT">
+                  <bz-option v-for="option in dateFormatOptions" :key="option.value" :label="option.label" :value="option.value" />
                 </bz-select>
-                <div
-                  v-else
-                  class="preferences-value"
-                >
-                  {{ currentLabels.date }}
-                </div>
+                <div v-else class="preferences-value">{{ currentLabels.date }}</div>
               </bz-form-item>
               <bz-form-item label="小数格式">
-                <bz-select
-                  v-if="editing"
-                  v-model="form.USER_DECIMAL_FORMAT"
-                >
-                  <bz-option
-                    v-for="option in decimalFormatOptions"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
-                  />
+                <bz-select v-if="editing" v-model="form.USER_DECIMAL_FORMAT">
+                  <bz-option v-for="option in decimalFormatOptions" :key="option.value" :label="option.label" :value="option.value" />
                 </bz-select>
-                <div
-                  v-else
-                  class="preferences-value"
-                >
-                  {{ currentLabels.decimal }}
-                </div>
+                <div v-else class="preferences-value">{{ currentLabels.decimal }}</div>
               </bz-form-item>
             </bz-form>
           </div>
@@ -121,8 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import { getMyConfigs, updateMyConfig, type UserConfigItem } from "@admin/api/configs";
-import { batchListDictOptions } from "@admin/api/dicts";
+import { computed, reactive, ref } from "vue";
+
+import { batchListDictOptions } from "../api/dicts";
+import { updateMyConfig } from "../api/configs";
+import { ensureAuthLoaded, usePersonalizedConfigs } from "../registry/auth.registry";
+import { message } from "../utils/message";
 import {
   resolveUserDateFormatCode,
   resolveUserDateTimeFormatCode,
@@ -131,13 +68,11 @@ import {
   USER_DATE_TIME_FORMAT_OPTIONS,
   USER_DECIMAL_FORMAT_OPTIONS,
   USER_TIME_ZONE_OPTIONS,
-} from "@admin/utils/user-config-options";
-import { message } from "@shared/utils/message";
-import { computed, reactive, ref } from "vue";
+} from "../utils/user-config-options";
 
 type OptionItem = { label: string; value: string };
 
-const configs = ref<UserConfigItem[]>([]);
+const configs = usePersonalizedConfigs();
 const editing = ref(false);
 const saving = ref(false);
 const form = reactive({
@@ -155,15 +90,11 @@ const decimalFormatOptions = ref<OptionItem[]>([]);
 void Promise.all([loadOptions(), reload()]);
 
 const currentLabels = computed(() => ({
-  timeZone:
-    timeZoneOptions.value.find((item) => item.value === form.USER_TIME_ZONE)?.label ||
-    form.USER_TIME_ZONE,
+  timeZone: timeZoneOptions.value.find((item) => item.value === form.USER_TIME_ZONE)?.label || form.USER_TIME_ZONE,
   dateTime:
     dateTimeFormatOptions.value.find((item) => item.value === form.USER_DATE_TIME_FORMAT)?.label ||
     form.USER_DATE_TIME_FORMAT,
-  date:
-    dateFormatOptions.value.find((item) => item.value === form.USER_DATE_FORMAT)?.label ||
-    form.USER_DATE_FORMAT,
+  date: dateFormatOptions.value.find((item) => item.value === form.USER_DATE_FORMAT)?.label || form.USER_DATE_FORMAT,
   decimal:
     decimalFormatOptions.value.find((item) => item.value === form.USER_DECIMAL_FORMAT)?.label ||
     form.USER_DECIMAL_FORMAT,
@@ -182,32 +113,16 @@ async function loadOptions() {
     dateFormatOptions.value = buildDateOptions(result.USER_DATE_FORMAT || []);
     decimalFormatOptions.value = buildDecimalOptions(result.USER_DECIMAL_FORMAT || []);
   } catch {
-    timeZoneOptions.value = USER_TIME_ZONE_OPTIONS.map((item) => ({
-      label: item.label,
-      value: item.code,
-    }));
-    dateTimeFormatOptions.value = USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({
-      label: item.label,
-      value: item.code,
-    }));
-    dateFormatOptions.value = USER_DATE_FORMAT_OPTIONS.map((item) => ({
-      label: item.label,
-      value: item.code,
-    }));
-    decimalFormatOptions.value = USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({
-      label: item.label,
-      value: item.code,
-    }));
+    timeZoneOptions.value = USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.label, value: item.code }));
+    dateTimeFormatOptions.value = USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code }));
+    dateFormatOptions.value = USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code }));
+    decimalFormatOptions.value = USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code }));
   }
 }
 
 async function reload() {
-  try {
-    configs.value = await getMyConfigs();
-    applyConfigs(configs.value);
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : "偏好设置加载失败");
-  }
+  await ensureAuthLoaded(true);
+  applyConfigs(configs.value);
 }
 
 function startEdit() {
@@ -236,7 +151,7 @@ async function submit() {
   }
 }
 
-function applyConfigs(items: UserConfigItem[]) {
+function applyConfigs(items: Array<{ code: string; value: string }>) {
   items.forEach((item) => {
     if (item.code === "USER_TIME_ZONE") form.USER_TIME_ZONE = item.value;
     if (item.code === "USER_DATE_TIME_FORMAT") form.USER_DATE_TIME_FORMAT = item.value;
@@ -245,47 +160,23 @@ function applyConfigs(items: UserConfigItem[]) {
   });
 }
 
-function buildTimeZoneOptions(
-  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
-): OptionItem[] {
-  return items.map((item) => ({
-    label: resolveStaticLabel(item.itemCode, item.itemLabel, USER_TIME_ZONE_OPTIONS),
-    value: item.itemCode || item.itemValue,
-  }));
+function buildTimeZoneOptions(items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>): OptionItem[] {
+  return items.map((item) => ({ label: resolveStaticLabel(item.itemCode, item.itemLabel, USER_TIME_ZONE_OPTIONS), value: item.itemCode || item.itemValue }));
 }
 
-function buildDateTimeOptions(
-  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
-): OptionItem[] {
-  return items.map((item) => ({
-    label: buildDateTimeSampleLabel(item.itemCode, item.itemLabel),
-    value: item.itemCode || item.itemValue,
-  }));
+function buildDateTimeOptions(items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>): OptionItem[] {
+  return items.map((item) => ({ label: buildDateTimeSampleLabel(item.itemCode, item.itemLabel), value: item.itemCode || item.itemValue }));
 }
 
-function buildDateOptions(
-  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
-): OptionItem[] {
-  return items.map((item) => ({
-    label: buildDateSampleLabel(item.itemCode, item.itemLabel),
-    value: item.itemCode || item.itemValue,
-  }));
+function buildDateOptions(items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>): OptionItem[] {
+  return items.map((item) => ({ label: buildDateSampleLabel(item.itemCode, item.itemLabel), value: item.itemCode || item.itemValue }));
 }
 
-function buildDecimalOptions(
-  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
-): OptionItem[] {
-  return items.map((item) => ({
-    label: buildDecimalSampleLabel(item.itemCode, item.itemLabel),
-    value: item.itemCode || item.itemValue,
-  }));
+function buildDecimalOptions(items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>): OptionItem[] {
+  return items.map((item) => ({ label: buildDecimalSampleLabel(item.itemCode, item.itemLabel), value: item.itemCode || item.itemValue }));
 }
 
-function resolveStaticLabel(
-  code: string | undefined,
-  fallbackLabel: string,
-  items: Array<{ code: string; label: string }>,
-): string {
+function resolveStaticLabel(code: string | undefined, fallbackLabel: string, items: Array<{ code: string; label: string }>): string {
   const matched = items.find((item) => item.code === (code || "").trim());
   return matched?.label || fallbackLabel;
 }
@@ -333,51 +224,15 @@ function formatDecimalByPattern(value: number, pattern: string): string {
 </script>
 
 <style scoped>
-.content {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
-.preferences-layout {
-  display: grid;
-  gap: 16px;
-}
-.preferences-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.preferences-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: #0f172a;
-}
-.preferences-actions {
-  display: flex;
-  gap: 8px;
-}
-.preferences-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px;
-}
-.preferences-value {
-  min-height: 32px;
-  padding: 6px 0;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 600;
-}
+.content { flex: 1; min-height: 0; width: 100%; overflow-y: auto; box-sizing: border-box; }
+.preferences-layout { display: grid; gap: 16px; }
+.preferences-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.preferences-title { font-size: 15px; font-weight: 800; color: #0f172a; }
+.preferences-actions { display: flex; gap: 8px; }
+.preferences-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.preferences-value { min-height: 32px; padding: 6px 0; color: #0f172a; font-size: 14px; font-weight: 600; }
 @media (max-width: 900px) {
-  .preferences-head {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .preferences-grid {
-    grid-template-columns: 1fr;
-  }
+  .preferences-head { flex-direction: column; align-items: stretch; }
+  .preferences-grid { grid-template-columns: 1fr; }
 }
 </style>

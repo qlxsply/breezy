@@ -294,18 +294,18 @@
         >
           <template #extra
             ><span class="drawer-subtitle"
-              >ID：{{ featureUser?.id || "-" }} / 用户名：{{
-                featureManagement?.account || "-"
-              }}</span
+              >ID：{{ featureUser?.id || "-" }} / 用户名：{{ featureManagement?.account || "-" }}</span
             ></template
           >
           <div
             v-if="featureManagement && featureUser"
             class="feature-manage-layout"
           >
+
             <section class="feature-manage-section">
               <div class="feature-manage-section__head">
                 <div class="feature-manage-section__title">功能分组</div>
+
               </div>
               <div class="feature-group-list">
                 <label
@@ -521,12 +521,6 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import { bzConfirm } from "@shared/utils/confirm";
-import { formatDateTime } from "@shared/utils/formatter";
-import { message } from "@shared/utils/message";
 import { computed, onMounted, ref } from "vue";
 
 import { batchListDictOptions } from "../api/dicts";
@@ -536,7 +530,10 @@ import {
   pageNormalFeatureGroups,
   saveNormalUserManagement,
 } from "../api/normal-features";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
 import AdminEntityDrawer from "../components/admin/AdminEntityDrawer.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
 import type { DictItem } from "../types/dict-admin";
 import type { ExternalUserEntry, ExternalUserStatus } from "../types/external-user-admin";
 import type {
@@ -546,6 +543,9 @@ import type {
 } from "../types/normal-feature";
 import type { NormalFeatureGroupEntry } from "../types/normal-feature-group";
 import type { PageResult } from "../types/page";
+import { bzConfirm } from "../utils/confirm";
+import { formatDateTime } from "../utils/formatter";
+import { message } from "../utils/message";
 
 type DictMeta = { label: string; tagType?: string | null };
 
@@ -592,14 +592,14 @@ const featurePageSize = ref(10);
 const userTypeMetaMap = ref<Record<string, DictMeta>>({});
 const webUserStatusMetaMap = ref<Record<string, DictMeta>>({});
 
-const canView = computed(() => hasAdminResourceCodeAccess("web-user-manage-view"));
-const canEdit = computed(() => hasAdminResourceCodeAccess("web-user-manage-edit"));
+const canView = computed(() => hasResourceCodeAccess("web-user-manage-view"));
+const canEdit = computed(() => hasResourceCodeAccess("web-user-manage-edit"));
 const canFeatureManage = computed(
   () =>
-    hasAdminResourceCodeAccess("normal-feature-user-view") ||
-    hasAdminResourceCodeAccess("normal-feature-user-save"),
+    hasResourceCodeAccess("normal-feature-user-view") ||
+    hasResourceCodeAccess("normal-feature-user-save"),
 );
-const canFeatureSave = computed(() => hasAdminResourceCodeAccess("normal-feature-user-save"));
+const canFeatureSave = computed(() => hasResourceCodeAccess("normal-feature-user-save"));
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);
 const isLastPage = computed(() => pageNo.value >= totalPages.value);
@@ -612,12 +612,10 @@ const filteredUserFeatures = computed(() => {
     if (
       appliedFeatureStatus.value !== "" &&
       item.enabled !== (appliedFeatureStatus.value === "true")
-    ) {
+    )
       return false;
-    }
-    if (appliedOverrideFilter.value !== "" && item.overrideType !== appliedOverrideFilter.value) {
+    if (appliedOverrideFilter.value !== "" && item.overrideType !== appliedOverrideFilter.value)
       return false;
-    }
     if (!kw) return true;
     return (
       item.code.toLowerCase().includes(kw) ||
@@ -682,9 +680,8 @@ function buildTokens(currentPageNo: number, totalPageCount: number): Array<numbe
   const current = Math.min(Math.max(currentPageNo, 1), total);
   if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
   if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-  if (current >= total - 3) {
+  if (current >= total - 3)
     return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
-  }
   return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
 }
 
@@ -747,9 +744,8 @@ function goToPage(nextPage: number) {
 }
 function handlePageSizeSelect(event: Event) {
   const nextPageSize = Number((event.target as HTMLSelectElement).value);
-  if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === pageSize.value) {
+  if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === pageSize.value)
     return;
-  }
   pageSize.value = nextPageSize;
   pageNo.value = 1;
   void reload();
@@ -759,22 +755,20 @@ function getRowActions(row: ExternalUserEntry): AdminActionItem[] {
   const actions: AdminActionItem[] = [
     { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
   ];
-  if (canFeatureManage.value) {
+  if (canFeatureManage.value)
     actions.push({
       key: `feature-${row.id}`,
       label: "功能",
       tone: "detail",
       handler: () => openFeatureManagement(row),
     });
-  }
-  if (canEdit.value && row.status !== "CANCELLED") {
+  if (canEdit.value && row.status !== "CANCELLED")
     actions.push({
       key: `toggle-${row.id}`,
       label: row.status === "ACTIVE" ? "停用" : "启用",
       tone: row.status === "ACTIVE" ? "disable" : "enable",
       handler: () => toggleStatus(row),
     });
-  }
   return actions;
 }
 
@@ -801,9 +795,7 @@ async function toggleStatus(row: ExternalUserEntry) {
   await updateExternalUser(row.id, { status: nextStatus });
   message.success(nextStatus === "ACTIVE" ? "已启用" : "已停用");
   await reload();
-  if (detailOpen.value && detail.value?.id === row.id) {
-    detail.value = await getExternalUser(row.id);
-  }
+  if (detailOpen.value && detail.value?.id === row.id) detail.value = await getExternalUser(row.id);
 }
 
 async function openFeatureManagement(user: ExternalUserEntry) {
@@ -847,13 +839,8 @@ function goToFeaturePage(nextPage: number) {
 }
 function handleFeaturePageSizeSelect(event: Event) {
   const nextPageSize = Number((event.target as HTMLSelectElement).value);
-  if (
-    !Number.isFinite(nextPageSize) ||
-    nextPageSize <= 0 ||
-    nextPageSize === featurePageSize.value
-  ) {
+  if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === featurePageSize.value)
     return;
-  }
   featurePageSize.value = nextPageSize;
   featurePageNo.value = 1;
 }
@@ -1027,6 +1014,28 @@ async function saveFeatureManagement() {
   display: grid;
   gap: 18px;
 }
+.feature-manage-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.feature-manage-card {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  display: grid;
+  gap: 8px;
+}
+.feature-manage-card span {
+  color: #64748b;
+  font-size: 12px;
+}
+.feature-manage-card strong {
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 800;
+}
 .feature-manage-section {
   border: 1px solid #e5e7eb;
   border-radius: 16px;
@@ -1045,6 +1054,11 @@ async function saveFeatureManagement() {
   font-size: 15px;
   font-weight: 800;
   color: #0f172a;
+}
+.feature-manage-section__tip {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
 }
 .feature-group-list {
   display: grid;
@@ -1091,6 +1105,7 @@ async function saveFeatureManagement() {
 }
 @media (max-width: 900px) {
   .detail-grid,
+  .feature-manage-cards,
   .feature-group-list {
     grid-template-columns: 1fr;
   }

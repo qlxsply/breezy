@@ -1,4 +1,13 @@
-import { post } from "@admin/api/http";
+import { post } from "./http";
+
+export interface SseTicketRes {
+  ticket: string;
+  expiresAtEpochMillis: number;
+}
+
+export function createSseTicket(): Promise<SseTicketRes> {
+  return post<SseTicketRes>("/sse/ticket", {});
+}
 
 export interface PreviewMsgPushReq {
   msgType: string;

@@ -1,4 +1,3 @@
-import { get, post } from "@admin/api/http";
 import type {
   DiagnosticCapability,
   DiagnosticConfigPayload,
@@ -6,7 +5,8 @@ import type {
   DiagnosticEventType,
   DiagnosticSession,
   DiagnosticSnapshot,
-} from "@admin/types/diagnostic";
+} from "../types/diagnostic";
+import { get, post } from "./http";
 
 const BASE = "/admin/diagnostic";
 

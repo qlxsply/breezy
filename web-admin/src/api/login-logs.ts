@@ -1,6 +1,7 @@
-import { post } from "@admin/api/http";
-import type { LoginLogEntry } from "@admin/types/login-log";
-import type { PageResult, PageRule, SortRule } from "@admin/types/page";
+// /src/api/login-logs.ts
+import type { LoginLogEntry } from "../types/login-log";
+import type { PageResult, PageRule, SortRule } from "../types/page";
+import { post } from "./http";
 
 const BASE = "/sys/login-logs";
 

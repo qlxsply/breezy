@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminActionItem } from "@admin/types/admin-action";
+import type { AdminActionItem } from "../../types/admin-action";
 
 withDefaults(
   defineProps<{

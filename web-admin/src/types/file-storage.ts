@@ -4,6 +4,8 @@ export type StorageSortBy = "NAME" | "SIZE" | "TYPE" | "UPDATED_AT";
 export type StorageSortOrder = "ASC" | "DESC";
 export type StorageViewMode = "GRID" | "LIST";
 
+export type FilePurpose = "AVATAR" | "ATTACHMENT" | "SNAPSHOT" | "CATALOG" | "DRIVE";
+
 export interface StorageItem {
   id: string;
   type: StorageNodeType;
@@ -43,4 +45,13 @@ export interface PhysicalFileDetail {
   contentType?: string | null;
   refCount: number;
   physicalCreatedAt?: string;
+}
+
+export interface StorageFolderCreateReq {
+  parentId?: string | null;
+  name: string;
+}
+
+export interface StorageFolderRenameReq {
+  newName: string;
 }

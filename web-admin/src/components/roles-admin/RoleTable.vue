@@ -84,9 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import type { RoleEntry } from "@admin/types/role-admin";
-import { formatDateTime } from "@shared/utils/formatter";
+import type { RoleEntry } from "../../types/role-admin";
+import { formatDateTime } from "../../utils/formatter";
+import AdminActionBar from "../admin/AdminActionBar.vue";
 
 const props = defineProps<{
   rows: RoleEntry[];

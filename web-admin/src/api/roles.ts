@@ -1,11 +1,11 @@
-import { del, get, post, put } from "@admin/api/http";
 import type {
   RoleCreateRequest,
   RoleEntry,
   RoleGrantResourceEntry,
   RoleGrantSelection,
   RoleUpdateRequest,
-} from "@admin/types/role-admin";
+} from "../types/role-admin";
+import { del, get, post, put } from "./http";
 
 const BASE = "/roles";
 

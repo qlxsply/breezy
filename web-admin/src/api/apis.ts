@@ -1,5 +1,5 @@
-import { get, put } from "@admin/api/http";
-import type { ApiEntry } from "@admin/types/api-admin";
+import type { ApiEntry } from "../types/api-admin";
+import { get, put } from "./http";
 
 const BASE = "/apis";
 

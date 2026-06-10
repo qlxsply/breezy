@@ -146,9 +146,9 @@
 </template>
 
 <script setup lang="ts">
-import type { RoleGrantResourceEntry, RoleGrantSelection } from "@admin/types/role-admin";
 import { computed, ref, watch } from "vue";
 
+import type { RoleGrantResourceEntry, RoleGrantSelection } from "../../types/role-admin";
 import RolePermissionTreeNode, {
   type RolePermissionTreeNodeView,
 } from "./RolePermissionTreeNode.vue";

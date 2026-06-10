@@ -1,3 +1,4 @@
+<!-- /src/components/users-admin/UserFormDialog.vue -->
 <template>
   <bz-dialog
     :model-value="true"
@@ -66,8 +67,9 @@
 </template>
 
 <script setup lang="ts">
-import type { UserEntry, UserStatus } from "@admin/types/user-admin";
 import { reactive, ref, watch } from "vue";
+
+import type { UserEntry, UserStatus } from "../../types/user-admin";
 
 const props = defineProps<{
   mode: "create" | "edit";

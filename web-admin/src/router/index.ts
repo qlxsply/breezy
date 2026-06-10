@@ -1,258 +1,525 @@
-import {
-  ensureAdminMenuResourcesLoaded,
-  normalizeAdminMenuPath,
-  useAdminMenuResources,
-} from "@admin/registry/admin-menu-resources";
-import { ensureAdminPermissionsLoaded } from "@admin/registry/admin-permissions";
-import { ensureAuthLoaded, isAuthenticated } from "@admin/registry/auth";
-import type { RouteRecordRaw } from "vue-router";
+import type { RouteLocationNormalizedLoadedGeneric, RouteMeta, RouteRecordRaw } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
 
-function resolveAdminPageComponent(path: string) {
-  switch (path) {
-    case "/profile":
-      return () => import("@admin/pages/AdminProfilePage.vue");
-    case "/profile/password":
-      return () => import("@admin/pages/AdminProfilePasswordPage.vue");
-    case "/profile/preferences":
-      return () => import("@admin/pages/AdminProfilePreferencesPage.vue");
-    case "/help":
-      return () => import("@admin/pages/AdminHelpPage.vue");
-    case "/method-stat":
-      return () => import("@admin/pages/MethodStatPage.vue");
-    case "/dicts":
-      return () => import("@admin/pages/DictAdminPage.vue");
-    case "/login-logs":
-      return () => import("@admin/pages/LoginLogsPage.vue");
-    case "/audit-logs":
-      return () => import("@admin/pages/AuditLogsPage.vue");
-    case "/web-users":
-      return () => import("@admin/pages/WebUsersAdminPage.vue");
-    case "/web-user-stats":
-      return () => import("@admin/pages/WebUserGroupsPage.vue");
-    case "/normal-features":
-      return () => import("@admin/pages/NormalFeatureAdminPage.vue");
-    case "/system-files":
-      return () => import("@admin/pages/SystemFilesAdminPage.vue");
-    case "/diagnostic":
-      return () => import("@admin/pages/DiagnosticAdminPage.vue");
-    default:
-      return () => import("@admin/pages/AdminPagePlaceholder.vue");
-  }
+import {
+  ensureAuthLoaded,
+  getCurrentUserType,
+  INTERNAL_USER_LANDING_PATH,
+} from "../registry/auth.registry";
+import { ensureRegistryLoaded } from "../registry/bootstrap";
+import {
+  ensurePermissionsLoaded,
+  hasApiPermission,
+  hasMenuAccess,
+} from "../registry/permissions.registry";
+import {
+  findMenuResourceByUrl,
+  getResourceMap,
+  getResources,
+} from "../registry/resources.registry";
+import type { ResourceEntry } from "../types/resource-admin";
+import { resolveRouteComponent } from "../utils/resourceLoader";
+
+interface AdminNavMeta {
+  sectionId: string;
+  sectionName: string;
+  sectionOrder: number;
+  order: number;
+  hidden?: boolean;
+}
+
+function adminMeta(
+  sectionName: string,
+  title: string,
+  sectionOrder: number,
+  order: number,
+  extra: Partial<RouteMeta> = {},
+): RouteMeta {
+  return {
+    layout: "admin",
+    appArea: "setting",
+    header: {
+      prefix: sectionName,
+      title,
+      ...(typeof extra.header === "object" ? extra.header : {}),
+    },
+    adminNav: {
+      sectionId: `admin-section-${sectionOrder}`,
+      sectionName,
+      sectionOrder,
+      order,
+      hidden: extra.hidden === true,
+    } satisfies AdminNavMeta,
+    ...extra,
+  };
 }
 
 const staticRoutes: RouteRecordRaw[] = [
   {
-    path: "/login",
-    name: "admin-login",
-    component: () => import("@admin/pages/AdminLoginPage.vue"),
-    meta: { layout: "blank", title: "后台登录" },
+    path: "/",
+    name: "home",
+    component: () => import("../pages/HomePage.vue"),
+    meta: { header: { showHome: false } },
   },
   {
-    path: "/",
+    path: "/login",
+    name: "external-login",
+    component: () => import("../pages/ExternalLoginPage.vue"),
+    meta: { layout: "blank" },
+  },
+  {
+    path: "/register",
+    name: "external-register",
+    component: () => import("../pages/ExternalRegisterPage.vue"),
+    meta: { layout: "blank" },
+  },
+  {
+    path: "/admin/login",
+    name: "admin-login",
+    component: () => import("../pages/AdminLoginPage.vue"),
+    meta: { layout: "blank" },
+  },
+  {
+    path: "/admin",
     name: "admin-workbench",
-    component: () => import("@admin/pages/AdminWorkbenchPage.vue"),
-    meta: { title: "工作台" },
+    component: () => import("../pages/AdminPlaceholderPage.vue"),
+    meta: adminMeta("概览", "工作台", 10, 10, {
+      description: "当前工作台页面预留为空白工作区域。",
+      showHome: false,
+    }),
+  },
+  {
+    path: "/admin/configs",
+    name: "settings-system",
+    component: () => import("../pages/ConfigsAdminPage.vue"),
+    meta: adminMeta("平台管理", "系统配置", 20, 10),
+  },
+  {
+    path: "/admin/apis",
+    name: "settings-apis",
+    component: () => import("../pages/ApisAdminPage.vue"),
+    meta: adminMeta("平台管理", "接口管理", 20, 20),
+  },
+  {
+    path: "/admin/dicts",
+    name: "settings-dicts",
+    component: () => import("../pages/DictAdminPage.vue"),
+    meta: adminMeta("平台管理", "数据字典", 20, 30),
+  },
+  {
+    path: "/admin/system-files",
+    name: "settings-system-files",
+    component: () => import("../pages/SystemFilesPage.vue"),
+    meta: adminMeta("平台管理", "系统文件", 20, 40),
+  },
+  {
+    path: "/admin/diagnostic",
+    name: "settings-diagnostic",
+    component: () => import("../pages/DiagnosticPage.vue"),
+    meta: adminMeta("平台管理", "诊断工具", 20, 50),
+  },
+  {
+    path: "/admin/method-stat",
+    name: "settings-method-stat",
+    component: () => import("../pages/MethodStatPage.vue"),
+    meta: adminMeta("平台管理", "方法统计", 20, 90, {
+      hidden: true,
+      permissionCode: "mst.stat.view",
+    }),
+  },
+  {
+    path: "/admin/users",
+    name: "settings-users",
+    component: () => import("../pages/UsersAdminPage.vue"),
+    meta: adminMeta("权限中心", "账号管理", 30, 10),
+  },
+  {
+    path: "/admin/roles",
+    name: "settings-roles",
+    component: () => import("../pages/RolesAdminPage.vue"),
+    meta: adminMeta("权限中心", "角色管理", 30, 20),
+  },
+  {
+    path: "/admin/permission-policies",
+    name: "settings-permission-policies",
+    component: () => import("../pages/AdminPlaceholderPage.vue"),
+    meta: adminMeta("权限中心", "权限策略", 30, 30, {
+      description: "当前权限策略页面预留为空白工作区域。",
+    }),
+  },
+  {
+    path: "/admin/login-logs",
+    name: "settings-login-logs",
+    component: () => import("../pages/LoginLogsPage.vue"),
+    meta: adminMeta("权限中心", "登录日志", 30, 40),
+  },
+  {
+    path: "/admin/audit-logs",
+    name: "settings-audit-logs",
+    component: () => import("../pages/AuditLogsPage.vue"),
+    meta: adminMeta("权限中心", "审计日志", 30, 50),
+  },
+  {
+    path: "/admin/web-users",
+    name: "settings-web-users",
+    component: () => import("../pages/WebUsersAdminPage.vue"),
+    meta: adminMeta("用户中心", "用户管理", 40, 10),
+  },
+  {
+    path: "/admin/web-user-stats",
+    name: "settings-web-user-groups",
+    component: () => import("../pages/WebUserGroupsPage.vue"),
+    meta: adminMeta("用户中心", "用户分组", 40, 20),
+  },
+  {
+    path: "/admin/normal-features",
+    name: "settings-normal-features",
+    component: () => import("../pages/NormalFeatureAdminPage.vue"),
+    meta: adminMeta("用户中心", "功能配置", 40, 30),
+  },
+  {
+    path: "/admin/profile",
+    name: "admin-profile",
+    component: () => import("../pages/AdminProfilePage.vue"),
+    meta: adminMeta("个人中心", "个人中心", 90, 10, {
+      hidden: true,
+      permissionCode: "usr.view",
+      standaloneBreadcrumb: true,
+      header: { prefix: "", title: "个人中心" },
+      selfServiceAdmin: true,
+    }),
+  },
+  {
+    path: "/admin/profile/password",
+    name: "admin-profile-password",
+    component: () => import("../pages/AdminProfilePasswordPage.vue"),
+    meta: adminMeta("个人中心", "修改密码", 90, 20, {
+      hidden: true,
+      standaloneBreadcrumb: true,
+      header: { prefix: "", title: "修改密码" },
+      selfServiceAdmin: true,
+    }),
+  },
+  {
+    path: "/admin/profile/preferences",
+    name: "admin-profile-preferences",
+    component: () => import("../pages/AdminProfilePreferencesPage.vue"),
+    meta: adminMeta("个人中心", "偏好设置", 90, 30, {
+      hidden: true,
+      standaloneBreadcrumb: true,
+      header: { prefix: "", title: "偏好设置" },
+      selfServiceAdmin: true,
+    }),
+  },
+  {
+    path: "/admin/help",
+    name: "admin-help",
+    component: () => import("../pages/AdminHelpPage.vue"),
+    meta: adminMeta("个人中心", "问题与帮助", 90, 40, {
+      hidden: true,
+      standaloneBreadcrumb: true,
+      header: { prefix: "", title: "问题与帮助" },
+      selfServiceAdmin: true,
+    }),
+  },
+  {
+    path: "/datasource",
+    name: "tools-datasource",
+    component: () => import("../pages/DataSourceAdminPage.vue"),
+    meta: { header: { prefix: "工具", title: "数据源管理" }, appArea: "tool" },
+  },
+  {
+    path: "/database-schemas",
+    name: "tools-database-schema",
+    component: () => import("../pages/DatabaseSchemaPage.vue"),
+    meta: { header: { prefix: "工具", title: "数据库管理" }, appArea: "tool" },
+  },
+  {
+    path: "/storage",
+    name: "tools-storage",
+    component: () => import("../pages/StoragePage.vue"),
+    meta: { header: { prefix: "工具", title: "文件存储" }, appArea: "tool" },
+  },
+  {
+    path: "/schemaforge",
+    name: "tools-schemaforge",
+    component: () => import("../pages/SchemaForgePage.vue"),
+    meta: { header: { prefix: "工具", title: "结构工厂" }, appArea: "tool" },
+  },
+  {
+    path: "/jsonfmt",
+    name: "tools-jsonfmt",
+    component: () => import("../pages/JsonFormatterPage.vue"),
+    meta: { header: { prefix: "工具", title: "JSON 格式化" }, appArea: "tool" },
+  },
+  {
+    path: "/todo",
+    name: "tools-todo",
+    component: () => import("../pages/TodoBoardPage.vue"),
+    meta: { header: { prefix: "工具", title: "待处理事项" }, appArea: "tool" },
+  },
+  {
+    path: "/todo/all",
+    name: "tools-todo-all",
+    component: () => import("../pages/TodoAllPage.vue"),
+    meta: {
+      header: { prefix: "工具", title: "待办全部查看" },
+      permissionCode: "tdo.use",
+      appArea: "tool",
+    },
+  },
+  {
+    path: "/database-schemas/:id/metadata",
+    name: "tools-metadata-browser",
+    component: () => import("../pages/MetadataBrowserPage.vue"),
+    meta: {
+      header: { prefix: "工具", title: "元数据浏览" },
+      permissionCode: "mdb.meta.view",
+      appArea: "tool",
+    },
+  },
+  {
+    path: "/clinic/management",
+    name: "clinic-management",
+    component: () => import("../pages/clinic/ClinicManagementPage.vue"),
+    meta: { header: { prefix: "工具", title: "诊所管理" }, appArea: "tool" },
   },
   {
     path: "/profile",
-    name: "admin-profile",
-    component: () => import("@admin/pages/AdminProfilePage.vue"),
-    meta: { title: "个人中心", originalPath: "/admin/profile" },
-  },
-  {
-    path: "/profile/password",
-    name: "admin-profile-password",
-    component: () => import("@admin/pages/AdminProfilePasswordPage.vue"),
-    meta: { title: "修改密码", originalPath: "/admin/profile/password" },
-  },
-  {
-    path: "/profile/preferences",
-    name: "admin-profile-preferences",
-    component: () => import("@admin/pages/AdminProfilePreferencesPage.vue"),
-    meta: { title: "偏好设置", originalPath: "/admin/profile/preferences" },
-  },
-  {
-    path: "/users",
-    name: "admin-users",
-    component: () => import("@admin/pages/UsersAdminPage.vue"),
-    meta: { title: "账号管理", originalPath: "/admin/users", resourceCode: "usr.manage" },
-  },
-  {
-    path: "/roles",
-    name: "admin-roles",
-    component: () => import("@admin/pages/RolesAdminPage.vue"),
-    meta: { title: "角色管理", originalPath: "/admin/roles", resourceCode: "rol.manage" },
-  },
-  {
-    path: "/configs",
-    name: "admin-configs",
-    component: () => import("@admin/pages/ConfigsAdminPage.vue"),
-    meta: { title: "系统配置", originalPath: "/admin/configs", resourceCode: "cfg.admin.view" },
-  },
-  {
-    path: "/apis",
-    name: "admin-apis",
-    component: () => import("@admin/pages/ApisAdminPage.vue"),
-    meta: { title: "接口管理", originalPath: "/admin/apis", resourceCode: "api.view" },
-  },
-  {
-    path: "/method-stat",
-    name: "admin-method-stat",
-    component: () => import("@admin/pages/MethodStatPage.vue"),
-    meta: {
-      title: "方法统计",
-      originalPath: "/admin/method-stat",
-      resourceCode: "method-stat-center",
-    },
-  },
-  {
-    path: "/dicts",
-    name: "admin-dicts",
-    component: () => import("@admin/pages/DictAdminPage.vue"),
-    meta: { title: "数据字典", originalPath: "/admin/dicts", resourceCode: "dict-manage-view" },
-  },
-  {
-    path: "/login-logs",
-    name: "admin-login-logs",
-    component: () => import("@admin/pages/LoginLogsPage.vue"),
-    meta: { title: "登录日志", originalPath: "/admin/login-logs", resourceCode: "login-log-view" },
-  },
-  {
-    path: "/audit-logs",
-    name: "admin-audit-logs",
-    component: () => import("@admin/pages/AuditLogsPage.vue"),
-    meta: { title: "审计日志", originalPath: "/admin/audit-logs", resourceCode: "audit-log-view" },
-  },
-  {
-    path: "/web-users",
-    name: "admin-web-users",
-    component: () => import("@admin/pages/WebUsersAdminPage.vue"),
-    meta: { title: "用户管理", originalPath: "/admin/web-users", resourceCode: "web-user-center" },
-  },
-  {
-    path: "/web-user-stats",
-    name: "admin-web-user-stats",
-    component: () => import("@admin/pages/WebUserGroupsPage.vue"),
-    meta: {
-      title: "用户分组",
-      originalPath: "/admin/web-user-stats",
-      resourceCode: "web-user-stats-center",
-    },
-  },
-  {
-    path: "/normal-features",
-    name: "admin-normal-features",
-    component: () => import("@admin/pages/NormalFeatureAdminPage.vue"),
-    meta: {
-      title: "功能配置",
-      originalPath: "/admin/normal-features",
-      resourceCode: "normal-feature-center",
-    },
-  },
-  {
-    path: "/system-files",
-    name: "admin-system-files",
-    component: () => import("@admin/pages/SystemFilesAdminPage.vue"),
-    meta: {
-      title: "系统文件",
-      originalPath: "/admin/system-files",
-      resourceCode: "system-file-center",
-    },
-  },
-  {
-    path: "/diagnostic",
-    name: "admin-diagnostic",
-    component: () => import("@admin/pages/DiagnosticAdminPage.vue"),
-    meta: {
-      title: "诊断工具",
-      originalPath: "/admin/diagnostic",
-      resourceCode: "diagnostic-center",
-    },
-  },
-  {
-    path: "/help",
-    name: "admin-help",
-    component: () => import("@admin/pages/AdminHelpPage.vue"),
-    meta: { title: "帮助中心", section: "帮助中心", originalPath: "/admin/help" },
+    name: "profile",
+    component: () => import("../pages/ProfilePage.vue"),
+    meta: { header: { prefix: "个人", title: "Profile" }, appArea: "info" },
   },
   {
     path: "/:pathMatch(.*)*",
-    name: "admin-not-found",
-    component: () => import("@admin/pages/AdminPagePlaceholder.vue"),
-    meta: { title: "页面不存在", section: "提示" },
+    name: "not-found",
+    component: () => import("../pages/NotFoundPage.vue"),
+    meta: { header: { prefix: "提示", title: "页面不存在" } },
   },
 ];
+
+const staticRouteNames = new Set(
+  staticRoutes
+    .map((route) => route.name)
+    .filter((name): name is string => typeof name === "string"),
+);
+const staticRoutePaths = new Set(staticRoutes.map((route) => route.path));
+
+function resolveHeaderPrefix(resource: ResourceEntry): string {
+  if (resource.scope === "SETTING") return "系统";
+  if (resource.scope === "TOOL") return "工具";
+  if (resource.scope === "INFO") return "信息";
+  return "";
+}
+
+function buildRouteMeta(resource: ResourceEntry): RouteMeta {
+  return {
+    appArea: resource.scope === "TOOL" ? "tool" : resource.scope === "SETTING" ? "setting" : "info",
+    layout: resource.scope === "SETTING" ? "admin" : "default",
+    header: {
+      prefix: resolveHeaderPrefix(resource),
+      title: resource.name,
+    },
+  };
+}
+
+function resolveRouteArea(
+  to: { name?: unknown; path: string; meta?: Record<string, unknown> },
+  target?: ResourceEntry,
+): "public" | "tool" | "setting" | "info" | "unknown" {
+  if (
+    to.name === "home" ||
+    to.name === "not-found" ||
+    to.name === "profile" ||
+    to.name === "external-login" ||
+    to.name === "admin-login"
+  ) {
+    return "public";
+  }
+  if (target) {
+    if (target.scope === "TOOL") return "tool";
+    if (target.scope === "SETTING") return "setting";
+    if (target.scope === "INFO") return "info";
+  }
+  if (to.path === "/admin" || to.path.startsWith("/admin/")) {
+    return "setting";
+  }
+  const appArea = typeof to.meta?.appArea === "string" ? to.meta.appArea : "";
+  if (appArea === "tool" || appArea === "setting" || appArea === "info") {
+    return appArea;
+  }
+  const name = typeof to.name === "string" ? to.name : "";
+  if (name.startsWith("tools-") || name === "clinic-management") return "tool";
+  if (name.startsWith("settings-") || name.startsWith("admin-")) return "setting";
+  return "unknown";
+}
+
+function buildDynamicRoutesFromResources(): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [];
+  const resources = getResources();
+
+  resources.forEach((resource) => {
+    if (resource.type !== "MENU") return;
+    if (resource.scope === "TOOL") return;
+    if (resource.openMode !== "PAGE") return;
+    if (!resource.url) return;
+    if (!resource.loadTarget) return;
+    if (staticRoutePaths.has(resource.url)) return;
+    if (staticRouteNames.has(resource.id)) return;
+
+    const component = resolveRouteComponent(resource.loadTarget);
+    if (!component) return;
+
+    routes.push({
+      path: resource.url,
+      name: resource.id,
+      component,
+      meta: buildRouteMeta(resource),
+    });
+  });
+
+  return routes;
+}
+
+let hasLoadedRoutes = false;
+let loadingPromise: Promise<void> | null = null;
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: staticRoutes,
 });
 
-let dynamicRoutesLoaded = false;
-
-export async function ensureAdminDynamicRoutes(): Promise<boolean> {
-  if (dynamicRoutesLoaded) {
-    return false;
+export async function initDynamicRoutes(): Promise<void> {
+  if (loadingPromise) {
+    await loadingPromise;
+    return;
   }
-  await ensureAdminMenuResourcesLoaded();
-  const routeNames = new Set(
-    router
-      .getRoutes()
-      .map((route) => route.name)
-      .filter((name): name is string => typeof name === "string"),
-  );
-  const routePaths = new Set(router.getRoutes().map((route) => route.path));
 
-  useAdminMenuResources().value.forEach((resource) => {
-    if (resource.openMode !== "PAGE" || !resource.url) {
-      return;
-    }
-    const path = normalizeAdminMenuPath(resource.url);
-    if (path === "/") {
-      return;
-    }
-    if (routeNames.has(resource.id)) {
-      return;
-    }
-    if (routePaths.has(path)) {
-      return;
-    }
-    router.addRoute({
-      path,
-      name: resource.id,
-      component: resolveAdminPageComponent(path),
-      meta: {
-        title: resource.name,
-        section: "后台菜单",
-        resourceCode: resource.code,
-        originalPath: resource.url,
-      },
-    });
-  });
+  loadingPromise = (async () => {
+    try {
+      await ensureRegistryLoaded();
+      const dynamicRoutes = buildDynamicRoutesFromResources();
 
-  dynamicRoutesLoaded = true;
+      const existingRouteNames = router
+        .getRoutes()
+        .map((route) => route.name)
+        .filter((name): name is string => typeof name === "string")
+        .filter((name) => !staticRouteNames.has(name));
+
+      existingRouteNames.forEach((name) => {
+        router.removeRoute(name);
+      });
+
+      dynamicRoutes.forEach((routeConfig) => {
+        router.addRoute(routeConfig);
+      });
+    } catch (error) {
+      console.error("load dynamic routes failed", error);
+    }
+  })();
+
+  try {
+    await loadingPromise;
+  } finally {
+    loadingPromise = null;
+    hasLoadedRoutes = true;
+  }
+}
+
+async function ensureDynamicRoutes(): Promise<boolean> {
+  if (hasLoadedRoutes) return false;
+  await initDynamicRoutes();
   return true;
 }
 
 router.beforeEach(async (to) => {
-  await ensureAuthLoaded();
-
-  if (to.name === "admin-login") {
-    return isAuthenticated.value ? { path: "/", replace: true } : true;
-  }
-
-  if (!isAuthenticated.value) {
-    return { name: "admin-login", replace: true, query: { redirect: to.fullPath } };
-  }
-
-  await ensureAdminPermissionsLoaded();
-
-  const loaded = await ensureAdminDynamicRoutes();
+  const loaded = await ensureDynamicRoutes();
   if (loaded) {
     return { ...to, replace: true };
   }
-  return true;
+
+  await ensureRegistryLoaded();
+  await ensureAuthLoaded();
+  await ensurePermissionsLoaded();
+
+  const resourceMap = getResourceMap();
+  const target = findMenuResourceByUrl(to.path);
+  const currentUserType = getCurrentUserType();
+  const routeArea = resolveRouteArea(to, target);
+  const permissionCode = typeof to.meta.permissionCode === "string" ? to.meta.permissionCode : "";
+
+  if (to.name === "external-login" || to.name === "admin-login") {
+    return currentUserType === "GUEST"
+      ? true
+      : { path: resolveLandingPathForAuthenticatedUser(currentUserType), replace: true };
+  }
+
+  if (currentUserType === "GUEST" && routeArea === "setting") {
+    return { name: "admin-login", replace: true, query: { redirect: to.fullPath } };
+  }
+
+  if (currentUserType === "INTERNAL" && (to.name === "home" || routeArea === "tool")) {
+    return { path: INTERNAL_USER_LANDING_PATH, replace: true };
+  }
+
+  if (currentUserType === "EXTERNAL" && routeArea === "setting") {
+    return { name: "home", replace: true };
+  }
+
+  if (to.meta?.selfServiceAdmin === true) {
+    return currentUserType === "INTERNAL" ? true : { name: "not-found", replace: true };
+  }
+
+  if (to.name === "admin-profile") {
+    return currentUserType === "INTERNAL" ? true : { name: "not-found", replace: true };
+  }
+
+  if (to.name === "admin-workbench") {
+    return currentUserType === "INTERNAL" ? true : { name: "not-found", replace: true };
+  }
+
+  if (to.name === "home" || to.name === "not-found") return true;
+
+  if (target) {
+    if (hasMenuAccess(target, resourceMap)) return true;
+  } else {
+    if (routeArea === "setting") {
+      if (permissionCode && hasApiPermission(permissionCode)) {
+        return true;
+      }
+      const fromHome = Boolean((to as { state?: { fromHome?: boolean } }).state?.fromHome);
+      return { name: "not-found", replace: true, state: { fromHome } };
+    }
+    if (!permissionCode || hasApiPermission(permissionCode)) return true;
+  }
+
+  const fromHome = Boolean((to as { state?: { fromHome?: boolean } }).state?.fromHome);
+  return { name: "not-found", replace: true, state: { fromHome } };
 });
 
 export default router;
+
+function resolveLandingPathForAuthenticatedUser(
+  userType: ReturnType<typeof getCurrentUserType>,
+): string {
+  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/";
+}
+
+export function resolveAdminSectionMeta(
+  target: Pick<RouteLocationNormalizedLoadedGeneric, "meta">,
+): AdminNavMeta | null {
+  const nav = target.meta?.adminNav;
+  if (!nav || typeof nav !== "object") {
+    return null;
+  }
+  const record = nav as Record<string, unknown>;
+  const sectionId = typeof record.sectionId === "string" ? record.sectionId : "";
+  const sectionName = typeof record.sectionName === "string" ? record.sectionName : "";
+  const sectionOrder = typeof record.sectionOrder === "number" ? record.sectionOrder : 0;
+  const order = typeof record.order === "number" ? record.order : 0;
+  const hidden = record.hidden === true;
+  if (!sectionId || !sectionName) {
+    return null;
+  }
+  return { sectionId, sectionName, sectionOrder, order, hidden };
+}

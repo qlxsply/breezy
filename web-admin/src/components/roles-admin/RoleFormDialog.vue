@@ -1,3 +1,4 @@
+<!-- /src/components/roles-admin/RoleFormDialog.vue -->
 <template>
   <bz-dialog
     :model-value="true"
@@ -53,8 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import type { RoleEntry } from "@admin/types/role-admin";
+// <script setup> + TS：顶层即 setup()。
 import { reactive, ref, watch } from "vue";
+
+import type { RoleEntry } from "../../types/role-admin";
 
 const props = defineProps<{
   mode: "create" | "edit";

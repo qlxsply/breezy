@@ -1,12 +1,13 @@
-import { del, get, post, put } from "@admin/api/http";
-import type { PageResult, PageRule, SortRule } from "@admin/types/page";
+// /src/api/users.ts
+import type { PageResult, PageRule, SortRule } from "../types/page";
 import type {
   UserCreateRequest,
   UserEntry,
   UserStatus,
   UserType,
   UserUpdateRequest,
-} from "@admin/types/user-admin";
+} from "../types/user-admin";
+import { del, get, post, put } from "./http";
 
 const BASE = "/users";
 

@@ -229,6 +229,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from "vue";
+
 import {
   createRole,
   deleteRole,
@@ -237,19 +239,14 @@ import {
   listRoles,
   updateRole,
   updateRoleGrantSelection,
-} from "@admin/api/roles";
-import RoleFormDialog from "@admin/components/roles-admin/RoleFormDialog.vue";
-import RolePermissionDialog from "@admin/components/roles-admin/RolePermissionDialog.vue";
-import RoleTable from "@admin/components/roles-admin/RoleTable.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type {
-  RoleEntry,
-  RoleGrantResourceEntry,
-  RoleGrantSelection,
-} from "@admin/types/role-admin";
-import { bzConfirm } from "@shared/utils/confirm";
-import { message } from "@shared/utils/message";
-import { computed, onMounted, ref } from "vue";
+} from "../api/roles";
+import RoleFormDialog from "../components/roles-admin/RoleFormDialog.vue";
+import RolePermissionDialog from "../components/roles-admin/RolePermissionDialog.vue";
+import RoleTable from "../components/roles-admin/RoleTable.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { RoleEntry, RoleGrantResourceEntry, RoleGrantSelection } from "../types/role-admin";
+import { bzConfirm } from "../utils/confirm";
+import { message } from "../utils/message";
 
 const rows = ref<RoleEntry[]>([]);
 const loading = ref(false);
@@ -277,11 +274,11 @@ const grantResourceRows = ref<RoleGrantResourceEntry[]>([]);
 
 const grantResources = computed(() => grantResourceRows.value);
 
-const canCreate = computed(() => hasAdminResourceCodeAccess("role-manage-create"));
-const canEdit = computed(() => hasAdminResourceCodeAccess("role-manage-edit"));
-const canDelete = computed(() => hasAdminResourceCodeAccess("role-manage-delete"));
-const canGrantView = computed(() => hasAdminResourceCodeAccess("role-manage-permission-view"));
-const canGrantEdit = computed(() => hasAdminResourceCodeAccess("role-manage-permission-edit"));
+const canCreate = computed(() => hasResourceCodeAccess("role-manage-create"));
+const canEdit = computed(() => hasResourceCodeAccess("role-manage-edit"));
+const canDelete = computed(() => hasResourceCodeAccess("role-manage-delete"));
+const canGrantView = computed(() => hasResourceCodeAccess("role-manage-permission-view"));
+const canGrantEdit = computed(() => hasResourceCodeAccess("role-manage-permission-edit"));
 const canGrant = computed(() => canGrantView.value || canGrantEdit.value);
 
 const filteredRows = computed(() => {

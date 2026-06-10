@@ -1,6 +1,6 @@
-import { del, get, post, put } from "@admin/api/http";
-import type { DictDisableValidation, DictItem, DictTypeItem } from "@admin/types/dict-admin";
-import type { PageResult, PageRule, SortRule } from "@admin/types/page";
+import type { DictDisableValidation, DictItem, DictTypeItem } from "../types/dict-admin";
+import type { PageResult, PageRule, SortRule } from "../types/page";
+import { del, get, post, put } from "./http";
 
 const TYPE_BASE = "/sys/dicts/types";
 const QUERY_BASE = "/sys/dicts";

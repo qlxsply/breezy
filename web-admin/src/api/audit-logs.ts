@@ -1,6 +1,6 @@
-import { get, post } from "@admin/api/http";
-import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
-import type { PageResult, PageRule, SortRule } from "@admin/types/page";
+import type { AuditLevel, AuditLogEntry } from "../types/audit-log";
+import type { PageResult, PageRule, SortRule } from "../types/page";
+import { get, post } from "./http";
 
 const BASE = "/sys/audit-logs";
 

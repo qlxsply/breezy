@@ -125,7 +125,6 @@
   cursor: pointer;
   user-select: none;
   transition: color 0.16s ease;
-  line-height: 1;
 }
 
 .admin-filter-toggle:hover {
@@ -152,6 +151,10 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
   border-radius: 999px;
+}
+
+.admin-filter-toggle {
+  line-height: 1;
 }
 
 .admin-filter-toggle-placeholder {

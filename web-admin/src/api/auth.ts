@@ -1,52 +1,79 @@
-import { get, post, put } from "@admin/api/http";
+// /src/api/auth.ts
+import type { UserConfigItem } from "./configs";
+import { get, post, put } from "./http";
 
-export interface AdminAuthUser {
+export type AuthUserType = "INTERNAL" | "EXTERNAL" | "GUEST";
+export type AuthSpace = "internal" | "external";
+
+export interface AuthUser {
   id: string | null;
-  account: string;
-  userType: "INTERNAL" | "EXTERNAL" | "GUEST";
+  username: string | null;
+  account?: string | null;
+  userType: AuthUserType;
+  configs?: UserConfigItem[];
 }
 
-interface AdminAuthUserPayload {
+export interface LoginResponse {
+  token: string;
+  user: AuthUser;
+}
+
+interface AuthUserPayload {
   id: string | null;
   account: string | null;
-  userType?: "INTERNAL" | "EXTERNAL" | "GUEST" | null;
+  userType?: AuthUserType | null;
+  configs?: UserConfigItem[];
 }
 
-interface LoginPayload {
+interface LoginResponsePayload {
   token: string;
-  user: AdminAuthUserPayload;
+  user: AuthUserPayload;
 }
 
-export interface AdminLoginResponse {
-  token: string;
-  user: AdminAuthUser;
+function authBase(space: AuthSpace): string {
+  return space === "internal" ? "/admin/auth" : "/auth";
 }
 
-export async function login(account: string, password: string): Promise<AdminLoginResponse> {
-  const payload = await post<LoginPayload>("/admin/auth/login", { account, password });
+export async function login(
+  space: AuthSpace,
+  username: string,
+  password: string,
+): Promise<LoginResponse> {
+  const payload = await post<LoginResponsePayload>(`${authBase(space)}/login`, {
+    account: username,
+    password,
+  });
   return {
     token: payload.token,
-    user: toAdminAuthUser(payload.user),
+    user: toAuthUser(payload.user),
   };
 }
 
-export async function getMe(): Promise<AdminAuthUser | null> {
-  const payload = await get<AdminAuthUserPayload | null>("/admin/auth/me");
-  return payload ? toAdminAuthUser(payload) : null;
+export async function getMe(space: AuthSpace): Promise<AuthUser | null> {
+  const payload = await get<AuthUserPayload | null>(`${authBase(space)}/me`);
+  if (!payload) return null;
+  return toAuthUser(payload);
 }
 
-export function logout(): Promise<boolean> {
-  return post<boolean>("/admin/auth/logout", {});
+export function logout(space: AuthSpace): Promise<boolean> {
+  return post<boolean>(`${authBase(space)}/logout`, {});
 }
 
-export function changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
-  return put<boolean>("/admin/auth/password", { oldPassword, newPassword });
+export function changePassword(
+  space: AuthSpace,
+  oldPassword: string,
+  newPassword: string,
+): Promise<boolean> {
+  return put<boolean>(`${authBase(space)}/password`, { oldPassword, newPassword });
 }
 
-function toAdminAuthUser(payload: AdminAuthUserPayload): AdminAuthUser {
+function toAuthUser(payload: AuthUserPayload): AuthUser {
+  const account = payload.account || "";
   return {
     id: payload.id,
-    account: payload.account || "",
+    username: account,
+    account,
     userType: payload.userType || "GUEST",
+    configs: payload.configs,
   };
 }

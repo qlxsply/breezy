@@ -1,3 +1,4 @@
+<!-- /src/pages/LoginLogsPage.vue -->
 <template>
   <div class="admin-page">
     <div class="content">
@@ -278,16 +279,17 @@
 </template>
 
 <script setup lang="ts">
-import { pageLoginLogs } from "@admin/api/login-logs";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { LoginLogEntry } from "@admin/types/login-log";
-import type { PageResult } from "@admin/types/page";
+import { computed, onMounted, ref } from "vue";
+
+import { pageLoginLogs } from "../api/login-logs";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { LoginLogEntry } from "../types/login-log";
+import type { PageResult } from "../types/page";
 import {
   dateTimeInputToEpochMillisString,
   dateTimeInputToNextMinuteEpochMillisString,
   formatDateTime,
-} from "@shared/utils/formatter";
-import { computed, onMounted, ref } from "vue";
+} from "../utils/formatter";
 
 const loading = ref(false);
 const rows = ref<LoginLogEntry[]>([]);
@@ -312,7 +314,7 @@ const pageNo = ref(1);
 const pageSize = ref(10);
 const pageSizeOptions = [10, 20, 30, 50, 100] as const;
 
-const canView = computed(() => hasAdminResourceCodeAccess("login-log-view"));
+const canView = computed(() => hasResourceCodeAccess("login-log-view"));
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);
 const isLastPage = computed(() => pageNo.value >= totalPages.value);

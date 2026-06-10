@@ -515,11 +515,6 @@
 </template>
 
 <script setup lang="ts">
-import AdminActionBar from "@admin/components/admin/AdminActionBar.vue";
-import { hasAdminResourceCodeAccess } from "@admin/registry/admin-permissions";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import { bzConfirm } from "@shared/utils/confirm";
-import { message } from "@shared/utils/message";
 import { computed, onMounted, reactive, ref } from "vue";
 
 import { batchListDictOptions } from "../api/dicts";
@@ -532,15 +527,20 @@ import {
   updateNormalFeatureGroup,
   updateNormalFeatureGroupStatus,
 } from "../api/normal-features";
+import AdminActionBar from "../components/admin/AdminActionBar.vue";
 import AdminEntityDrawer from "../components/admin/AdminEntityDrawer.vue";
+import { hasResourceCodeAccess } from "../registry/permissions.registry";
+import type { AdminActionItem } from "../types/admin-action";
 import type { DictItem } from "../types/dict-admin";
 import type { NormalFeatureEntry } from "../types/normal-feature";
 import type {
-  NormalFeatureGroupEntry,
   NormalFeatureGroupFeatureEntry,
+  NormalFeatureGroupEntry,
   SaveNormalFeatureGroupRequest,
 } from "../types/normal-feature-group";
 import type { PageResult } from "../types/page";
+import { bzConfirm } from "../utils/confirm";
+import { message } from "../utils/message";
 
 type TagType = "info" | "success" | "warning" | "danger";
 type DictMeta = { label: string; tagType?: TagType };
@@ -601,8 +601,8 @@ const groupTypeMetaMap = ref<Record<string, DictMeta>>({});
 const groupTypeOptions = computed(() =>
   Object.entries(groupTypeMetaMap.value).map(([value, meta]) => ({ value, label: meta.label })),
 );
-const canView = computed(() => hasAdminResourceCodeAccess("web-user-stats-view"));
-const canEdit = computed(() => hasAdminResourceCodeAccess("web-user-stats-edit"));
+const canView = computed(() => hasResourceCodeAccess("web-user-stats-view"));
+const canEdit = computed(() => hasResourceCodeAccess("nfm.user.save"));
 const totalPages = computed(() => Math.max(1, page.value.totalPages || 1));
 const isFirstPage = computed(() => pageNo.value <= 1);
 const isLastPage = computed(() => pageNo.value >= totalPages.value);

@@ -1,3 +1,4 @@
+<!-- /src/components/users-admin/PasswordResetDialog.vue -->
 <template>
   <bz-dialog
     :model-value="true"
@@ -24,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+// <script setup> + TS：顶层即 setup()。
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "submit"): void;

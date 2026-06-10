@@ -1,3 +1,5 @@
+// /src/types/page.ts
+
 export interface PageResult<T> {
   pageNo: number;
   pageSize: number;
