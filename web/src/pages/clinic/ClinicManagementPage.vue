@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { type Component, computed, defineAsyncComponent, onMounted, ref } from "vue";
 
-import { getResources } from "../../registry/resources.registry";
+import { getUserTools } from "../../registry/user-tools.registry";
 
 const activeTab = ref<string>("");
 
@@ -50,7 +50,7 @@ const clinicMenuSeeds = [
 
 const clinicMenus = computed(() => {
   const allowed = new Set(
-    getResources()
+    getUserTools()
       .filter((resource) => resource.type === "MENU")
       .filter((resource) => resource.parentId === "tool-clinic")
       .map((resource) => resource.id),

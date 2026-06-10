@@ -47,7 +47,7 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { isAuthenticated as authFlag, logout, useAuthUser } from "../../registry/auth.registry";
-import { refreshPermissions } from "../../registry/permissions.registry";
+import { refreshUserToolPermissions } from "../../registry/user-tool-permissions.registry";
 
 const router = useRouter();
 const route = useRoute();
@@ -58,8 +58,7 @@ const dropdownOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
 
 function openLoginPage() {
-  const target = route.path.startsWith("/admin") ? "/admin/login" : "/login";
-  void router.push({ path: target, query: { redirect: route.fullPath } });
+  void router.push({ path: "/login", query: { redirect: route.fullPath } });
 }
 
 function toggleDropdown() {
@@ -68,10 +67,9 @@ function toggleDropdown() {
 
 async function onLogout() {
   dropdownOpen.value = false;
-  const redirectPath = route.path.startsWith("/admin") ? "/admin/login" : "/";
   await logout();
-  await refreshPermissions();
-  router.push({ path: redirectPath });
+  await refreshUserToolPermissions();
+  router.push({ path: "/" });
 }
 
 function onProfile() {

@@ -421,7 +421,7 @@ import {
 import FolderTargetPickerDialog, {
   type FolderTargetOption,
 } from "../components/common/FolderTargetPickerDialog.vue";
-import { hasApiPermission } from "../registry/permissions.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import type {
   StorageItem,
   StorageListQuery,
@@ -476,15 +476,15 @@ const nameDialog = reactive({
   submitting: false,
 });
 
-const canView = computed(() => hasApiPermission("stg.view"));
-const canCreateFolder = computed(() => hasApiPermission("stg.dir.add"));
-const canRenameFolder = computed(() => hasApiPermission("stg.dir.rename"));
-const canDeleteFolder = computed(() => hasApiPermission("stg.dir.del"));
-const canUpload = computed(() => hasApiPermission("stg.file.upload"));
-const canRenameFile = computed(() => hasApiPermission("stg.file.rename"));
-const canDeleteFile = computed(() => hasApiPermission("stg.file.del"));
-const canMoveFolder = computed(() => hasApiPermission("stg.dir.move"));
-const canMoveFile = computed(() => hasApiPermission("stg.file.move"));
+const canView = computed(() => hasUserPermissionCode("stg.view"));
+const canCreateFolder = computed(() => hasUserPermissionCode("stg.dir.add"));
+const canRenameFolder = computed(() => hasUserPermissionCode("stg.dir.rename"));
+const canDeleteFolder = computed(() => hasUserPermissionCode("stg.dir.del"));
+const canUpload = computed(() => hasUserPermissionCode("stg.file.upload"));
+const canRenameFile = computed(() => hasUserPermissionCode("stg.file.rename"));
+const canDeleteFile = computed(() => hasUserPermissionCode("stg.file.del"));
+const canMoveFolder = computed(() => hasUserPermissionCode("stg.dir.move"));
+const canMoveFile = computed(() => hasUserPermissionCode("stg.file.move"));
 
 const currentPath = computed(() => {
   if (breadcrumbs.value.length === 0) return "/";

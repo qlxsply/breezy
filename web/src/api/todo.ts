@@ -1,3 +1,4 @@
+import { getValidAuthToken, handleUnauthorizedResponse } from "../registry/auth-token.registry";
 import type {
   TodoAttachmentMeta,
   TodoCompleteReq,
@@ -9,7 +10,6 @@ import type {
   TodoReorderReq,
   TodoSaveReq,
 } from "../types/todo";
-import { getAuthToken } from "../utils/authStorage";
 import { API_BASE_URL, del, get, post, put } from "./http";
 
 const TODO_BASE = "/todo";
@@ -69,7 +69,7 @@ export function getTodoDailyDetail(date: string): Promise<TodoDailyDetail> {
 }
 
 export async function uploadTodoAttachment(file: File): Promise<string> {
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const form = new FormData();
   form.append("file", file);
 
@@ -79,6 +79,9 @@ export async function uploadTodoAttachment(file: File): Promise<string> {
     body: form,
   });
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorizedResponse();
+    }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
   const json = (await response.json()) as ApiResponse<string>;
@@ -93,7 +96,7 @@ export function getTodoAttachmentMetadata(ids: string[]): Promise<TodoAttachment
 }
 
 export async function fetchTodoAttachmentView(fileId: string): Promise<Blob> {
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const response = await fetch(
     `${API_BASE_URL}${TODO_ATTACHMENT_BASE}/${encodeURIComponent(fileId)}/view`,
     {
@@ -102,6 +105,9 @@ export async function fetchTodoAttachmentView(fileId: string): Promise<Blob> {
     },
   );
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorizedResponse();
+    }
     throw new Error(`HTTP ${response.status} ${response.statusText}`);
   }
   return response.blob();

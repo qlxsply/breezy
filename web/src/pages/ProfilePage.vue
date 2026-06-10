@@ -100,7 +100,7 @@ import { computed, reactive, ref } from "vue";
 import { updateMyConfig } from "../api/configs";
 import { batchListDictOptions } from "../api/dicts";
 import { ensureAuthLoaded, useAuthUser, usePersonalizedConfigs } from "../registry/auth.registry";
-import { hasApiPermission } from "../registry/permissions.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import { message } from "../utils/message";
 import {
   USER_DATE_FORMAT_OPTIONS,
@@ -111,7 +111,7 @@ import {
 
 const user = computed(() => useAuthUser().value);
 const configs = usePersonalizedConfigs();
-const canSave = computed(() => Boolean(user.value) && hasApiPermission("pro.cfg.edit"));
+const canSave = computed(() => Boolean(user.value) && hasUserPermissionCode("pro.cfg.edit"));
 const submitting = ref(false);
 
 type OptionItem = { label: string; value: string };
@@ -142,7 +142,8 @@ async function loadOptions() {
     dateTimeFormatOptions.value = toOptions(result.USER_DATE_TIME_FORMAT || []);
     dateFormatOptions.value = toOptions(result.USER_DATE_FORMAT || []);
     decimalFormatOptions.value = toOptions(result.USER_DECIMAL_FORMAT || []);
-    if (timeZoneOptions.value.length === 0) timeZoneOptions.value = toStaticOptions(USER_TIME_ZONE_OPTIONS);
+    if (timeZoneOptions.value.length === 0)
+      timeZoneOptions.value = toStaticOptions(USER_TIME_ZONE_OPTIONS);
     if (dateTimeFormatOptions.value.length === 0) {
       dateTimeFormatOptions.value = toStaticOptions(USER_DATE_TIME_FORMAT_OPTIONS);
     }

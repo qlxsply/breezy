@@ -163,8 +163,8 @@ import { useRoute, useRouter } from "vue-router";
 
 import type { AuthUserType } from "../api/auth";
 import { login, resolveLandingPathForUser } from "../registry/auth.registry";
-import { refreshRegistryLoaded } from "../registry/bootstrap";
-import { refreshPermissions } from "../registry/permissions.registry";
+import { refreshUserToolPermissions } from "../registry/user-tool-permissions.registry";
+import { refreshUserToolsLoaded } from "../registry/user-tools.registry";
 import { initDynamicRoutes } from "../router";
 
 const router = useRouter();
@@ -199,8 +199,8 @@ async function submit() {
 
     const current = await login("external", username.value.trim(), password.value);
 
-    await refreshRegistryLoaded();
-    await refreshPermissions();
+    await refreshUserToolsLoaded();
+    await refreshUserToolPermissions();
     await initDynamicRoutes();
     await router.push({ path: resolveRedirectPath(current.userType) });
   } catch (err) {

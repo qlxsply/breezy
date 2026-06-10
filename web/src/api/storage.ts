@@ -1,10 +1,10 @@
+import { getValidAuthToken, handleUnauthorizedResponse } from "../registry/auth-token.registry";
 import type {
   StorageFolderCreateReq,
   StorageFolderRenameReq,
   StorageItem,
   StorageListQuery,
 } from "../types/file-storage";
-import { getAuthToken } from "../utils/authStorage";
 import { API_BASE_URL, del, get, post, put } from "./http";
 
 interface ApiResponse<T> {
@@ -77,7 +77,7 @@ export function deleteStorageFile(fileId: string): Promise<boolean> {
 }
 
 export async function uploadStorageFile(file: File, parentId?: string): Promise<string> {
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const form = new FormData();
   form.append("file", file);
   if (parentId) {
@@ -91,6 +91,9 @@ export async function uploadStorageFile(file: File, parentId?: string): Promise<
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      handleUnauthorizedResponse();
+    }
     throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
   }
 

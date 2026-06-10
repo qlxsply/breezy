@@ -1,12 +1,9 @@
 <!-- /src/App.vue -->
 <template>
   <RouterView v-slot="{ Component }">
-    <AdminLayout v-if="layoutMode === 'admin'">
-      <component :is="Component" />
-    </AdminLayout>
     <component
       :is="Component"
-      v-else-if="layoutMode === 'blank'"
+      v-if="layoutMode === 'blank'"
     />
     <div
       v-else
@@ -22,18 +19,36 @@
       </main>
     </div>
   </RouterView>
-  <StatusBar v-if="layoutMode !== 'admin'" />
+  <LoginDialog
+    v-if="loginDialogOpen"
+    :error="loginDialogError"
+    initial-mode="external"
+    :allow-scope-switch="false"
+    @close="closeLoginDialog"
+    @submit="handleLoginDialogSubmit"
+  />
+  <StatusBar />
   <BzMessageHost />
   <BzConfirmHost />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
+import LoginDialog from "./components/auth/LoginDialog.vue";
 import StatusBar from "./components/common/StatusBar.vue";
-import AdminLayout from "./layout/AdminLayout.vue";
 import AppHeader from "./layout/AppHeader.vue";
+import { login } from "./registry/auth.registry";
+import {
+  closeLoginDialog,
+  setLoginDialogError,
+  useLoginDialogError,
+  useLoginDialogOpen,
+} from "./registry/auth-dialog.registry";
+import { refreshUserToolPermissions } from "./registry/user-tool-permissions.registry";
+import { refreshUserToolsLoaded } from "./registry/user-tools.registry";
+import { initDynamicRoutes } from "./router";
 
 interface HeaderConfig {
   prefix?: string;
@@ -42,15 +57,15 @@ interface HeaderConfig {
 }
 
 const route = useRoute();
+const router = useRouter();
+const loginDialogOpen = useLoginDialogOpen();
+const loginDialogError = useLoginDialogError();
 
-type LayoutMode = "default" | "admin" | "blank";
+type LayoutMode = "default" | "blank";
 
 const layoutMode = computed<LayoutMode>(() => {
   const layout = typeof route.meta?.layout === "string" ? route.meta.layout : "";
-  if (layout === "admin" || layout === "blank") {
-    return layout;
-  }
-  return "default";
+  return layout === "blank" ? "blank" : "default";
 });
 
 const headerConfig = computed<HeaderConfig>(() => {
@@ -64,6 +79,27 @@ const headerConfig = computed<HeaderConfig>(() => {
   }
   return { ...metaHeader, showHome: metaHeader.showHome ?? true };
 });
+
+async function handleLoginDialogSubmit(payload: {
+  scope: "internal" | "external";
+  username: string;
+  password: string;
+}) {
+  try {
+    await login("external", payload.username, payload.password);
+    await refreshUserToolsLoaded();
+    await refreshUserToolPermissions();
+    await initDynamicRoutes();
+    closeLoginDialog();
+    await router.replace({
+      path: route.fullPath,
+      query: route.query,
+      hash: route.hash,
+    });
+  } catch (error) {
+    setLoginDialogError(error instanceof Error ? error.message : "登录失败");
+  }
+}
 </script>
 
 <style scoped>

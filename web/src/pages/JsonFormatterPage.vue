@@ -588,8 +588,8 @@ import {
   saveJsonFmtRecord,
 } from "../api/jsonfmt";
 import JsonDiffViewer from "../components/json-formatter/JsonDiffViewer.vue";
-import { hasApiPermission } from "../registry/permissions.registry";
 import { clearPageShortcuts, setPageShortcuts } from "../registry/shortcuts.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import type { JsonFmtRecordDetail, JsonFmtRecordListItem } from "../types/jsonfmt";
 import { formatDateTime } from "../utils/formatter";
 import { message } from "../utils/message";
@@ -688,7 +688,7 @@ let errorLineTimer: number | null = null;
 let suppressSearchWatch = false;
 const recordStates = new Map<string, RecordUiState>();
 
-const canUse = computed(() => hasApiPermission("jfm.use"));
+const canUse = computed(() => hasUserPermissionCode("jfm.use"));
 const canDownload = computed(() => rawInput.value.trim().length > 0);
 const canFold = computed(() => canUse.value);
 const hasMultipleMatches = computed(() => matchCount.value > 1);

@@ -420,8 +420,8 @@ import {
 import TodoAttachmentField from "../components/todo/TodoAttachmentField.vue";
 import TodoDetailDialog from "../components/todo/TodoDetailDialog.vue";
 import TodoImagePreviewDialog from "../components/todo/TodoImagePreviewDialog.vue";
-import { hasApiPermission } from "../registry/permissions.registry";
 import { clearPageShortcuts, setPageShortcuts } from "../registry/shortcuts.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import type {
   TodoAttachmentDraftItem,
   TodoAttachmentMeta,
@@ -500,7 +500,7 @@ const completeForm = reactive({
   drafts: [] as TodoAttachmentDraftItem[],
 });
 
-const canUse = computed(() => hasApiPermission("tdo.use"));
+const canUse = computed(() => hasUserPermissionCode("tdo.use"));
 const router = useRouter();
 
 const groupedTodos = computed<Record<TodoStatus, TodoItem[]>>(() => ({

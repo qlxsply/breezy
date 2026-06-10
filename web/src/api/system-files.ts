@@ -1,3 +1,4 @@
+import { getValidAuthToken, handleUnauthorizedResponse } from "../registry/auth-token.registry";
 import type {
   PhysicalFileDetail,
   StorageListQuery,
@@ -5,7 +6,6 @@ import type {
   StorageSortOrder,
   SystemFileItem,
 } from "../types/file-storage";
-import { getAuthToken } from "../utils/authStorage";
 import { API_BASE_URL, get } from "./http";
 
 const BASE = "/sys/files";
@@ -66,12 +66,15 @@ export function listPhysicalFileLogicalRefs(
 }
 
 export async function fetchSystemFileView(fileId: string): Promise<Blob> {
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const resp = await fetch(`${API_BASE_URL}${BASE}/view/${encodeURIComponent(fileId)}`, {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   if (!resp.ok) {
+    if (resp.status === 401) {
+      handleUnauthorizedResponse();
+    }
     throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
   }
   return resp.blob();
@@ -109,12 +112,15 @@ export async function downloadSystemFile(
   fileId: string,
   fallbackName?: string,
 ): Promise<{ blob: Blob; fileName: string }> {
-  const token = getAuthToken();
+  const token = await getValidAuthToken();
   const resp = await fetch(`${API_BASE_URL}${BASE}/download/${encodeURIComponent(fileId)}`, {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   if (!resp.ok) {
+    if (resp.status === 401) {
+      handleUnauthorizedResponse();
+    }
     throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
   }
 

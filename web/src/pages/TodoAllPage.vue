@@ -144,14 +144,14 @@ import { useRouter } from "vue-router";
 import { listDictOptions } from "../api/dicts";
 import { listTodos } from "../api/todo";
 import TodoDetailDialog from "../components/todo/TodoDetailDialog.vue";
-import { hasApiPermission } from "../registry/permissions.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import type { DictItem } from "../types/dict-admin";
 import type { TodoItem, TodoStatus } from "../types/todo";
 import { formatDateTime } from "../utils/formatter";
 import { message } from "../utils/message";
 
 const router = useRouter();
-const canUse = computed(() => hasApiPermission("tdo.use"));
+const canUse = computed(() => hasUserPermissionCode("tdo.use"));
 
 const loading = ref(false);
 const rows = ref<TodoItem[]>([]);

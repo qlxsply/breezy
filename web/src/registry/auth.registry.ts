@@ -4,20 +4,20 @@ import { computed, ref } from "vue";
 import type { AuthSpace, AuthUser, AuthUserType } from "../api/auth";
 import { getMe, login as loginApi, logout as logoutApi } from "../api/auth";
 import type { UserConfigItem } from "../api/configs";
+import { getAuthScope, getAuthToken, getRefreshToken, setAuthScope } from "../utils/authStorage";
 import {
-  clearAuthToken,
-  getAuthScope,
-  getAuthToken,
-  setAuthScope,
-  setAuthToken,
-} from "../utils/authStorage";
+  applyExternalAuthTokens,
+  clearAuthSession,
+  ensureValidAccessToken,
+  handleAuthSessionExpired,
+} from "./auth-token.registry";
 import { ensureUnreadLoaded } from "./notifications.registry";
-import { refreshPermissions } from "./permissions.registry";
 import {
   ensureWebPushSubscription,
   initTodoReminderPermission,
   removeWebPushSubscription,
 } from "./todo-reminder.registry";
+import { refreshUserToolPermissions } from "./user-tool-permissions.registry";
 
 const currentUser = ref<AuthUser | null>(null);
 const personalizedConfigs = ref<UserConfigItem[]>([]);
@@ -28,10 +28,8 @@ const authState = {
   promise: null as Promise<void> | null,
 };
 
-export const INTERNAL_USER_LANDING_PATH = "/admin";
 export const isAuthenticated = computed(() => Boolean(currentUser.value?.id));
 export const currentUserType = computed<AuthUserType>(() => currentUser.value?.userType || "GUEST");
-export const isInternalUser = computed(() => currentUserType.value === "INTERNAL");
 export const isExternalUser = computed(() => currentUserType.value === "EXTERNAL");
 export const isNormalUser = isExternalUser;
 
@@ -39,12 +37,19 @@ export function useAuthUser() {
   return currentUser;
 }
 
+export function resetAuthPresentationState(): void {
+  currentUser.value = null;
+  personalizedConfigs.value = [];
+  authState.loaded = false;
+}
+
 export function getCurrentUserType(): AuthUserType {
   return currentUser.value?.userType || "GUEST";
 }
 
 export function resolveLandingPathForUser(userType: AuthUserType): string {
-  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/";
+  void userType;
+  return "/";
 }
 
 export function usePersonalizedConfigs() {
@@ -66,13 +71,15 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
   authState.promise = (async () => {
     try {
       const token = getAuthToken();
-      if (!token) {
+      const refreshToken = getRefreshToken();
+      if (!token && !refreshToken) {
         currentUser.value = null;
         personalizedConfigs.value = [];
         await ensureUnreadLoaded(true);
         return;
       }
 
+      await ensureValidAccessToken();
       const me = await getMe(getAuthScope());
       if (me) {
         if (me.id) {
@@ -96,8 +103,7 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
       }
     } catch (err) {
       console.warn("[auth] load failed", err);
-      clearAuthToken();
-      currentUser.value = null;
+      handleAuthSessionExpired("登录已过期，请重新登录");
       await ensureUnreadLoaded(true);
     } finally {
       authState.loaded = true;
@@ -117,10 +123,18 @@ export async function login(
   if (!resp || !resp.token || !resp.user) {
     throw new Error("登录响应无效");
   }
-  setAuthToken(resp.token);
-  setAuthScope(scope);
+  if (scope === "external") {
+    applyExternalAuthTokens({
+      accessToken: resp.token,
+      refreshToken: resp.refreshToken,
+      accessTokenExpiresAt: resp.accessTokenExpiresAt,
+      refreshTokenExpiresAt: resp.refreshTokenExpiresAt,
+    });
+  } else {
+    setAuthScope(scope);
+  }
 
-  await refreshPermissions();
+  await refreshUserToolPermissions();
 
   currentUser.value = resp.user;
   if (resp.user.configs) {
@@ -140,7 +154,7 @@ export async function logout(): Promise<void> {
     await removeWebPushSubscription();
     await logoutApi(getAuthScope());
   } finally {
-    clearAuthToken();
+    clearAuthSession();
     authState.loaded = false;
     await ensureAuthLoaded(true);
   }

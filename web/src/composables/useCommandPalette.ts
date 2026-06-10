@@ -1,17 +1,23 @@
 // /src/composables/useCommandPalette.ts
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { ensureRegistryLoaded } from "../registry/bootstrap";
 import { getConfigAction } from "../registry/configs.registry";
-import { ensurePermissionsLoaded, hasMenuAccess } from "../registry/permissions.registry";
-import { getResourceMap, getResources } from "../registry/resources.registry";
+import {
+  ensureUserToolPermissionsLoaded,
+  hasToolPageAccess,
+} from "../registry/user-tool-permissions.registry";
+import {
+  ensureUserToolsLoaded,
+  getUserToolMap,
+  getUserTools,
+} from "../registry/user-tools.registry";
 import type {
   ConfigActionContext,
-  MenuResource,
   ResultGroup,
   ResultItem,
   SearchBadge,
-} from "../types/command";
+  ToolPageEntry,
+} from "../types/user-tools";
 import { message } from "../utils/message";
 import { DEFAULT_SCORE_OPTIONS, scoreText } from "../utils/search";
 
@@ -35,7 +41,7 @@ watch(searchMode, (val) => {
  * - 输出 resultGroups（用于分组UI）
  */
 export function useCommandPalette(options: {
-  onExecuteConfig: (resource: MenuResource) => void;
+  onExecuteConfig: (resource: ToolPageEntry) => void;
   autoExecute?: { enabled: boolean; delayMs: number };
   enableFuzzy?: boolean;
 }) {
@@ -53,7 +59,7 @@ export function useCommandPalette(options: {
     if (hasTriggeredLoad.value) return;
     hasTriggeredLoad.value = true;
     try {
-      await Promise.all([ensurePermissionsLoaded(), ensureRegistryLoaded()]);
+      await Promise.all([ensureUserToolPermissionsLoaded(), ensureUserToolsLoaded()]);
     } catch (e) {
       console.error("[command-palette] init load failed", e);
     }
@@ -73,18 +79,18 @@ export function useCommandPalette(options: {
     enableFuzzy: options.enableFuzzy ?? true,
   }));
 
-  const resourceMap = computed(() => getResourceMap());
+  const resourceMap = computed(() => getUserToolMap());
 
   /**
    * 预过滤全量可用菜单，仅包含 MODAL 和 PAGE
    */
   const toolMenus = computed(() => {
     const map = resourceMap.value;
-    return (getResources() as MenuResource[]).filter((r) => {
+    return (getUserTools() as ToolPageEntry[]).filter((r) => {
       if (r.type !== "MENU") return false;
       if (r.openMode !== "MODAL" && r.openMode !== "PAGE") return false;
       if (r.scope !== "TOOL") return false;
-      return hasMenuAccess(r, map);
+      return hasToolPageAccess(r, map);
     });
   });
 

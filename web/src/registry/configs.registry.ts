@@ -1,5 +1,5 @@
 // /src/registry/configs.registry.ts
-import type { ConfigActionContext } from "../types/command";
+import type { ConfigActionContext } from "../types/user-tools";
 
 export interface ConfigActionDef {
   code: string; // 对应资源 code，例如 md

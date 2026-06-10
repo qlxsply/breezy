@@ -7,7 +7,10 @@
     :close-on-click-modal="false"
     @close="$emit('close')"
   >
-    <div class="login-mode">
+    <div
+      v-if="allowScopeSwitch"
+      class="login-mode"
+    >
       <bz-button
         :type="mode === 'external' ? 'primary' : 'default'"
         @click="switchMode('external')"
@@ -67,6 +70,7 @@ import type { AuthScope } from "../../utils/authStorage";
 const props = defineProps<{
   error?: string;
   initialMode?: AuthScope;
+  allowScopeSwitch?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -77,6 +81,7 @@ const emit = defineEmits<{
 const username = ref("");
 const password = ref("");
 const mode = ref<AuthScope>(props.initialMode || "external");
+const allowScopeSwitch = computed(() => props.allowScopeSwitch !== false);
 const usernameInput = ref<{ focus: () => void } | null>(null);
 const error = computed(() => props.error ?? "");
 
@@ -85,6 +90,7 @@ function submit() {
 }
 
 function switchMode(next: AuthScope) {
+  if (!allowScopeSwitch.value) return;
   mode.value = next;
 }
 

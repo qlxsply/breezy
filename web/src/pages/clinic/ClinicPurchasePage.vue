@@ -81,7 +81,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { createPurchase, deletePurchase, pagePurchases } from "../../api/clinic";
 import PurchaseFormDialog from "../../components/clinic/PurchaseFormDialog.vue";
 import PurchaseTable from "../../components/clinic/PurchaseTable.vue";
-import { hasApiPermission } from "../../registry/permissions.registry";
+import { hasUserPermissionCode } from "../../registry/user-tool-permissions.registry";
 import type { Purchase, PurchaseSubmitPayload } from "../../types/clinic";
 import { bzConfirm } from "../../utils/confirm";
 import { message } from "../../utils/message";
@@ -100,7 +100,7 @@ const query = reactive({
   },
 });
 
-const canManage = computed(() => hasApiPermission("cln.pur.edit"));
+const canManage = computed(() => hasUserPermissionCode("cln.pur.edit"));
 
 async function load() {
   loading.value = true;

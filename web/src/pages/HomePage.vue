@@ -74,25 +74,25 @@ import { useRouter } from "vue-router";
 import ResultsPanel from "../components/ResultsPanel.vue";
 import SearchBox from "../components/SearchBox.vue";
 import { useCommandPalette } from "../composables/useCommandPalette";
-import { hasMenuAccess } from "../registry/permissions.registry";
-import { getResourceMap } from "../registry/resources.registry";
-import type { MenuResource } from "../types/command";
+import { hasToolPageAccess } from "../registry/user-tool-permissions.registry";
+import { getUserToolMap } from "../registry/user-tools.registry";
+import type { ToolPageEntry } from "../types/user-tools";
 import { resolveResourceComponent } from "../utils/resourceLoader";
 
 // useRouter 来自 vue-router，提供路由跳转与解析能力。
 const router = useRouter();
 // ref<T>() 泛型：指定引用值类型。这里允许 HTMLElement 或 null。
 const rootRef = ref<HTMLElement | null>(null);
-const modalResource = ref<MenuResource | null>(null);
+const modalResource = ref<ToolPageEntry | null>(null);
 const modalComponent = computed(() => resolveResourceComponent(modalResource.value?.loadTarget));
-const resourceMap = computed(() => getResourceMap());
+const resourceMap = computed(() => getUserToolMap());
 
-function resolveMenuUrl(resource: MenuResource): string {
+function resolveMenuUrl(resource: ToolPageEntry): string {
   if (resource.url && resource.url.trim()) return resource.url.trim();
   return resource.code.startsWith("/") ? resource.code : `/${resource.code}`;
 }
 
-function openModal(resource: MenuResource) {
+function openModal(resource: ToolPageEntry) {
   modalResource.value = resource;
 }
 
@@ -120,7 +120,7 @@ const {
   executeConfigAction,
 } = useCommandPalette({
   onExecuteConfig: (config) => {
-    if (!hasMenuAccess(config, resourceMap.value)) return;
+    if (!hasToolPageAccess(config, resourceMap.value)) return;
 
     const { isNewTab } = resolveSearchContext(searchQuery.value);
 

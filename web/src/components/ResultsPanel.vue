@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-import type { ResultGroup, ResultItem } from "../types/command";
+import type { ResultGroup, ResultItem } from "../types/user-tools";
 
 const props = defineProps<{
   open: boolean;

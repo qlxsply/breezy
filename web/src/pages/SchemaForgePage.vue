@@ -699,7 +699,7 @@ import { listDatabaseSchemas } from "../api/database-source";
 import * as schemaforgeApi from "../api/schemaforge";
 import { downloadSystemFile, fetchSystemFileView, getSystemFileMeta } from "../api/system-files";
 import DiffResultPanel from "../components/schemaforge/DiffResultPanel.vue";
-import { hasApiPermission } from "../registry/permissions.registry";
+import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import type { DatabaseSchema } from "../types/database-source";
 import type { SystemFileItem } from "../types/file-storage";
 import type { PageResult } from "../types/page";
@@ -739,19 +739,19 @@ function resolveTabFromQuery(value: unknown): ActiveTab {
 const activeTab = ref<ActiveTab>(resolveTabFromQuery(route.query.tab));
 const managedDatabases = ref<DatabaseSchema[]>([]);
 
-const canSnapshotView = computed(() => hasApiPermission("sfg.snap.view"));
-const canSnapshotCreate = computed(() => hasApiPermission("sfg.snap.add"));
-const canSnapshotEdit = computed(() => hasApiPermission("sfg.snap.edit"));
-const canSnapshotDelete = computed(() => hasApiPermission("sfg.snap.del"));
+const canSnapshotView = computed(() => hasUserPermissionCode("sfg.snap.view"));
+const canSnapshotCreate = computed(() => hasUserPermissionCode("sfg.snap.add"));
+const canSnapshotEdit = computed(() => hasUserPermissionCode("sfg.snap.edit"));
+const canSnapshotDelete = computed(() => hasUserPermissionCode("sfg.snap.del"));
 
-const canDdlView = computed(() => hasApiPermission("sfg.ddl.view"));
-const canDdlCreate = computed(() => hasApiPermission("sfg.ddl.add"));
-const canDdlEdit = computed(() => hasApiPermission("sfg.ddl.edit"));
-const canDdlDelete = computed(() => hasApiPermission("sfg.ddl.del"));
+const canDdlView = computed(() => hasUserPermissionCode("sfg.ddl.view"));
+const canDdlCreate = computed(() => hasUserPermissionCode("sfg.ddl.add"));
+const canDdlEdit = computed(() => hasUserPermissionCode("sfg.ddl.edit"));
+const canDdlDelete = computed(() => hasUserPermissionCode("sfg.ddl.del"));
 
-const canDiffView = computed(() => hasApiPermission("sfg.diff.view"));
-const canFileView = computed(() => hasApiPermission("sfl.preview"));
-const canFileDownload = computed(() => hasApiPermission("sfl.download"));
+const canDiffView = computed(() => hasUserPermissionCode("sfg.diff.view"));
+const canFileView = computed(() => hasUserPermissionCode("sfl.preview"));
+const canFileDownload = computed(() => hasUserPermissionCode("sfl.download"));
 
 const snapshotQuery = reactive({
   managedDatabaseId: undefined as string | undefined,

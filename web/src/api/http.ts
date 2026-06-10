@@ -1,5 +1,9 @@
 // /src/api/http.ts
 
+import {
+  ensureValidAccessToken,
+  handleUnauthorizedResponse,
+} from "../registry/auth-token.registry";
 import { getAuthToken } from "../utils/authStorage";
 import { message as toast } from "../utils/message";
 
@@ -20,10 +24,11 @@ export interface ApiResponse<T> {
  * - 如果前后端同域部署，通常为空即可
  * - 如果后端是 /api 前缀，把 baseURL 改成 "/api"
  */
-export const API_BASE_URL = "http://localhost:8910/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8910/api";
 const baseURL = API_BASE_URL;
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  await ensureValidAccessToken();
   const token = getAuthToken();
   const headers = new Headers(init?.headers ?? {});
   if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
@@ -36,6 +41,9 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     });
 
     if (!resp.ok) {
+      if (resp.status === 401) {
+        handleUnauthorizedResponse();
+      }
       if (resp.status !== 401) {
         toast.error(`网络请求异常 (HTTP ${resp.status})`);
       }
@@ -60,6 +68,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 async function requestRaw<T>(url: string, init?: RequestInit): Promise<T> {
+  await ensureValidAccessToken();
   const token = getAuthToken();
   const headers = new Headers(init?.headers ?? {});
   if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
@@ -72,6 +81,9 @@ async function requestRaw<T>(url: string, init?: RequestInit): Promise<T> {
     });
 
     if (!resp.ok) {
+      if (resp.status === 401) {
+        handleUnauthorizedResponse();
+      }
       if (resp.status !== 401) {
         toast.error(`网络请求异常 (HTTP ${resp.status})`);
       }

@@ -92,7 +92,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { createSale, deleteSale, pageSales } from "../../api/clinic";
 import SaleFormDialog from "../../components/clinic/SaleFormDialog.vue";
 import SaleTable from "../../components/clinic/SaleTable.vue";
-import { hasApiPermission } from "../../registry/permissions.registry";
+import { hasUserPermissionCode } from "../../registry/user-tool-permissions.registry";
 import type { Sale, SaleSubmitPayload } from "../../types/clinic";
 import { bzConfirm } from "../../utils/confirm";
 import { message } from "../../utils/message";
@@ -112,7 +112,7 @@ const query = reactive({
   },
 });
 
-const canManage = computed(() => hasApiPermission("cln.sal.edit"));
+const canManage = computed(() => hasUserPermissionCode("cln.sal.edit"));
 
 async function load() {
   loading.value = true;

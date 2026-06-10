@@ -3,7 +3,8 @@ import { computed, watch } from "vue";
 import type { SseMessage } from "../utils/sse-coordinator";
 import { useSseCoordinator } from "../utils/sse-coordinator";
 import { isAuthenticated, useAuthUser } from "./auth.registry";
-import { hasApiPermission, isPermissionsLoaded } from "./permissions.registry";
+import { hasUserPermissionCode } from "./user-tool-permissions.registry";
+import { isUserToolsLoaded } from "./user-tools.registry";
 
 export const sseCoordinator = useSseCoordinator();
 
@@ -109,7 +110,7 @@ export function resetSseMessageCache(): void {
  */
 export function initSseLifecycle() {
   const authUser = useAuthUser();
-  const readyToConnect = computed(() => isAuthenticated.value && isPermissionsLoaded.value);
+  const readyToConnect = computed(() => isAuthenticated.value && isUserToolsLoaded.value);
 
   watch(
     readyToConnect,
@@ -117,11 +118,11 @@ export function initSseLifecycle() {
       console.log("[sse] readyToConnect check:", {
         ready,
         authenticated: isAuthenticated.value,
-        permissionsLoaded: isPermissionsLoaded.value,
+        userToolsLoaded: isUserToolsLoaded.value,
       });
       if (ready) {
         // 此时登录状态和权限数据均已加载
-        const hasPermission = hasApiPermission("sys.use");
+        const hasPermission = hasUserPermissionCode("sys.use");
         console.log("[sse] has sys.use permission:", hasPermission);
         const currentUserId = authUser.value?.id;
         if (hasPermission && currentUserId) {
