@@ -17,6 +17,10 @@ public interface AuthConfigService {
 
     Duration externalAccessTokenTtl();
 
+    Duration externalRefreshTokenTtl();
+
+    Duration externalAccessTokenRefreshSkew();
+
     String externalJwtSecret();
 
     String externalJwtIssuer();

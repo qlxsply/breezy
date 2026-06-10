@@ -90,7 +90,8 @@ public class AuthService {
             authPrincipalAuthenticator.cacheSession(tokenHash, principal, Duration.between(now, expiresAt));
 
             loginLogService.logLoginSuccess(user);
-            return new LoginView(rawToken, toAuthView(user, user.getUserType()));
+            return new LoginView(rawToken, null, String.valueOf(expiresAt.toEpochMilli()), null,
+                    toAuthView(user, user.getUserType()));
         } catch (RuntimeException ex) {
             loginLogService.logLoginFailure(account, ex.getMessage());
             throw ex;

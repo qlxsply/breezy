@@ -5,6 +5,9 @@ package com.corwin.system.webuser.application.view;
  */
 public record WebUserLoginView(
         String token,
+        String refreshToken,
+        String accessTokenExpiresAt,
+        String refreshTokenExpiresAt,
         WebUserAuthView user
 ) {
 }

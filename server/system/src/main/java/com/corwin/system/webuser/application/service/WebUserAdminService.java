@@ -10,11 +10,7 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.webuser.application.command.UpdateWebUserCommand;
 import com.corwin.system.webuser.application.view.WebUserAdminView;
-import com.corwin.system.webuser.domain.model.WebUser;
-import com.corwin.system.webuser.domain.model.WebUserIdentity;
-import com.corwin.system.webuser.domain.model.WebUserIdentityType;
-import com.corwin.system.webuser.domain.model.WebUserLifecycleEventType;
-import com.corwin.system.webuser.domain.model.WebUserStatus;
+import com.corwin.system.webuser.domain.model.*;
 import com.corwin.system.webuser.domain.repo.WebUserIdentityRepository;
 import com.corwin.system.webuser.domain.repo.WebUserRepository;
 import org.springframework.stereotype.Service;
@@ -32,9 +28,8 @@ public class WebUserAdminService {
     private final WebUserIdentityRepository webUserIdentityRepository;
     private final WebUserLifecycleService webUserLifecycleService;
 
-    public WebUserAdminService(WebUserRepository webUserRepository,
-            WebUserIdentityRepository webUserIdentityRepository,
-            WebUserLifecycleService webUserLifecycleService) {
+    public WebUserAdminService(WebUserRepository webUserRepository, WebUserIdentityRepository webUserIdentityRepository,
+                               WebUserLifecycleService webUserLifecycleService) {
         this.webUserRepository = webUserRepository;
         this.webUserIdentityRepository = webUserIdentityRepository;
         this.webUserLifecycleService = webUserLifecycleService;
@@ -105,8 +100,7 @@ public class WebUserAdminService {
             }
         }
         return webUserIdentityRepository.findFirstByUserIdAndIdentityType(user.getId(), WebUserIdentityType.USERNAME)
-                .map(WebUserIdentity::getIdentityValue)
-                .orElse(String.valueOf(user.getId()));
+                                        .map(WebUserIdentity::getIdentityValue).orElse(String.valueOf(user.getId()));
     }
 
     private String operator() {

@@ -8,14 +8,14 @@ import com.corwin.system.normalfeature.domain.model.NormalFeature;
 import com.corwin.system.normalfeature.domain.model.NormalFeaturePermission;
 import com.corwin.system.normalfeature.domain.repo.NormalFeaturePermissionRepository;
 import com.corwin.system.normalfeature.domain.repo.NormalFeatureRepository;
-import com.corwin.system.resource.application.view.RegistryResourceView;
-import com.corwin.system.resource.application.view.RegistryView;
+import com.corwin.system.resource.application.view.AdminMenuResourceView;
+import com.corwin.system.resource.application.view.AdminMenuResourcesView;
 import com.corwin.system.resource.domain.model.Function;
 import com.corwin.system.resource.domain.model.FunctionPermission;
 import com.corwin.system.resource.domain.model.FunctionType;
 import com.corwin.system.resource.domain.model.Menu;
-import com.corwin.system.resource.domain.model.MenuType;
 import com.corwin.system.resource.domain.model.MenuFunction;
+import com.corwin.system.resource.domain.model.MenuType;
 import com.corwin.system.resource.domain.model.Permission;
 import com.corwin.system.resource.domain.repo.FunctionPermissionRepository;
 import com.corwin.system.resource.domain.repo.FunctionRepository;
@@ -42,13 +42,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 当前登录用户资源注册表。
- *
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/5/31
  */
 @Service
 @RequiredArgsConstructor
-public class RegistryService {
+public class AdminMenuResourceService {
 
     private final SecurityContextService securityContextService;
     private final PermissionService permissionService;
@@ -71,23 +69,23 @@ public class RegistryService {
             "storage", new ExternalToolRoute("/storage", "pages/StoragePage.vue", 50),
             "clinic", new ExternalToolRoute("/clinic/management", "pages/clinic/ClinicManagementPage.vue", 60));
 
-    public RegistryView currentRegistry() {
+    public AdminMenuResourcesView currentAdminMenuResources() {
         Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
         if (principalOptional.isEmpty()) {
-            return new RegistryView(List.of());
+            return new AdminMenuResourcesView(List.of());
         }
         AuthPrincipal principal = principalOptional.get();
-        Set<String> permissionCodes = permissionService.permissionCodesForCurrent();
         if (principal.userType() != UserType.INTERNAL) {
-            return new RegistryView(buildExternalResources(resolveGrantedPermissions(permissionCodes)));
+            return new AdminMenuResourcesView(List.of());
         }
+        Set<String> permissionCodes = permissionService.permissionCodesForCurrent();
         if (principal.admin()) {
-            return new RegistryView(buildAdminResources(resolveGrantedPermissions(permissionCodes)));
+            return new AdminMenuResourcesView(buildAdminResources(resolveGrantedPermissions(permissionCodes)));
         }
-        return new RegistryView(buildInternalResources(principal.userId(), resolveGrantedPermissions(permissionCodes)));
+        return new AdminMenuResourcesView(buildInternalResources(principal.userId(), resolveGrantedPermissions(permissionCodes)));
     }
 
-    private List<RegistryResourceView> buildExternalResources(List<Permission> grantedPermissions) {
+    private List<AdminMenuResourceView> buildExternalResources(List<Permission> grantedPermissions) {
         if (grantedPermissions.isEmpty()) {
             return List.of();
         }
@@ -109,20 +107,20 @@ public class RegistryService {
             return List.of();
         }
 
-        List<RegistryResourceView> resources = new ArrayList<>();
+        List<AdminMenuResourceView> resources = new ArrayList<>();
         normalFeatureRepository.findByIdIn(accessibleFeatureIds).stream()
                 .filter(feature -> feature.getId() != null)
                 .filter(feature -> Boolean.TRUE.equals(feature.getEnabled()))
                 .map(this::toExternalToolResource)
                 .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(RegistryResourceView::orderNo)
-                        .thenComparing(RegistryResourceView::code, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .sorted(Comparator.comparing(AdminMenuResourceView::orderNo)
+                        .thenComparing(AdminMenuResourceView::code, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEach(resources::add);
         resources.addAll(buildPermissionResources(grantedPermissions));
         return resources;
     }
 
-    private List<RegistryResourceView> buildAdminResources(List<Permission> grantedPermissions) {
+    private List<AdminMenuResourceView> buildAdminResources(List<Permission> grantedPermissions) {
         List<Menu> menus = menuRepository.findAll().stream().filter(this::menuVisibleAndEnabled)
                 .sorted(menuComparator()).toList();
         List<Function> functions = functionRepository.findAll().stream().filter(this::functionEnabled)
@@ -135,7 +133,7 @@ public class RegistryService {
                 .filter(menuFunction -> functionById.containsKey(menuFunction.getFunctionId()))
                 .sorted(menuFunctionComparator()).toList();
 
-        List<RegistryResourceView> resources = new ArrayList<>();
+        List<AdminMenuResourceView> resources = new ArrayList<>();
         menus.forEach(menu -> resources.add(toMenuResource(menu)));
         menuFunctions.forEach(menuFunction -> {
             Function function = functionById.get(menuFunction.getFunctionId());
@@ -147,7 +145,7 @@ public class RegistryService {
         return resources;
     }
 
-    private List<RegistryResourceView> buildInternalResources(Long userId, List<Permission> grantedPermissions) {
+    private List<AdminMenuResourceView> buildInternalResources(Long userId, List<Permission> grantedPermissions) {
         if (grantedPermissions.isEmpty()) {
             return List.of();
         }
@@ -195,7 +193,7 @@ public class RegistryService {
         }
         includeMenuAncestors(includedMenuIds, menuById);
 
-        List<RegistryResourceView> resources = new ArrayList<>();
+        List<AdminMenuResourceView> resources = new ArrayList<>();
         includedMenuIds.stream().map(menuById::get).filter(Objects::nonNull).sorted(menuComparator())
                 .map(this::toMenuResource).forEach(resources::add);
         includedMenuFunctionIds.stream().map(menuFunctionById::get).filter(Objects::nonNull).sorted(menuFunctionComparator())
@@ -253,9 +251,9 @@ public class RegistryService {
                 .sorted(permissionComparator()).toList();
     }
 
-    private List<RegistryResourceView> buildPermissionResources(Collection<Permission> permissions) {
+    private List<AdminMenuResourceView> buildPermissionResources(Collection<Permission> permissions) {
         return permissions.stream().filter(permission -> permission.getId() != null).sorted(permissionComparator())
-                .map(permission -> new RegistryResourceView("perm:" + permission.getId(), null,
+                .map(permission -> new AdminMenuResourceView("perm:" + permission.getId(), null,
                         blankToDefault(permission.getName(), permission.getCode()), null, permission.getDescription(),
                         permission.getCode(), "DATA", "NONE", "NONE", "", "",
                         permission.getId().intValue(), resolveLevel(permission.getSystemBuiltin()),
@@ -263,8 +261,8 @@ public class RegistryService {
                 .toList();
     }
 
-    private RegistryResourceView toMenuResource(Menu menu) {
-        return new RegistryResourceView("menu:" + menu.getId(),
+    private AdminMenuResourceView toMenuResource(Menu menu) {
+        return new AdminMenuResourceView("menu:" + menu.getId(),
                 menu.getParentId() == null ? null : "menu:" + menu.getParentId(), menu.getName(),
                 resolveMenuIcon(menu.getIcon()),
                 menu.getRemark(), menu.getCode(), "MENU", resolveScope(menu.getPath(), menu.resolveMenuType()), resolveOpenMode(menu),
@@ -277,8 +275,8 @@ public class RegistryService {
         return staticAssetQueryService.resolveFileIdByCode(iconCode).orElse(null);
     }
 
-    private RegistryResourceView toFunctionResource(MenuFunction menuFunction, Function function) {
-        return new RegistryResourceView("mf:" + menuFunction.getId(),
+    private AdminMenuResourceView toFunctionResource(MenuFunction menuFunction, Function function) {
+        return new AdminMenuResourceView("mf:" + menuFunction.getId(),
                 menuFunction.getParentId() == null ? "menu:" + menuFunction.getMenuId() : "mf:" + menuFunction.getParentId(),
                 function.getName(), null, function.getDescription(), function.getCode(), resolveType(function),
                 "NONE", "NONE", "", "", menuFunction.getSortNo() == null ? 0 : menuFunction.getSortNo(),
@@ -293,12 +291,7 @@ public class RegistryService {
         return Boolean.TRUE.equals(function.getEnabled());
     }
 
-    private boolean isAdminMenu(Menu menu) {
-        String path = menu.getPath();
-        return path != null && path.startsWith("/admin");
-    }
-
-    private RegistryResourceView toExternalToolResource(NormalFeature feature) {
+    private AdminMenuResourceView toExternalToolResource(NormalFeature feature) {
         if (feature.getCode() == null || feature.getCode().isBlank()) {
             return null;
         }
@@ -307,16 +300,9 @@ public class RegistryService {
             return null;
         }
         String id = "nf:" + feature.getId();
-        return new RegistryResourceView(id, null, feature.getName(), null, feature.getDescription(),
+        return new AdminMenuResourceView(id, null, feature.getName(), null, feature.getDescription(),
                 feature.getCode(), "MENU", "TOOL", "PAGE", route.path(), route.component(), route.orderNo(),
                 resolveLevel(feature.getSystemBuiltin()), true, false);
-    }
-
-    private record ExternalToolRoute(
-            String path,
-            String component,
-            int orderNo
-    ) {
     }
 
     private Comparator<Menu> menuComparator() {
@@ -379,5 +365,12 @@ public class RegistryService {
 
     private String blankToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private record ExternalToolRoute(
+            String path,
+            String component,
+            int orderNo
+    ) {
     }
 }

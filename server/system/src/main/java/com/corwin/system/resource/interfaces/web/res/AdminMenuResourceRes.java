@@ -1,9 +1,9 @@
-package com.corwin.system.resource.application.view;
+package com.corwin.system.resource.interfaces.web.res;
 
 /**
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/5/31
  */
-public record RegistryResourceView(
+public record AdminMenuResourceRes(
         String id,
         String parentId,
         String name,

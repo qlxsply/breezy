@@ -15,7 +15,7 @@
     <name>server</name>
 
     <modules>
-	    <module>dependencies</module>
+        <module>dependencies</module>
         <module>framework</module>
         <module>system</module>
         <module>business</module>

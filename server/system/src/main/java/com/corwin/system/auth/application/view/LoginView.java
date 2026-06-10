@@ -5,6 +5,9 @@ package com.corwin.system.auth.application.view;
  */
 public record LoginView(
         String token,
+        String refreshToken,
+        String accessTokenExpiresAt,
+        String refreshTokenExpiresAt,
         AuthUserView user
 ) {
 }

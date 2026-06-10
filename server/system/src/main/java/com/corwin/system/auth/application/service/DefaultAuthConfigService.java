@@ -16,6 +16,8 @@ public class DefaultAuthConfigService implements AuthConfigService {
     private static final String SESSION_CACHE_TTL_SECONDS = "auth.cache.session-ttl-seconds";
     private static final String LAST_ACCESS_REFRESH_INTERVAL_SECONDS = "auth.internal.update-last-access-interval-seconds";
     private static final String EXTERNAL_ACCESS_TOKEN_TTL_SECONDS = "auth.external.access-token-ttl-seconds";
+    private static final String EXTERNAL_REFRESH_TOKEN_TTL_SECONDS = "auth.external.refresh-token-ttl-seconds";
+    private static final String EXTERNAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS = "auth.external.access-token-refresh-skew-seconds";
     private static final String EXTERNAL_JWT_SECRET = "auth.external.jwt-secret";
     private static final String EXTERNAL_JWT_ISSUER = "auth.external.jwt-issuer";
 
@@ -48,6 +50,16 @@ public class DefaultAuthConfigService implements AuthConfigService {
     @Override
     public Duration externalAccessTokenTtl() {
         return Duration.ofSeconds(longValue(EXTERNAL_ACCESS_TOKEN_TTL_SECONDS, 30 * 60));
+    }
+
+    @Override
+    public Duration externalRefreshTokenTtl() {
+        return Duration.ofSeconds(longValue(EXTERNAL_REFRESH_TOKEN_TTL_SECONDS, 7 * 24 * 60 * 60));
+    }
+
+    @Override
+    public Duration externalAccessTokenRefreshSkew() {
+        return Duration.ofSeconds(longValue(EXTERNAL_ACCESS_TOKEN_REFRESH_SKEW_SECONDS, 60));
     }
 
     @Override

@@ -5,6 +5,9 @@ package com.corwin.system.auth.interfaces.web.res;
  */
 public record LoginResponseRes(
         String token,
+        String refreshToken,
+        String accessTokenExpiresAt,
+        String refreshTokenExpiresAt,
         AuthUserRes user
 ) {
 }

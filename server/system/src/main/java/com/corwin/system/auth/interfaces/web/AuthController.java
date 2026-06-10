@@ -6,6 +6,7 @@ import com.corwin.system.auth.application.command.ChangePasswordCommand;
 import com.corwin.system.auth.application.command.LoginCommand;
 import com.corwin.system.auth.interfaces.web.req.ChangePasswordReq;
 import com.corwin.system.auth.interfaces.web.req.LoginReq;
+import com.corwin.system.auth.interfaces.web.req.RefreshTokenReq;
 import com.corwin.system.auth.interfaces.web.res.AuthUserRes;
 import com.corwin.system.auth.interfaces.web.res.LoginResponseRes;
 import com.corwin.system.auth.published.Authenticated;
@@ -42,7 +43,16 @@ public class AuthController {
     @PermitAll
     public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
         WebUserLoginView result = webUserAuthService.login(new LoginCommand(req.account(), req.password()));
-        return ApiResponse.ok(new LoginResponseRes(result.token(), toAuthDto(result.user())));
+        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
+                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
+    }
+
+    @PostMapping("/refresh")
+    @PermitAll
+    public ApiResponse<LoginResponseRes> refresh(@RequestBody RefreshTokenReq req) {
+        WebUserLoginView result = webUserAuthService.refresh(req.refreshToken());
+        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
+                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
     }
 
     @GetMapping("/me")

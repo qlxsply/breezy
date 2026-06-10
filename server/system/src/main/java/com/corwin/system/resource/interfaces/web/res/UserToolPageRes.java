@@ -1,21 +1,17 @@
 package com.corwin.system.resource.interfaces.web.res;
 
 /**
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/6/6
  */
-public record RegistryResourceRes(
+public record UserToolPageRes(
         String id,
-        String parentId,
         String name,
         String icon,
         String description,
         String code,
-        String type,
-        String scope,
-        String openMode,
-        String url,
-        String loadTarget,
-        int orderNo,
+        String path,
+        String component,
+        int sortNo,
         String level,
         boolean enabled,
         boolean guestAccess

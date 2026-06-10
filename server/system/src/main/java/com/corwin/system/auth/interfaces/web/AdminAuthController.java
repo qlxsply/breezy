@@ -42,7 +42,8 @@ public class AdminAuthController {
     @PermitAll
     public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
         LoginView result = authService.login(new LoginCommand(req.account(), req.password()));
-        return ApiResponse.ok(new LoginResponseRes(result.token(), toAuthDto(result.user())));
+        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
+                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
     }
 
     @GetMapping("/me")
