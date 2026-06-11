@@ -10,9 +10,11 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:corwin": "vite --mode corwin",
     "dev:test": "vite --mode test",
     "dev:prod": "vite --mode production",
     "build": "vue-tsc -p tsconfig.json --noEmit && vite build",
+    "build:corwin": "vue-tsc -p tsconfig.json --noEmit && vite build --mode corwin",
     "build:test": "vue-tsc -p tsconfig.json --noEmit && vite build --mode test",
     "build:prod": "vue-tsc -p tsconfig.json --noEmit && vite build --mode production",
     "preview": "vite preview",

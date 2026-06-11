@@ -179,7 +179,7 @@
             <id>corwin</id>
             <properties>
                 <env.active>corwin</env.active>
-                <frontend.build.skip>true</frontend.build.skip>
+                <frontend.build.skip>false</frontend.build.skip>
             </properties>
         </profile>
 
