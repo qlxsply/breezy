@@ -161,7 +161,6 @@
 import { nextTick, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import type { AuthUserType } from "../api/auth";
 import { login, resolveLandingPathForUser } from "../registry/auth.registry";
 import { refreshUserToolPermissions } from "../registry/user-tool-permissions.registry";
 import { refreshUserToolsLoaded } from "../registry/user-tools.registry";
@@ -177,14 +176,14 @@ const submitting = ref(false);
 const passwordVisible = ref(false);
 const usernameInput = ref<{ focus: () => void } | null>(null);
 
-function resolveRedirectPath(userType: AuthUserType): string {
+function resolveRedirectPath(): string {
   const redirect = typeof route.query.redirect === "string" ? route.query.redirect.trim() : "";
 
   if (!redirect) {
-    return resolveLandingPathForUser(userType);
+    return resolveLandingPathForUser("EXTERNAL");
   }
 
-  return redirect.startsWith("/admin") ? resolveLandingPathForUser(userType) : redirect;
+  return redirect.startsWith("/admin") ? resolveLandingPathForUser("EXTERNAL") : redirect;
 }
 
 async function submit() {
@@ -197,12 +196,12 @@ async function submit() {
     submitting.value = true;
     error.value = "";
 
-    const current = await login("external", username.value.trim(), password.value);
+    await login(username.value.trim(), password.value);
 
     await refreshUserToolsLoaded();
     await refreshUserToolPermissions();
     await initDynamicRoutes();
-    await router.push({ path: resolveRedirectPath(current.userType) });
+    await router.push({ path: resolveRedirectPath() });
   } catch (err) {
     error.value = err instanceof Error ? err.message : "登录失败";
   } finally {

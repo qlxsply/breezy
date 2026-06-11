@@ -39,7 +39,7 @@ const showHomeLink = computed(() =>
 );
 
 function goHome() {
-  router.replace({ name: "home" });
+  router.replace({ name: "admin-workbench" });
 }
 </script>
 

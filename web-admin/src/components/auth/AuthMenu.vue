@@ -58,8 +58,7 @@ const dropdownOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
 
 function openLoginPage() {
-  const target = route.path.startsWith("/admin") ? "/admin/login" : "/login";
-  void router.push({ path: target, query: { redirect: route.fullPath } });
+  void router.push({ path: "/admin/login", query: { redirect: route.fullPath } });
 }
 
 function toggleDropdown() {
@@ -68,15 +67,14 @@ function toggleDropdown() {
 
 async function onLogout() {
   dropdownOpen.value = false;
-  const redirectPath = route.path.startsWith("/admin") ? "/admin/login" : "/";
   await logout();
   await refreshPermissions();
-  router.push({ path: redirectPath });
+  router.push({ path: "/admin/login" });
 }
 
 function onProfile() {
   dropdownOpen.value = false;
-  router.push({ path: "/profile", state: { fromHome: true } });
+  router.push({ path: "/admin/profile" });
 }
 
 function onClickOutside(e: MouseEvent) {

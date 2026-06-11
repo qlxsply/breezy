@@ -1,10 +1,10 @@
 // /src/registry/auth.registry.ts
 import { computed, ref } from "vue";
 
-import type { AuthSpace, AuthUser, AuthUserType } from "../api/auth";
+import type { AuthUser, AuthUserType } from "../api/auth";
 import { getMe, login as loginApi, logout as logoutApi } from "../api/auth";
 import type { UserConfigItem } from "../api/configs";
-import { getAuthScope, getAuthToken, getRefreshToken, setAuthScope } from "../utils/authStorage";
+import { getAuthScope, getAuthToken, getRefreshToken } from "../utils/authStorage";
 import {
   applyExternalAuthTokens,
   clearAuthSession,
@@ -47,8 +47,7 @@ export function getCurrentUserType(): AuthUserType {
   return currentUser.value?.userType || "GUEST";
 }
 
-export function resolveLandingPathForUser(userType: AuthUserType): string {
-  void userType;
+export function resolveLandingPathForUser(_userType: AuthUserType): string {
   return "/";
 }
 
@@ -115,24 +114,19 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
 }
 
 export async function login(
-  scope: AuthSpace,
   username: string,
   password: string,
 ): Promise<AuthUser> {
-  const resp = await loginApi(scope, username, password);
+  const resp = await loginApi("external", username, password);
   if (!resp || !resp.token || !resp.user) {
     throw new Error("登录响应无效");
   }
-  if (scope === "external") {
-    applyExternalAuthTokens({
-      accessToken: resp.token,
-      refreshToken: resp.refreshToken,
-      accessTokenExpiresAt: resp.accessTokenExpiresAt,
-      refreshTokenExpiresAt: resp.refreshTokenExpiresAt,
-    });
-  } else {
-    setAuthScope(scope);
-  }
+  applyExternalAuthTokens({
+    accessToken: resp.token,
+    refreshToken: resp.refreshToken,
+    accessTokenExpiresAt: resp.accessTokenExpiresAt,
+    refreshTokenExpiresAt: resp.refreshTokenExpiresAt,
+  });
 
   await refreshUserToolPermissions();
 
@@ -152,7 +146,7 @@ export async function login(
 export async function logout(): Promise<void> {
   try {
     await removeWebPushSubscription();
-    await logoutApi(getAuthScope());
+    await logoutApi("external");
   } finally {
     clearAuthSession();
     authState.loaded = false;

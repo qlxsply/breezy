@@ -3,7 +3,7 @@ import type { UserConfigItem } from "./configs";
 import { API_BASE_URL, get, post, put } from "./http";
 
 export type AuthUserType = "INTERNAL" | "EXTERNAL" | "GUEST";
-export type AuthSpace = "internal" | "external";
+export type AuthSpace = "external";
 
 export interface AuthUser {
   id: string | null;
@@ -37,7 +37,8 @@ interface LoginResponsePayload {
 }
 
 function authBase(space: AuthSpace): string {
-  return space === "internal" ? "/admin/auth" : "/auth";
+  void space;
+  return "/auth";
 }
 
 export async function login(

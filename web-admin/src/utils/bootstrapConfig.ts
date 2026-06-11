@@ -50,7 +50,7 @@ export function getBootstrapConfig(): BootstrapConfig {
   };
 }
 
-export function resolveBootstrapUrl(defaultPath = "/api/registry"): string {
+export function resolveBootstrapUrl(defaultPath = "/api/admin/menu-resources"): string {
   const cfg = getBootstrapConfig();
   if (cfg.bootstrapUrl) return cfg.bootstrapUrl;
 

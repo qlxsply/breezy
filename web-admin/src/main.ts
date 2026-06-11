@@ -8,18 +8,20 @@ import { createApp } from "vue";
 
 import App from "./App.vue";
 import { BzUi } from "./components/bz";
-import { ensureAuthLoaded } from "./registry/auth.registry";
+import { ensureAuthLoaded, getCurrentUserType } from "./registry/auth.registry";
 import { ensureRegistryLoaded } from "./registry/bootstrap";
 import { ensurePermissionsLoaded } from "./registry/permissions.registry";
 import { initSseLifecycle } from "./registry/sse.registry";
 import router, { initDynamicRoutes } from "./router";
 
 async function bootstrap(): Promise<void> {
-  // 初始化动态路由
-  await initDynamicRoutes();
-  await ensureRegistryLoaded();
   await ensureAuthLoaded();
-  await ensurePermissionsLoaded();
+
+  if (getCurrentUserType() === "INTERNAL") {
+    await initDynamicRoutes();
+    await ensureRegistryLoaded();
+    await ensurePermissionsLoaded();
+  }
 
   // 初始化 SSE 生命周期
   initSseLifecycle();

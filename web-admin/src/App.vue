@@ -55,7 +55,7 @@ const layoutMode = computed<LayoutMode>(() => {
 
 const headerConfig = computed<HeaderConfig>(() => {
   const metaHeader = (route.meta?.header as HeaderConfig | undefined) ?? {};
-  if (route.name === "home") {
+  if (route.name === "admin-workbench") {
     return { ...metaHeader, showHome: false };
   }
   if (route.name === "not-found") {

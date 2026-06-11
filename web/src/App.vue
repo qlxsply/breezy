@@ -22,8 +22,6 @@
   <LoginDialog
     v-if="loginDialogOpen"
     :error="loginDialogError"
-    initial-mode="external"
-    :allow-scope-switch="false"
     @close="closeLoginDialog"
     @submit="handleLoginDialogSubmit"
   />
@@ -80,13 +78,9 @@ const headerConfig = computed<HeaderConfig>(() => {
   return { ...metaHeader, showHome: metaHeader.showHome ?? true };
 });
 
-async function handleLoginDialogSubmit(payload: {
-  scope: "internal" | "external";
-  username: string;
-  password: string;
-}) {
+async function handleLoginDialogSubmit(payload: { username: string; password: string }) {
   try {
-    await login("external", payload.username, payload.password);
+    await login(payload.username, payload.password);
     await refreshUserToolsLoaded();
     await refreshUserToolPermissions();
     await initDynamicRoutes();

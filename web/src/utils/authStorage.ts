@@ -6,7 +6,7 @@ const ACCESS_TOKEN_EXPIRES_AT_KEY = "breezy:auth:access-token-expires-at";
 const REFRESH_TOKEN_EXPIRES_AT_KEY = "breezy:auth:refresh-token-expires-at";
 const SCOPE_KEY = "breezy:auth:scope";
 
-export type AuthScope = "internal" | "external";
+export type AuthScope = "external";
 
 export function getAuthToken(): string {
   if (typeof window === "undefined") return "";
@@ -49,9 +49,8 @@ export function setRefreshTokenExpiresAt(expiresAt: string): void {
 }
 
 export function getAuthScope(): AuthScope {
-  if (typeof window === "undefined") return "external";
-  const value = window.localStorage.getItem(SCOPE_KEY);
-  return value === "internal" ? "internal" : "external";
+  void SCOPE_KEY;
+  return "external";
 }
 
 export function setAuthScope(scope: AuthScope): void {

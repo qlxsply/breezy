@@ -3,7 +3,7 @@
     scope="internal"
     form-title="后台登录"
     return-label="返回首页"
-    return-to="/"
+    return-to="/admin"
   />
 </template>
 

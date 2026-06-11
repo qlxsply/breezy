@@ -56,24 +56,6 @@ function adminMeta(
 
 const staticRoutes: RouteRecordRaw[] = [
   {
-    path: "/",
-    name: "home",
-    component: () => import("../pages/HomePage.vue"),
-    meta: { header: { showHome: false } },
-  },
-  {
-    path: "/login",
-    name: "external-login",
-    component: () => import("../pages/ExternalLoginPage.vue"),
-    meta: { layout: "blank" },
-  },
-  {
-    path: "/register",
-    name: "external-register",
-    component: () => import("../pages/ExternalRegisterPage.vue"),
-    meta: { layout: "blank" },
-  },
-  {
     path: "/admin/login",
     name: "admin-login",
     component: () => import("../pages/AdminLoginPage.vue"),
@@ -223,74 +205,6 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/datasource",
-    name: "tools-datasource",
-    component: () => import("../pages/DataSourceAdminPage.vue"),
-    meta: { header: { prefix: "工具", title: "数据源管理" }, appArea: "tool" },
-  },
-  {
-    path: "/database-schemas",
-    name: "tools-database-schema",
-    component: () => import("../pages/DatabaseSchemaPage.vue"),
-    meta: { header: { prefix: "工具", title: "数据库管理" }, appArea: "tool" },
-  },
-  {
-    path: "/storage",
-    name: "tools-storage",
-    component: () => import("../pages/StoragePage.vue"),
-    meta: { header: { prefix: "工具", title: "文件存储" }, appArea: "tool" },
-  },
-  {
-    path: "/schemaforge",
-    name: "tools-schemaforge",
-    component: () => import("../pages/SchemaForgePage.vue"),
-    meta: { header: { prefix: "工具", title: "结构工厂" }, appArea: "tool" },
-  },
-  {
-    path: "/jsonfmt",
-    name: "tools-jsonfmt",
-    component: () => import("../pages/JsonFormatterPage.vue"),
-    meta: { header: { prefix: "工具", title: "JSON 格式化" }, appArea: "tool" },
-  },
-  {
-    path: "/todo",
-    name: "tools-todo",
-    component: () => import("../pages/TodoBoardPage.vue"),
-    meta: { header: { prefix: "工具", title: "待处理事项" }, appArea: "tool" },
-  },
-  {
-    path: "/todo/all",
-    name: "tools-todo-all",
-    component: () => import("../pages/TodoAllPage.vue"),
-    meta: {
-      header: { prefix: "工具", title: "待办全部查看" },
-      permissionCode: "tdo.use",
-      appArea: "tool",
-    },
-  },
-  {
-    path: "/database-schemas/:id/metadata",
-    name: "tools-metadata-browser",
-    component: () => import("../pages/MetadataBrowserPage.vue"),
-    meta: {
-      header: { prefix: "工具", title: "元数据浏览" },
-      permissionCode: "mdb.meta.view",
-      appArea: "tool",
-    },
-  },
-  {
-    path: "/clinic/management",
-    name: "clinic-management",
-    component: () => import("../pages/clinic/ClinicManagementPage.vue"),
-    meta: { header: { prefix: "工具", title: "诊所管理" }, appArea: "tool" },
-  },
-  {
-    path: "/profile",
-    name: "profile",
-    component: () => import("../pages/ProfilePage.vue"),
-    meta: { header: { prefix: "个人", title: "Profile" }, appArea: "info" },
-  },
-  {
     path: "/:pathMatch(.*)*",
     name: "not-found",
     component: () => import("../pages/NotFoundPage.vue"),
@@ -313,9 +227,10 @@ function resolveHeaderPrefix(resource: ResourceEntry): string {
 }
 
 function buildRouteMeta(resource: ResourceEntry): RouteMeta {
+  const isAdminPage = resource.url.startsWith("/admin");
   return {
     appArea: resource.scope === "TOOL" ? "tool" : resource.scope === "SETTING" ? "setting" : "info",
-    layout: resource.scope === "SETTING" ? "admin" : "default",
+    layout: resource.scope === "SETTING" || isAdminPage ? "admin" : "default",
     header: {
       prefix: resolveHeaderPrefix(resource),
       title: resource.name,
@@ -326,18 +241,11 @@ function buildRouteMeta(resource: ResourceEntry): RouteMeta {
 function resolveRouteArea(
   to: { name?: unknown; path: string; meta?: Record<string, unknown> },
   target?: ResourceEntry,
-): "public" | "tool" | "setting" | "info" | "unknown" {
-  if (
-    to.name === "home" ||
-    to.name === "not-found" ||
-    to.name === "profile" ||
-    to.name === "external-login" ||
-    to.name === "admin-login"
-  ) {
+): "public" | "setting" | "info" | "unknown" {
+  if (to.name === "not-found" || to.name === "admin-login") {
     return "public";
   }
   if (target) {
-    if (target.scope === "TOOL") return "tool";
     if (target.scope === "SETTING") return "setting";
     if (target.scope === "INFO") return "info";
   }
@@ -345,11 +253,10 @@ function resolveRouteArea(
     return "setting";
   }
   const appArea = typeof to.meta?.appArea === "string" ? to.meta.appArea : "";
-  if (appArea === "tool" || appArea === "setting" || appArea === "info") {
+  if (appArea === "setting" || appArea === "info") {
     return appArea;
   }
   const name = typeof to.name === "string" ? to.name : "";
-  if (name.startsWith("tools-") || name === "clinic-management") return "tool";
   if (name.startsWith("settings-") || name.startsWith("admin-")) return "setting";
   return "unknown";
 }
@@ -364,6 +271,7 @@ function buildDynamicRoutesFromResources(): RouteRecordRaw[] {
     if (resource.openMode !== "PAGE") return;
     if (!resource.url) return;
     if (!resource.loadTarget) return;
+    if (!resource.url.startsWith("/admin")) return;
     if (staticRoutePaths.has(resource.url)) return;
     if (staticRouteNames.has(resource.id)) return;
 
@@ -448,22 +356,22 @@ router.beforeEach(async (to) => {
   const routeArea = resolveRouteArea(to, target);
   const permissionCode = typeof to.meta.permissionCode === "string" ? to.meta.permissionCode : "";
 
-  if (to.name === "external-login" || to.name === "admin-login") {
-    return currentUserType === "GUEST"
-      ? true
-      : { path: resolveLandingPathForAuthenticatedUser(currentUserType), replace: true };
+  if (to.name === "admin-login") {
+    if (currentUserType === "GUEST") {
+      return true;
+    }
+    if (currentUserType === "INTERNAL") {
+      return { path: resolveLandingPathForAuthenticatedUser(currentUserType), replace: true };
+    }
+    return { name: "not-found", replace: true };
   }
 
   if (currentUserType === "GUEST" && routeArea === "setting") {
     return { name: "admin-login", replace: true, query: { redirect: to.fullPath } };
   }
 
-  if (currentUserType === "INTERNAL" && (to.name === "home" || routeArea === "tool")) {
-    return { path: INTERNAL_USER_LANDING_PATH, replace: true };
-  }
-
   if (currentUserType === "EXTERNAL" && routeArea === "setting") {
-    return { name: "home", replace: true };
+    return { name: "not-found", replace: true };
   }
 
   if (to.meta?.selfServiceAdmin === true) {
@@ -478,7 +386,7 @@ router.beforeEach(async (to) => {
     return currentUserType === "INTERNAL" ? true : { name: "not-found", replace: true };
   }
 
-  if (to.name === "home" || to.name === "not-found") return true;
+  if (to.name === "not-found") return true;
 
   if (target) {
     if (hasMenuAccess(target, resourceMap)) return true;
@@ -502,7 +410,7 @@ export default router;
 function resolveLandingPathForAuthenticatedUser(
   userType: ReturnType<typeof getCurrentUserType>,
 ): string {
-  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/";
+  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/admin/login";
 }
 
 export function resolveAdminSectionMeta(

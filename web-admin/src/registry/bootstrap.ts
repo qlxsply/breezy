@@ -56,7 +56,7 @@ export async function refreshRegistryLoaded(): Promise<void> {
 }
 
 async function fetchRegistryPayload(): Promise<{ resources: ResourceEntry[] } | null> {
-  const url = resolveBootstrapUrl(`${API_BASE_URL}/registry`);
+  const url = resolveBootstrapUrl(`${API_BASE_URL}/admin/menu-resources`);
   if (!url) return null;
 
   const headers = new Headers({ Accept: "application/json" });
@@ -94,9 +94,10 @@ function normalizeResources(raw: unknown): ResourceEntry[] {
       const code = stringOr(record.code ?? record.shortcut ?? record.cmd, "").trim();
       if (!code) return null;
 
-      const type = normalizeType(record.type);
-      const scope = normalizeScope(record.scope, type);
-      const openMode = normalizeOpenMode(record.openMode, type);
+      const rawType = String(record.type ?? "").toUpperCase();
+      const type = normalizeType(rawType);
+      const scope = normalizeScope(record.scope, type, record.url ?? record.path, rawType);
+      const openMode = normalizeOpenMode(record.openMode, type, rawType);
       const level = normalizeLevel(record.level, record.system);
 
       const rawParent = record.parentId ?? record.parent_id ?? null;
@@ -136,20 +137,34 @@ function toNumber(value: unknown, fallback: number): number {
   return Number.isFinite(num) ? num : fallback;
 }
 
-function normalizeType(value: unknown): ResourceType {
-  const raw = String(value ?? "").toUpperCase();
+function normalizeType(raw: string): ResourceType {
   if (raw === "BUTTON" || raw === "FEATURE" || raw === "DATA") return raw as ResourceType;
   return "MENU";
 }
 
-function normalizeScope(value: unknown, type: ResourceType): ResourceScope {
+function normalizeScope(
+  value: unknown,
+  type: ResourceType,
+  urlValue: unknown,
+  rawType: string,
+): ResourceScope {
   if (type !== "MENU") return "NONE";
+  if (rawType === "DIRECTORY") {
+    return "SETTING";
+  }
   const raw = String(value ?? "").toUpperCase();
   if (raw === "TOOL" || raw === "SETTING" || raw === "INFO") return raw as ResourceScope;
+  const url = String(urlValue ?? "").trim();
+  if (url.startsWith("/admin")) return "SETTING";
   return "NONE";
 }
 
-function normalizeOpenMode(value: unknown, type: ResourceType): ResourceOpenMode {
+function normalizeOpenMode(
+  value: unknown,
+  type: ResourceType,
+  rawType: string,
+): ResourceOpenMode {
+  if (rawType === "DIRECTORY") return "NONE";
   const raw = String(value ?? "").toUpperCase();
   if (raw === "MODAL" || raw === "PAGE") return raw as ResourceOpenMode;
   if (raw === "NONE") return "NONE";

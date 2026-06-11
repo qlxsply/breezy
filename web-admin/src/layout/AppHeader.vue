@@ -5,7 +5,7 @@
     <RouterLink
       v-if="props.showHome"
       class="home-btn"
-      :to="{ name: 'home' }"
+      :to="{ name: 'admin-workbench' }"
       title="返回主页"
     >
       <svg

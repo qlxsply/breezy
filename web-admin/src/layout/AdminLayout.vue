@@ -883,7 +883,7 @@ function isAdminMenuResource(resource: ResourceEntry): boolean {
     return true;
   }
 
-  return resource.scope === "SETTING" && Boolean(resource.url?.startsWith("/admin"));
+  return Boolean(resource.url?.startsWith("/admin"));
 }
 
 function resolveMenuNodeType(resource: ResourceEntry): MenuNodeType {
