@@ -9,6 +9,7 @@ import com.corwin.system.auth.interfaces.web.req.LoginReq;
 import com.corwin.system.auth.interfaces.web.req.RefreshTokenReq;
 import com.corwin.system.auth.interfaces.web.res.AuthUserRes;
 import com.corwin.system.auth.interfaces.web.res.LoginResponseRes;
+import com.corwin.system.auth.interfaces.web.res.RefreshTokenResponseRes;
 import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.auth.published.PermitAll;
 import com.corwin.system.resource.published.ApiMeta;
@@ -19,7 +20,12 @@ import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
 import com.corwin.system.webuser.application.service.WebUserAuthService;
 import com.corwin.system.webuser.application.view.WebUserAuthView;
 import com.corwin.system.webuser.application.view.WebUserLoginView;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -49,10 +55,10 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @PermitAll
-    public ApiResponse<LoginResponseRes> refresh(@RequestBody RefreshTokenReq req) {
+    public ApiResponse<RefreshTokenResponseRes> refresh(@RequestBody RefreshTokenReq req) {
         WebUserLoginView result = webUserAuthService.refresh(req.refreshToken());
-        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
-                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
+        return ApiResponse.ok(new RefreshTokenResponseRes(result.token(), result.refreshToken(),
+                result.accessTokenExpiresAt(), result.refreshTokenExpiresAt()));
     }
 
     @GetMapping("/me")

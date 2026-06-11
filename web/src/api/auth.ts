@@ -21,6 +21,13 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
+export interface RefreshTokenResponse {
+  token: string;
+  refreshToken: string;
+  accessTokenExpiresAt: string;
+  refreshTokenExpiresAt: string;
+}
+
 interface AuthUserPayload {
   id: string | null;
   account: string | null;
@@ -34,6 +41,13 @@ interface LoginResponsePayload {
   accessTokenExpiresAt?: string | null;
   refreshTokenExpiresAt?: string | null;
   user: AuthUserPayload;
+}
+
+interface RefreshTokenResponsePayload {
+  token: string;
+  refreshToken?: string | null;
+  accessTokenExpiresAt?: string | null;
+  refreshTokenExpiresAt?: string | null;
 }
 
 function authBase(space: AuthSpace): string {
@@ -59,7 +73,7 @@ export async function login(
   };
 }
 
-export async function refreshExternalToken(refreshToken: string): Promise<LoginResponse> {
+export async function refreshExternalToken(refreshToken: string): Promise<RefreshTokenResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: "POST",
     headers: {
@@ -75,7 +89,7 @@ export async function refreshExternalToken(refreshToken: string): Promise<LoginR
     success: boolean;
     code: string;
     msg: string;
-    data: LoginResponsePayload;
+    data: RefreshTokenResponsePayload;
   };
   if (!envelope.success) {
     throw new Error(envelope.msg || `API Error code=${envelope.code}`);
@@ -86,7 +100,6 @@ export async function refreshExternalToken(refreshToken: string): Promise<LoginR
     refreshToken: payload.refreshToken || "",
     accessTokenExpiresAt: payload.accessTokenExpiresAt || "",
     refreshTokenExpiresAt: payload.refreshTokenExpiresAt || "",
-    user: toAuthUser(payload.user),
   };
 }
 
