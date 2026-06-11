@@ -20,7 +20,7 @@ export interface ApiResponse<T> {
  * - 如果前后端同域部署，通常为空即可
  * - 如果后端是 /api 前缀，把 baseURL 改成 "/api"
  */
-export const API_BASE_URL = "http://localhost:8910/api";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8910/api";
 const baseURL = API_BASE_URL;
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
