@@ -19,11 +19,16 @@
       </main>
     </div>
   </RouterView>
-  <LoginDialog
+  <AuthDrawer
     v-if="loginDialogOpen"
-    :error="loginDialogError"
+    :mode="loginDialogMode"
+    :message="loginDialogError"
+    :message-type="loginDialogMessageType"
+    :submitting="authSubmitting"
     @close="closeLoginDialog"
-    @submit="handleLoginDialogSubmit"
+    @switch-mode="setLoginDialogMode"
+    @submit-login="handleLoginDialogSubmit"
+    @submit-register="handleRegisterDialogSubmit"
   />
   <StatusBar />
   <BzMessageHost />
@@ -31,17 +36,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import LoginDialog from "./components/auth/LoginDialog.vue";
+import { registerExternalUser } from "./api/public-users";
+import AuthDrawer from "./components/auth/AuthDrawer.vue";
 import StatusBar from "./components/common/StatusBar.vue";
 import AppHeader from "./layout/AppHeader.vue";
 import { login } from "./registry/auth.registry";
 import {
   closeLoginDialog,
+  getLoginDialogRedirectPath,
   setLoginDialogError,
+  setLoginDialogMode,
+  setLoginDialogSuccess,
   useLoginDialogError,
+  useLoginDialogMessageType,
+  useLoginDialogMode,
   useLoginDialogOpen,
 } from "./registry/auth-dialog.registry";
 import { refreshUserToolPermissions } from "./registry/user-tool-permissions.registry";
@@ -58,6 +69,9 @@ const route = useRoute();
 const router = useRouter();
 const loginDialogOpen = useLoginDialogOpen();
 const loginDialogError = useLoginDialogError();
+const loginDialogMode = useLoginDialogMode();
+const loginDialogMessageType = useLoginDialogMessageType();
+const authSubmitting = ref(false);
 
 type LayoutMode = "default" | "blank";
 
@@ -80,18 +94,61 @@ const headerConfig = computed<HeaderConfig>(() => {
 
 async function handleLoginDialogSubmit(payload: { username: string; password: string }) {
   try {
+    authSubmitting.value = true;
+    if (!payload.username || !payload.password) {
+      setLoginDialogError("用户名和密码不能为空");
+      return;
+    }
+
     await login(payload.username, payload.password);
     await refreshUserToolsLoaded();
     await refreshUserToolPermissions();
     await initDynamicRoutes();
+
+    const redirectPath = getLoginDialogRedirectPath();
     closeLoginDialog();
-    await router.replace({
-      path: route.fullPath,
-      query: route.query,
-      hash: route.hash,
-    });
+
+    if (redirectPath && !redirectPath.startsWith("/admin")) {
+      await router.replace(redirectPath);
+      return;
+    }
+
+    await router.replace({ path: route.fullPath, query: route.query, hash: route.hash });
   } catch (error) {
     setLoginDialogError(error instanceof Error ? error.message : "登录失败");
+  } finally {
+    authSubmitting.value = false;
+  }
+}
+
+async function handleRegisterDialogSubmit(payload: {
+  username: string;
+  password: string;
+  confirmPassword: string;
+}) {
+  try {
+    authSubmitting.value = true;
+    if (!payload.username || !payload.password || !payload.confirmPassword) {
+      setLoginDialogError("用户名、密码和确认密码不能为空");
+      return;
+    }
+
+    if (payload.password.trim() !== payload.confirmPassword.trim()) {
+      setLoginDialogError("两次输入的密码不一致");
+      return;
+    }
+
+    await registerExternalUser({
+      username: payload.username,
+      password: payload.password.trim(),
+    });
+
+    setLoginDialogMode("login");
+    setLoginDialogSuccess("注册成功，请使用新账户登录。");
+  } catch (error) {
+    setLoginDialogError(error instanceof Error ? error.message : "注册失败");
+  } finally {
+    authSubmitting.value = false;
   }
 }
 </script>
@@ -105,13 +162,13 @@ async function handleLoginDialogSubmit(payload: { username: string; password: st
 .app-content {
   height: 100vh;
   overflow: auto;
-  padding: calc(var(--app-header-height) + 16px) 0 calc(var(--status-bar-height) + 16px);
+  padding: calc(var(--app-header-height)) 0 calc(var(--status-bar-height));
   box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .app-content {
-    padding: calc(var(--app-header-height) + 12px) 0 calc(var(--status-bar-height) + 12px);
+    padding: calc(var(--app-header-height)) 0 calc(var(--status-bar-height));
   }
 }
 </style>

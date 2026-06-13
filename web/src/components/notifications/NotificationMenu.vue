@@ -6,7 +6,9 @@
   >
     <button
       class="icon-btn"
+      type="button"
       aria-label="通知"
+      title="通知"
       @click="togglePopover"
     >
       <svg
@@ -60,10 +62,9 @@
         />
       </svg>
       <span
-        v-if="displayCount"
-        class="badge"
-        >{{ displayCount }}</span
-      >
+        v-if="hasUnread"
+        class="notify-dot"
+      ></span>
     </button>
 
     <div
@@ -330,11 +331,6 @@ const latestDeliveryText = computed(() => {
   return `${latestDelivery.status} (${latestDelivery.priority}/${latestDelivery.msgType})`;
 });
 
-const displayCount = computed(() => {
-  if (unreadCount.value <= 0) return "";
-  return unreadCount.value > 99 ? "99+" : String(unreadCount.value);
-});
-
 async function togglePopover() {
   open.value = !open.value;
   if (open.value) {
@@ -506,50 +502,68 @@ onUnmounted(() => {
 <style scoped>
 .notify {
   position: relative;
+  z-index: 4;
 }
 
 .icon-btn {
-  position: relative;
-  border: 1px solid var(--border-color);
-  background: #fff;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--text-main);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.icon-btn:focus {
+  outline: none;
+}
+
+.icon-btn:focus-visible {
+  outline: none;
 }
 
 .bell-icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   color: var(--text-main);
+  transition: transform 0.18s ease;
 }
 
-.badge {
+.icon-btn:hover .bell-icon {
+  transform: scale(1.12);
+}
+
+.notify-dot {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
   background: #ef4444;
-  color: #fff;
-  font-size: 11px;
-  padding: 2px 6px;
   border-radius: 999px;
-  font-weight: 800;
 }
 
 .popover {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
-  width: 320px;
+  width: 360px;
   background: #fff;
   border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
   overflow: hidden;
-  z-index: 30;
+  z-index: 8;
 }
 
 .popover-header {

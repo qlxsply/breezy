@@ -200,6 +200,10 @@ onUnmounted(() => {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(37, 99, 235, 0.12), transparent 32%),
+    radial-gradient(circle at 84% 78%, rgba(14, 165, 233, 0.13), transparent 30%),
+    #f6f8fc;
 }
 
 .main-container {
@@ -207,7 +211,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 12vh;
+  padding-top: 14vh;
 }
 
 .home-entry-bar {

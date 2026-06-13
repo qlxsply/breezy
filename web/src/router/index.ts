@@ -141,7 +141,8 @@ function resolveRouteArea(
     to.name === "home" ||
     to.name === "not-found" ||
     to.name === "profile" ||
-    to.name === "external-login"
+    to.name === "external-login" ||
+    to.name === "external-register"
   ) {
     return "public";
   }
@@ -251,7 +252,7 @@ router.beforeEach(async (to) => {
   const routeArea = resolveRouteArea(to, target);
   const permissionCode = typeof to.meta.permissionCode === "string" ? to.meta.permissionCode : "";
 
-  if (to.name === "external-login") {
+  if (to.name === "external-login" || to.name === "external-register") {
     return currentUserType === "GUEST" ? true : { path: "/", replace: true };
   }
 

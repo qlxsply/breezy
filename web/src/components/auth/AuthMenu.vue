@@ -4,23 +4,21 @@
     ref="rootRef"
     class="auth-menu"
   >
-    <button
-      v-if="!isAuthenticated"
-      class="btn"
-      @click="openLoginPage"
-    >
-      登录
-    </button>
+    <div v-if="!isAuthenticated" class="guest-actions">
+      <button class="btn btn-ghost" type="button" @click="openRegisterPanel">注册</button>
+      <button class="btn btn-primary" type="button" @click="openLoginPanel">登录</button>
+    </div>
 
-    <div
+    <button
       v-else
-      class="profile"
+      class="avatar-button"
+      type="button"
+      title="当前用户"
       @click="toggleDropdown"
     >
-      <span class="avatar">👤</span>
-      <span class="name">{{ user?.username || "用户" }}</span>
-      <span class="caret">▾</span>
-    </div>
+      <span class="avatar-face">{{ avatarText }}</span>
+      <span class="avatar-status"></span>
+    </button>
 
     <div
       v-if="dropdownOpen"
@@ -43,10 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { isAuthenticated as authFlag, logout, useAuthUser } from "../../registry/auth.registry";
+import { openLoginDialog, openRegisterDialog } from "../../registry/auth-dialog.registry";
 import { refreshUserToolPermissions } from "../../registry/user-tool-permissions.registry";
 
 const router = useRouter();
@@ -56,9 +55,17 @@ const isAuthenticated = authFlag;
 
 const dropdownOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
+const avatarText = computed(() => {
+  const source = (user.value?.username || "用户").trim();
+  return source.slice(0, 1).toUpperCase() || "用";
+});
 
-function openLoginPage() {
-  void router.push({ path: "/login", query: { redirect: route.fullPath } });
+function openLoginPanel() {
+  openLoginDialog("", route.fullPath);
+}
+
+function openRegisterPanel() {
+  openRegisterDialog(route.fullPath);
 }
 
 function toggleDropdown() {
@@ -93,62 +100,112 @@ onUnmounted(() => document.removeEventListener("mousedown", onClickOutside));
   position: relative;
   display: inline-flex;
   align-items: center;
+  z-index: 4;
+}
+
+.guest-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .btn {
   border: 1px solid var(--border-color);
   background: #fff;
-  padding: 6px 12px;
-  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
-.profile {
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.btn-ghost {
+  color: #334155;
+  background: transparent;
+}
+
+.btn-primary {
+  color: #fff;
+  border-color: transparent;
+  background: #2563eb;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.24);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.avatar-button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: #fff;
 }
 
-.avatar {
-  font-size: 16px;
-}
-
-.name {
+.avatar-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f59e0b 0%, #fb7185 55%, #60a5fa 100%);
+  border-radius: 999px;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.caret {
-  color: var(--text-muted);
+.avatar-status {
+  position: absolute;
+  right: 5px;
+  bottom: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #22c55e;
+  border: 2px solid #ffffff;
 }
 
 .dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   right: 0;
+  width: 220px;
   background: #fff;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 12px 22px -8px rgba(0, 0, 0, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(18px);
   overflow: hidden;
-  min-width: 160px;
-  z-index: 20;
+  z-index: 8;
 }
 
 .dropdown-item {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
+  padding: 13px 16px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-weight: 600;
+  color: var(--text-main);
 }
 
 .dropdown-item:hover {
