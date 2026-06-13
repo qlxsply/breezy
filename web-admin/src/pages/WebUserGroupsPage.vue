@@ -534,8 +534,8 @@ import type { AdminActionItem } from "../types/admin-action";
 import type { DictItem } from "../types/dict-admin";
 import type { NormalFeatureEntry } from "../types/normal-feature";
 import type {
-  NormalFeatureGroupFeatureEntry,
   NormalFeatureGroupEntry,
+  NormalFeatureGroupFeatureEntry,
   SaveNormalFeatureGroupRequest,
 } from "../types/normal-feature-group";
 import type { PageResult } from "../types/page";

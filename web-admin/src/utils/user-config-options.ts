@@ -53,13 +53,21 @@ export const USER_DECIMAL_FORMAT_OPTIONS: UserConfigOptionItem[] = [
   { code: "PLAIN_4", label: "1234.5678 (无千分位，四位小数)", value: "0.0000" },
 ];
 
-function findValue(options: UserConfigOptionItem[], code: string | null | undefined, fallback: string): string {
+function findValue(
+  options: UserConfigOptionItem[],
+  code: string | null | undefined,
+  fallback: string,
+): string {
   if (!code) return fallback;
   const matched = options.find((item) => item.code === code.trim());
   return matched?.value || fallback;
 }
 
-function findLabel(options: UserConfigOptionItem[], code: string | null | undefined, fallback: string): string {
+function findLabel(
+  options: UserConfigOptionItem[],
+  code: string | null | undefined,
+  fallback: string,
+): string {
   if (!code) return fallback;
   const matched = options.find((item) => item.code === code.trim());
   return matched?.label || fallback;

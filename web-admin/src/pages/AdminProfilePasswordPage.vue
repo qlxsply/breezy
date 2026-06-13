@@ -2,7 +2,10 @@
   <div class="admin-page">
     <div class="content">
       <div class="admin-page-stack">
-        <bz-card class="admin-panel admin-table-card" shadow="never">
+        <bz-card
+          class="admin-panel admin-table-card"
+          shadow="never"
+        >
           <template #header>
             <div class="admin-table-header">
               <div class="admin-table-title">修改密码</div>
@@ -10,19 +13,42 @@
           </template>
 
           <div class="password-layout">
-            <bz-form label-position="top" class="password-form">
+            <bz-form
+              label-position="top"
+              class="password-form"
+            >
               <bz-form-item label="当前密码">
-                <bz-input v-model="form.oldPassword" type="password" show-password placeholder="请输入当前密码" />
+                <bz-input
+                  v-model="form.oldPassword"
+                  type="password"
+                  show-password
+                  placeholder="请输入当前密码"
+                />
               </bz-form-item>
               <bz-form-item label="新密码">
-                <bz-input v-model="form.newPassword" type="password" show-password placeholder="请输入新密码" />
+                <bz-input
+                  v-model="form.newPassword"
+                  type="password"
+                  show-password
+                  placeholder="请输入新密码"
+                />
               </bz-form-item>
               <bz-form-item label="确认新密码">
-                <bz-input v-model="form.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+                <bz-input
+                  v-model="form.confirmPassword"
+                  type="password"
+                  show-password
+                  placeholder="请再次输入新密码"
+                />
               </bz-form-item>
             </bz-form>
             <div class="password-actions">
-              <bz-button type="primary" :loading="saving" @click="submit">确认</bz-button>
+              <bz-button
+                type="primary"
+                :loading="saving"
+                @click="submit"
+                >确认</bz-button
+              >
             </div>
           </div>
         </bz-card>
@@ -68,8 +94,24 @@ async function submit() {
 </script>
 
 <style scoped>
-.content { flex: 1; min-height: 0; width: 100%; overflow-y: auto; box-sizing: border-box; }
-.password-layout { display: grid; gap: 16px; max-width: 520px; }
-.password-form { display: grid; gap: 8px; }
-.password-actions { display: flex; justify-content: flex-end; }
+.content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.password-layout {
+  display: grid;
+  gap: 16px;
+  max-width: 520px;
+}
+.password-form {
+  display: grid;
+  gap: 8px;
+}
+.password-actions {
+  display: flex;
+  justify-content: flex-end;
+}
 </style>

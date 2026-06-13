@@ -1149,7 +1149,10 @@ function toDictLabelMap(items?: DictItem[]): Record<string, string> {
 }
 
 function toDictOptions(items?: DictItem[]): DictOption[] {
-  return (items || []).map((item) => ({ label: item.itemLabel, value: item.itemCode || item.itemValue }));
+  return (items || []).map((item) => ({
+    label: item.itemLabel,
+    value: item.itemCode || item.itemValue,
+  }));
 }
 
 function toStaticDictOptions(items: Array<{ label: string; code: string }>): DictOption[] {

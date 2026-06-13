@@ -294,18 +294,18 @@
         >
           <template #extra
             ><span class="drawer-subtitle"
-              >ID：{{ featureUser?.id || "-" }} / 用户名：{{ featureManagement?.account || "-" }}</span
+              >ID：{{ featureUser?.id || "-" }} / 用户名：{{
+                featureManagement?.account || "-"
+              }}</span
             ></template
           >
           <div
             v-if="featureManagement && featureUser"
             class="feature-manage-layout"
           >
-
             <section class="feature-manage-section">
               <div class="feature-manage-section__head">
                 <div class="feature-manage-section__title">功能分组</div>
-
               </div>
               <div class="feature-group-list">
                 <label

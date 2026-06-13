@@ -6,8 +6,8 @@ import type {
   SaveNormalFeatureUserManagementRequest,
 } from "../types/normal-feature";
 import type {
-  NormalFeatureGroupFeatureEntry,
   NormalFeatureGroupEntry,
+  NormalFeatureGroupFeatureEntry,
   SaveNormalFeatureGroupRequest,
 } from "../types/normal-feature-group";
 import type { PageResult, PageRule, SortRule } from "../types/page";
@@ -63,7 +63,9 @@ function toUserManagementEntry(
   };
 }
 
-function toGroupFeatureEntry(payload: NormalFeatureGroupFeatureEntry): NormalFeatureGroupFeatureEntry {
+function toGroupFeatureEntry(
+  payload: NormalFeatureGroupFeatureEntry,
+): NormalFeatureGroupFeatureEntry {
   return {
     id: String(payload.id),
     code: payload.code,

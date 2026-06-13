@@ -159,11 +159,7 @@ function normalizeScope(
   return "NONE";
 }
 
-function normalizeOpenMode(
-  value: unknown,
-  type: ResourceType,
-  rawType: string,
-): ResourceOpenMode {
+function normalizeOpenMode(value: unknown, type: ResourceType, rawType: string): ResourceOpenMode {
   if (rawType === "DIRECTORY") return "NONE";
   const raw = String(value ?? "").toUpperCase();
   if (raw === "MODAL" || raw === "PAGE") return raw as ResourceOpenMode;

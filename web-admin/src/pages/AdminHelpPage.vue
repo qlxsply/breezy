@@ -2,7 +2,10 @@
   <div class="admin-page">
     <div class="content">
       <div class="admin-page-stack">
-        <bz-card class="admin-panel admin-table-card" shadow="never">
+        <bz-card
+          class="admin-panel admin-table-card"
+          shadow="never"
+        >
           <template #header>
             <div class="admin-table-header">
               <div class="admin-table-title">问题与帮助</div>
@@ -33,8 +36,30 @@
 </template>
 
 <style scoped>
-.content { flex: 1; min-height: 0; width: 100%; overflow-y: auto; box-sizing: border-box; }
-.help-grid { display: grid; gap: 16px; }
-.help-card { border: 1px solid #e5e7eb; border-radius: 16px; background: #fff; padding: 18px; display: grid; gap: 10px; color: #334155; line-height: 1.7; }
-.help-card__title { font-size: 15px; font-weight: 800; color: #0f172a; }
+.content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.help-grid {
+  display: grid;
+  gap: 16px;
+}
+.help-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #fff;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  color: #334155;
+  line-height: 1.7;
+}
+.help-card__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
 </style>

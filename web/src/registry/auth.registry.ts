@@ -113,10 +113,7 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
   return authState.promise;
 }
 
-export async function login(
-  username: string,
-  password: string,
-): Promise<AuthUser> {
+export async function login(username: string, password: string): Promise<AuthUser> {
   const resp = await loginApi("external", username, password);
   if (!resp || !resp.token || !resp.user) {
     throw new Error("登录响应无效");
