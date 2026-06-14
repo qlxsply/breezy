@@ -12,8 +12,8 @@ public class BootstrapDefinitionResources {
 
     private static final String RESOURCES_XML = "bootstarp/resources.xml";
     private static final String RESOURCES_XSD = "bootstarp/resources.xsd";
-    private static final String NORMAL_FEATURES_XML = "bootstarp/normal-features.xml";
-    private static final String NORMAL_FEATURES_XSD = "bootstarp/normal-features.xsd";
+    private static final String USER_FEATURES_XML = "bootstarp/user-features.xml";
+    private static final String USER_FEATURES_XSD = "bootstarp/user-features.xsd";
     private static final String DICTS_XML = "bootstarp/dictionaries.xml";
     private static final String DICTS_XSD = "bootstarp/dictionaries.xsd";
 
@@ -25,12 +25,12 @@ public class BootstrapDefinitionResources {
         return new ClassPathResource(RESOURCES_XSD);
     }
 
-    public Resource normalFeaturesXml() {
-        return new ClassPathResource(NORMAL_FEATURES_XML);
+    public Resource userFeaturesXml() {
+        return new ClassPathResource(USER_FEATURES_XML);
     }
 
-    public Resource normalFeaturesXsd() {
-        return new ClassPathResource(NORMAL_FEATURES_XSD);
+    public Resource userFeaturesXsd() {
+        return new ClassPathResource(USER_FEATURES_XSD);
     }
 
     public Resource dictionariesXml() {

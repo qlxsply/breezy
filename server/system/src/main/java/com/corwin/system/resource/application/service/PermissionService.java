@@ -7,7 +7,6 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.InternalPermissionSessionService;
-import com.corwin.system.normalfeature.application.service.NormalFeatureService;
 import com.corwin.system.resource.application.view.MyPermissionsDetailView;
 import com.corwin.system.resource.domain.model.FunctionPermission;
 import com.corwin.system.resource.domain.model.Permission;
@@ -23,6 +22,7 @@ import com.corwin.system.user.domain.model.User;
 import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.repo.UserRepository;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
+import com.corwin.system.userfeature.application.service.UserFeatureAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +48,7 @@ public class PermissionService {
     private final FunctionPermissionRepository functionPermissionRepository;
     private final ApiPermissionCache apiPermissionCache;
     private final UserRepository userRepository;
-    private final NormalFeatureService normalFeatureService;
+    private final UserFeatureAccessService userFeatureAccessService;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
     public MyPermissionsDetailView getPermissionDetailForCurrent() {
@@ -81,7 +81,7 @@ public class PermissionService {
 
     public Set<String> permissionCodesForUser(Long userId, UserType userType) {
         if (userType == UserType.EXTERNAL) {
-            return normalFeatureService.permissionCodesForNormalUser(userId);
+            return userFeatureAccessService.permissionCodesForExternalUser(userId);
         }
         User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
         if (DefaultUser.isAdmin(userId)) {

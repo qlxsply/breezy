@@ -13,6 +13,8 @@ public interface WebUserRepository extends DomainRepository<WebUser, Long> {
 
     PageData<WebUser> findAll(PageSpec spec);
 
+    PageData<WebUser> page(String keyword, WebUserStatus status, PageSpec spec);
+
     PageData<WebUser> findByStatus(WebUserStatus status, PageSpec spec);
 
     PageData<WebUser> findByKeyword(String keyword, PageSpec spec);

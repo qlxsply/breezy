@@ -364,55 +364,55 @@
                 </buttons>
             </menu>
 
-            <menu code="web-user-stats-center"
-                  name="用户分组"
-                  path="/admin/web-user-stats"
-                  component="pages/WebUserGroupsPage.vue"
+            <menu code="user-feature-package-center"
+                  name="应用包管理"
+                  path="/admin/user-feature-packages"
+                  component="pages/UserFeaturePackagesPage.vue"
                   icon="customer-chart"
                   sortNo="20"
                   visible="true"
                   defaultEntry="true">
                 <buttons>
-                    <button code="web-user-stats-view" name="查看用户分组" sortNo="10" visible="true">
+                    <button code="user-feature-package-view" name="查看应用包" sortNo="10" visible="true">
                         <permissions>
-                            <permission code="nfm.view"/>
+                            <permission code="ufp.view"/>
                         </permissions>
                     </button>
-                    <button code="web-user-stats-edit" name="维护用户分组" sortNo="20" visible="true">
+                    <button code="user-feature-package-edit" name="维护应用包" sortNo="20" visible="true">
                         <permissions>
-                            <permission code="nfm.user.save"/>
+                            <permission code="ufp.edit"/>
                         </permissions>
                     </button>
                 </buttons>
             </menu>
 
-            <menu code="normal-feature-center"
-                  name="功能配置"
-                  path="/admin/normal-features"
-                  component="pages/NormalFeatureAdminPage.vue"
+            <menu code="user-feature-application-center"
+                  name="应用配置"
+                  path="/admin/user-feature-applications"
+                  component="pages/UserFeatureApplicationsPage.vue"
                   icon="spark"
                   sortNo="30"
                   visible="true"
                   defaultEntry="true">
                 <buttons>
-                    <button code="normal-feature-view" name="查看功能" sortNo="10" visible="true">
+                    <button code="user-feature-application-view" name="查看应用配置" sortNo="10" visible="true">
                         <permissions>
-                            <permission code="nfm.view"/>
+                            <permission code="ufa.view"/>
                         </permissions>
                     </button>
-                    <button code="normal-feature-default-save" name="维护默认功能" sortNo="20" visible="true">
+                    <button code="user-feature-application-edit" name="维护应用配置" sortNo="20" visible="true">
                         <permissions>
-                            <permission code="nfm.default.save"/>
+                            <permission code="ufa.edit"/>
                         </permissions>
                     </button>
-                    <button code="normal-feature-user-view" name="查看用户功能授权" sortNo="30" visible="true">
+                    <button code="user-feature-user-view" name="查看用户应用功能授权" sortNo="30" visible="true">
                         <permissions>
-                            <permission code="nfm.user.view"/>
+                            <permission code="ufu.view"/>
                         </permissions>
                     </button>
-                    <button code="normal-feature-user-save" name="维护用户功能授权" sortNo="40" visible="true">
+                    <button code="user-feature-user-edit" name="维护用户应用功能授权" sortNo="40" visible="true">
                         <permissions>
-                            <permission code="nfm.user.save"/>
+                            <permission code="ufu.edit"/>
                         </permissions>
                     </button>
                 </buttons>

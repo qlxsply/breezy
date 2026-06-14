@@ -1,1 +1,0 @@
-delete from sys_normal_feature_user_override;

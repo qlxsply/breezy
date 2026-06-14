@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:simpleType name="AccessScopeType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="FULL"/>
+            <xs:enumeration value="PARTIAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="PermissionRefType">
+        <xs:attribute name="code" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="FeatureRefType">
+        <xs:attribute name="code" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="FeatureNodeType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="permissions" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="permission" type="PermissionRefType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="sortNo" type="xs:int" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="ApplicationNodeType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="features" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="feature" type="FeatureNodeType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="sortNo" type="xs:int" use="optional"/>
+        <xs:attribute name="icon" type="xs:string" use="optional"/>
+        <xs:attribute name="routePath" type="xs:string" use="required"/>
+        <xs:attribute name="componentPath" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="PackageApplicationNodeType">
+        <xs:sequence>
+            <xs:element name="features" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="feature" type="FeatureRefType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="featureAccessScope" type="AccessScopeType" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="PackageNodeType">
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="applications" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="application" type="PackageApplicationNodeType" minOccurs="1" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="packageType" type="xs:string" use="required"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="defaultPackage" type="xs:boolean" use="optional"/>
+        <xs:attribute name="sortNo" type="xs:int" use="optional"/>
+    </xs:complexType>
+
+    <xs:element name="user-features">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="applications" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="application" type="ApplicationNodeType" minOccurs="1" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="packages" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="package" type="PackageNodeType" minOccurs="1" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

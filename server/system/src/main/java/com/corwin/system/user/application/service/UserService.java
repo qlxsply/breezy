@@ -9,10 +9,10 @@ import com.corwin.system.auth.application.command.ChangePasswordCommand;
 import com.corwin.system.auth.application.error.AuthError;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
 import com.corwin.system.auth.published.SecurityContextService;
-import com.corwin.system.normalfeature.application.service.NormalFeatureGroupAdminService;
 import com.corwin.system.user.application.command.RegisterUserCommand;
 import com.corwin.system.user.application.command.UpdateMyProfileCommand;
 import com.corwin.system.user.application.view.UserProfileView;
+import com.corwin.system.userfeature.application.service.UserFeatureAccessService;
 import com.corwin.system.webuser.application.service.WebUserAuthService;
 import com.corwin.system.webuser.application.service.WebUserIdentitySupport;
 import com.corwin.system.webuser.application.service.WebUserLifecycleService;
@@ -49,7 +49,7 @@ public class UserService {
     private final WebUserCurrentIdentityRepository webUserCurrentIdentityRepository;
     private final PasswordPolicyService passwordPolicyService;
     private final SecurityContextService securityContextService;
-    private final NormalFeatureGroupAdminService normalFeatureGroupAdminService;
+    private final UserFeatureAccessService userFeatureAccessService;
     private final WebUserAuthService webUserAuthService;
     private final WebUserLifecycleService webUserLifecycleService;
     private final WebUserIdentitySupport webUserIdentitySupport;
@@ -77,7 +77,7 @@ public class UserService {
                 null, null, user.getId(), identity.getId()));
         user.setPrimaryIdentityId(identity.getId(), username);
         user = webUserRepository.save(user);
-        normalFeatureGroupAdminService.assignDefaultGroupsToUser(user.getId());
+        userFeatureAccessService.assignDefaultPackagesToUser(user.getId());
         webUserLifecycleService.record(user.getId(), WebUserLifecycleEventType.REGISTERED,
                 Map.of("registerMethod", WebUserRegisterMethod.USERNAME_PASSWORD.name()));
         return toView(user, identity.getIdentityValue());

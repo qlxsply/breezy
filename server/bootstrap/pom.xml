@@ -155,8 +155,8 @@
                 <includes>
                     <include>bootstarp/resources.xml</include>
                     <include>bootstarp/resources.xsd</include>
-                    <include>bootstarp/normal-features.xml</include>
-                    <include>bootstarp/normal-features.xsd</include>
+                    <include>bootstarp/user-features.xml</include>
+                    <include>bootstarp/user-features.xsd</include>
                     <include>bootstarp/dictionaries.xml</include>
                     <include>bootstarp/dictionaries.xsd</include>
                     <include>bootstarp/sql/mysql/**</include>

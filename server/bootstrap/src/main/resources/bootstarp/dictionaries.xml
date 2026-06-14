@@ -352,31 +352,11 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
-        <id>dict-type-normal-feature-status</id>
-        <code>NORMAL_FEATURE_STATUS</code>
-        <name>用户功能状态</name>
-        <description>用户功能状态。</description>
-        <enumClass>com.corwin.system.normalfeature.domain.model.NormalFeatureStatus</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
-        <id>dict-type-normal-feature-group-type</id>
-        <code>NORMAL_FEATURE_GROUP_TYPE</code>
-        <name>用户功能分组类型</name>
-        <description>用户功能分组类型。</description>
-        <enumClass>com.corwin.system.normalfeature.domain.model.NormalFeatureGroupType</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
-        <id>dict-type-normal-feature-override-type</id>
-        <code>NORMAL_FEATURE_OVERRIDE_TYPE</code>
-        <name>用户功能覆盖类型</name>
-        <description>用户功能覆盖类型。</description>
-        <enumClass>com.corwin.system.normalfeature.domain.model.NormalFeatureOverrideType</enumClass>
+        <id>dict-type-user-application-package-type</id>
+        <code>USER_APPLICATION_PACKAGE_TYPE</code>
+        <name>用户应用包类型</name>
+        <description>用户应用包类型。</description>
+        <enumClass>com.corwin.system.userfeature.domain.model.UserApplicationPackageType</enumClass>
         <valueType>STRING</valueType>
         <structureType>FLAT</structureType>
         <enabled>true</enabled>

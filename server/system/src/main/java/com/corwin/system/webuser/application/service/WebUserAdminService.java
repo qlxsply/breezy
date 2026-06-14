@@ -36,18 +36,8 @@ public class WebUserAdminService {
     }
 
     public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
-        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
         WebUserStatus normalizedStatus = parseStatus(status);
-        PageData<WebUser> page;
-        if (normalizedStatus != null && normalizedKeyword != null) {
-            page = webUserRepository.findByStatusAndKeyword(normalizedStatus, normalizedKeyword, spec);
-        } else if (normalizedStatus != null) {
-            page = webUserRepository.findByStatus(normalizedStatus, spec);
-        } else if (normalizedKeyword != null) {
-            page = webUserRepository.findByKeyword(normalizedKeyword, spec);
-        } else {
-            page = webUserRepository.findAll(spec);
-        }
+        PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, spec);
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(this::toView).toList());
     }

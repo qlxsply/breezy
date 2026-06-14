@@ -4,10 +4,6 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.system.auth.published.SecurityContextService;
 import com.corwin.system.file.application.service.StaticAssetQueryService;
-import com.corwin.system.normalfeature.domain.model.NormalFeature;
-import com.corwin.system.normalfeature.domain.model.NormalFeaturePermission;
-import com.corwin.system.normalfeature.domain.repo.NormalFeaturePermissionRepository;
-import com.corwin.system.normalfeature.domain.repo.NormalFeatureRepository;
 import com.corwin.system.resource.application.view.AdminMenuResourceView;
 import com.corwin.system.resource.application.view.AdminMenuResourcesView;
 import com.corwin.system.resource.domain.model.Function;
@@ -26,6 +22,8 @@ import com.corwin.system.role.domain.model.RoleMenu;
 import com.corwin.system.role.domain.repo.RoleMenuRepository;
 import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
+import com.corwin.system.userfeature.domain.model.ProductApplication;
+import com.corwin.system.userfeature.domain.repo.ProductApplicationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -58,16 +56,7 @@ public class AdminMenuResourceService {
     private final RoleMenuRepository roleMenuRepository;
     private final UserRoleRepository userRoleRepository;
     private final StaticAssetQueryService staticAssetQueryService;
-    private final NormalFeatureRepository normalFeatureRepository;
-    private final NormalFeaturePermissionRepository normalFeaturePermissionRepository;
-
-    private static final Map<String, ExternalToolRoute> EXTERNAL_TOOL_ROUTE_MAP = Map.of(
-            "jsonfmt", new ExternalToolRoute("/jsonfmt", "pages/JsonFormatterPage.vue", 10),
-            "reminder", new ExternalToolRoute("/todo", "pages/TodoBoardPage.vue", 20),
-            "datasource", new ExternalToolRoute("/datasource", "pages/DataSourceAdminPage.vue", 30),
-            "schemaforge", new ExternalToolRoute("/schemaforge", "pages/SchemaForgePage.vue", 40),
-            "storage", new ExternalToolRoute("/storage", "pages/StoragePage.vue", 50),
-            "clinic", new ExternalToolRoute("/clinic/management", "pages/clinic/ClinicManagementPage.vue", 60));
+    private final ProductApplicationRepository productApplicationRepository;
 
     public AdminMenuResourcesView currentAdminMenuResources() {
         Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
@@ -86,31 +75,12 @@ public class AdminMenuResourceService {
     }
 
     private List<AdminMenuResourceView> buildExternalResources(List<Permission> grantedPermissions) {
-        if (grantedPermissions.isEmpty()) {
-            return List.of();
-        }
-        Set<Long> grantedPermissionIds = grantedPermissions.stream()
-                .map(Permission::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        if (grantedPermissionIds.isEmpty()) {
-            return List.of();
-        }
-
-        Set<Long> accessibleFeatureIds = normalFeaturePermissionRepository.findAll().stream()
-                .filter(mapping -> mapping.getPermissionId() != null)
-                .filter(mapping -> grantedPermissionIds.contains(mapping.getPermissionId()))
-                .map(NormalFeaturePermission::getFeatureId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        if (accessibleFeatureIds.isEmpty()) {
-            return List.of();
-        }
-
         List<AdminMenuResourceView> resources = new ArrayList<>();
-        normalFeatureRepository.findByIdIn(accessibleFeatureIds).stream()
-                .filter(feature -> feature.getId() != null)
-                .filter(feature -> Boolean.TRUE.equals(feature.getEnabled()))
+        productApplicationRepository.findAll().stream()
+                .filter(application -> application.getId() != null)
+                .filter(application -> Boolean.TRUE.equals(application.getEnabled()))
+                .filter(application -> application.getRoutePath() != null && !application.getRoutePath().isBlank())
+                .filter(application -> application.getComponentPath() != null && !application.getComponentPath().isBlank())
                 .map(this::toExternalToolResource)
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(AdminMenuResourceView::orderNo)
@@ -291,18 +261,13 @@ public class AdminMenuResourceService {
         return Boolean.TRUE.equals(function.getEnabled());
     }
 
-    private AdminMenuResourceView toExternalToolResource(NormalFeature feature) {
-        if (feature.getCode() == null || feature.getCode().isBlank()) {
-            return null;
-        }
-        ExternalToolRoute route = EXTERNAL_TOOL_ROUTE_MAP.get(feature.getCode().trim().toLowerCase());
-        if (route == null) {
-            return null;
-        }
-        String id = "nf:" + feature.getId();
-        return new AdminMenuResourceView(id, null, feature.getName(), null, feature.getDescription(),
-                feature.getCode(), "MENU", "TOOL", "PAGE", route.path(), route.component(), route.orderNo(),
-                resolveLevel(feature.getSystemBuiltin()), true, false);
+    private AdminMenuResourceView toExternalToolResource(ProductApplication application) {
+        String id = "app:" + application.getId();
+        return new AdminMenuResourceView(id, null, application.getApplicationName(), application.getIcon(),
+                application.getDescription(), application.getApplicationCode(), "MENU", "TOOL", "PAGE",
+                blankToEmpty(application.getRoutePath()), blankToEmpty(application.getComponentPath()),
+                application.getDisplayOrder() == null ? 0 : application.getDisplayOrder(),
+                resolveLevel(application.getSystemBuiltIn()), true, false);
     }
 
     private Comparator<Menu> menuComparator() {
@@ -365,12 +330,5 @@ public class AdminMenuResourceService {
 
     private String blankToEmpty(String value) {
         return value == null ? "" : value;
-    }
-
-    private record ExternalToolRoute(
-            String path,
-            String component,
-            int orderNo
-    ) {
     }
 }
