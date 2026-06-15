@@ -77,7 +77,7 @@
             </exclusions>
         </dependency>
 
-        <!-- log4j-core经常发现漏洞，需要单独指定版本，只要不出现无法运行的情况，都可以一直升级 -->
+        <!-- log4j-core 经常发现漏洞，需要单独指定版本，只要不出现无法运行的情况，都可以一直升级 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -219,6 +219,7 @@
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
+                    <!-- 复制外置配置到 target/app/config，并对 application*.yml/properties 做 Maven 占位符替换 -->
                     <execution>
                         <id>copy-runtime-configs</id>
                         <phase>prepare-package</phase>
@@ -240,6 +241,7 @@
                                         <include>application-*.properties</include>
                                     </includes>
                                 </resource>
+
                                 <resource>
                                     <directory>src/main/resources</directory>
                                     <filtering>false</filtering>
@@ -247,6 +249,7 @@
                                         <include>log4j2-spring.xml</include>
                                     </includes>
                                 </resource>
+
                                 <resource>
                                     <directory>src/main/resources/log4j2</directory>
                                     <filtering>false</filtering>
@@ -255,6 +258,8 @@
                             </resources>
                         </configuration>
                     </execution>
+
+                    <!-- 复制外置应用资源到 target/app/app-resources -->
                     <execution>
                         <id>copy-runtime-app-resources</id>
                         <phase>prepare-package</phase>
@@ -273,6 +278,25 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- 最终 jar 中排除配置文件，但 target/classes 中仍然保留配置文件，方便 IDEA 本地运行 -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>application.yml</exclude>
+                        <exclude>application.yaml</exclude>
+                        <exclude>application.properties</exclude>
+                        <exclude>application-*.yml</exclude>
+                        <exclude>application-*.yaml</exclude>
+                        <exclude>application-*.properties</exclude>
+                        <exclude>log4j2-spring.xml</exclude>
+                        <exclude>log4j2/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- 生成 Spring Boot 可执行 jar：target/${artifactId}-${version}-exec.jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -288,6 +312,8 @@
                     <mainClass>${spring.boot.main-class}</mainClass>
                 </configuration>
             </plugin>
+
+            <!-- 生成最终部署目录 target/app -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -310,7 +336,23 @@
                 </executions>
             </plugin>
         </plugins>
+
         <resources>
+            <!-- application 配置文件：进入 target/classes，并参与 Maven filtering，供 IDEA 本地运行使用 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.yml</include>
+                    <include>application.yaml</include>
+                    <include>application.properties</include>
+                    <include>application-*.yml</include>
+                    <include>application-*.yaml</include>
+                    <include>application-*.properties</include>
+                </includes>
+            </resource>
+
+            <!-- 其他资源：进入 target/classes，但不做 Maven filtering，避免破坏 log4j2、xml、json 等文件中的占位符 -->
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
@@ -321,7 +363,6 @@
                     <exclude>application-*.yml</exclude>
                     <exclude>application-*.yaml</exclude>
                     <exclude>application-*.properties</exclude>
-                    <exclude>log4j2-spring.xml</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -330,6 +371,9 @@
     <profiles>
         <profile>
             <id>corwin</id>
+            <properties>
+                <env.active>corwin</env.active>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -360,6 +404,9 @@
         </profile>
         <profile>
             <id>prod</id>
+            <properties>
+                <env.active>prod</env.active>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
