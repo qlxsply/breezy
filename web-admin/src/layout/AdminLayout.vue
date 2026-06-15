@@ -653,7 +653,6 @@ import {
 import type { RouteLocationRaw } from "vue-router";
 import { useRoute, useRouter } from "vue-router";
 
-import { API_BASE_URL } from "../api/http";
 import brandLogo from "../assets/brand-logo.png";
 import MessagesModal from "../components/notifications/MessagesModal.vue";
 import { logout as logoutAction, useAuthUser } from "../registry/auth.registry";
@@ -669,6 +668,7 @@ import type { NotificationItem } from "../types/notification";
 import type { ResourceEntry } from "../types/resource-admin";
 import { formatDateTime } from "../utils/formatter";
 import { message } from "../utils/message";
+import { resolveResourceIconUrl } from "../utils/resource-icon";
 
 type MenuNodeType = "directory" | "menu";
 
@@ -679,7 +679,7 @@ interface MenuNode {
   to?: string;
   fallbackTo?: string;
   order: number;
-  iconFileId?: string;
+  icon?: string;
   children: MenuNode[];
 }
 
@@ -825,7 +825,7 @@ function buildMenuTree(resources: ResourceEntry[]): MenuNode[] {
       to: item.openMode === "PAGE" && item.url ? item.url : undefined,
       fallbackTo: undefined,
       order: item.orderNo ?? 0,
-      iconFileId: item.icon || undefined,
+      icon: item.icon || undefined,
       children: [],
     });
   });
@@ -915,10 +915,6 @@ function findFirstNavigableChild(children: MenuNode[]): string | undefined {
     }
   }
   return undefined;
-}
-
-function resolveStaticAssetUrl(fileId: string): string {
-  return `${API_BASE_URL}/public/static-files/${encodeURIComponent(fileId)}`;
 }
 
 function toggleMenuNode(nodeId: string): void {
@@ -1016,10 +1012,11 @@ function findMenuNodePath(
 }
 
 function renderMenuNodeIcon(node: MenuNode) {
-  if (node.iconFileId) {
+  const iconUrl = resolveResourceIconUrl(node.icon);
+  if (iconUrl) {
     return [
       h("img", {
-        src: resolveStaticAssetUrl(node.iconFileId),
+        src: iconUrl,
         alt: node.name,
       }),
     ];

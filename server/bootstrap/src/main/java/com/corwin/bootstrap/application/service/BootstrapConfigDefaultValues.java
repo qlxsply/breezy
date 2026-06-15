@@ -69,6 +69,7 @@ public final class BootstrapConfigDefaultValues {
                   {"type":"EXACT","pattern":"/api/auth/login"},
                   {"type":"EXACT","pattern":"/api/auth/logout"},
                   {"type":"EXACT","pattern":"/api/auth/me"},
+                  {"type":"ANT","pattern":"/api/public/frontend-resources/**"},
                   {"type":"EXACT","pattern":"/h2-console"},
                   {"type":"ANT","pattern":"/h2-console/**"}
                 ]

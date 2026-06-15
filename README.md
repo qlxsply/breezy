@@ -348,6 +348,11 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `server/bootstrap/src/main/resources/bootstarp/resources.xml` 中 `directory/menu` 的 `icon` 属性统一填写静态资源 `code`
     - 静态资源 `code` 默认取 `STATIC_ASSET` 根目录下文件名主名，例如 `overview.svg` 的 `code` 为 `overview`
     - 前端通过后端公开接口 `/api/public/static-files/{fileId}` 获取菜单静态资源，且该接口只允许访问 `STATIC_ASSET` 用途下的图片资源文件
+    - 用户工具应用图标与其他前端公开资源统一存放在 `server/business/app-resources/public/` 下，支持多级目录组织
+    - `ProductApplication.icon` 不再存储 SVG 内容或静态资源 `code`，统一存储相对资源路径，例如 `icons/applications/jsonfmt.svg`
+    - 前端通过公开接口 `/api/public/frontend-resources/{path}` 获取这类资源；该接口无权限控制，并加入默认认证白名单
+    - `server/business` 打包后会生成 `target/app/` 部署目录，结构为 `app.jar + config/ + app-resources/ + logs/ + data/`
+    - `application*.yml`、`log4j2-spring.xml` 与 `config/log4j2/json-template.json` 放在 `config/` 下；前端公开资源与模板文件放在 `app-resources/` 下，不再直接打进 `exec jar`
 
 ### 后台菜单图标静态资源清单
 

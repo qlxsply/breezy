@@ -5,6 +5,7 @@
         <Property name="LOG_DIR">${sys:log.dir:-logs}</Property>
         <Property name="APP_NAME">${sys:app.name:-${spring:spring.application.name:-app}}</Property>
         <Property name="APP_ENV">${spring:spring.profiles.active:-unknown}</Property>
+        <Property name="APP_LOG4J_TEMPLATE_URI">${sys:app.log4j.template.uri:-classpath:log4j2/json-template.json}</Property>
         <Property name="CONSOLE_PATTERN">%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} [%style{%-16X{traceId}-%-8X{spanId}}{magenta}] [%style{%t}{blue}] %highlight{%-5level} %style{%logger{36}}{green} | %msg%n</Property>
         <Property name="FILE_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-16X{traceId}-%-8X{spanId}] [%t] %-5level %logger{36} | %msg%n</Property>
     </Properties>
@@ -28,7 +29,7 @@
         <RollingFile name="FILE_JSON"
                      fileName="${LOG_DIR}/${APP_NAME}.json"
                      filePattern="${LOG_DIR}/${APP_NAME}.%d{yyyy-MM-dd}.%i.json.gz">
-            <JsonTemplateLayout eventTemplateUri="classpath:log4j2/json-template.json"/>
+            <JsonTemplateLayout eventTemplateUri="${APP_LOG4J_TEMPLATE_URI}"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
                 <SizeBasedTriggeringPolicy size="200 MB"/>

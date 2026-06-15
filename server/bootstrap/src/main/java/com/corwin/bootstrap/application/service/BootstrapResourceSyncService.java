@@ -45,10 +45,7 @@ public class BootstrapResourceSyncService {
                 + "; applications=" + stats.applicationCount
                 + "; features=" + stats.featureCount
                 + "; featurePermissions=" + stats.featurePermissionCount
-                + "; packages=" + stats.packageCount
-                + "; packageApplications=" + stats.packageApplicationAccessCount
-                + "; packageFeatures=" + stats.packageFeatureAccessCount
-                + "; strategy=resource-rebuild+userfeature-upsert";
+                + "; strategy=resource-rebuild+userfeature-rebuild";
         return new BootstrapTaskReport(BootstrapTaskKey.RESOURCE_SYNC, dryRun, true,
                 System.currentTimeMillis() - startedAt, message);
     }
@@ -169,22 +166,15 @@ public class BootstrapResourceSyncService {
     private void upsertUserFeatures(Connection connection,
             BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed seed,
             Map<String, PermissionRef> permissionByCode, ResourceStats stats) throws SQLException {
-        Map<String, Long> applicationIdByCode = new LinkedHashMap<>();
-        Map<String, Long> featureIdByCompositeCode = new LinkedHashMap<>();
+        clearUserFeatureData(connection);
 
         for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : seed.applications()) {
             Long applicationId = upsertApplication(connection, application);
-            applicationIdByCode.put(application.code(), applicationId);
             stats.applicationCount++;
 
             for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
                 Long featureId = upsertFeature(connection, applicationId, feature);
-                featureIdByCompositeCode.put(application.code() + "::" + feature.code(), featureId);
                 stats.featureCount++;
-            }
-            deleteBuiltInFeaturePermissionBindingsByApplication(connection, applicationId);
-            for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
-                Long featureId = featureIdByCompositeCode.get(application.code() + "::" + feature.code());
                 for (String permissionCode : feature.permissionCodes()) {
                     PermissionRef permission = permissionByCode.get(permissionCode);
                     insertFeaturePermissionBinding(connection, applicationId, featureId, permission.id());
@@ -192,23 +182,18 @@ public class BootstrapResourceSyncService {
                 }
             }
         }
+    }
 
-        for (BootstrapUserFeatureDefinitionLoader.PackageSeed pkg : seed.packages()) {
-            Long packageId = upsertPackage(connection, pkg);
-            stats.packageCount++;
-            deleteBuiltInPackageFeatureAccesses(connection, packageId);
-            deleteBuiltInPackageApplicationAccesses(connection, packageId);
-            for (BootstrapUserFeatureDefinitionLoader.PackageApplicationSeed applicationAccess : pkg.applications()) {
-                Long applicationId = applicationIdByCode.get(applicationAccess.applicationCode());
-                insertPackageApplicationAccess(connection, packageId, applicationId, applicationAccess.featureAccessScope());
-                stats.packageApplicationAccessCount++;
-                for (String featureCode : applicationAccess.featureCodes()) {
-                    Long featureId = featureIdByCompositeCode.get(applicationAccess.applicationCode() + "::" + featureCode);
-                    insertPackageFeatureAccess(connection, packageId, applicationId, featureId);
-                    stats.packageFeatureAccessCount++;
-                }
-            }
-        }
+    private void clearUserFeatureData(Connection connection) throws SQLException {
+        executeSql(connection, "delete from sys_user_feature_override");
+        executeSql(connection, "delete from sys_user_application_override");
+        executeSql(connection, "delete from sys_user_package_feature_access");
+        executeSql(connection, "delete from sys_user_package_application_access");
+        executeSql(connection, "delete from sys_user_application_package_member");
+        executeSql(connection, "delete from sys_user_application_package");
+        executeSql(connection, "delete from sys_product_feature_permission_binding");
+        executeSql(connection, "delete from sys_product_feature");
+        executeSql(connection, "delete from sys_product_application");
     }
 
     private Long insertMenu(Connection connection, BootstrapResourceDefinitionLoader.MenuSeed menu,
@@ -336,39 +321,6 @@ public class BootstrapResourceSyncService {
         return selectFeatureId(connection, applicationId, seed.code());
     }
 
-    private Long upsertPackage(Connection connection, BootstrapUserFeatureDefinitionLoader.PackageSeed seed) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_update_package_by_code.sql"))) {
-            ps.setString(1, seed.name());
-            ps.setString(2, seed.packageType().name());
-            ps.setString(3, seed.description());
-            ps.setBoolean(4, seed.enabled());
-            ps.setBoolean(5, seed.defaultPackage());
-            ps.setBoolean(6, true);
-            ps.setInt(7, seed.sortNo());
-            ps.setLong(8, 0L);
-            ps.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
-            ps.setString(10, seed.code());
-            if (ps.executeUpdate() == 0) {
-                try (PreparedStatement insertPs = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_package.sql"))) {
-                    insertPs.setString(1, seed.code());
-                    insertPs.setString(2, seed.name());
-                    insertPs.setString(3, seed.packageType().name());
-                    insertPs.setString(4, seed.description());
-                    insertPs.setBoolean(5, seed.enabled());
-                    insertPs.setBoolean(6, seed.defaultPackage());
-                    insertPs.setBoolean(7, true);
-                    insertPs.setInt(8, seed.sortNo());
-                    insertPs.setLong(9, 0L);
-                    insertPs.setTimestamp(10, new Timestamp(System.currentTimeMillis()));
-                    insertPs.setLong(11, 0L);
-                    insertPs.setTimestamp(12, new Timestamp(System.currentTimeMillis()));
-                    insertPs.executeUpdate();
-                }
-            }
-        }
-        return selectIdByCode(connection, "user_feature_select_package_id_by_code.sql", seed.code(), "package");
-    }
-
     private Long selectIdByCode(Connection connection, String sqlName, String code, String type) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load(sqlName))) {
             ps.setString(1, code);
@@ -394,13 +346,6 @@ public class BootstrapResourceSyncService {
         throw new IllegalStateException("read feature id failed: " + applicationId + ":" + code);
     }
 
-    private void deleteBuiltInFeaturePermissionBindingsByApplication(Connection connection, Long applicationId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_delete_feature_permission_bindings_by_application.sql"))) {
-            ps.setLong(1, applicationId);
-            ps.executeUpdate();
-        }
-    }
-
     private void insertFeaturePermissionBinding(Connection connection, Long applicationId, Long featureId, Long permissionId) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_feature_permission_binding.sql"))) {
             ps.setLong(1, applicationId);
@@ -408,47 +353,6 @@ public class BootstrapResourceSyncService {
             ps.setLong(3, permissionId);
             ps.setBoolean(4, true);
             ps.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
-            ps.executeUpdate();
-        }
-    }
-
-    private void deleteBuiltInPackageApplicationAccesses(Connection connection, Long packageId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_delete_package_application_access_by_package.sql"))) {
-            ps.setLong(1, packageId);
-            ps.executeUpdate();
-        }
-    }
-
-    private void deleteBuiltInPackageFeatureAccesses(Connection connection, Long packageId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_delete_package_feature_access_by_package.sql"))) {
-            ps.setLong(1, packageId);
-            ps.executeUpdate();
-        }
-    }
-
-    private void insertPackageApplicationAccess(Connection connection, Long packageId, Long applicationId,
-            com.corwin.system.userfeature.domain.model.ApplicationFeatureAccessScope scope) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_package_application_access.sql"))) {
-            ps.setLong(1, packageId);
-            ps.setLong(2, applicationId);
-            ps.setString(3, scope.name());
-            ps.setBoolean(4, true);
-            ps.setLong(5, 0L);
-            ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-            ps.setLong(7, 0L);
-            ps.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
-            ps.executeUpdate();
-        }
-    }
-
-    private void insertPackageFeatureAccess(Connection connection, Long packageId, Long applicationId, Long featureId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_package_feature_access.sql"))) {
-            ps.setLong(1, packageId);
-            ps.setLong(2, applicationId);
-            ps.setLong(3, featureId);
-            ps.setBoolean(4, true);
-            ps.setLong(5, 0L);
-            ps.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
             ps.executeUpdate();
         }
     }
@@ -466,6 +370,12 @@ public class BootstrapResourceSyncService {
 
     private void executeDelete(Connection connection, String sqlName) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load(sqlName))) {
+            ps.executeUpdate();
+        }
+    }
+
+    private void executeSql(Connection connection, String sql) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.executeUpdate();
         }
     }
@@ -498,13 +408,6 @@ public class BootstrapResourceSyncService {
             stats.featureCount += application.features().size();
             for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
                 stats.featurePermissionCount += feature.permissionCodes().size();
-            }
-        }
-        stats.packageCount = userFeatures.packages().size();
-        for (BootstrapUserFeatureDefinitionLoader.PackageSeed pkg : userFeatures.packages()) {
-            stats.packageApplicationAccessCount += pkg.applications().size();
-            for (BootstrapUserFeatureDefinitionLoader.PackageApplicationSeed application : pkg.applications()) {
-                stats.packageFeatureAccessCount += application.featureCodes().size();
             }
         }
         return stats;
@@ -541,8 +444,5 @@ public class BootstrapResourceSyncService {
         private int applicationCount;
         private int featureCount;
         private int featurePermissionCount;
-        private int packageCount;
-        private int packageApplicationAccessCount;
-        private int packageFeatureAccessCount;
     }
 }

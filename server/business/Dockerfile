@@ -2,9 +2,8 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-ARG JAR_FILE=target/*-exec.jar
-COPY ${JAR_FILE} app.jar
+COPY target/app/ /app/
 
 EXPOSE 8910
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-Dlogging.config=/app/config/log4j2-spring.xml", "-Dapp.log4j.template.uri=file:/app/config/log4j2/json-template.json", "-Dapp.resources.dir=/app/app-resources/public", "-jar", "/app/app.jar"]

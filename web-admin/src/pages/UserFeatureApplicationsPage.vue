@@ -53,9 +53,22 @@
           </template>
 
           <div class="admin-table-surface">
-            <bz-table v-loading="loading" :data="rows" row-key="id" empty-text="暂无应用" size="small">
-              <bz-table-column prop="code" label="应用编码" min-width="160" show-overflow-tooltip />
-              <bz-table-column prop="name" label="名称" min-width="160" show-overflow-tooltip />
+              <bz-table v-loading="loading" :data="rows" row-key="id" empty-text="暂无应用" size="small">
+                <bz-table-column label="图标" width="80" align="center">
+                  <template #default="scope">
+                    <div class="application-icon-cell">
+                      <img
+                        v-if="resolveIconUrl(scope.row.icon)"
+                        :src="resolveIconUrl(scope.row.icon) || undefined"
+                        :alt="scope.row.name"
+                        class="application-icon-cell__image"
+                      />
+                      <span v-else class="application-icon-cell__fallback">-</span>
+                    </div>
+                  </template>
+                </bz-table-column>
+                <bz-table-column prop="code" label="应用编码" min-width="160" show-overflow-tooltip />
+                <bz-table-column prop="name" label="名称" min-width="160" show-overflow-tooltip />
               <bz-table-column prop="routePath" label="路由" min-width="160" show-overflow-tooltip>
                 <template #default="scope">{{ scope.row.routePath || "-" }}</template>
               </bz-table-column>
@@ -110,7 +123,18 @@
             <div class="detail-field"><span class="detail-field__label">路由</span><span class="detail-field__value">{{ detail.routePath || "-" }}</span></div>
             <div class="detail-field"><span class="detail-field__label">组件</span><span class="detail-field__value">{{ detail.componentPath || "-" }}</span></div>
             <div class="detail-field"><span class="detail-field__label">状态</span><span class="detail-field__value">{{ detail.enabled ? "启用" : "停用" }}</span></div>
-            <div class="detail-field"><span class="detail-field__label">图标</span><span class="detail-field__value">{{ detail.icon || "-" }}</span></div>
+            <div class="detail-field">
+              <span class="detail-field__label">图标</span>
+              <span class="detail-field__value detail-field__value--icon">
+                <img
+                  v-if="resolveIconUrl(detail.icon)"
+                  :src="resolveIconUrl(detail.icon) || undefined"
+                  :alt="detail.name"
+                  class="application-detail-icon"
+                />
+                <span>{{ detail.icon || "-" }}</span>
+              </span>
+            </div>
             <div class="detail-field detail-field--wide"><span class="detail-field__label">描述</span><span class="detail-field__value">{{ detail.description || "-" }}</span></div>
           </div>
 
@@ -158,6 +182,7 @@ import type { PageResult } from "../types/page";
 import type { UserFeatureApplicationEntry } from "../types/user-feature";
 import { bzConfirm } from "../utils/confirm";
 import { message } from "../utils/message";
+import { resolveResourceIconUrl } from "../utils/resource-icon";
 
 const loading = ref(false);
 const rows = ref<UserFeatureApplicationEntry[]>([]);
@@ -199,6 +224,10 @@ const pageTokens = computed<Array<number | "ellipsis">>(() => {
 onMounted(() => {
   void reload();
 });
+
+function resolveIconUrl(icon?: string | null) {
+  return resolveResourceIconUrl(icon);
+}
 
 async function reload() {
   if (!canView.value) {
@@ -414,6 +443,32 @@ async function toggleStatus(row: UserFeatureApplicationEntry) {
   font-size: 14px;
   line-height: 1.6;
   word-break: break-all;
+}
+
+.detail-field__value--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.application-icon-cell {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.application-icon-cell__image,
+.application-detail-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.application-icon-cell__fallback {
+  color: #94a3b8;
 }
 
 .app-feature-panel {

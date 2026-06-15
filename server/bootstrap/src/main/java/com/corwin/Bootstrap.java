@@ -29,6 +29,7 @@ public class Bootstrap {
         properties.put("spring.main.web-application-type", "none");
         properties.put("spring.autoconfigure.exclude", String.join(",", autoconfigureExclude));
         properties.put("spring.datasource.hikari.auto-commit", "false");
+        properties.put("spring.liquibase.enabled", "false");
         properties.put("bootstrap.initialization.process", "true");
 
         SpringApplication application = new SpringApplication(Bootstrap.class);

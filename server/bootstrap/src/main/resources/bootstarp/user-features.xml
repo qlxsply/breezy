@@ -7,7 +7,7 @@
                      name="JSON 工具"
                      enabled="true"
                      sortNo="10"
-                     icon="spark"
+                     icon="icons/applications/jsonfmt.svg"
                      routePath="/jsonfmt"
                      componentPath="pages/JsonFormatterPage.vue">
             <description>JSON 格式化与记录管理能力。</description>
@@ -25,7 +25,7 @@
                      name="提醒事项"
                      enabled="true"
                      sortNo="20"
-                     icon="history"
+                     icon="icons/applications/reminder.svg"
                      routePath="/todo"
                      componentPath="pages/TodoBoardPage.vue">
             <description>提醒、日程与待办能力。</description>
@@ -43,7 +43,7 @@
                      name="数据源"
                      enabled="true"
                      sortNo="30"
-                     icon="link"
+                     icon="icons/applications/datasource.svg"
                      routePath="/datasource"
                      componentPath="pages/DataSourceAdminPage.vue">
             <description>数据源连接、元数据与库表管理能力。</description>
@@ -61,7 +61,7 @@
                      name="SchemaForge"
                      enabled="true"
                      sortNo="40"
-                     icon="monitor"
+                     icon="icons/applications/schemaforge.svg"
                      routePath="/schemaforge"
                      componentPath="pages/SchemaForgePage.vue">
             <description>数据库快照、DDL 与结构比对能力。</description>
@@ -79,7 +79,7 @@
                      name="存储空间"
                      enabled="true"
                      sortNo="50"
-                     icon="folder"
+                     icon="icons/applications/storage.svg"
                      routePath="/storage"
                      componentPath="pages/StoragePage.vue">
             <description>个人文件存储与目录管理能力。</description>
@@ -97,7 +97,7 @@
                      name="诊所业务"
                      enabled="true"
                      sortNo="60"
-                     icon="customer-chart"
+                     icon="icons/applications/clinic.svg"
                      routePath="/clinic/management"
                      componentPath="pages/clinic/ClinicManagementPage.vue">
             <description>诊所商品、库存、采购、销售与台账能力。</description>
@@ -111,23 +111,4 @@
             </features>
         </application>
     </applications>
-
-    <packages>
-        <package code="default-tools"
-                 name="默认工具包"
-                 packageType="DEFAULT"
-                 enabled="true"
-                 defaultPackage="true"
-                 sortNo="10">
-            <description>系统默认分配给新注册用户的基础工具包。</description>
-            <applications>
-                <application code="jsonfmt" featureAccessScope="FULL"/>
-                <application code="reminder" featureAccessScope="FULL"/>
-                <application code="datasource" featureAccessScope="FULL"/>
-                <application code="schemaforge" featureAccessScope="FULL"/>
-                <application code="storage" featureAccessScope="FULL"/>
-                <application code="clinic" featureAccessScope="FULL"/>
-            </applications>
-        </package>
-    </packages>
 </user-features>

@@ -38,7 +38,15 @@
       >
         <div class="modal-card">
           <div class="modal-header">
-            <span class="modal-icon">{{ modalResource.icon || "🧩" }}</span>
+            <span class="modal-icon">
+              <img
+                v-if="modalIconUrl"
+                :src="modalIconUrl"
+                :alt="modalResource.name"
+                class="modal-icon__image"
+              />
+              <span v-else>{{ modalResource.icon || "🧩" }}</span>
+            </span>
             <span class="modal-title">{{ modalResource.name }}</span>
             <button
               class="modal-close"
@@ -77,6 +85,7 @@ import { useCommandPalette } from "../composables/useCommandPalette";
 import { hasToolPageAccess } from "../registry/user-tool-permissions.registry";
 import { getUserToolMap } from "../registry/user-tools.registry";
 import type { ToolPageEntry } from "../types/user-tools";
+import { resolveResourceIconUrl } from "../utils/resource-icon";
 import { resolveResourceComponent } from "../utils/resourceLoader";
 
 // useRouter 来自 vue-router，提供路由跳转与解析能力。
@@ -85,6 +94,7 @@ const router = useRouter();
 const rootRef = ref<HTMLElement | null>(null);
 const modalResource = ref<ToolPageEntry | null>(null);
 const modalComponent = computed(() => resolveResourceComponent(modalResource.value?.loadTarget));
+const modalIconUrl = computed(() => resolveResourceIconUrl(modalResource.value?.icon));
 const resourceMap = computed(() => getUserToolMap());
 
 function resolveMenuUrl(resource: ToolPageEntry): string {
@@ -268,7 +278,18 @@ onUnmounted(() => {
 }
 
 .modal-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 22px;
+}
+
+.modal-icon__image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .modal-title {

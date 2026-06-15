@@ -31,7 +31,15 @@
           @mouseenter="$emit('hover', flatIndexOf(gi, ii))"
           @click="$emit('clickItem', flatIndexOf(gi, ii))"
         >
-          <div class="item-icon">{{ iconOf(it) }}</div>
+          <div class="item-icon">
+            <img
+              v-if="iconUrlOf(it)"
+              :src="iconUrlOf(it) || undefined"
+              :alt="nameOf(it)"
+              class="item-icon__image"
+            />
+            <span v-else>{{ iconFallbackOf(it) }}</span>
+          </div>
 
           <div class="item-body">
             <span class="item-name">{{ nameOf(it) }}</span>
@@ -49,6 +57,7 @@
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
 import type { ResultGroup, ResultItem } from "../types/user-tools";
+import { resolveResourceIconUrl } from "../utils/resource-icon";
 
 const props = defineProps<{
   open: boolean;
@@ -108,7 +117,11 @@ function keyOf(it: ResultItem, gi: number, ii: number) {
   return `${it.kind}:${it.resource.code}:${gi}:${ii}`;
 }
 
-function iconOf(it: ResultItem) {
+function iconUrlOf(it: ResultItem) {
+  return resolveResourceIconUrl(it.resource.icon);
+}
+
+function iconFallbackOf(it: ResultItem) {
   return it.resource.icon || "⚙️";
 }
 
@@ -172,7 +185,17 @@ function shortcutOf(it: ResultItem) {
   font-size: 26px;
   margin-right: 18px;
   width: 34px;
+  height: 34px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-icon__image {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
 }
 
 .item-body {
