@@ -9,7 +9,7 @@
           class="brand-link"
           type="button"
           aria-label="Breezy Admin"
-          @click="navigate('/admin')"
+          @click="navigate('/')"
         >
           <span class="brand-logo">
             <img
@@ -719,10 +719,24 @@ const canScrollTabsRight = ref(false);
 const visitedTabs = ref<VisitedTab[]>([
   {
     title: "工作台",
-    fullPath: "/admin",
+    fullPath: "/",
     pinned: true,
   },
 ]);
+
+function normalizeAdminRoutePath(path?: string): string | undefined {
+  if (!path) {
+    return undefined;
+  }
+  const normalized = path.trim();
+  if (normalized === "/admin") {
+    return "/";
+  }
+  if (normalized.startsWith("/admin/")) {
+    return normalized.substring("/admin".length);
+  }
+  return normalized || undefined;
+}
 
 const previewList = computed(() => unreadList.value.slice(0, 4));
 const displayUnreadCount = computed(() => unreadCount.value > 0);
@@ -822,7 +836,7 @@ function buildMenuTree(resources: ResourceEntry[]): MenuNode[] {
       id: item.id,
       name: item.name,
       type: resolveMenuNodeType(item),
-      to: item.openMode === "PAGE" && item.url ? item.url : undefined,
+      to: item.openMode === "PAGE" && item.url ? normalizeAdminRoutePath(item.url) : undefined,
       fallbackTo: undefined,
       order: item.orderNo ?? 0,
       icon: item.icon || undefined,
@@ -1134,14 +1148,14 @@ function navigate(target: string): void {
 }
 
 function ensureVisitedTab(): void {
-  if (!route.path.startsWith("/admin")) {
+  if (route.name === "admin-login" || route.name === "not-found") {
     return;
   }
 
   const nextTab: VisitedTab = {
     title: resolveRouteTitle(route),
     fullPath: route.fullPath,
-    pinned: route.path === "/admin",
+    pinned: route.path === "/",
   };
 
   const existingIndex = visitedTabs.value.findIndex((item) => item.fullPath === nextTab.fullPath);
@@ -1167,7 +1181,7 @@ function closeTab(tab: VisitedTab): void {
 
   const fallback =
     visitedTabs.value[currentIndex - 1] || visitedTabs.value[currentIndex] || visitedTabs.value[0];
-  void router.push(fallback?.fullPath || "/admin");
+  void router.push(fallback?.fullPath || "/");
 }
 
 function refreshCurrentPage(): void {
@@ -1248,22 +1262,22 @@ function openMessageCenter(): void {
 
 function goProfile(): void {
   userOpen.value = false;
-  void router.push("/admin/profile");
+  void router.push("/profile");
 }
 
 function goChangePassword(): void {
   userOpen.value = false;
-  void router.push("/admin/profile/password");
+  void router.push("/profile/password");
 }
 
 function goPreferences(): void {
   userOpen.value = false;
-  void router.push("/admin/profile/preferences");
+  void router.push("/profile/preferences");
 }
 
 function goHelp(): void {
   userOpen.value = false;
-  void router.push("/admin/help");
+  void router.push("/help");
 }
 
 async function onLogout(): Promise<void> {
@@ -1271,7 +1285,7 @@ async function onLogout(): Promise<void> {
   notificationOpen.value = false;
   await logoutAction();
   message.success("已退出登录");
-  await router.push("/admin/login");
+  await router.push("/login");
 }
 
 function notificationAvatar(title: string): string {

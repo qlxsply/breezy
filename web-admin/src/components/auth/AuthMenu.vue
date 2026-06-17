@@ -58,7 +58,7 @@ const dropdownOpen = ref(false);
 const rootRef = ref<HTMLElement | null>(null);
 
 function openLoginPage() {
-  void router.push({ path: "/admin/login", query: { redirect: route.fullPath } });
+  void router.push({ path: "/login", query: { redirect: route.fullPath } });
 }
 
 function toggleDropdown() {
@@ -69,12 +69,12 @@ async function onLogout() {
   dropdownOpen.value = false;
   await logout();
   await refreshPermissions();
-  router.push({ path: "/admin/login" });
+  router.push({ path: "/login" });
 }
 
 function onProfile() {
   dropdownOpen.value = false;
-  router.push({ path: "/admin/profile" });
+  router.push({ path: "/profile" });
 }
 
 function onClickOutside(e: MouseEvent) {

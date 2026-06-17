@@ -105,10 +105,10 @@ function resolveRedirectPath(userType: AuthUserType): string {
   }
 
   if (userType === "INTERNAL") {
-    return redirect.startsWith("/admin") ? redirect : resolveLandingPathForUser(userType);
+    return redirect.startsWith("/") ? redirect : resolveLandingPathForUser(userType);
   }
 
-  return redirect.startsWith("/admin") ? resolveLandingPathForUser(userType) : redirect;
+  return redirect.startsWith("/") ? resolveLandingPathForUser(userType) : redirect;
 }
 
 async function submit() {

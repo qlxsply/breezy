@@ -28,7 +28,7 @@ const authState = {
   promise: null as Promise<void> | null,
 };
 
-export const INTERNAL_USER_LANDING_PATH = "/admin";
+export const INTERNAL_USER_LANDING_PATH = "/";
 export const isAuthenticated = computed(() => Boolean(currentUser.value?.id));
 export const currentUserType = computed<AuthUserType>(() => currentUser.value?.userType || "GUEST");
 export const isInternalUser = computed(() => currentUserType.value === "INTERNAL");

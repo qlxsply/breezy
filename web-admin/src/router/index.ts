@@ -28,6 +28,17 @@ interface AdminNavMeta {
   hidden?: boolean;
 }
 
+function normalizeAdminRoutePath(path: string): string {
+  const normalized = path.trim();
+  if (normalized === "/admin") {
+    return "/";
+  }
+  if (normalized.startsWith("/admin/")) {
+    return normalized.substring("/admin".length);
+  }
+  return normalized || "/";
+}
+
 function adminMeta(
   sectionName: string,
   title: string,
@@ -56,13 +67,13 @@ function adminMeta(
 
 const staticRoutes: RouteRecordRaw[] = [
   {
-    path: "/admin/login",
+    path: "/login",
     name: "admin-login",
     component: () => import("../pages/AdminLoginPage.vue"),
     meta: { layout: "blank" },
   },
   {
-    path: "/admin",
+    path: "/",
     name: "admin-workbench",
     component: () => import("../pages/AdminPlaceholderPage.vue"),
     meta: adminMeta("概览", "工作台", 10, 10, {
@@ -71,37 +82,37 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/configs",
+    path: "/configs",
     name: "settings-system",
     component: () => import("../pages/ConfigsAdminPage.vue"),
     meta: adminMeta("平台管理", "系统配置", 20, 10),
   },
   {
-    path: "/admin/apis",
+    path: "/apis",
     name: "settings-apis",
     component: () => import("../pages/ApisAdminPage.vue"),
     meta: adminMeta("平台管理", "接口管理", 20, 20),
   },
   {
-    path: "/admin/dicts",
+    path: "/dicts",
     name: "settings-dicts",
     component: () => import("../pages/DictAdminPage.vue"),
     meta: adminMeta("平台管理", "数据字典", 20, 30),
   },
   {
-    path: "/admin/system-files",
+    path: "/system-files",
     name: "settings-system-files",
     component: () => import("../pages/SystemFilesPage.vue"),
     meta: adminMeta("平台管理", "系统文件", 20, 40),
   },
   {
-    path: "/admin/diagnostic",
+    path: "/diagnostic",
     name: "settings-diagnostic",
     component: () => import("../pages/DiagnosticPage.vue"),
     meta: adminMeta("平台管理", "诊断工具", 20, 50),
   },
   {
-    path: "/admin/method-stat",
+    path: "/method-stat",
     name: "settings-method-stat",
     component: () => import("../pages/MethodStatPage.vue"),
     meta: adminMeta("平台管理", "方法统计", 20, 90, {
@@ -110,19 +121,19 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/users",
+    path: "/users",
     name: "settings-users",
     component: () => import("../pages/UsersAdminPage.vue"),
     meta: adminMeta("权限中心", "账号管理", 30, 10),
   },
   {
-    path: "/admin/roles",
+    path: "/roles",
     name: "settings-roles",
     component: () => import("../pages/RolesAdminPage.vue"),
     meta: adminMeta("权限中心", "角色管理", 30, 20),
   },
   {
-    path: "/admin/permission-policies",
+    path: "/permission-policies",
     name: "settings-permission-policies",
     component: () => import("../pages/AdminPlaceholderPage.vue"),
     meta: adminMeta("权限中心", "权限策略", 30, 30, {
@@ -130,37 +141,37 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/login-logs",
+    path: "/login-logs",
     name: "settings-login-logs",
     component: () => import("../pages/LoginLogsPage.vue"),
     meta: adminMeta("权限中心", "登录日志", 30, 40),
   },
   {
-    path: "/admin/audit-logs",
+    path: "/audit-logs",
     name: "settings-audit-logs",
     component: () => import("../pages/AuditLogsPage.vue"),
     meta: adminMeta("权限中心", "审计日志", 30, 50),
   },
   {
-    path: "/admin/web-users",
+    path: "/web-users",
     name: "settings-web-users",
     component: () => import("../pages/WebUsersAdminPage.vue"),
     meta: adminMeta("用户中心", "用户管理", 40, 10),
   },
   {
-    path: "/admin/user-feature-packages",
+    path: "/user-feature-packages",
     name: "settings-user-feature-packages",
     component: () => import("../pages/UserFeaturePackagesPage.vue"),
     meta: adminMeta("用户中心", "应用包管理", 40, 20),
   },
   {
-    path: "/admin/user-feature-applications",
+    path: "/user-feature-applications",
     name: "settings-user-feature-applications",
     component: () => import("../pages/UserFeatureApplicationsPage.vue"),
     meta: adminMeta("用户中心", "应用配置", 40, 30),
   },
   {
-    path: "/admin/profile",
+    path: "/profile",
     name: "admin-profile",
     component: () => import("../pages/AdminProfilePage.vue"),
     meta: adminMeta("个人中心", "个人中心", 90, 10, {
@@ -172,7 +183,7 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/profile/password",
+    path: "/profile/password",
     name: "admin-profile-password",
     component: () => import("../pages/AdminProfilePasswordPage.vue"),
     meta: adminMeta("个人中心", "修改密码", 90, 20, {
@@ -183,7 +194,7 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/profile/preferences",
+    path: "/profile/preferences",
     name: "admin-profile-preferences",
     component: () => import("../pages/AdminProfilePreferencesPage.vue"),
     meta: adminMeta("个人中心", "偏好设置", 90, 30, {
@@ -194,7 +205,7 @@ const staticRoutes: RouteRecordRaw[] = [
     }),
   },
   {
-    path: "/admin/help",
+    path: "/help",
     name: "admin-help",
     component: () => import("../pages/AdminHelpPage.vue"),
     meta: adminMeta("个人中心", "问题与帮助", 90, 40, {
@@ -249,7 +260,7 @@ function resolveRouteArea(
     if (target.scope === "SETTING") return "setting";
     if (target.scope === "INFO") return "info";
   }
-  if (to.path === "/admin" || to.path.startsWith("/admin/")) {
+  if (to.path !== "/login") {
     return "setting";
   }
   const appArea = typeof to.meta?.appArea === "string" ? to.meta.appArea : "";
@@ -272,14 +283,15 @@ function buildDynamicRoutesFromResources(): RouteRecordRaw[] {
     if (!resource.url) return;
     if (!resource.loadTarget) return;
     if (!resource.url.startsWith("/admin")) return;
-    if (staticRoutePaths.has(resource.url)) return;
+    const routePath = normalizeAdminRoutePath(resource.url);
+    if (staticRoutePaths.has(routePath)) return;
     if (staticRouteNames.has(resource.id)) return;
 
     const component = resolveRouteComponent(resource.loadTarget);
     if (!component) return;
 
     routes.push({
-      path: resource.url,
+      path: routePath,
       name: resource.id,
       component,
       meta: buildRouteMeta(resource),
@@ -410,7 +422,7 @@ export default router;
 function resolveLandingPathForAuthenticatedUser(
   userType: ReturnType<typeof getCurrentUserType>,
 ): string {
-  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/admin/login";
+  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/login";
 }
 
 export function resolveAdminSectionMeta(

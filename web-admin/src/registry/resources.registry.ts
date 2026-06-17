@@ -49,8 +49,19 @@ export function findResourceByCode(code: string): ResourceEntry | undefined {
 }
 
 export function findMenuResourceByUrl(url: string): ResourceEntry | undefined {
-  const normalized = url.trim();
+  const normalized = normalizeAdminAppPath(url);
   return RESOURCES.value.find(
-    (r) => r.type === "MENU" && r.openMode === "PAGE" && r.url === normalized,
+    (r) => r.type === "MENU" && r.openMode === "PAGE" && normalizeAdminAppPath(r.url) === normalized,
   );
+}
+
+function normalizeAdminAppPath(url: string): string {
+  const normalized = url.trim();
+  if (normalized === "/admin") {
+    return "/";
+  }
+  if (normalized.startsWith("/admin/")) {
+    return normalized.substring("/admin".length);
+  }
+  return normalized || "/";
 }
