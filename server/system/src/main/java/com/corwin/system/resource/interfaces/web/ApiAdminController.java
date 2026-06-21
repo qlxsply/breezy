@@ -11,6 +11,11 @@ import com.corwin.system.audit.published.Audit;
 import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.application.service.ApiAdminService;
 import com.corwin.system.resource.domain.model.Api;
+import com.corwin.system.resource.domain.model.ApiAccessType;
+import com.corwin.system.resource.domain.model.ApiAuditDeclaredStatus;
+import com.corwin.system.resource.domain.model.ApiPermissionDeclaredStatus;
+import com.corwin.system.resource.domain.model.ApiStatus;
+import com.corwin.system.resource.domain.repo.ApiPageQuery;
 import com.corwin.system.resource.interfaces.web.res.ApiRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
@@ -38,11 +43,22 @@ public class ApiAdminController {
 
     @GetMapping("/page")
     @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"api.view"})
-    public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Boolean enabled, @RequestParam(defaultValue = "1") Integer pageNo,
+    public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String module,
+            @RequestParam(required = false) String pathPattern,
+            @RequestParam(required = false) String handlerClass,
+            @RequestParam(required = false) String handlerMethod,
+            @RequestParam(required = false) String permissionDeclared,
+            @RequestParam(required = false) String accessType,
+            @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String auditDeclared,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "1") Integer pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         PageSpec pageSpec = PageSpec.of(pageNo, pageSize, List.of());
-        return ApiResponse.ok(PageResult.of(apiAdminService.page(keyword, enabled, pageSpec), this::toDto));
+        ApiPageQuery query = new ApiPageQuery(module, pathPattern, handlerClass, handlerMethod,
+                resolvePermissionDeclared(permissionDeclared), resolveAccessType(accessType), resolveUserType(userType),
+                resolveAuditDeclared(auditDeclared), resolveEnabled(status));
+        return ApiResponse.ok(PageResult.of(apiAdminService.page(query, pageSpec), this::toDto));
     }
 
     @PutMapping("/{id}/publish")
@@ -65,5 +81,50 @@ public class ApiAdminController {
                 api.getAccessType(), api.getUserTypes(), Boolean.TRUE.equals(api.getAuditDeclared()),
                 api.getAuditResource(), api.getAuditAction(), api.getAuditDescription(),
                 Boolean.TRUE.equals(api.getEnabled()), 0, false);
+    }
+
+    private Boolean resolvePermissionDeclared(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return switch (ApiPermissionDeclaredStatus.valueOf(raw.trim().toUpperCase())) {
+            case DECLARED -> true;
+            case UNDECLARED -> false;
+        };
+    }
+
+    private ApiAccessType resolveAccessType(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return ApiAccessType.valueOf(raw.trim().toUpperCase());
+    }
+
+    private UserType resolveUserType(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return UserType.valueOf(raw.trim().toUpperCase());
+    }
+
+    private Boolean resolveAuditDeclared(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return switch (ApiAuditDeclaredStatus.valueOf(raw.trim().toUpperCase())) {
+            case ENABLED -> true;
+            case DISABLED -> false;
+        };
+    }
+
+    private Boolean resolveEnabled(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return switch (ApiStatus.valueOf(raw.trim().toUpperCase())) {
+            case ACTIVE -> true;
+            case DISABLED -> false;
+            default -> null;
+        };
     }
 }

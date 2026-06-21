@@ -16,6 +16,6 @@ public interface ApiRepository extends DomainRepository<Api, Long> {
 
     List<Api> findAll();
 
-    PageData<Api> page(String keyword, Boolean enabled, PageSpec spec);
+    PageData<Api> page(ApiPageQuery query, PageSpec spec);
 
 }

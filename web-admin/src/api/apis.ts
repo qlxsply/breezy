@@ -22,6 +22,20 @@ interface ApiPayload {
   enabled: boolean;
 }
 
+export interface ApiPageQueryParams {
+  module?: string;
+  pathPattern?: string;
+  handlerClass?: string;
+  handlerMethod?: string;
+  permissionDeclared?: string;
+  accessType?: string;
+  userType?: string;
+  auditDeclared?: string;
+  status?: string;
+  pageNo: number;
+  pageSize: number;
+}
+
 function toApiEntry(payload: ApiPayload): ApiEntry {
   return {
     id: String(payload.id),
@@ -47,13 +61,19 @@ export async function listApis(): Promise<ApiEntry[]> {
   return rows.map(toApiEntry);
 }
 
-export async function pageApis(keyword: string, pageNo: number, pageSize: number): Promise<PageResult<ApiEntry>> {
+export async function pageApis(query: ApiPageQueryParams): Promise<PageResult<ApiEntry>> {
   const params = new URLSearchParams();
-  if (keyword.trim()) {
-    params.set("keyword", keyword.trim());
-  }
-  params.set("pageNo", String(pageNo));
-  params.set("pageSize", String(pageSize));
+  appendQueryParam(params, "module", query.module);
+  appendQueryParam(params, "pathPattern", query.pathPattern);
+  appendQueryParam(params, "handlerClass", query.handlerClass);
+  appendQueryParam(params, "handlerMethod", query.handlerMethod);
+  appendQueryParam(params, "permissionDeclared", query.permissionDeclared);
+  appendQueryParam(params, "accessType", query.accessType);
+  appendQueryParam(params, "userType", query.userType);
+  appendQueryParam(params, "auditDeclared", query.auditDeclared);
+  appendQueryParam(params, "status", query.status);
+  params.set("pageNo", String(query.pageNo));
+  params.set("pageSize", String(query.pageSize));
 
   const page = await get<PageResult<ApiPayload>>(`${BASE}/page?${params.toString()}`);
   return {
@@ -70,4 +90,11 @@ export async function publishApi(id: string): Promise<ApiEntry> {
 export async function disableApi(id: string): Promise<ApiEntry> {
   const row = await put<ApiPayload>(`${BASE}/${id}/disable`, {});
   return toApiEntry(row);
+}
+
+function appendQueryParam(params: URLSearchParams, key: string, value?: string) {
+  const normalized = value?.trim();
+  if (normalized) {
+    params.set(key, normalized);
+  }
 }

@@ -5,6 +5,7 @@ import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
 import com.corwin.system.resource.domain.model.Api;
+import com.corwin.system.resource.domain.repo.ApiPageQuery;
 import com.corwin.system.resource.domain.repo.ApiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,8 @@ public class ApiAdminService {
         return apiRepository.findAll();
     }
 
-    public PageData<Api> page(String keyword, Boolean enabled, PageSpec spec) {
-        return apiRepository.page(keyword, enabled, spec);
+    public PageData<Api> page(ApiPageQuery query, PageSpec spec) {
+        return apiRepository.page(query, spec);
     }
 
     public Api get(Long id) {

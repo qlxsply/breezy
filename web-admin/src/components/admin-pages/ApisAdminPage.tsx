@@ -3,20 +3,22 @@
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
-import { BzButton, BzCard, BzFormItem, BzInput, BzPagination } from "@admin/components/bz";
+import { BzButton, BzCard, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const API_DICT_CODES = ["API_METHOD", "API_PROTOCOL", "API_ACCESS_TYPE"] as const;
-const USER_TYPE_LABELS: Record<string, string> = {
-  SYSTEM: "系统账号",
-  INTERNAL: "账号",
-  EXTERNAL: "用户",
-  GUEST: "游客",
-};
+const API_DICT_CODES = [
+  "API_METHOD",
+  "API_PROTOCOL",
+  "API_ACCESS_TYPE",
+  "USER_TYPE",
+  "API_STATUS",
+  "API_PERMISSION_DECLARED",
+  "API_AUDIT_DECLARED",
+] as const;
 
 export function ApisAdminPage() {
   const [loading, setLoading] = useState(false);
@@ -31,13 +33,33 @@ export function ApisAdminPage() {
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
   const [queryExpanded, setQueryExpanded] = useState(false);
   const [querySingleRow, setQuerySingleRow] = useState(true);
-  const [keywordDraft, setKeywordDraft] = useState("");
-  const [appliedKeyword, setAppliedKeyword] = useState("");
+  const [moduleDraft, setModuleDraft] = useState("");
+  const [pathPatternDraft, setPathPatternDraft] = useState("");
+  const [handlerClassDraft, setHandlerClassDraft] = useState("");
+  const [handlerMethodDraft, setHandlerMethodDraft] = useState("");
+  const [permissionDeclaredDraft, setPermissionDeclaredDraft] = useState("");
+  const [accessTypeDraft, setAccessTypeDraft] = useState("");
+  const [userTypeDraft, setUserTypeDraft] = useState("");
+  const [auditDeclaredDraft, setAuditDeclaredDraft] = useState("");
+  const [statusDraft, setStatusDraft] = useState("");
+  const [appliedModule, setAppliedModule] = useState("");
+  const [appliedPathPattern, setAppliedPathPattern] = useState("");
+  const [appliedHandlerClass, setAppliedHandlerClass] = useState("");
+  const [appliedHandlerMethod, setAppliedHandlerMethod] = useState("");
+  const [appliedPermissionDeclared, setAppliedPermissionDeclared] = useState("");
+  const [appliedAccessType, setAppliedAccessType] = useState("");
+  const [appliedUserType, setAppliedUserType] = useState("");
+  const [appliedAuditDeclared, setAppliedAuditDeclared] = useState("");
+  const [appliedStatus, setAppliedStatus] = useState("");
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [methodLabelMap, setMethodLabelMap] = useState<Record<string, string>>({});
   const [protocolLabelMap, setProtocolLabelMap] = useState<Record<string, string>>({});
   const [accessTypeLabelMap, setAccessTypeLabelMap] = useState<Record<string, string>>({});
+  const [userTypeLabelMap, setUserTypeLabelMap] = useState<Record<string, string>>({});
+  const [statusLabelMap, setStatusLabelMap] = useState<Record<string, string>>({});
+  const [permissionDeclaredLabelMap, setPermissionDeclaredLabelMap] = useState<Record<string, string>>({});
+  const [auditDeclaredLabelMap, setAuditDeclaredLabelMap] = useState<Record<string, string>>({});
 
   const canPublish = hasResourceCodeAccess("api-manage-publish");
   const canDisable = hasResourceCodeAccess("api-manage-disable");
@@ -51,7 +73,19 @@ export function ApisAdminPage() {
 
   useEffect(() => {
     void reload();
-  }, [appliedKeyword, pageNo, pageSize]);
+  }, [
+    appliedModule,
+    appliedPathPattern,
+    appliedHandlerClass,
+    appliedHandlerMethod,
+    appliedPermissionDeclared,
+    appliedAccessType,
+    appliedUserType,
+    appliedAuditDeclared,
+    appliedStatus,
+    pageNo,
+    pageSize,
+  ]);
 
   useEffect(() => {
     if (!queryPanelVisible) {
@@ -109,10 +143,19 @@ export function ApisAdminPage() {
         protocolLabel: protocolLabelMap[api.protocol] || api.protocol,
         httpMethodLabel: methodLabelMap[api.httpMethod] || api.httpMethod,
         accessTypeLabel: accessTypeLabelMap[api.accessType] || api.accessType,
-        userTypeLabels: resolveUserTypeLabels(api.userTypes),
+        userTypeLabels: resolveUserTypeLabels(api.userTypes, userTypeLabelMap),
         auditTooltip: buildAuditTooltip(api),
       })),
-    [accessTypeLabelMap, methodLabelMap, page.elements, protocolLabelMap],
+    [accessTypeLabelMap, methodLabelMap, page.elements, protocolLabelMap, userTypeLabelMap],
+  );
+
+  const accessTypeOptions = useMemo(() => toOptions(accessTypeLabelMap), [accessTypeLabelMap]);
+  const userTypeOptions = useMemo(() => toOptions(userTypeLabelMap), [userTypeLabelMap]);
+  const permissionDeclaredOptions = useMemo(() => toOptions(permissionDeclaredLabelMap), [permissionDeclaredLabelMap]);
+  const auditDeclaredOptions = useMemo(() => toOptions(auditDeclaredLabelMap), [auditDeclaredLabelMap]);
+  const statusOptions = useMemo(
+    () => toOptions(statusLabelMap).filter((item) => item.value === "ACTIVE" || item.value === "DISABLED"),
+    [statusLabelMap],
   );
 
   async function loadDictionaries() {
@@ -121,17 +164,42 @@ export function ApisAdminPage() {
       setMethodLabelMap(toLabelMap(result.API_METHOD));
       setProtocolLabelMap(toLabelMap(result.API_PROTOCOL));
       setAccessTypeLabelMap(toLabelMap(result.API_ACCESS_TYPE));
+      setUserTypeLabelMap(toLabelMap(result.USER_TYPE));
+      setStatusLabelMap(toLabelMap(result.API_STATUS));
+      setPermissionDeclaredLabelMap(toLabelMap(result.API_PERMISSION_DECLARED));
+      setAuditDeclaredLabelMap(toLabelMap(result.API_AUDIT_DECLARED));
     } catch {
       setMethodLabelMap({});
       setProtocolLabelMap({});
       setAccessTypeLabelMap({});
+      setUserTypeLabelMap({
+        SYSTEM: "系统账号",
+        INTERNAL: "账号",
+        EXTERNAL: "用户",
+        GUEST: "游客",
+      });
+      setStatusLabelMap({ ACTIVE: "启用", DISABLED: "停用" });
+      setPermissionDeclaredLabelMap({ DECLARED: "已声明", UNDECLARED: "未声明" });
+      setAuditDeclaredLabelMap({ ENABLED: "已开启", DISABLED: "未开启" });
     }
   }
 
   async function reload() {
     setLoading(true);
     try {
-      const nextPage = await pageApis(appliedKeyword, pageNo, pageSize);
+      const nextPage = await pageApis({
+        module: appliedModule,
+        pathPattern: appliedPathPattern,
+        handlerClass: appliedHandlerClass,
+        handlerMethod: appliedHandlerMethod,
+        permissionDeclared: appliedPermissionDeclared,
+        accessType: appliedAccessType,
+        userType: appliedUserType,
+        auditDeclared: appliedAuditDeclared,
+        status: appliedStatus,
+        pageNo,
+        pageSize,
+      });
       setPage(nextPage);
     } finally {
       setLoading(false);
@@ -139,13 +207,37 @@ export function ApisAdminPage() {
   }
 
   function applyFilters() {
-    setAppliedKeyword(keywordDraft.trim());
+    setAppliedModule(moduleDraft.trim());
+    setAppliedPathPattern(pathPatternDraft.trim());
+    setAppliedHandlerClass(handlerClassDraft.trim());
+    setAppliedHandlerMethod(handlerMethodDraft.trim());
+    setAppliedPermissionDeclared(permissionDeclaredDraft);
+    setAppliedAccessType(accessTypeDraft);
+    setAppliedUserType(userTypeDraft);
+    setAppliedAuditDeclared(auditDeclaredDraft);
+    setAppliedStatus(statusDraft);
     setPageNo(1);
   }
 
   function resetFilters() {
-    setKeywordDraft("");
-    setAppliedKeyword("");
+    setModuleDraft("");
+    setPathPatternDraft("");
+    setHandlerClassDraft("");
+    setHandlerMethodDraft("");
+    setPermissionDeclaredDraft("");
+    setAccessTypeDraft("");
+    setUserTypeDraft("");
+    setAuditDeclaredDraft("");
+    setStatusDraft("");
+    setAppliedModule("");
+    setAppliedPathPattern("");
+    setAppliedHandlerClass("");
+    setAppliedHandlerMethod("");
+    setAppliedPermissionDeclared("");
+    setAppliedAccessType("");
+    setAppliedUserType("");
+    setAppliedAuditDeclared("");
+    setAppliedStatus("");
     setPageNo(1);
   }
 
@@ -205,15 +297,146 @@ export function ApisAdminPage() {
                   }}
                 >
                   <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">关键字</div>
+                    <div className="admin-query-field__label">模块</div>
                     <div className="admin-query-field__control">
                       <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="搜索模块、路径、处理类、处理方法"
+                        modelValue={moduleDraft}
+                        placeholder="请输入模块"
                         clearable
-                        onValueChange={setKeywordDraft}
+                        onValueChange={setModuleDraft}
                         onKeyUp={(event) => event.key === "Enter" && applyFilters()}
                       />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">路径</div>
+                    <div className="admin-query-field__control">
+                      <BzInput
+                        modelValue={pathPatternDraft}
+                        placeholder="请输入路径"
+                        clearable
+                        onValueChange={setPathPatternDraft}
+                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                      />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">处理类</div>
+                    <div className="admin-query-field__control">
+                      <BzInput
+                        modelValue={handlerClassDraft}
+                        placeholder="请输入处理类"
+                        clearable
+                        onValueChange={setHandlerClassDraft}
+                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                      />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">处理方法</div>
+                    <div className="admin-query-field__control">
+                      <BzInput
+                        modelValue={handlerMethodDraft}
+                        placeholder="请输入处理方法"
+                        clearable
+                        onValueChange={setHandlerMethodDraft}
+                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                      />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">权限声明</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={permissionDeclaredDraft || undefined}
+                        placeholder="请选择权限声明"
+                        clearable
+                        onValueChange={(value) => setPermissionDeclaredDraft(value || "")}
+                      >
+                        {permissionDeclaredOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">访问类型</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={accessTypeDraft || undefined}
+                        placeholder="请选择访问类型"
+                        clearable
+                        onValueChange={(value) => setAccessTypeDraft(value || "")}
+                      >
+                        {accessTypeOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">用户类型</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={userTypeDraft || undefined}
+                        placeholder="请选择用户类型"
+                        clearable
+                        onValueChange={(value) => setUserTypeDraft(value || "")}
+                      >
+                        {userTypeOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">审计</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={auditDeclaredDraft || undefined}
+                        placeholder="请选择审计状态"
+                        clearable
+                        onValueChange={(value) => setAuditDeclaredDraft(value || "")}
+                      >
+                        {auditDeclaredOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">状态</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={statusDraft || undefined}
+                        placeholder="请选择状态"
+                        clearable
+                        onValueChange={(value) => setStatusDraft(value || "")}
+                      >
+                        {statusOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
                     </div>
                   </BzFormItem>
                 </form>
@@ -311,8 +534,12 @@ function toLabelMap(items?: DictItem[]): Record<string, string> {
   return map;
 }
 
-function resolveUserTypeLabels(raw?: string): string[] {
-  return parseUserTypes(raw).map((code) => USER_TYPE_LABELS[code] || code);
+function resolveUserTypeLabels(raw: string | undefined, labelMap: Record<string, string>): string[] {
+  return parseUserTypes(raw).map((code) => labelMap[code] || code);
+}
+
+function toOptions(labelMap: Record<string, string>) {
+  return Object.entries(labelMap).map(([value, label]) => ({ value, label }));
 }
 
 function parseUserTypes(raw?: string): string[] {

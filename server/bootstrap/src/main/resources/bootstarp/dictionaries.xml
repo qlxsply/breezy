@@ -332,6 +332,26 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
+        <id>dict-type-api-permission-declared</id>
+        <code>API_PERMISSION_DECLARED</code>
+        <name>接口权限声明状态</name>
+        <description>接口权限声明状态。</description>
+        <enumClass>com.corwin.system.resource.domain.model.ApiPermissionDeclaredStatus</enumClass>
+        <valueType>STRING</valueType>
+        <structureType>FLAT</structureType>
+        <enabled>true</enabled>
+    </dictionary>
+    <dictionary>
+        <id>dict-type-api-audit-declared</id>
+        <code>API_AUDIT_DECLARED</code>
+        <name>接口审计状态</name>
+        <description>接口审计状态。</description>
+        <enumClass>com.corwin.system.resource.domain.model.ApiAuditDeclaredStatus</enumClass>
+        <valueType>STRING</valueType>
+        <structureType>FLAT</structureType>
+        <enabled>true</enabled>
+    </dictionary>
+    <dictionary>
         <id>dict-type-function-type</id>
         <code>FUNCTION_TYPE</code>
         <name>功能类型</name>
