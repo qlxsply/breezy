@@ -1,10 +1,16 @@
 package com.corwin.system.resource.infrastructure.persistence;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.util.StrUtil;
+import com.corwin.framework.xsql.XSql;
+import com.corwin.framework.xsql.XTableQuery;
 import com.corwin.system.resource.domain.model.Api;
 import com.corwin.system.resource.domain.repo.ApiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +22,8 @@ import java.util.Optional;
 public class ApiRepositoryJpaAdapter implements ApiRepository {
 
     private final ApiJpaRepository repo;
+    private final XSql xSql;
+    private final DataSource dataSource;
 
     @Override
     public <S extends Api> S save(S entity) {
@@ -58,4 +66,16 @@ public class ApiRepositoryJpaAdapter implements ApiRepository {
     public List<Api> findAll() {
         return repo.findAll();
     }
+
+    @Override
+    public PageData<Api> page(String keyword, Boolean enabled, PageSpec spec) {
+        keyword = StrUtil.trimToNull(keyword);
+        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
+
+        XTableQuery<Api, Api> dynamicQuery = xSql.using(dataSource).table(Api.class, Api.class)
+                .likeIf(StrUtil.isNotBlank(keyword), Api::getPathPattern, "%" + keyword + "%")
+                .eqIf(enabled != null, Api::getEnabled, enabled).applySort(resolvedSpec);
+        return dynamicQuery.page(resolvedSpec.pageNo(), resolvedSpec.pageSize());
+    }
+
 }

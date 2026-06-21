@@ -253,6 +253,17 @@ Application Service
 - 调度实现
 - 外部系统调用
 
+### 3.4.1 分页与动态查询实现约定
+
+AI 在实现带有分页、筛选、搜索、排序的查询接口时必须遵守以下规则：
+
+- 只要查询存在 **分页** 或 **动态查询条件**，默认优先使用 `XSQL` 实现
+- 不要优先使用 Spring Data JPA 方法名派生查询、`@Query` 拼接分页查询来承载复杂列表页
+- 简单主键查询、唯一键查询、固定条件存在性判断、少量静态条件查询可以继续使用 JPA Repository
+- 一旦进入后台列表页、条件筛选页、统计检索页等场景，优先在 `infrastructure.persistence` 中使用 `XSql` / `XNativeQuery` / `XTableQuery`
+- 分页查询应在仓储实现层统一处理：条件构造、排序映射、分页执行、`PageData` 返回
+- Application Service 负责用例编排，不承载 SQL 细节
+
 ### 3.5 DDD 重要规则
 
 AI 必须遵守：

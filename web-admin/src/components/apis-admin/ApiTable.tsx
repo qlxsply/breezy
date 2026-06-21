@@ -51,12 +51,16 @@ export function ApiTable({
       render: (row) => <span className="mono">{row.pathPattern}</span>,
     },
     {
-      key: "handler",
-      title: "处理器",
-      minWidth: 380,
-      render: (row) => (
-        <span className="mono subdued">{formatHandler(row.handlerClass, row.handlerMethod)}</span>
-      ),
+      key: "handlerClass",
+      title: "处理类",
+      minWidth: 300,
+      render: (row) => <span className="mono subdued">{row.handlerClass || "-"}</span>,
+    },
+    {
+      key: "handlerMethod",
+      title: "处理方法",
+      minWidth: 180,
+      render: (row) => <span className="mono subdued">{row.handlerMethod || "-"}</span>,
     },
     {
       key: "permissionDeclared",
@@ -182,11 +186,6 @@ function accessTagType(accessType?: string): "info" | "success" | "warning" | "d
     default:
       return "info";
   }
-}
-
-function formatHandler(handlerClass?: string, handlerMethod?: string) {
-  if (handlerClass && handlerMethod) return `${handlerClass}#${handlerMethod}`;
-  return handlerClass || handlerMethod || "-";
 }
 
 function getRowActions(

@@ -1,4 +1,5 @@
 import type { ApiEntry } from "../types/api-admin";
+import type { PageResult } from "../types/page";
 import { get, put } from "./http";
 
 const BASE = "/apis";
@@ -44,6 +45,21 @@ function toApiEntry(payload: ApiPayload): ApiEntry {
 export async function listApis(): Promise<ApiEntry[]> {
   const rows = await get<ApiPayload[]>(BASE);
   return rows.map(toApiEntry);
+}
+
+export async function pageApis(keyword: string, pageNo: number, pageSize: number): Promise<PageResult<ApiEntry>> {
+  const params = new URLSearchParams();
+  if (keyword.trim()) {
+    params.set("keyword", keyword.trim());
+  }
+  params.set("pageNo", String(pageNo));
+  params.set("pageSize", String(pageSize));
+
+  const page = await get<PageResult<ApiPayload>>(`${BASE}/page?${params.toString()}`);
+  return {
+    ...page,
+    elements: page.elements.map(toApiEntry),
+  };
 }
 
 export async function publishApi(id: string): Promise<ApiEntry> {

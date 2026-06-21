@@ -1,6 +1,7 @@
 package com.corwin.framework.xsql;
 
 import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 
 import java.util.Collection;
 import java.util.List;
@@ -244,6 +245,8 @@ public interface XTableQuery<E, R> {
     XTableQuery<E, R> orderByIf(boolean condition, String propertyPath, XSortDirection direction);
 
     XTableQuery<E, R> orderByIf(boolean condition, XGetter<E, ?> getter, XSortDirection direction);
+
+    XTableQuery<E, R> applySort(PageSpec spec);
 
     /**
      * 执行列表查询。

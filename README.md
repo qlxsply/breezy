@@ -132,6 +132,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 需要继续细分时，优先使用“区域名 + 功能名”的方式命名
     - 示例：`关键字筛选项`、`状态筛选项`、`主刷新按钮`、`查询面板开关按钮`、`操作列`、`详情弹窗`、`编辑弹窗`
 - `/admin/apis` 页面可作为当前标准参考页，其页面结构默认按上述术语理解和沟通。
+- `/admin/apis` 当前前端列表接口应直接调用分页接口 `/api/apis/page`，不再拉全量列表后做前端本地分页；`/api/apis` 可保留给其他非分页场景复用。
 - 后台壳体级自助页面约定
     - 例如：`/admin/profile`、`/admin/profile/password`、`/admin/profile/preferences`、`/admin/help`
     - 这类页面属于 `user-panel` 下拉菜单入口，不属于后台侧边导航区菜单
@@ -197,6 +198,25 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 - `@ElementCollection` 这类会隐式引入集合表关联的映射默认禁止使用，优先改为普通字段序列化或独立实体 + 逻辑外键
 - 开发阶段保持 `spring.jpa.hibernate.ddl-auto=update`，继续通过运行自动更新表结构
 - 默认不考虑历史数据、旧表结构、旧约束、旧数据迁移与兼容；仅在需求明确提出时处理
+- 分页查询、动态筛选查询、后台列表检索查询默认优先使用 `XSQL` 实现，不优先使用 Spring Data JPA 方法名派生或 `@Query` 直接拼装复杂分页逻辑
+- `XSQL` 使用约定：
+    - `XTableQuery`：适用于单表、按实体属性路径构造条件、条件之间以 `AND` 组合的场景
+    - `XNativeQuery`：适用于需要自定义 SQL、跨字段表达式、`OR` 组合、复杂统计、别名排序映射的场景
+    - 选择原则：
+        - 如果查询条件都能直接映射到实体属性，并且 where 逻辑是普通 `AND` 叠加，优先使用 `XTableQuery`
+        - 如果关键字查询需要覆盖多个字段并通过 `OR` 命中，或需要 `concat/coalesce/case when/聚合` 这类表达式，改用 `XNativeQuery`
+        - 不要为了强行使用 `XTableQuery` 而把本应是 `OR` 的语义错误改写成多个 `AND like`
+    - `*If` 系列方法（如 `eqIf / likeIf / inIf / betweenIf`）用于动态条件拼装，条件不满足时自动忽略
+    - `likeIf` 不会自动补 `%`，需要调用方显式传入，例如 `"%" + keyword + "%"`
+    - 排序应在仓储实现层做字段白名单映射：
+        - `XTableQuery` 使用 `orderBy(...)`
+        - `XNativeQuery` 使用 `orderByAlias(...)`
+        - 不要直接信任前端字段名
+    - 分页统一在仓储层返回 `PageData<T>`，Controller 再转换为 `PageResult<T>`
+    - 推荐模板：
+        - `XTableQuery`：参考 `com.corwin.datasource.infrastructure.persistence.DatabaseTableRepositoryJpaAdapter#pageByQuery`
+        - `XNativeQuery`：适用于 API 列表这类“模块 / 路径 / 处理类 / 处理方法 任一命中”的关键字检索场景
+    - 简单主键查询、唯一键查询、固定条件存在性判断仍可继续使用普通 JPA Repository
 - Bootstrap SQL 结构文件是引导程序建库建表的权威输入之一，必须与应用实体定义保持一致：
     - 系统域实体对应 `server/bootstrap/src/main/resources/bootstarp/sql/*/system_schema.sql`
     - 业务域实体对应 `server/bootstrap/src/main/resources/bootstarp/sql/*/business_schema.sql`

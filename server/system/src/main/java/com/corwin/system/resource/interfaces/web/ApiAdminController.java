@@ -1,7 +1,9 @@
 package com.corwin.system.resource.interfaces.web;
 
 import com.corwin.framework.constant.UserType;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.audit.domain.model.AuditAction;
 import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditResource;
@@ -13,11 +15,7 @@ import com.corwin.system.resource.interfaces.web.res.ApiRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -38,6 +36,15 @@ public class ApiAdminController {
         return ApiResponse.ok(apiAdminService.listAll().stream().map(this::toDto).toList());
     }
 
+    @GetMapping("/page")
+    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"api.view"})
+    public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean enabled, @RequestParam(defaultValue = "1") Integer pageNo,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageSpec pageSpec = PageSpec.of(pageNo, pageSize, List.of());
+        return ApiResponse.ok(PageResult.of(apiAdminService.page(keyword, enabled, pageSpec), this::toDto));
+    }
+
     @PutMapping("/{id}/publish")
     @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"api.pub"})
     @Audit(resource = AuditResource.API, action = AuditAction.PUBLISH, level = AuditLevel.HIGH)
@@ -53,10 +60,10 @@ public class ApiAdminController {
     }
 
     private ApiRes toDto(Api api) {
-        return new ApiRes(api.getId(), api.getModule(), api.getProtocol(), api.getHttpMethod(),
-                api.getPathPattern(), api.getHandlerClass(), api.getHandlerMethod(),
-                Boolean.TRUE.equals(api.getPermissionDeclared()), api.getAccessType(), api.getUserTypes(),
-                Boolean.TRUE.equals(api.getAuditDeclared()), api.getAuditResource(), api.getAuditAction(),
-                api.getAuditDescription(), Boolean.TRUE.equals(api.getEnabled()), 0, false);
+        return new ApiRes(api.getId(), api.getModule(), api.getProtocol(), api.getHttpMethod(), api.getPathPattern(),
+                api.getHandlerClass(), api.getHandlerMethod(), Boolean.TRUE.equals(api.getPermissionDeclared()),
+                api.getAccessType(), api.getUserTypes(), Boolean.TRUE.equals(api.getAuditDeclared()),
+                api.getAuditResource(), api.getAuditAction(), api.getAuditDescription(),
+                Boolean.TRUE.equals(api.getEnabled()), 0, false);
     }
 }

@@ -163,8 +163,111 @@
   min-height: 32px;
 }
 
+.admin-query-layout {
+  container-type: inline-size;
+}
+
+.admin-query-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-query-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-query-title::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  border-radius: 999px;
+  background: #2563eb;
+  flex: none;
+}
+
+.admin-query-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: none;
+  white-space: nowrap;
+}
+
+.admin-query-grid.bz-form {
+  --admin-query-field-width: 300px;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width)));
+  gap: 14px 16px;
+  justify-content: start;
+  align-items: start;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+
+.admin-query-layout.is-collapsed .admin-query-grid {
+  max-height: var(--admin-query-collapsed-height, 60px);
+}
+
+.admin-query-layout.is-expanded .admin-query-grid {
+  max-height: var(--admin-query-expanded-height, 1000px);
+}
+
+.admin-query-layout.is-single-row .admin-query-grid {
+  max-height: none;
+  overflow: visible;
+}
+
+.admin-query-field {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-query-field .bz-form-item__content {
+  display: flex;
+  width: 100%;
+}
+
+.admin-query-field__label {
+  height: 18px;
+  margin-bottom: 6px;
+  color: #344258;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-query-field__control {
+  width: 100%;
+}
+
+.admin-query-field__control .bz-input,
+.admin-query-field__control .bz-select {
+  min-height: 36px;
+  border-color: #d4ddeb;
+  border-radius: 8px;
+}
+
+.admin-query-field__control .bz-input__inner,
+.admin-query-field__control .bz-select__inner {
+  height: 34px;
+  font-size: 13px;
+}
+
 .admin-table-card .bz-card__header {
-  padding: 16px 20px 10px;
+  padding: 10px 20px 10px;
   border-bottom: none;
 }
 
@@ -325,6 +428,98 @@
   overflow: hidden;
 }
 
+.dict-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 48px;
+  padding: 5px 20px 5px 20px;
+  color: #475569;
+}
+
+.dict-pagination-summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.dict-pagination-right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 32px;
+  margin-left: auto;
+}
+
+.dict-page-size {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dict-page-size__select {
+  min-width: 92px;
+  height: 32px;
+  padding: 0 12px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.dict-page-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dict-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dict-page-btn:hover:not(:disabled) {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.dict-page-btn.is-active {
+  color: #ffffff;
+  background: #1677ff;
+  border-color: #1677ff;
+}
+
+.dict-page-btn:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.dict-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  color: #94a3b8;
+}
+
 @media (max-width: 1200px) {
   .admin-filter-form.bz-form {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
@@ -343,6 +538,16 @@
 @media (max-width: 768px) {
   .admin-filter-form.bz-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-query-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-query-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .admin-filter-field {
@@ -373,5 +578,16 @@
   .admin-table-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .dict-pagination-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dict-pagination-right {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 }

@@ -1,22 +1,14 @@
 "use client";
 
-import { disableApi, listApis, publishApi } from "@admin/api/apis";
+import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
-import {
-  BzButton,
-  BzCard,
-  BzForm,
-  BzFormItem,
-  BzInput,
-  BzOption,
-  BzPagination,
-  BzSelect,
-} from "@admin/components/bz";
+import { BzButton, BzCard, BzFormItem, BzInput, BzPagination } from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
-import { useEffect, useMemo, useState } from "react";
+import type { PageResult } from "@admin/types/page";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const API_DICT_CODES = ["API_METHOD", "API_PROTOCOL", "API_ACCESS_TYPE"] as const;
 const USER_TYPE_LABELS: Record<string, string> = {
@@ -28,15 +20,19 @@ const USER_TYPE_LABELS: Record<string, string> = {
 
 export function ApisAdminPage() {
   const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<ApiEntry[]>([]);
+  const [page, setPage] = useState<PageResult<ApiEntry>>({
+    pageNo: 1,
+    pageSize: 10,
+    numberOfElements: 0,
+    totalPages: 0,
+    totalElements: 0,
+    elements: [],
+  });
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
-  const [queryCollapsed, setQueryCollapsed] = useState(false);
+  const [queryExpanded, setQueryExpanded] = useState(false);
+  const [querySingleRow, setQuerySingleRow] = useState(true);
   const [keywordDraft, setKeywordDraft] = useState("");
-  const [moduleDraft, setModuleDraft] = useState<string | undefined>();
-  const [statusDraft, setStatusDraft] = useState<string | undefined>();
   const [appliedKeyword, setAppliedKeyword] = useState("");
-  const [appliedModule, setAppliedModule] = useState<string | undefined>();
-  const [appliedStatus, setAppliedStatus] = useState<string | undefined>();
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [methodLabelMap, setMethodLabelMap] = useState<Record<string, string>>({});
@@ -46,24 +42,69 @@ export function ApisAdminPage() {
   const canPublish = hasResourceCodeAccess("api-manage-publish");
   const canDisable = hasResourceCodeAccess("api-manage-disable");
   const pageSizeOptions = [10, 20, 30, 50, 100, 200];
+  const queryCardRef = useRef<HTMLDivElement | null>(null);
+  const queryGridRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    void Promise.all([loadDictionaries(), reload()]);
+    void loadDictionaries();
   }, []);
 
-  const moduleOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          rows.map((item) => item.module?.trim()).filter((item): item is string => Boolean(item)),
-        ),
-      ).sort((a, b) => a.localeCompare(b)),
-    [rows],
-  );
+  useEffect(() => {
+    void reload();
+  }, [appliedKeyword, pageNo, pageSize]);
+
+  useEffect(() => {
+    if (!queryPanelVisible) {
+      return;
+    }
+
+    const card = queryCardRef.current;
+    const grid = queryGridRef.current;
+    if (!card || !grid) {
+      return;
+    }
+
+    const refreshCollapseState = () => {
+      const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
+      if (fields.length === 0) {
+        card.style.removeProperty("--admin-query-collapsed-height");
+        card.style.removeProperty("--admin-query-expanded-height");
+        setQuerySingleRow(true);
+        return;
+      }
+
+      const previousMaxHeight = grid.style.maxHeight;
+      grid.style.maxHeight = "none";
+
+      const rowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort((left, right) => left - right);
+      const firstRowTop = rowTops[0] || 0;
+      const firstRowFields = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
+      const firstRowBottom = Math.max(...firstRowFields.map((field) => field.offsetTop + field.offsetHeight), 0);
+      const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
+      const expandedHeight = grid.scrollHeight;
+
+      grid.style.maxHeight = previousMaxHeight;
+
+      card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
+      card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
+      setQuerySingleRow(rowTops.length <= 1);
+    };
+
+    refreshCollapseState();
+
+    const observer = new ResizeObserver(() => {
+      refreshCollapseState();
+    });
+
+    observer.observe(grid);
+    return () => {
+      observer.disconnect();
+    };
+  }, [queryPanelVisible]);
 
   const enrichedRows = useMemo(
     () =>
-      rows.map((api) => ({
+      page.elements.map((api) => ({
         ...api,
         protocolLabel: protocolLabelMap[api.protocol] || api.protocol,
         httpMethodLabel: methodLabelMap[api.httpMethod] || api.httpMethod,
@@ -71,51 +112,8 @@ export function ApisAdminPage() {
         userTypeLabels: resolveUserTypeLabels(api.userTypes),
         auditTooltip: buildAuditTooltip(api),
       })),
-    [accessTypeLabelMap, methodLabelMap, protocolLabelMap, rows],
+    [accessTypeLabelMap, methodLabelMap, page.elements, protocolLabelMap],
   );
-
-  const filteredRows = useMemo(() => {
-    const kw = appliedKeyword.trim().toLowerCase();
-    const moduleValue = appliedModule?.trim() || "";
-    const statusValue = appliedStatus?.trim() || "";
-    return enrichedRows.filter((api) => {
-      if (moduleValue && api.module !== moduleValue) return false;
-      if (statusValue === "enabled" && !api.enabled) return false;
-      if (statusValue === "disabled" && api.enabled) return false;
-      if (!kw) return true;
-      const text = [
-        api.module,
-        api.protocol,
-        api.protocolLabel,
-        api.httpMethod,
-        api.httpMethodLabel,
-        api.pathPattern,
-        api.handlerClass,
-        api.handlerMethod,
-        api.accessType,
-        api.accessTypeLabel,
-        api.userTypes,
-        ...(api.userTypeLabels || []),
-        api.auditResource,
-        api.auditAction,
-        api.auditDescription,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return text.includes(kw);
-    });
-  }, [appliedKeyword, appliedModule, appliedStatus, enrichedRows]);
-
-  const pagedRows = useMemo(
-    () => filteredRows.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize),
-    [filteredRows, pageNo, pageSize],
-  );
-
-  useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-    if (pageNo > totalPages) setPageNo(totalPages);
-  }, [filteredRows.length, pageNo, pageSize]);
 
   async function loadDictionaries() {
     try {
@@ -133,26 +131,21 @@ export function ApisAdminPage() {
   async function reload() {
     setLoading(true);
     try {
-      setRows(await listApis());
+      const nextPage = await pageApis(appliedKeyword, pageNo, pageSize);
+      setPage(nextPage);
     } finally {
       setLoading(false);
     }
   }
 
   function applyFilters() {
-    setAppliedKeyword(keywordDraft);
-    setAppliedModule(moduleDraft);
-    setAppliedStatus(statusDraft);
+    setAppliedKeyword(keywordDraft.trim());
     setPageNo(1);
   }
 
   function resetFilters() {
     setKeywordDraft("");
-    setModuleDraft(undefined);
-    setStatusDraft(undefined);
     setAppliedKeyword("");
-    setAppliedModule(undefined);
-    setAppliedStatus(undefined);
     setPageNo(1);
   }
 
@@ -165,99 +158,66 @@ export function ApisAdminPage() {
               className="admin-panel admin-filter-card"
               shadow="never"
             >
-              <BzForm
-                className={`admin-filter-form${queryCollapsed ? " is-collapsed" : ""}`}
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  applyFilters();
-                }}
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
               >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">关键字</div>
-                    <div className="admin-filter-control">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      onClick={resetFilters}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton
+                      className="admin-filter-primary"
+                      buttonType="primary"
+                      onClick={applyFilters}
+                    >
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i
+                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">关键字</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordDraft}
-                        placeholder="搜索模块、路径、处理器、访问类型"
+                        placeholder="搜索模块、路径、处理类、处理方法"
                         clearable
                         onValueChange={setKeywordDraft}
                         onKeyUp={(event) => event.key === "Enter" && applyFilters()}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">模块</div>
-                    <div className="admin-filter-control">
-                      <BzSelect
-                        modelValue={moduleDraft}
-                        placeholder="请选择模块"
-                        clearable
-                        onValueChange={setModuleDraft}
-                      >
-                        {moduleOptions.map((option) => (
-                          <BzOption
-                            key={option}
-                            label={option}
-                            value={option}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </div>
-                </BzFormItem>
-                {!queryCollapsed ? (
-                  <BzFormItem className="admin-filter-item">
-                    <div className="admin-filter-field">
-                      <div className="admin-filter-label">状态</div>
-                      <div className="admin-filter-control">
-                        <BzSelect
-                          modelValue={statusDraft}
-                          placeholder="请选择状态"
-                          clearable
-                          onValueChange={setStatusDraft}
-                        >
-                          <BzOption
-                            label="启用"
-                            value="enabled"
-                          />
-                          <BzOption
-                            label="停用"
-                            value="disabled"
-                          />
-                        </BzSelect>
-                      </div>
-                    </div>
                   </BzFormItem>
-                ) : null}
-                <div className="admin-filter-actions">
-                  <BzButton
-                    className="admin-filter-secondary"
-                    onClick={resetFilters}
-                  >
-                    重置
-                  </BzButton>
-                  <BzButton
-                    className="admin-filter-primary"
-                    buttonType="primary"
-                    nativeType="submit"
-                  >
-                    搜索
-                  </BzButton>
-                  <button
-                    className="admin-filter-toggle"
-                    type="button"
-                    onClick={() => setQueryCollapsed((value) => !value)}
-                  >
-                    <span>{queryCollapsed ? "展开" : "收起"}</span>
-                    <i
-                      className={`admin-filter-toggle__icon ${queryCollapsed ? "is-down" : "is-up"}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                </div>
-              </BzForm>
+                </form>
+              </div>
             </BzCard>
           ) : null}
 
@@ -268,19 +228,6 @@ export function ApisAdminPage() {
               <div className="admin-table-header">
                 <div className="admin-table-title">接口列表</div>
                 <div className="admin-table-tools">
-                  <BzButton
-                    className="admin-toolbar-primary"
-                    buttonType="primary"
-                    onClick={() => void reload()}
-                  >
-                    <span className="admin-toolbar-primary__content">
-                      <i
-                        className="admin-toolbar-primary__icon admin-toolbar-primary__icon--reload"
-                        aria-hidden="true"
-                      />
-                      <span>刷新接口</span>
-                    </span>
-                  </BzButton>
                   <button
                     className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
                     type="button"
@@ -309,7 +256,7 @@ export function ApisAdminPage() {
           >
             <div className="admin-table-surface">
               <ApiTable
-                rows={pagedRows}
+                rows={enrichedRows}
                 loading={loading}
                 canPublish={canPublish}
                 canDisable={canDisable}
@@ -317,12 +264,12 @@ export function ApisAdminPage() {
                 onDisable={(api) => void onDisable(api)}
               />
             </div>
-            {filteredRows.length > 0 ? (
+            {page.totalElements > 0 ? (
               <div className="dict-pagination-bar">
-                <div className="dict-pagination-summary">共 {filteredRows.length} 条记录</div>
+                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <BzPagination
-                    total={filteredRows.length}
+                    total={page.totalElements}
                     pageSize={pageSize}
                     currentPage={pageNo}
                     pageSizes={pageSizeOptions}

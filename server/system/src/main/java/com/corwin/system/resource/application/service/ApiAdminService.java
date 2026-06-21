@@ -1,5 +1,7 @@
 package com.corwin.system.resource.application.service;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
 import com.corwin.system.resource.domain.model.Api;
@@ -22,6 +24,10 @@ public class ApiAdminService {
 
     public List<Api> listAll() {
         return apiRepository.findAll();
+    }
+
+    public PageData<Api> page(String keyword, Boolean enabled, PageSpec spec) {
+        return apiRepository.page(keyword, enabled, spec);
     }
 
     public Api get(Long id) {

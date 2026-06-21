@@ -1,6 +1,10 @@
 package com.corwin.framework.xsql;
 
 import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.domain.page.SortDirection;
+import com.corwin.framework.domain.page.SortSpec;
+import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.xsql.codec.XValueCodec;
 import com.corwin.framework.xsql.dialect.XSqlDialect;
 import com.corwin.framework.xsql.error.XSqlExecuteException;
@@ -8,21 +12,11 @@ import com.corwin.framework.xsql.error.XSqlQueryBuildException;
 import com.corwin.framework.xsql.error.XSqlTooManyResultsException;
 import com.corwin.framework.xsql.meta.XColumnMeta;
 import com.corwin.framework.xsql.meta.XEntityMeta;
-import com.corwin.framework.xsql.support.XSqlBuilderResult;
-import com.corwin.framework.xsql.support.XSqlOperator;
-import com.corwin.framework.xsql.support.XSqlOrder;
-import com.corwin.framework.xsql.support.XSqlOrderBuilder;
-import com.corwin.framework.xsql.support.XSqlPredicate;
-import com.corwin.framework.xsql.support.XSqlResultMapper;
-import com.corwin.framework.xsql.support.XSqlWhereBuilder;
+import com.corwin.framework.xsql.support.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * XSql 单表查询实现。
@@ -377,6 +371,28 @@ final class DefaultXTableQuery<E, R> implements XTableQuery<E, R> {
         return condition ? orderBy(getter, direction) : this;
     }
 
+    @Override
+    public XTableQuery<E, R> applySort(PageSpec spec) {
+        if (spec == null || spec.sorts().isEmpty()) {
+            return this;
+        }
+        for (SortSpec sort : spec.sorts()) {
+            if (sort == null) {
+                continue;
+            }
+            String field = StrUtil.trimToNull(sort.field());
+            if (field == null) {
+                continue;
+            }
+            XSortDirection direction = XSortDirection.ASC;
+            if (sort.direction() == SortDirection.DESC) {
+                direction = XSortDirection.DESC;
+            }
+            this.orderBy(field, direction);
+        }
+        return this;
+    }
+
     /**
      * 执行列表查询。
      */
@@ -453,8 +469,8 @@ final class DefaultXTableQuery<E, R> implements XTableQuery<E, R> {
      */
     private XTableQuery<E, R> addRangePredicate(String propertyPath, XSqlOperator operator, Object start, Object end) {
         XColumnMeta column = requireConditionableColumn(propertyPath);
-        predicates.add(new XSqlPredicate(toColumnExpr(column), operator,
-                List.of(encode(column, start), encode(column, end))));
+        predicates.add(
+                new XSqlPredicate(toColumnExpr(column), operator, List.of(encode(column, start), encode(column, end))));
         return this;
     }
 

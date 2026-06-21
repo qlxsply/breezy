@@ -15,7 +15,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
-  getCurrentRouteTitle,
   getVisitedTabs,
   useAdminBreadcrumb,
   useAdminMenuSections,
@@ -41,7 +40,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const sections = useAdminMenuSections();
   const breadcrumbItems = useAdminBreadcrumb(pathname);
   const visitedTabs = useMemo(() => getVisitedTabs(pathname), [pathname]);
-  const currentTitle = useMemo(() => getCurrentRouteTitle(pathname), [pathname]);
   const previewList = useMemo(() => unreadList.slice(0, 4), [unreadList]);
   const displayUnreadCount = unreadCount > 0;
   const userName = (authUser?.account || authUser?.username || "Admin").trim() || "Admin";
@@ -396,12 +394,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="admin-workspace">{children}</div>
         </main>
       </section>
-      <div
-        className="admin-shell-status"
-        aria-live="polite"
-      >
-        当前页面：{currentTitle}
-      </div>
     </div>
   );
 }
