@@ -765,14 +765,16 @@ export function ConfigsAdminPage() {
 
   useEffect(() => {
     loadConfigDictionaries();
-    reload();
   }, []);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   function applyFilters() {
     setAppliedCodeLike(codeLikeDraft.trim());
     setAppliedDescriptionLike(descriptionLikeDraft.trim());
     setPageNo(1);
-    setTimeout(() => reload(), 0);
   }
 
   function resetFilters() {
@@ -781,14 +783,12 @@ export function ConfigsAdminPage() {
     setAppliedCodeLike("");
     setAppliedDescriptionLike("");
     setPageNo(1);
-    setTimeout(() => reload(), 0);
   }
 
   function goToPage(targetPageNo: number) {
     const nextPage = Math.min(Math.max(targetPageNo, 1), totalPages);
     if (nextPage === pageNo) return;
     setPageNo(nextPage);
-    setTimeout(() => reload(), 0);
   }
 
   function handlePageSizeChange(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -796,7 +796,6 @@ export function ConfigsAdminPage() {
     if (!Number.isFinite(value) || value <= 0 || value === pageSize) return;
     setPageSize(value);
     setPageNo(1);
-    setTimeout(() => reload(), 0);
   }
 
   function renderValue(item: ConfigItem): string {
@@ -1285,19 +1284,6 @@ export function ConfigsAdminPage() {
               <div className="admin-table-header">
                 <div className="admin-table-title">系统配置</div>
                 <div className="admin-table-tools">
-                  <BzButton
-                    className="admin-toolbar-primary"
-                    buttonType="primary"
-                    onClick={() => reload()}
-                  >
-                    <span className="admin-toolbar-primary__content">
-                      <i
-                        className="admin-toolbar-primary__icon admin-toolbar-primary__icon--reload"
-                        aria-hidden="true"
-                      />
-                      <span>刷新配置</span>
-                    </span>
-                  </BzButton>
                   <button
                     className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
                     type="button"
