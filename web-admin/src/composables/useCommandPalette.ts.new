@@ -1,2 +1,0 @@
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import type { MenuResource, ResultGroup, ResultItem, SearchBadge, ConfigActionContext } from '../types/command';

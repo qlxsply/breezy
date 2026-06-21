@@ -1,6 +1,6 @@
 import type { OptionHTMLAttributes, ReactNode } from "react";
 
-interface BzOptionProps extends OptionHTMLAttributes<HTMLOptionElement> {
+interface BzOptionProps extends Omit<OptionHTMLAttributes<HTMLOptionElement>, "value"> {
   label?: string;
   value?: string | number | null;
   children?: ReactNode;

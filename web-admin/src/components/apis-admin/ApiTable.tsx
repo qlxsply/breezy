@@ -1,5 +1,5 @@
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
-import { BzTable, BzTag, BzTooltip, type BzTableColumn } from "@admin/components/bz";
+import { BzTable, type BzTableColumn,BzTag, BzTooltip } from "@admin/components/bz";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { ApiEntry } from "@admin/types/api-admin";
 
