@@ -6,10 +6,8 @@ import importPlugin from "eslint-plugin-import";
 import promisePlugin from "eslint-plugin-promise";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import unusedImports from "eslint-plugin-unused-imports";
-import pluginVue from "eslint-plugin-vue";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import vueParser from "vue-eslint-parser";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,10 +15,21 @@ export default [
   {
     ignores: [
       "dist/**",
+      ".next/**",
       "coverage/**",
       "node_modules/**",
       "public/mock/**",
       "public/**",
+      "src/**/*.vue",
+      "src/api/**",
+      "src/assets/**",
+      "src/composables/**",
+      "src/layout/**",
+      "src/pages/**",
+      "src/registry/**",
+      "src/router/**",
+      "src/types/**",
+      "src/utils/**",
       "eslint.config.mjs",
       "prettier.config.mjs",
       "*.min.js",
@@ -28,7 +37,7 @@ export default [
     ],
   },
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,jsx,tsx,vue}"],
+    files: ["**/*.{js,mjs,cjs,ts,mts,jsx,tsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -40,22 +49,8 @@ export default [
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  ...pluginVue.configs["flat/recommended"],
   {
-    files: ["**/*.vue"],
-    languageOptions: {
-      parser: vueParser,
-      parserOptions: {
-        parser: tseslint.parser,
-        extraFileExtensions: [".vue"],
-        ecmaVersion: "latest",
-        sourceType: "module",
-        tsconfigRootDir: __dirname,
-      },
-    },
-  },
-  {
-    files: ["**/*.{js,mjs,cjs,ts,mts,jsx,tsx,vue}"],
+    files: ["**/*.{js,mjs,cjs,ts,mts,jsx,tsx}"],
     plugins: {
       import: importPlugin,
       promise: promisePlugin,
@@ -103,23 +98,6 @@ export default [
       "no-empty": ["warn", { allowEmptyCatch: true }],
       "no-misleading-character-class": "warn",
       "no-useless-escape": "warn",
-
-      "vue/multi-word-component-names": "off",
-      "vue/valid-template-root": "off",
-      "vue/no-mutating-props": "error",
-      "vue/component-tags-order": ["warn", { order: ["template", "script", "style"] }],
-      "vue/block-order": ["warn", { order: ["template", "script", "style"] }],
-      "vue/html-self-closing": [
-        "warn",
-        {
-          html: { void: "always", normal: "never", component: "always" },
-          svg: "always",
-          math: "always",
-        },
-      ],
-      "vue/max-attributes-per-line": "off",
-      "vue/singleline-html-element-content-newline": "off",
-      "vue/multiline-html-element-content-newline": "off",
     },
   },
   eslintConfigPrettier,

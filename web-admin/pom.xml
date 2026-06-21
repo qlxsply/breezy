@@ -61,7 +61,7 @@
             <configuration>
               <workingDirectory>${project.basedir}</workingDirectory>
               <installDirectory>${project.build.directory}/frontend</installDirectory>
-              <arguments>run build -- --mode ${env.active}</arguments>
+              <arguments>run build</arguments>
             </configuration>
           </execution>
         </executions>

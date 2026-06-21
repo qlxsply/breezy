@@ -848,6 +848,87 @@ cd web; npm run build
 - 首页搜索只属于用户前端，只搜索用户工具页，不包含后台菜单页、后台壳体级自助页。
 - 后台规范只覆盖账号后台前端，不覆盖用户工具页。
 
+## web-admin Vue3 -> React + Next.js 重构方案（待评估）
+
+### 一、需求背景
+
+- 当前 `web-admin/` 已独立为账号后台前端工程，但技术栈仍为 `Vue 3 + Vite + TypeScript`。
+- 本次需求要求在只处理 `web-admin/` 的前提下，将实现方案整体切换为 `React + Next.js`。
+- 页面交互、样式、功能、路由体验需保持不变，只替换前端技术方案。
+- 重构完成后，`web-admin/` 中不再保留任何 Vue 代码，Vue 相关依赖与构建配置一并移除。
+
+### 二、当前现状
+
+- `web-admin/` 当前是独立 SPA 工程，关键技术栈如下：
+    - `vue@3.5.13`
+    - `vue-router@4.5.1`
+    - `vite@8.0.5`
+    - `@vitejs/plugin-vue`、`vue-tsc`、`eslint-plugin-vue`
+- 当前工程使用 `npm`，`packageManager` 与 `engines` 固定为：
+    - `node 22.22.1`
+    - `npm 11.11.1`
+- Maven 根工程 `pom.xml` 也固定了前端工具链版本：
+    - `<node.version>v22.22.1</node.version>`
+    - `<npm.version>11.11.1</npm.version>`
+- 当前页面与能力规模：
+    - 22 个后台页面，位于 `web-admin/src/pages/*.vue`
+    - 20 个 API 模块，位于 `web-admin/src/api/*.ts`
+    - 9 个 registry 模块，位于 `web-admin/src/registry/*.ts`
+    - 44 个自研 `Bz` Vue 组件，位于 `web-admin/src/components/bz/*.vue`
+- 当前 `web-admin` 已基本摆脱对 `web/` 源码复用的直接依赖：
+    - `vite.config.ts` 中仍保留 `@shared -> ../web/src` 别名
+    - 但当前 `web-admin/src` 内已无 `@shared` 实际引用
+- 当前部署方式为 `Vite SPA + dist 静态产物 + nginx`，`/admin/` 通过 `nginx.conf` 做单页回退。
+
+### 三、目标
+
+- 将 `web-admin/` 完整重构为 `React + Next.js + TypeScript`。
+- 保持现有后台所有页面的视觉效果、DOM 结构语义、交互流程、接口行为、权限控制、动态菜单、通知、SSE、推送能力不变。
+- 重构完成后删除 `web-admin/` 内全部 Vue 文件、Vue 构建配置、Vue ESLint/TS 配置与 Vue 依赖。
+- 工具链版本切换为：
+    - `node v24.16.0`
+    - `npm 11.13.0`
+- 默认继续使用 `npm`，仅在明确遇到安装或工程兼容问题时再评估切换到 `pnpm 11.7.0`。
+
+### 四、技术方案
+
+- 路由与工程形态
+    - 采用 `Next.js` 作为新工程壳体，优先使用 `App Router`。
+    - 由于当前后台路由依赖运行时资源树和动态权限，推荐 `web-admin` 迁移为“Next 壳体 + 客户端路由状态驱动”的实现，而不是继续使用纯静态导出模式。
+    - 推荐以 `/admin` 及 `/admin/[[...slug]]` 作为统一后台入口，登录页保留 `/admin/login` 语义。
+- 渲染策略
+    - 现有后台高度依赖 `localStorage`、`EventSource`、`Notification`、`Service Worker`、运行时鉴权和动态菜单，因此后台主体页面按客户端组件实现更稳妥。
+    - 不以 SSR 为目标，不主动引入服务端取数复杂度；Next 主要承担 React 工程组织、路由壳体、构建和部署。
+- UI 迁移策略
+    - 现有 `Bz UI` 是 Vue 组件体系，不能直接复用。
+    - 需要在 `web-admin` 内重写一套 React 版 `Bz UI`，组件命名、视觉样式、交互行为与当前后台保持一致。
+    - 现有全局样式文件 `theme.css`、`list-page.css`、`admin-page.css`、`bz-ui.css` 可尽量保留并迁移使用，减少样式回归风险。
+- 状态与基础能力迁移
+    - `api/*.ts` 大部分可保留 TypeScript 数据模型与 fetch 调用方式，仅改造为 React/Next 可直接消费的组织方式。
+    - `registry/*.ts` 需从 Vue `ref/computed/watch` 改造为 React 可用的 store/context/hook 方案。
+    - `router/index.ts` 中的静态路由、动态资源路由、权限判断、跳转守卫，需要重写为 Next 路由适配方案。
+- 部署与构建迁移
+    - 当前 `Dockerfile + nginx.conf` 面向静态 `dist/`。
+    - 若采用标准 Next 运行时，Dockerfile、nginx、Maven 前端构建命令都需要同步改造。
+    - 若后续强行要求纯静态部署，则需要额外评估 Next 对后台动态路由的兼容性，复杂度更高。
+
+### 五、任务拆分
+
+| 任务编号 | 任务内容 | 状态 |
+| ---- | ---- | --- |
+| T1 | 锁定重构边界：仅处理 `web-admin/`，不修改 `web/` 运行逻辑，并确认 Next 采用 App Router + 客户端壳体方案 | 已完成 |
+| T2 | 调整工具链与构建入口：升级根 `pom.xml`、`web-admin/package.json` 的 Node/NPM 版本，移除 Vite/Vue 工程骨架，建立 Next 基础工程 | 已完成 |
+| T3 | 重建后台应用壳体：迁移全局样式、`App.vue`、`AdminLayout.vue`、顶部工具区、侧边导航区、消息/确认宿主 | 已完成 |
+| T4 | 重写 React 版 `Bz UI` 基础组件集，优先覆盖表格、表单、弹窗、下拉、分页、树、消息、确认、加载态等后台核心组件 | 已完成 |
+| T5 | 迁移基础能力：`api`、鉴权存储、bootstrap 配置、格式化工具、消息/确认、SSE 协调、推送与通知能力 | 已完成 |
+| T6 | 迁移 registry 体系：认证、资源树、权限、通知、快捷键、SSE 生命周期、待办提醒 | 已完成 |
+| T7 | 重写路由与动态菜单机制，保证静态页、动态资源页、登录跳转、权限校验与面包屑行为一致 | 已完成 |
+| T8 | 逐页迁移 22 个后台页面及其专属子组件，保持样式、交互、抽屉/弹窗/表格行为不变 | 开发中 |
+| T9 | 清理 Vue 遗留：删除 `.vue` 文件、Vue ESLint/TS 配置、`vite.config.ts`、`index.html`、Vue 相关依赖与无效别名 | 未开始 |
+| T10 | 改造 `Dockerfile`、`nginx.conf`、Maven 前端构建流程，并完成最终构建验证与文档回写 | 未开始 |
+
+- 详细方案文档：`web-admin/docs/web-admin-react-next-refactor.md`
+
 ## 引导程序模块设计（草案）
 
 - 当前 `server/bootstrap` 已经独立成模块，但初始化能力仍需继续从 `business` 收口到 `bootstrap`。
