@@ -3,6 +3,7 @@
 import { createSseTicket } from "@admin/api/sse";
 import { getAuthToken } from "@admin/core/auth-storage";
 import { createStore, useStoreValue } from "@admin/core/client-store";
+import { API_BASE_URL } from "@admin/core/env";
 import type { AuthUser } from "@admin/core/registry/auth-registry";
 import { hasApiPermission, isPermissionsLoaded } from "@admin/core/registry/permissions-registry";
 
@@ -272,7 +273,7 @@ async function connectSse() {
   }
 
   const lastEventId = window.localStorage.getItem(LAST_EVENT_ID_KEY);
-  const url = new URL("/api/sse/stream", window.location.origin);
+  const url = new URL(`${API_BASE_URL}/sse/stream`);
   url.searchParams.set("sseTicket", ticket);
   if (lastEventId) {
     url.searchParams.set("lastEventId", lastEventId);
