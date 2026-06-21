@@ -33,16 +33,25 @@ public class ConfigAdminService {
     private final ConfigStore configStore;
     private final List<ConfigValueValidator> validators;
 
-    public List<StoredConfig> query(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
+    public List<StoredConfig> query(String codeLike, String descriptionLike) {
+        String normalizedCodeLike = codeLike == null ? "" : codeLike.trim();
+        String normalizedDescriptionLike = descriptionLike == null ? "" : descriptionLike.trim();
+        if (normalizedCodeLike.isEmpty() && normalizedDescriptionLike.isEmpty()) {
             return configStore.findAllActive();
         }
-        return configStore.findByKeyword(keyword.trim());
+        String loweredCodeLike = normalizedCodeLike.toLowerCase();
+        String loweredDescriptionLike = normalizedDescriptionLike.toLowerCase();
+        return configStore.findAllActive().stream()
+                .filter(item -> normalizedCodeLike.isEmpty()
+                        || item.code().toLowerCase().contains(loweredCodeLike))
+                .filter(item -> normalizedDescriptionLike.isEmpty()
+                        || item.description().toLowerCase().contains(loweredDescriptionLike))
+                .toList();
     }
 
-    public PageData<StoredConfig> page(String keyword, PageSpec spec) {
+    public PageData<StoredConfig> page(String codeLike, String descriptionLike, PageSpec spec) {
         PageSpec safeSpec = spec == null ? PageSpec.of(1, 20, List.of()) : spec;
-        List<StoredConfig> matched = query(keyword);
+        List<StoredConfig> matched = query(codeLike, descriptionLike);
         int total = matched.size();
         int fromIndex = Math.min(Math.max(0, (safeSpec.pageNo() - 1) * safeSpec.pageSize()), total);
         int toIndex = Math.min(fromIndex + safeSpec.pageSize(), total);

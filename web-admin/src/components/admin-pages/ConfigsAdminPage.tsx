@@ -148,8 +148,12 @@ export function ConfigsAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
-  const [keywordDraft, setKeywordDraft] = useState("");
-  const [appliedKeyword, setAppliedKeyword] = useState("");
+  const [queryExpanded, setQueryExpanded] = useState(false);
+  const [querySingleRow, setQuerySingleRow] = useState(true);
+  const [codeLikeDraft, setCodeLikeDraft] = useState("");
+  const [descriptionLikeDraft, setDescriptionLikeDraft] = useState("");
+  const [appliedCodeLike, setAppliedCodeLike] = useState("");
+  const [appliedDescriptionLike, setAppliedDescriptionLike] = useState("");
   const [rows, setRows] = useState<ConfigItem[]>([]);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -202,6 +206,8 @@ export function ConfigsAdminPage() {
   const [editorPreviewLoading, setEditorPreviewLoading] = useState(false);
   const [previewSending, setPreviewSending] = useState(false);
   const [previewMsgType, setPreviewMsgType] = useState("");
+  const queryCardRef = useRef<HTMLDivElement | null>(null);
+  const queryGridRef = useRef<HTMLFormElement | null>(null);
 
   const editorTitle = useMemo(() => {
     if (!editorItem) return "编辑配置";
@@ -349,6 +355,56 @@ export function ConfigsAdminPage() {
       formatted: error ? "-" : formatDecimalByPattern(num, pattern),
     }));
   }, [isDecimalFormatEditor, editorRawValue, currentUserFormatOptions]);
+
+  useEffect(() => {
+    if (!queryPanelVisible) {
+      return;
+    }
+    const card = queryCardRef.current;
+    const grid = queryGridRef.current;
+    if (!card || !grid) {
+      return;
+    }
+
+    const refreshCollapseState = () => {
+      const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
+      if (fields.length === 0) {
+        card.style.removeProperty("--admin-query-collapsed-height");
+        card.style.removeProperty("--admin-query-expanded-height");
+        setQuerySingleRow(true);
+        return;
+      }
+
+      const previousMaxHeight = grid.style.maxHeight;
+      grid.style.maxHeight = "none";
+
+      const rowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort(
+        (left, right) => left - right,
+      );
+      const firstRowTop = rowTops[0] || 0;
+      const firstRowFields = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
+      const firstRowBottom = Math.max(
+        ...firstRowFields.map((field) => field.offsetTop + field.offsetHeight),
+        0,
+      );
+      const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
+      const expandedHeight = grid.scrollHeight;
+
+      grid.style.maxHeight = previousMaxHeight;
+      card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
+      card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
+      setQuerySingleRow(rowTops.length <= 1);
+    };
+
+    refreshCollapseState();
+    const observer = new ResizeObserver(() => {
+      refreshCollapseState();
+    });
+    observer.observe(grid);
+    return () => {
+      observer.disconnect();
+    };
+  }, [queryPanelVisible]);
 
   useEffect(() => {
     if (previewSendOptions.length === 0) {
@@ -657,7 +713,8 @@ export function ConfigsAdminPage() {
     try {
       const requestedPageNo = pageNo;
       const p = await listConfigs({
-        keyword: appliedKeyword,
+        codeLike: appliedCodeLike,
+        descriptionLike: appliedDescriptionLike,
         pageNo: requestedPageNo,
         pageSize,
       });
@@ -678,7 +735,8 @@ export function ConfigsAdminPage() {
         const fallbackPageNo = Math.max(1, p.totalPages);
         setPageNo(fallbackPageNo);
         const fallback = await listConfigs({
-          keyword: appliedKeyword,
+          codeLike: appliedCodeLike,
+          descriptionLike: appliedDescriptionLike,
           pageNo: fallbackPageNo,
           pageSize: newPageSize,
         });
@@ -695,7 +753,8 @@ export function ConfigsAdminPage() {
   }, [
     pageNo,
     pageSize,
-    appliedKeyword,
+    appliedCodeLike,
+    appliedDescriptionLike,
     clientIpModeOptions.length,
     msgTypeOptions.length,
     authWhitelistMatchTypeOptions.length,
@@ -704,27 +763,23 @@ export function ConfigsAdminPage() {
     loadAuthWhitelistMatchTypeOptions,
   ]);
 
-  const pageNoRef = useRef(pageNo);
-  pageNoRef.current = pageNo;
-  const pageSizeRef = useRef(pageSize);
-  pageSizeRef.current = pageSize;
-  const appliedKeywordRef = useRef(appliedKeyword);
-  appliedKeywordRef.current = appliedKeyword;
-
   useEffect(() => {
     loadConfigDictionaries();
     reload();
   }, []);
 
   function applyFilters() {
-    setAppliedKeyword(keywordDraft);
+    setAppliedCodeLike(codeLikeDraft.trim());
+    setAppliedDescriptionLike(descriptionLikeDraft.trim());
     setPageNo(1);
     setTimeout(() => reload(), 0);
   }
 
   function resetFilters() {
-    setKeywordDraft("");
-    setAppliedKeyword("");
+    setCodeLikeDraft("");
+    setDescriptionLikeDraft("");
+    setAppliedCodeLike("");
+    setAppliedDescriptionLike("");
     setPageNo(1);
     setTimeout(() => reload(), 0);
   }
@@ -1144,50 +1199,82 @@ export function ConfigsAdminPage() {
               className="admin-panel admin-filter-card"
               shadow="never"
             >
-              <BzForm
-                className="admin-filter-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  applyFilters();
-                }}
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
               >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">关键词</div>
-                    <div className="admin-filter-control">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      onClick={resetFilters}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton
+                      className="admin-filter-primary"
+                      buttonType="primary"
+                      onClick={applyFilters}
+                    >
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i
+                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">配置键</div>
+                    <div className="admin-query-field__control">
                       <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="搜索配置项"
+                        modelValue={codeLikeDraft}
+                        placeholder="请输入配置键"
                         clearable
-                        onValueChange={setKeywordDraft}
+                        onValueChange={setCodeLikeDraft}
                         onKeyUp={(e) => {
                           if (e.key === "Enter") applyFilters();
                         }}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-
-                <div className="admin-filter-actions">
-                  <BzButton
-                    className="admin-filter-secondary"
-                    onClick={resetFilters}
-                  >
-                    重置
-                  </BzButton>
-                  <BzButton
-                    className="admin-filter-primary"
-                    buttonType="primary"
-                    nativeType="submit"
-                  >
-                    搜索
-                  </BzButton>
-                  <div
-                    className="admin-filter-toggle-placeholder"
-                    aria-hidden="true"
-                  />
-                </div>
-              </BzForm>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">说明</div>
+                    <div className="admin-query-field__control">
+                      <BzInput
+                        modelValue={descriptionLikeDraft}
+                        placeholder="请输入说明"
+                        clearable
+                        onValueChange={setDescriptionLikeDraft}
+                        onKeyUp={(e) => {
+                          if (e.key === "Enter") applyFilters();
+                        }}
+                      />
+                    </div>
+                  </BzFormItem>
+                </form>
+              </div>
             </BzCard>
           ) : null}
 

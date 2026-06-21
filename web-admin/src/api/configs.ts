@@ -12,13 +12,17 @@ import { get, post, put } from "./http";
 const BASE = "/sys/configs";
 
 export function listConfigs(params?: {
-  keyword?: string;
+  codeLike?: string;
+  descriptionLike?: string;
   pageNo?: number;
   pageSize?: number;
 }): Promise<PageResult<ConfigItem>> {
   const searchParams = new URLSearchParams();
-  if (params?.keyword?.trim()) {
-    searchParams.set("keyword", params.keyword.trim());
+  if (params?.codeLike?.trim()) {
+    searchParams.set("codeLike", params.codeLike.trim());
+  }
+  if (params?.descriptionLike?.trim()) {
+    searchParams.set("descriptionLike", params.descriptionLike.trim());
   }
   if (params?.pageNo) {
     searchParams.set("pageNo", String(params.pageNo));

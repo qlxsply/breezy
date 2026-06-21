@@ -49,10 +49,11 @@ public class ConfigController {
 
     @GetMapping
     @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.view"})
-    public ApiResponse<PageResult<ConfigRes>> list(@RequestParam(required = false) String keyword,
+    public ApiResponse<PageResult<ConfigRes>> list(@RequestParam(required = false) String codeLike,
+            @RequestParam(required = false) String descriptionLike,
             @RequestParam(defaultValue = "1") Integer pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize) {
-        var page = appService.page(keyword, PageSpec.of(pageNo, pageSize, List.of()));
+        var page = appService.page(codeLike, descriptionLike, PageSpec.of(pageNo, pageSize, List.of()));
         return ApiResponse.ok(PageResult.of(page, this::toRes));
     }
 
