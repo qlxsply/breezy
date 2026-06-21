@@ -12,7 +12,13 @@ interface BzAlertProps {
   className?: string;
 }
 
-export function BzAlert({ title, type = "info", showIcon = false, closable = true, className }: BzAlertProps) {
+export function BzAlert({
+  title,
+  type = "info",
+  showIcon = false,
+  closable = true,
+  className,
+}: BzAlertProps) {
   const [closed, setClosed] = useState(false);
 
   if (closed) {
@@ -21,10 +27,19 @@ export function BzAlert({ title, type = "info", showIcon = false, closable = tru
 
   return (
     <div className={["bz-alert", `bz-alert--${type}`, className].filter(Boolean).join(" ")}>
-      {showIcon ? <span className="bz-alert__icon" aria-hidden="true" /> : null}
+      {showIcon ? (
+        <span
+          className="bz-alert__icon"
+          aria-hidden="true"
+        />
+      ) : null}
       <div className="bz-alert__title">{title}</div>
       {closable ? (
-        <button className="bz-alert__close bz-dialog__close" type="button" onClick={() => setClosed(true)}>
+        <button
+          className="bz-alert__close bz-dialog__close"
+          type="button"
+          onClick={() => setClosed(true)}
+        >
           <BzIconClose />
         </button>
       ) : null}

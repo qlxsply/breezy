@@ -1,7 +1,18 @@
 "use client";
 
-import { BzAlert, BzButton, BzForm, BzFormItem, BzInput, type BzInputRef } from "@admin/components/bz";
-import { type AuthSpace,login, resolveLandingPathForUser } from "@admin/core/registry/auth-registry";
+import {
+  BzAlert,
+  BzButton,
+  BzForm,
+  BzFormItem,
+  BzInput,
+  type BzInputRef,
+} from "@admin/components/bz";
+import {
+  type AuthSpace,
+  login,
+  resolveLandingPathForUser,
+} from "@admin/core/registry/auth-registry";
 import { ensureRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
 import { ensurePermissionsLoaded } from "@admin/core/registry/permissions-registry";
 import { useRouter } from "next/navigation";
@@ -97,19 +108,39 @@ export function AuthLoginPageCard({
           </BzFormItem>
         </BzForm>
 
-        {error ? <BzAlert title={error} type="error" showIcon className="auth-card__error" /> : null}
+        {error ? (
+          <BzAlert
+            title={error}
+            type="error"
+            showIcon
+            className="auth-card__error"
+          />
+        ) : null}
 
-        <div className={`auth-card__actions${extraActionLabel && extraActionTo ? " has-extra-action" : ""}`}>
-          <BzButton buttonType="primary" size="large" loading={submitting} onClick={() => void submit()}>
+        <div
+          className={`auth-card__actions${extraActionLabel && extraActionTo ? " has-extra-action" : ""}`}
+        >
+          <BzButton
+            buttonType="primary"
+            size="large"
+            loading={submitting}
+            onClick={() => void submit()}
+          >
             登录
           </BzButton>
 
-          <BzButton size="large" onClick={() => router.push(returnTo)}>
+          <BzButton
+            size="large"
+            onClick={() => router.push(returnTo)}
+          >
             {returnLabel}
           </BzButton>
 
           {extraActionLabel && extraActionTo ? (
-            <BzButton size="large" onClick={() => router.push(extraActionTo)}>
+            <BzButton
+              size="large"
+              onClick={() => router.push(extraActionTo)}
+            >
               {extraActionLabel}
             </BzButton>
           ) : null}

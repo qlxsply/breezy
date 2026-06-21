@@ -1,11 +1,20 @@
 import { BzCard } from "@admin/components/bz";
 
-export function AdminPlaceholderPage({ title, description }: { title: string; description: string }) {
+export function AdminPlaceholderPage({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
   return (
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <BzCard className="admin-panel placeholder-panel" shadow="never">
+          <BzCard
+            className="admin-panel placeholder-panel"
+            shadow="never"
+          >
             <div className="placeholder-body">
               <div className="placeholder-mark">{title.slice(0, 2) || "页面"}</div>
               <div className="placeholder-title">{title}</div>

@@ -52,7 +52,12 @@ export function BzButton({
         onClick?.(event);
       }}
     >
-      {loading ? <span className="bz-button-spinner" aria-hidden="true" /> : null}
+      {loading ? (
+        <span
+          className="bz-button-spinner"
+          aria-hidden="true"
+        />
+      ) : null}
       <span className="bz-button-text">{children}</span>
     </button>
   );

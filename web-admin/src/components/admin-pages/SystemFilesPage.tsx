@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import {
   downloadSystemFile,
   fetchSystemFileView,
@@ -10,7 +8,7 @@ import {
   listSystemNodes,
 } from "@admin/api/system-files";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type {
   PhysicalFileDetail,
   StorageListQuery,
@@ -19,6 +17,8 @@ import type {
   StorageViewMode,
   SystemFileItem,
 } from "@admin/types/file-storage";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
 import { BzButtonGroup } from "../bz/BzButtonGroup";
@@ -113,7 +113,9 @@ function isTextType(contentType: string): boolean {
   if (!contentType) return false;
   const normalized = contentType.toLowerCase().split(";")[0]!.trim();
   if (normalized.startsWith("text/")) return true;
-  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(normalized);
+  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(
+    normalized,
+  );
 }
 
 export function SystemFilesPage() {
@@ -212,7 +214,7 @@ export function SystemFilesPage() {
     }
   }, [canAdmin, clearPreview]);
 
-  const loadReverseRefs = useCallback(async () => {
+  const _loadReverseRefs = useCallback(async () => {
     if (!canReverseRef.current || !physicalDetail) return;
     setRefsLoading(true);
     setRefsErrorMessage("");
@@ -239,7 +241,6 @@ export function SystemFilesPage() {
 
   useEffect(() => {
     return () => clearPreview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function applySearch() {
@@ -409,28 +410,36 @@ export function SystemFilesPage() {
         actions.push({
           key: "preview",
           label: "预览",
-          handler: () => { previewFile(item).catch(() => {}); },
+          handler: () => {
+            previewFile(item).catch(() => {});
+          },
         });
       }
       if (canDownload) {
         actions.push({
           key: "download",
           label: "下载",
-          handler: () => { downloadFile(item).catch(() => {}); },
+          handler: () => {
+            downloadFile(item).catch(() => {});
+          },
         });
       }
       if (canPhysical) {
         actions.push({
           key: "physical",
           label: "物理信息",
-          handler: () => { loadPhysicalDetail(item).catch(() => {}); },
+          handler: () => {
+            loadPhysicalDetail(item).catch(() => {});
+          },
         });
       }
     }
     actions.push({
       key: "copy",
       label: "复制ID",
-      handler: () => { copyId(item.id).catch(() => {}); },
+      handler: () => {
+        copyId(item.id).catch(() => {});
+      },
     });
     return actions;
   }
@@ -455,11 +464,18 @@ export function SystemFilesPage() {
       render: (row) => (
         <div>
           {row.type === "FOLDER" ? (
-            <BzButton link onClick={() => enterFolder(row)}>
-              {"📁 "}{row.name}
+            <BzButton
+              link
+              onClick={() => enterFolder(row)}
+            >
+              {"📁 "}
+              {row.name}
             </BzButton>
           ) : (
-            <span>{"📄 "}{row.name}</span>
+            <span>
+              {"📄 "}
+              {row.name}
+            </span>
           )}
           <div className="node-id">{row.id}</div>
         </div>
@@ -469,15 +485,17 @@ export function SystemFilesPage() {
       key: "owner",
       title: "Owner",
       width: 160,
-      render: (row) => <span>{row.ownerType}/{row.ownerId}</span>,
+      render: (row) => (
+        <span>
+          {row.ownerType}/{row.ownerId}
+        </span>
+      ),
     },
     {
       key: "type",
       title: "类型",
       width: 120,
-      render: (row) => (
-        <BzTag size="small">{row.type === "FOLDER" ? "目录" : "文件"}</BzTag>
-      ),
+      render: (row) => <BzTag size="small">{row.type === "FOLDER" ? "目录" : "文件"}</BzTag>,
     },
     {
       key: "size",
@@ -543,7 +561,8 @@ export function SystemFilesPage() {
       minWidth: 260,
       render: (row) => (
         <div>
-          {"📄 "}{row.name}
+          {"📄 "}
+          {row.name}
           <div className="node-id">{row.id}</div>
         </div>
       ),
@@ -552,7 +571,11 @@ export function SystemFilesPage() {
       key: "owner",
       title: "Owner",
       width: 160,
-      render: (row) => <span>{row.ownerType}/{row.ownerId}</span>,
+      render: (row) => (
+        <span>
+          {row.ownerType}/{row.ownerId}
+        </span>
+      ),
     },
     {
       key: "updatedAt",
@@ -567,16 +590,31 @@ export function SystemFilesPage() {
       render: (row) => (
         <div className="row-actions">
           {canView ? (
-            <BzButton size="small" onClick={() => { previewFile(row).catch(() => {}); }}>
+            <BzButton
+              size="small"
+              onClick={() => {
+                previewFile(row).catch(() => {});
+              }}
+            >
               预览
             </BzButton>
           ) : null}
           {canDownload ? (
-            <BzButton size="small" onClick={() => { downloadFile(row).catch(() => {}); }}>
+            <BzButton
+              size="small"
+              onClick={() => {
+                downloadFile(row).catch(() => {});
+              }}
+            >
               下载
             </BzButton>
           ) : null}
-          <BzButton size="small" onClick={() => { copyId(row.id).catch(() => {}); }}>
+          <BzButton
+            size="small"
+            onClick={() => {
+              copyId(row.id).catch(() => {});
+            }}
+          >
             复制ID
           </BzButton>
         </div>
@@ -594,11 +632,17 @@ export function SystemFilesPage() {
             <section className="list-page-actions">
               <div className="list-page-actions-main">
                 <BzButton onClick={goRoot}>根目录</BzButton>
-                <BzButton disabled={breadcrumbs.length === 0} onClick={goBack}>
+                <BzButton
+                  disabled={breadcrumbs.length === 0}
+                  onClick={goBack}
+                >
                   返回上级
                 </BzButton>
                 <BzButton onClick={() => reload()}>刷新</BzButton>
-                <span className="path" title={currentPath}>
+                <span
+                  className="path"
+                  title={currentPath}
+                >
                   当前路径：{currentPath}
                 </span>
               </div>
@@ -606,7 +650,10 @@ export function SystemFilesPage() {
           ) : null}
 
           {canAdmin ? (
-            <BzCard className="list-page-query-card" shadow="never">
+            <BzCard
+              className="list-page-query-card"
+              shadow="never"
+            >
               <BzForm
                 className="list-page-filter-form is-inline"
                 onSubmit={(e) => {
@@ -630,10 +677,16 @@ export function SystemFilesPage() {
                   </div>
                 </BzFormItem>
                 <BzFormItem className="list-page-filter-actions">
-                  <BzButton buttonType="primary" onClick={applySearch}>
+                  <BzButton
+                    buttonType="primary"
+                    onClick={applySearch}
+                  >
                     搜索
                   </BzButton>
-                  <BzButton disabled={!activeKeyword} onClick={clearSearch}>
+                  <BzButton
+                    disabled={!activeKeyword}
+                    onClick={clearSearch}
+                  >
                     清空
                   </BzButton>
                 </BzFormItem>
@@ -646,18 +699,36 @@ export function SystemFilesPage() {
                         className="sm"
                         onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}
                       >
-                        <BzOption label="名称" value="NAME" />
-                        <BzOption label="大小" value="SIZE" />
-                        <BzOption label="类型" value="TYPE" />
-                        <BzOption label="最新修改" value="UPDATED_AT" />
+                        <BzOption
+                          label="名称"
+                          value="NAME"
+                        />
+                        <BzOption
+                          label="大小"
+                          value="SIZE"
+                        />
+                        <BzOption
+                          label="类型"
+                          value="TYPE"
+                        />
+                        <BzOption
+                          label="最新修改"
+                          value="UPDATED_AT"
+                        />
                       </BzSelect>
                       <BzSelect
                         modelValue={sortOrder}
                         className="sm"
                         onValueChange={(v) => setSortOrder((v ?? "ASC") as StorageSortOrder)}
                       >
-                        <BzOption label="升序" value="ASC" />
-                        <BzOption label="降序" value="DESC" />
+                        <BzOption
+                          label="升序"
+                          value="ASC"
+                        />
+                        <BzOption
+                          label="降序"
+                          value="DESC"
+                        />
                       </BzSelect>
                     </div>
                   </div>
@@ -687,14 +758,28 @@ export function SystemFilesPage() {
             </BzCard>
           ) : null}
 
-          <BzCard className="list-page-result-card board" shadow="never">
-            <BzLoading loading={loading} text="加载中...">
+          <BzCard
+            className="list-page-result-card board"
+            shadow="never"
+          >
+            <BzLoading
+              loading={loading}
+              text="加载中..."
+            >
               {!canAdmin ? (
                 <BzEmpty description="无权限查看文件管理页面" />
               ) : errorMessage ? (
                 <div className="state-block">
-                  <BzAlert title={errorMessage} type="error" showIcon />
-                  <BzButton size="small" buttonType="primary" onClick={() => reload()}>
+                  <BzAlert
+                    title={errorMessage}
+                    type="error"
+                    showIcon
+                  />
+                  <BzButton
+                    size="small"
+                    buttonType="primary"
+                    onClick={() => reload()}
+                  >
                     重试
                   </BzButton>
                 </div>
@@ -718,16 +803,31 @@ export function SystemFilesPage() {
                         const primary = getPrimaryActions(item);
                         const extra = getExtraActions(item);
                         return (
-                          <BzCard key={item.id} className="node-card" shadow="never">
+                          <BzCard
+                            key={item.id}
+                            className="node-card"
+                            shadow="never"
+                          >
                             <div className="node-header">
                               {item.type === "FOLDER" ? (
-                                <BzButton link className="title" onClick={() => enterFolder(item)}>
-                                  {"📁 "}{item.name}
+                                <BzButton
+                                  link
+                                  className="title"
+                                  onClick={() => enterFolder(item)}
+                                >
+                                  {"📁 "}
+                                  {item.name}
                                 </BzButton>
                               ) : (
-                                <div className="title">{"📄 "}{item.name}</div>
+                                <div className="title">
+                                  {"📄 "}
+                                  {item.name}
+                                </div>
                               )}
-                              <div className="node-id" title={item.id}>
+                              <div
+                                className="node-id"
+                                title={item.id}
+                              >
                                 {item.id}
                               </div>
                             </div>
@@ -782,7 +882,12 @@ export function SystemFilesPage() {
                       })}
                     </div>
                   ) : (
-                    <BzTable data={items} columns={listColumns} rowKey="id" size="small" />
+                    <BzTable
+                      data={items}
+                      columns={listColumns}
+                      rowKey="id"
+                      size="small"
+                    />
                   )}
                 </div>
               )}
@@ -798,18 +903,30 @@ export function SystemFilesPage() {
                 </div>
                 <div className="row-actions">
                   {previewIsText ? (
-                    <BzButton size="small" onClick={() => { copyPreviewText().catch(() => {}); }}>
+                    <BzButton
+                      size="small"
+                      onClick={() => {
+                        copyPreviewText().catch(() => {});
+                      }}
+                    >
                       复制文本
                     </BzButton>
                   ) : null}
-                  <BzButton size="small" onClick={clearPreview}>
+                  <BzButton
+                    size="small"
+                    onClick={clearPreview}
+                  >
                     关闭
                   </BzButton>
                 </div>
               </div>
               <div className="preview-body">
                 {previewIsImage ? (
-                  <img src={previewUrl} alt="preview" className="preview-image" />
+                  <img
+                    src={previewUrl}
+                    alt="preview"
+                    className="preview-image"
+                  />
                 ) : previewIsText ? (
                   <pre className="preview-text">{previewText}</pre>
                 ) : (
@@ -826,7 +943,10 @@ export function SystemFilesPage() {
                   <div className="preview-title">物理文件详情：{physicalDetail.fileName}</div>
                   <div className="muted">逻辑文件：{physicalDetail.logicalFileName}</div>
                 </div>
-                <BzButton size="small" onClick={clearPhysicalDetail}>
+                <BzButton
+                  size="small"
+                  onClick={clearPhysicalDetail}
+                >
                   关闭
                 </BzButton>
               </div>
@@ -893,10 +1013,11 @@ export function SystemFilesPage() {
                       if (e.key === "Enter") applyRefsSearch();
                     }}
                   />
-                  {canReverse ? (
-                    <BzButton onClick={applyRefsSearch}>查询</BzButton>
-                  ) : null}
-                  <BzButton disabled={!refsKeyword} onClick={clearRefsSearch}>
+                  {canReverse ? <BzButton onClick={applyRefsSearch}>查询</BzButton> : null}
+                  <BzButton
+                    disabled={!refsKeyword}
+                    onClick={clearRefsSearch}
+                  >
                     清空
                   </BzButton>
                 </div>
@@ -905,9 +1026,17 @@ export function SystemFilesPage() {
               {!canReverse ? (
                 <BzEmpty description="无权限查看反向引用信息" />
               ) : (
-                <BzLoading loading={refsLoading} text="引用查询中..." className="refs-body">
+                <BzLoading
+                  loading={refsLoading}
+                  text="引用查询中..."
+                  className="refs-body"
+                >
                   {refsErrorMessage ? (
-                    <BzAlert title={refsErrorMessage} type="error" showIcon />
+                    <BzAlert
+                      title={refsErrorMessage}
+                      type="error"
+                      showIcon
+                    />
                   ) : reverseRefs.length > 0 ? (
                     <div className="refs-table">
                       <BzTable

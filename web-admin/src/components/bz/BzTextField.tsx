@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { BzIconClose } from "./BzIconClose";
 
 interface BzTextFieldProps {
@@ -36,7 +35,6 @@ export function BzTextField({
   onFocus,
   onBlur,
 }: BzTextFieldProps) {
-  const [focused, setFocused] = useState(false);
   const hasValue = modelValue.length > 0;
   const currentLength = modelValue.length;
 
@@ -67,7 +65,15 @@ export function BzTextField({
 
   return (
     <div className="bz-text-field">
-      <div className={["bz-text-field__control", disabled ? "is-disabled" : "", type === "textarea" ? "is-textarea" : ""].filter(Boolean).join(" ")}>
+      <div
+        className={[
+          "bz-text-field__control",
+          disabled ? "is-disabled" : "",
+          type === "textarea" ? "is-textarea" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {type === "textarea" ? (
           <textarea
             className="bz-text-field__textarea"
@@ -80,8 +86,8 @@ export function BzTextField({
             onInput={handleInput}
             onChange={handleChange}
             onKeyUp={onKeyUp}
-            onFocus={(e) => { setFocused(true); onFocus?.(e); }}
-            onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+            onFocus={(e) => onFocus?.(e)}
+            onBlur={(e) => onBlur?.(e)}
           />
         ) : (
           <input
@@ -95,19 +101,25 @@ export function BzTextField({
             onInput={handleInput}
             onChange={handleChange}
             onKeyUp={onKeyUp}
-            onFocus={(e) => { setFocused(true); onFocus?.(e); }}
-            onBlur={(e) => { setFocused(false); onBlur?.(e); }}
+            onFocus={(e) => onFocus?.(e)}
+            onBlur={(e) => onBlur?.(e)}
           />
         )}
         {clearable && hasValue && !disabled && !readonly && (
-          <button className="bz-text-field__clear" type="button" onClick={clearValue}>
+          <button
+            className="bz-text-field__clear"
+            type="button"
+            onClick={clearValue}
+          >
             <BzIconClose size={20} />
           </button>
         )}
       </div>
       {showCounter && typeof maxlength === "number" && (
         <div className="bz-text-field__helper">
-          <div className="bz-text-field__counter">{currentLength}/{maxlength}</div>
+          <div className="bz-text-field__counter">
+            {currentLength}/{maxlength}
+          </div>
         </div>
       )}
     </div>

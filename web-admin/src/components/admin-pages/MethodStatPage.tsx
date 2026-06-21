@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
 import {
   clearAllMethodStat,
   clearMethodStat,
@@ -31,9 +29,15 @@ import {
   BzTooltip,
 } from "@admin/components/bz";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
-import type { MethodStatMatchMode, MethodStatSortBy, MethodStatSortDirection, MethodStatStatsItem } from "@admin/types/method-stat";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import type {
+  MethodStatMatchMode,
+  MethodStatSortBy,
+  MethodStatSortDirection,
+  MethodStatStatsItem,
+} from "@admin/types/method-stat";
 import type { PageResult } from "@admin/types/page";
+import { useEffect, useMemo, useState } from "react";
 
 const SORT_OPTIONS: Array<{ label: string; value: MethodStatSortBy }> = [
   { label: "累计调用", value: "TOTAL_CALLS" },
@@ -156,7 +160,14 @@ export function MethodStatPage() {
 
   async function loadStats(pNo?: number) {
     if (!canStatsView) {
-      setStatsPage({ pageNo: 1, pageSize, numberOfElements: 0, totalPages: 0, totalElements: 0, elements: [] });
+      setStatsPage({
+        pageNo: 1,
+        pageSize,
+        numberOfElements: 0,
+        totalPages: 0,
+        totalElements: 0,
+        elements: [],
+      });
       return;
     }
     if (typeof pNo === "number") {
@@ -194,7 +205,14 @@ export function MethodStatPage() {
         methodName: undefined,
         matchMode: "FUZZY",
         page: { pageNo: 1, pageSize },
-        sort: { orders: [{ field: "TOTAL_CALLS" as MethodStatSortBy, direction: "DESC" as MethodStatSortDirection }] },
+        sort: {
+          orders: [
+            {
+              field: "TOTAL_CALLS" as MethodStatSortBy,
+              direction: "DESC" as MethodStatSortDirection,
+            },
+          ],
+        },
       });
       setStatsPage(page);
       setPageNo(page.pageNo || 1);
@@ -247,7 +265,9 @@ export function MethodStatPage() {
     setStatsPage((prev) => ({
       ...prev,
       elements: prev.elements.map((e) =>
-        e.key === row.key ? { ...e, methodSwitchEnabled: next, collectEnabled: next && globalSwitchEnabled } : e,
+        e.key === row.key
+          ? { ...e, methodSwitchEnabled: next, collectEnabled: next && globalSwitchEnabled }
+          : e,
       ),
     }));
 
@@ -263,7 +283,13 @@ export function MethodStatPage() {
       setStatsPage((prev) => ({
         ...prev,
         elements: prev.elements.map((e) =>
-          e.key === row.key ? { ...e, methodSwitchEnabled: previous, collectEnabled: previous && globalSwitchEnabled } : e,
+          e.key === row.key
+            ? {
+                ...e,
+                methodSwitchEnabled: previous,
+                collectEnabled: previous && globalSwitchEnabled,
+              }
+            : e,
         ),
       }));
     } finally {
@@ -371,7 +397,9 @@ export function MethodStatPage() {
       minWidth: 260,
       render: (row) => (
         <BzTooltip content={row.methodSignature}>
-          <span style={{ fontWeight: 600, lineHeight: 1.4 }}>{formatMethodDisplay(row.className, row.methodName)}</span>
+          <span style={{ fontWeight: 600, lineHeight: 1.4 }}>
+            {formatMethodDisplay(row.className, row.methodName)}
+          </span>
         </BzTooltip>
       ),
     },
@@ -379,7 +407,14 @@ export function MethodStatPage() {
       key: "status",
       title: "状态",
       width: 120,
-      render: (row) => <BzTag size="small" type={row.collectEnabled ? "success" : "info"}>{row.collectEnabled ? "采集中" : "已关闭"}</BzTag>,
+      render: (row) => (
+        <BzTag
+          size="small"
+          type={row.collectEnabled ? "success" : "info"}
+        >
+          {row.collectEnabled ? "采集中" : "已关闭"}
+        </BzTag>
+      ),
     },
     {
       key: "totalCalls",
@@ -393,9 +428,15 @@ export function MethodStatPage() {
       minWidth: 170,
       render: (row) => (
         <div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>1分：{formatNumber(row.recent1MinuteCalls)}</div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>1时：{formatNumber(row.recent1HourCalls)}</div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>1天：{formatNumber(row.recent1DayCalls)}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            1分：{formatNumber(row.recent1MinuteCalls)}
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            1时：{formatNumber(row.recent1HourCalls)}
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            1天：{formatNumber(row.recent1DayCalls)}
+          </div>
         </div>
       ),
     },
@@ -405,9 +446,15 @@ export function MethodStatPage() {
       minWidth: 160,
       render: (row) => (
         <div>
-          <div style={{ fontSize: 12, lineHeight: 1.45, color: "#16a34a" }}>成功：{formatNumber(row.totalSuccess)}</div>
-          <div style={{ fontSize: 12, lineHeight: 1.45, color: "#dc2626" }}>失败：{formatNumber(row.totalFailure)}</div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>成功率：{formatSuccessRate(row.totalSuccess, row.totalCalls)}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.45, color: "#16a34a" }}>
+            成功：{formatNumber(row.totalSuccess)}
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.45, color: "#dc2626" }}>
+            失败：{formatNumber(row.totalFailure)}
+          </div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            成功率：{formatSuccessRate(row.totalSuccess, row.totalCalls)}
+          </div>
         </div>
       ),
     },
@@ -417,10 +464,14 @@ export function MethodStatPage() {
       minWidth: 180,
       render: (row) => (
         <div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>avg：{formatDecimal(row.durationAvg)}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            avg：{formatDecimal(row.durationAvg)}
+          </div>
           <div style={{ fontSize: 12, lineHeight: 1.45 }}>p95：{formatNumber(row.durationP95)}</div>
           <div style={{ fontSize: 12, lineHeight: 1.45 }}>max：{formatNumber(row.durationMax)}</div>
-          <div style={{ fontSize: 12, lineHeight: 1.45 }}>样本：{formatNumber(row.durationSampleSize)}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.45 }}>
+            样本：{formatNumber(row.durationSampleSize)}
+          </div>
         </div>
       ),
     },
@@ -441,7 +492,10 @@ export function MethodStatPage() {
               {row.methodSwitchEnabled ? "关闭" : "开启"}
             </BzButton>
           ) : null}
-          <BzButton size="small" onClick={() => void openStatsDetail(row.key)}>
+          <BzButton
+            size="small"
+            onClick={() => void openStatsDetail(row.key)}
+          >
             详情
           </BzButton>
           {canStatClear ? (
@@ -485,7 +539,10 @@ export function MethodStatPage() {
                 </>
               ) : null}
               {canStatClear ? (
-                <BzButton loading={clearingAll} onClick={() => void handleClearAllStats()}>
+                <BzButton
+                  loading={clearingAll}
+                  onClick={() => void handleClearAllStats()}
+                >
                   全部清空
                 </BzButton>
               ) : null}
@@ -503,8 +560,15 @@ export function MethodStatPage() {
             ) : null}
           </section>
 
-          <BzCard className="list-page-query-card" shadow="never">
-            <BzForm className="list-page-filter-form" inline onSubmit={(e) => e.preventDefault()}>
+          <BzCard
+            className="list-page-query-card"
+            shadow="never"
+          >
+            <BzForm
+              className="list-page-filter-form"
+              inline
+              onSubmit={(e) => e.preventDefault()}
+            >
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">方法名</div>
@@ -514,7 +578,9 @@ export function MethodStatPage() {
                     placeholder="输入方法名"
                     clearable
                     onValueChange={setMethodName}
-                    onKeyUp={(e) => { if (e.key === "Enter") void handleSearch(); }}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") void handleSearch();
+                    }}
                   />
                 </div>
               </BzFormItem>
@@ -522,9 +588,19 @@ export function MethodStatPage() {
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">匹配模式</div>
-                  <BzSelect modelValue={matchMode} className="match-mode-select" onValueChange={(v) => setMatchMode((v ?? "FUZZY") as MethodStatMatchMode)}>
-                    <BzOption label="模糊" value="FUZZY" />
-                    <BzOption label="精确" value="EXACT" />
+                  <BzSelect
+                    modelValue={matchMode}
+                    className="match-mode-select"
+                    onValueChange={(v) => setMatchMode((v ?? "FUZZY") as MethodStatMatchMode)}
+                  >
+                    <BzOption
+                      label="模糊"
+                      value="FUZZY"
+                    />
+                    <BzOption
+                      label="精确"
+                      value="EXACT"
+                    />
                   </BzSelect>
                 </div>
               </BzFormItem>
@@ -533,21 +609,44 @@ export function MethodStatPage() {
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">排序规则</div>
                   <div className="list-page-sort-group">
-                    <BzSelect modelValue={sortBy} className="sort-field-select" onValueChange={(v) => setSortBy((v ?? "TOTAL_CALLS") as MethodStatSortBy)}>
+                    <BzSelect
+                      modelValue={sortBy}
+                      className="sort-field-select"
+                      onValueChange={(v) => setSortBy((v ?? "TOTAL_CALLS") as MethodStatSortBy)}
+                    >
                       {SORT_OPTIONS.map((option) => (
-                        <BzOption key={option.value} label={option.label} value={option.value} />
+                        <BzOption
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
                       ))}
                     </BzSelect>
-                    <BzSelect modelValue={sortDirection} className="sort-order-select" onValueChange={(v) => setSortDirection((v ?? "DESC") as MethodStatSortDirection)}>
-                      <BzOption label="升序" value="ASC" />
-                      <BzOption label="降序" value="DESC" />
+                    <BzSelect
+                      modelValue={sortDirection}
+                      className="sort-order-select"
+                      onValueChange={(v) =>
+                        setSortDirection((v ?? "DESC") as MethodStatSortDirection)
+                      }
+                    >
+                      <BzOption
+                        label="升序"
+                        value="ASC"
+                      />
+                      <BzOption
+                        label="降序"
+                        value="DESC"
+                      />
                     </BzSelect>
                   </div>
                 </div>
               </BzFormItem>
 
               <BzFormItem className="list-page-filter-actions">
-                <BzButton buttonType="primary" onClick={() => void handleSearch()}>
+                <BzButton
+                  buttonType="primary"
+                  onClick={() => void handleSearch()}
+                >
                   搜索
                 </BzButton>
                 <BzButton onClick={() => void handleReset()}>重置</BzButton>
@@ -555,7 +654,10 @@ export function MethodStatPage() {
             </BzForm>
           </BzCard>
 
-          <BzCard className="list-page-result-card" shadow="never">
+          <BzCard
+            className="list-page-result-card"
+            shadow="never"
+          >
             {!canStatsView ? (
               <BzEmpty description="无权限查看统计结果" />
             ) : (
@@ -603,91 +705,288 @@ export function MethodStatPage() {
         title="方法统计详情"
         width={760}
         onClose={closeStatsDetail}
-        onUpdateModelValue={(v) => { if (!v) closeStatsDetail(); }}
+        onUpdateModelValue={(v) => {
+          if (!v) closeStatsDetail();
+        }}
         footer={<BzButton onClick={closeStatsDetail}>关闭</BzButton>}
       >
         <BzLoading loading={detailLoading}>
           {detailData ? (
             <>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>包名</div>
-                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>{detailData.packageName}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>
+                  包名
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>
+                  {detailData.packageName}
+                </div>
               </div>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>类名</div>
-                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>{detailData.className}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>
+                  类名
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>
+                  {detailData.className}
+                </div>
               </div>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>方法名</div>
-                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>{detailData.methodName}</div>
+                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>
+                  方法名
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.5, wordBreak: "break-all" }}>
+                  {detailData.methodName}
+                </div>
               </div>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>唯一Key</div>
-                <div style={{
-                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace",
-                  fontSize: 12,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  display: "inline-block",
-                  maxWidth: "100%",
-                }}>
+                <div style={{ fontSize: 12, color: "var(--text-muted, #64748b)", marginBottom: 4 }}>
+                  唯一Key
+                </div>
+                <div
+                  style={{
+                    fontFamily:
+                      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace",
+                    fontSize: 12,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "inline-block",
+                    maxWidth: "100%",
+                  }}
+                >
                   {detailData.key}
                 </div>
               </div>
 
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                gap: 8,
-              }}>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>累计调用</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.totalCalls)}</span>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    累计调用
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.totalCalls)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>累计成功</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.totalSuccess)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    累计成功
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.totalSuccess)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>累计失败</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.totalFailure)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    累计失败
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.totalFailure)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>1分钟调用</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.recent1MinuteCalls)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    1分钟调用
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.recent1MinuteCalls)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>1小时调用</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.recent1HourCalls)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    1小时调用
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.recent1HourCalls)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
                   <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>1天调用</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.recent1DayCalls)}</span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.recent1DayCalls)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>耗时avg(ms)</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatDecimal(detailData.durationAvg)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    耗时avg(ms)
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatDecimal(detailData.durationAvg)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>耗时p95(ms)</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.durationP95)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    耗时p95(ms)
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.durationP95)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>耗时max(ms)</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.durationMax)}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    耗时max(ms)
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.durationMax)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
                   <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>样本数</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{formatNumber(detailData.durationSampleSize)}</span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {formatNumber(detailData.durationSampleSize)}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>方法开关</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{detailData.methodSwitchEnabled ? "开启" : "关闭"}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    方法开关
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {detailData.methodSwitchEnabled ? "开启" : "关闭"}
+                  </span>
                 </div>
-                <div style={{ border: "1px solid var(--border-color, #e5e7eb)", borderRadius: 8, padding: "8px 10px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>采集状态</span>
-                  <span style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}>{detailData.collectEnabled ? "采集中" : "已关闭"}</span>
+                <div
+                  style={{
+                    border: "1px solid var(--border-color, #e5e7eb)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: "var(--text-muted, #64748b)" }}>
+                    采集状态
+                  </span>
+                  <span
+                    style={{ fontSize: 13, color: "var(--text-main, #0f172a)", fontWeight: 600 }}
+                  >
+                    {detailData.collectEnabled ? "采集中" : "已关闭"}
+                  </span>
                 </div>
               </div>
             </>

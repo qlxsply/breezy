@@ -107,7 +107,9 @@ function toUserApplicationEntry(
   };
 }
 
-function toUserManagementEntry(payload: UserFeatureUserManagementEntry): UserFeatureUserManagementEntry {
+function toUserManagementEntry(
+  payload: UserFeatureUserManagementEntry,
+): UserFeatureUserManagementEntry {
   return {
     userId: String(payload.userId),
     account: payload.account || "",
@@ -177,7 +179,9 @@ export function pageUserFeaturePackages(params: {
 }
 
 export function getUserFeaturePackage(id: string): Promise<UserFeaturePackageEntry> {
-  return get<UserFeaturePackageEntry>(`${BASE}/packages/${encodeURIComponent(id)}`).then(toPackageEntry);
+  return get<UserFeaturePackageEntry>(`${BASE}/packages/${encodeURIComponent(id)}`).then(
+    toPackageEntry,
+  );
 }
 
 export function createUserFeaturePackage(
@@ -203,10 +207,12 @@ export function deleteUserFeaturePackage(id: string): Promise<boolean> {
   return del<boolean>(`${BASE}/packages/${encodeURIComponent(id)}`);
 }
 
-export function getUserFeatureUserManagement(userId: string): Promise<UserFeatureUserManagementEntry> {
-  return get<UserFeatureUserManagementEntry>(`${BASE}/users/${encodeURIComponent(userId)}/management`).then(
-    toUserManagementEntry,
-  );
+export function getUserFeatureUserManagement(
+  userId: string,
+): Promise<UserFeatureUserManagementEntry> {
+  return get<UserFeatureUserManagementEntry>(
+    `${BASE}/users/${encodeURIComponent(userId)}/management`,
+  ).then(toUserManagementEntry);
 }
 
 export function saveUserFeatureUserManagement(

@@ -8,7 +8,10 @@ interface BzOptionProps extends Omit<OptionHTMLAttributes<HTMLOptionElement>, "v
 
 export function BzOption({ label = "", value = "", children, ...rest }: BzOptionProps) {
   return (
-    <option {...rest} value={String(value ?? "") || ""}>
+    <option
+      {...rest}
+      value={String(value ?? "") || ""}
+    >
       {children ?? label}
     </option>
   );

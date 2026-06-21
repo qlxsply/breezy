@@ -3,8 +3,6 @@
 import { updateMyConfig } from "@admin/api/configs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { BzButton, BzCard, BzForm, BzFormItem, BzOption, BzSelect } from "@admin/components/bz";
-import { message } from "@admin/core/message";
-import { ensureAuthLoaded, usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
 import {
   resolveUserDateFormatCode,
   resolveUserDateTimeFormatCode,
@@ -13,10 +11,16 @@ import {
   USER_DATE_TIME_FORMAT_OPTIONS,
   USER_DECIMAL_FORMAT_OPTIONS,
   USER_TIME_ZONE_OPTIONS,
-} from "@admin/utils/user-config-options";
+  type UserConfigOptionItem,
+} from "@admin/core/formatter";
+import { message } from "@admin/core/message";
+import { ensureAuthLoaded, usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-interface OptionItem { label: string; value: string }
+interface OptionItem {
+  label: string;
+  value: string;
+}
 
 function applyPattern(date: Date, pattern: string): string {
   const map: Record<string, string> = {
@@ -44,9 +48,13 @@ function formatDecimalByPattern(value: number, pattern: string): string {
   });
 }
 
-function resolveStaticLabel(code: string | undefined, fallbackLabel: string, items: Array<{ code: string; label: string }>): string {
+function resolveStaticLabel(
+  code: string | undefined,
+  fallbackLabel: string,
+  items: UserConfigOptionItem[],
+): string {
   const matched = items.find((item) => item.code === (code || "").trim());
-  return matched?.label || fallbackLabel;
+  return matched?.value || fallbackLabel;
 }
 
 function buildDateTimeSampleLabel(code: string | undefined, fallbackLabel: string): string {
@@ -64,7 +72,10 @@ function buildDecimalSampleLabel(code: string | undefined, fallbackLabel: string
   return formatDecimalByPattern(1234567.8912, resolveUserDecimalFormatCode(code)) || fallbackLabel;
 }
 
-function buildOptions(items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>, labelFn: (code: string | undefined, fallback: string) => string): OptionItem[] {
+function buildOptions(
+  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
+  labelFn: (code: string | undefined, fallback: string) => string,
+): OptionItem[] {
   return items.map((item) => ({
     label: labelFn(item.itemCode, item.itemLabel),
     value: item.itemCode || item.itemValue,
@@ -75,7 +86,12 @@ export function AdminProfilePreferencesPage() {
   const configs = usePersonalizedConfigs();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ USER_TIME_ZONE: "ASIA_SHANGHAI", USER_DATE_TIME_FORMAT: "YYYY_MM_DD_HH_MM_SS", USER_DATE_FORMAT: "YYYY_MM_DD", USER_DECIMAL_FORMAT: "COMMA_2" });
+  const [form, setForm] = useState({
+    USER_TIME_ZONE: "ASIA_SHANGHAI",
+    USER_DATE_TIME_FORMAT: "YYYY_MM_DD_HH_MM_SS",
+    USER_DATE_FORMAT: "YYYY_MM_DD",
+    USER_DECIMAL_FORMAT: "COMMA_2",
+  });
 
   const [timeZoneOptions, setTimeZoneOptions] = useState<OptionItem[]>([]);
   const [dateTimeFormatOptions, setDateTimeFormatOptions] = useState<OptionItem[]>([]);
@@ -89,25 +105,57 @@ export function AdminProfilePreferencesPage() {
     void Promise.all([loadOptions(), reload()]);
   }, []);
 
-  const currentLabels = useMemo(() => ({
-    timeZone: timeZoneOptions.find((item) => item.value === form.USER_TIME_ZONE)?.label || form.USER_TIME_ZONE,
-    dateTime: dateTimeFormatOptions.find((item) => item.value === form.USER_DATE_TIME_FORMAT)?.label || form.USER_DATE_TIME_FORMAT,
-    date: dateFormatOptions.find((item) => item.value === form.USER_DATE_FORMAT)?.label || form.USER_DATE_FORMAT,
-    decimal: decimalFormatOptions.find((item) => item.value === form.USER_DECIMAL_FORMAT)?.label || form.USER_DECIMAL_FORMAT,
-  }), [timeZoneOptions, dateTimeFormatOptions, dateFormatOptions, decimalFormatOptions, form]);
+  const currentLabels = useMemo(
+    () => ({
+      timeZone:
+        timeZoneOptions.find((item) => item.value === form.USER_TIME_ZONE)?.label ||
+        form.USER_TIME_ZONE,
+      dateTime:
+        dateTimeFormatOptions.find((item) => item.value === form.USER_DATE_TIME_FORMAT)?.label ||
+        form.USER_DATE_TIME_FORMAT,
+      date:
+        dateFormatOptions.find((item) => item.value === form.USER_DATE_FORMAT)?.label ||
+        form.USER_DATE_FORMAT,
+      decimal:
+        decimalFormatOptions.find((item) => item.value === form.USER_DECIMAL_FORMAT)?.label ||
+        form.USER_DECIMAL_FORMAT,
+    }),
+    [timeZoneOptions, dateTimeFormatOptions, dateFormatOptions, decimalFormatOptions, form],
+  );
 
   async function loadOptions() {
     try {
-      const result = await batchListDictOptions(["USER_TIME_ZONE", "USER_DATE_TIME_FORMAT", "USER_DATE_FORMAT", "USER_DECIMAL_FORMAT"]);
-      setTimeZoneOptions(buildOptions(result.USER_TIME_ZONE || [], (code, fallback) => resolveStaticLabel(code, fallback, USER_TIME_ZONE_OPTIONS)));
-      setDateTimeFormatOptions(buildOptions(result.USER_DATE_TIME_FORMAT || [], buildDateTimeSampleLabel));
+      const result = await batchListDictOptions([
+        "USER_TIME_ZONE",
+        "USER_DATE_TIME_FORMAT",
+        "USER_DATE_FORMAT",
+        "USER_DECIMAL_FORMAT",
+      ]);
+      setTimeZoneOptions(
+        buildOptions(result.USER_TIME_ZONE || [], (code, fallback) =>
+          resolveStaticLabel(code, fallback, USER_TIME_ZONE_OPTIONS),
+        ),
+      );
+      setDateTimeFormatOptions(
+        buildOptions(result.USER_DATE_TIME_FORMAT || [], buildDateTimeSampleLabel),
+      );
       setDateFormatOptions(buildOptions(result.USER_DATE_FORMAT || [], buildDateSampleLabel));
-      setDecimalFormatOptions(buildOptions(result.USER_DECIMAL_FORMAT || [], buildDecimalSampleLabel));
+      setDecimalFormatOptions(
+        buildOptions(result.USER_DECIMAL_FORMAT || [], buildDecimalSampleLabel),
+      );
     } catch {
-      setTimeZoneOptions(USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.label, value: item.code })));
-      setDateTimeFormatOptions(USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code })));
-      setDateFormatOptions(USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code })));
-      setDecimalFormatOptions(USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.label, value: item.code })));
+      setTimeZoneOptions(
+        USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+      );
+      setDateTimeFormatOptions(
+        USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+      );
+      setDateFormatOptions(
+        USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+      );
+      setDecimalFormatOptions(
+        USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+      );
     }
   }
 
@@ -127,7 +175,9 @@ export function AdminProfilePreferencesPage() {
     setForm((prev) => ({ ...prev, ...update }));
   }
 
-  function startEdit() { setEditing(true); }
+  function startEdit() {
+    setEditing(true);
+  }
 
   function cancelEdit() {
     setEditing(false);
@@ -161,15 +211,30 @@ export function AdminProfilePreferencesPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <BzCard className="admin-panel admin-table-card" shadow="never"
-            header={<div className="admin-table-header"><div className="admin-table-title">偏好设置</div></div>}
+          <BzCard
+            className="admin-panel admin-table-card"
+            shadow="never"
+            header={
+              <div className="admin-table-header">
+                <div className="admin-table-title">偏好设置</div>
+              </div>
+            }
           >
             <div className="preferences-layout">
               <div className="preferences-head">
                 <div className="preferences-title">个性化显示设置</div>
                 <div className="preferences-actions">
-                  {editing ? <BzButton disabled={saving} onClick={cancelEdit}>取消</BzButton> : null}
-                  <BzButton buttonType={editing ? "primary" : undefined} loading={saving}
+                  {editing ? (
+                    <BzButton
+                      disabled={saving}
+                      onClick={cancelEdit}
+                    >
+                      取消
+                    </BzButton>
+                  ) : null}
+                  <BzButton
+                    buttonType={editing ? "primary" : undefined}
+                    loading={saving}
                     onClick={editing ? submit : startEdit}
                   >
                     {editing ? "确认" : "编辑"}
@@ -180,9 +245,18 @@ export function AdminProfilePreferencesPage() {
               <BzForm className="preferences-grid">
                 <BzFormItem label="时区">
                   {editing ? (
-                    <BzSelect modelValue={form.USER_TIME_ZONE} onValueChange={(value) => setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "ASIA_SHANGHAI" }))}>
+                    <BzSelect
+                      modelValue={form.USER_TIME_ZONE}
+                      onValueChange={(value) =>
+                        setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "ASIA_SHANGHAI" }))
+                      }
+                    >
                       {timeZoneOptions.map((option) => (
-                        <BzOption key={option.value} label={option.label} value={option.value} />
+                        <BzOption
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
                       ))}
                     </BzSelect>
                   ) : (
@@ -191,9 +265,21 @@ export function AdminProfilePreferencesPage() {
                 </BzFormItem>
                 <BzFormItem label="日期时间格式">
                   {editing ? (
-                    <BzSelect modelValue={form.USER_DATE_TIME_FORMAT} onValueChange={(value) => setForm((prev) => ({ ...prev, USER_DATE_TIME_FORMAT: value || "YYYY_MM_DD_HH_MM_SS" }))}>
+                    <BzSelect
+                      modelValue={form.USER_DATE_TIME_FORMAT}
+                      onValueChange={(value) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          USER_DATE_TIME_FORMAT: value || "YYYY_MM_DD_HH_MM_SS",
+                        }))
+                      }
+                    >
                       {dateTimeFormatOptions.map((option) => (
-                        <BzOption key={option.value} label={option.label} value={option.value} />
+                        <BzOption
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
                       ))}
                     </BzSelect>
                   ) : (
@@ -202,9 +288,18 @@ export function AdminProfilePreferencesPage() {
                 </BzFormItem>
                 <BzFormItem label="日期格式">
                   {editing ? (
-                    <BzSelect modelValue={form.USER_DATE_FORMAT} onValueChange={(value) => setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "YYYY_MM_DD" }))}>
+                    <BzSelect
+                      modelValue={form.USER_DATE_FORMAT}
+                      onValueChange={(value) =>
+                        setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "YYYY_MM_DD" }))
+                      }
+                    >
                       {dateFormatOptions.map((option) => (
-                        <BzOption key={option.value} label={option.label} value={option.value} />
+                        <BzOption
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
                       ))}
                     </BzSelect>
                   ) : (
@@ -213,9 +308,18 @@ export function AdminProfilePreferencesPage() {
                 </BzFormItem>
                 <BzFormItem label="小数格式">
                   {editing ? (
-                    <BzSelect modelValue={form.USER_DECIMAL_FORMAT} onValueChange={(value) => setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_2" }))}>
+                    <BzSelect
+                      modelValue={form.USER_DECIMAL_FORMAT}
+                      onValueChange={(value) =>
+                        setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_2" }))
+                      }
+                    >
                       {decimalFormatOptions.map((option) => (
-                        <BzOption key={option.value} label={option.label} value={option.value} />
+                        <BzOption
+                          key={option.value}
+                          label={option.label}
+                          value={option.value}
+                        />
                       ))}
                     </BzSelect>
                   ) : (

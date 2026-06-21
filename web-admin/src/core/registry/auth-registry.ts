@@ -1,12 +1,22 @@
 "use client";
 
-import { clearAuthToken, getAuthScope, getAuthToken, setAuthScope, setAuthToken } from "@admin/core/auth-storage";
+import {
+  clearAuthToken,
+  getAuthScope,
+  getAuthToken,
+  setAuthScope,
+  setAuthToken,
+} from "@admin/core/auth-storage";
 import { createStore, useStoreValue } from "@admin/core/client-store";
 import { clearFormatterConfigs, setFormatterConfigs } from "@admin/core/formatter";
 import { get, post, put } from "@admin/core/http";
 import { ensureUnreadLoaded } from "@admin/core/registry/notifications-registry";
 import { refreshPermissions } from "@admin/core/registry/permissions-registry";
-import { ensureWebPushSubscription, initTodoReminderPermission, removeWebPushSubscription } from "@admin/core/registry/todo-reminder-registry";
+import {
+  ensureWebPushSubscription,
+  initTodoReminderPermission,
+  removeWebPushSubscription,
+} from "@admin/core/registry/todo-reminder-registry";
 import type { UserConfigItem } from "@admin/core/types";
 
 export type AuthUserType = "INTERNAL" | "EXTERNAL" | "GUEST";
@@ -148,7 +158,11 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
   return authPromise;
 }
 
-export async function login(scope: AuthSpace, username: string, password: string): Promise<AuthUser> {
+export async function login(
+  scope: AuthSpace,
+  username: string,
+  password: string,
+): Promise<AuthUser> {
   const payload = await post<LoginResponsePayload>(`${authBase(scope)}/login`, {
     account: username,
     password,
@@ -186,7 +200,11 @@ export async function logout(): Promise<void> {
   }
 }
 
-export async function changePassword(space: AuthSpace, oldPassword: string, newPassword: string): Promise<boolean> {
+export async function changePassword(
+  space: AuthSpace,
+  oldPassword: string,
+  newPassword: string,
+): Promise<boolean> {
   return put<boolean>(`${authBase(space)}/password`, { oldPassword, newPassword });
 }
 

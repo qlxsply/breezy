@@ -18,7 +18,13 @@ export interface SseMessage {
   osNotificationEnabled: boolean;
 }
 
-export type SseState = "idle" | "leader-open" | "leader-connecting" | "leader-reconnecting" | "follower" | "closed";
+export type SseState =
+  | "idle"
+  | "leader-open"
+  | "leader-connecting"
+  | "leader-reconnecting"
+  | "follower"
+  | "closed";
 
 interface SseRegistryState {
   state: SseState;
@@ -213,7 +219,11 @@ function takeMaster(currentVersion: number) {
   setLock(newLock);
   window.setTimeout(() => {
     const checkLockValue = getLock();
-    if (checkLockValue && checkLockValue.tabId === tabId && checkLockValue.version === newLock.version) {
+    if (
+      checkLockValue &&
+      checkLockValue.tabId === tabId &&
+      checkLockValue.version === newLock.version
+    ) {
       becomeLeader();
       return;
     }
@@ -289,7 +299,10 @@ async function connectSse() {
         route: data.route || "",
         priority: data.priority || "LOW",
         panelAutoOpen: resolveBoolean(data.panelAutoOpen, (data.priority || "LOW") !== "LOW"),
-        osNotificationEnabled: resolveBoolean(data.osNotificationEnabled, (data.priority || "LOW") === "HIGH"),
+        osNotificationEnabled: resolveBoolean(
+          data.osNotificationEnabled,
+          (data.priority || "LOW") === "HIGH",
+        ),
       };
       if (eventId) {
         window.localStorage.setItem(LAST_EVENT_ID_KEY, eventId);

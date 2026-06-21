@@ -11,7 +11,11 @@ export function AdminNotFoundPage() {
         <h1>404</h1>
         <p>未找到对应页面或工具。</p>
         <div className="admin-placeholder-actions">
-          <button className="admin-placeholder-btn primary" type="button" onClick={() => router.replace("/admin")}>
+          <button
+            className="admin-placeholder-btn primary"
+            type="button"
+            onClick={() => router.replace("/admin")}
+          >
             返回首页
           </button>
         </div>

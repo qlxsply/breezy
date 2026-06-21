@@ -70,23 +70,53 @@ export function AdminRouteViewport() {
   }, [authLoaded, authenticated, pathname, router]);
 
   if (!authLoaded) {
-    return <AdminPlaceholderCard badge="系统 / 加载中" title="正在初始化后台" description="后台登录态、资源树、权限和通知能力正在加载，请稍候。" />;
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 加载中"
+        title="正在初始化后台"
+        description="后台登录态、资源树、权限和通知能力正在加载，请稍候。"
+      />
+    );
   }
 
   if (!authenticated) {
-    return <AdminPlaceholderCard badge="系统 / 跳转中" title="正在跳转到登录页" description="当前未登录，系统将自动跳转到后台登录页。" />;
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 跳转中"
+        title="正在跳转到登录页"
+        description="当前未登录，系统将自动跳转到后台登录页。"
+      />
+    );
   }
 
   if (currentUserType !== "INTERNAL") {
-    return <AdminPlaceholderCard badge="系统 / 无权访问" title="当前账号不能访问后台" description="该账号不是内部账号，系统将返回首页。" />;
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 无权访问"
+        title="当前账号不能访问后台"
+        description="该账号不是内部账号，系统将返回首页。"
+      />
+    );
   }
 
   if (!registryLoaded || !permissionsLoaded) {
-    return <AdminPlaceholderCard badge="系统 / 同步中" title="正在同步后台资源" description="后台资源树和权限数据正在准备，完成后会自动进入目标页面。" />;
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 同步中"
+        title="正在同步后台资源"
+        description="后台资源树和权限数据正在准备，完成后会自动进入目标页面。"
+      />
+    );
   }
 
   if (!resolved.exists) {
-    return <AdminPlaceholderCard badge="提示 / 页面不存在" title="页面不存在" description="当前路径没有对应的后台资源或静态自助页定义。" />;
+    return (
+      <AdminPlaceholderCard
+        badge="提示 / 页面不存在"
+        title="页面不存在"
+        description="当前路径没有对应的后台资源或静态自助页定义。"
+      />
+    );
   }
 
   if (!resolved.accessible) {
@@ -96,7 +126,10 @@ export function AdminRouteViewport() {
         title="无权限访问当前页面"
         description="当前账号没有访问该后台页面的资源权限。"
         extra={
-          <BzButton buttonType="primary" onClick={() => router.replace("/admin")}>
+          <BzButton
+            buttonType="primary"
+            onClick={() => router.replace("/admin")}
+          >
             返回工作台
           </BzButton>
         }
@@ -118,7 +151,10 @@ export function AdminRouteViewport() {
         <section className="admin-placeholder-card">
           <span className="admin-placeholder-meta">{badge || "概览 / 工作台"}</span>
           <h1>{title}</h1>
-          <p>后台壳体、Bz UI、基础能力和 registry 已经切换到 React 方案。后续页面主体会继续按批次逐页接管。</p>
+          <p>
+            后台壳体、Bz UI、基础能力和 registry 已经切换到 React
+            方案。后续页面主体会继续按批次逐页接管。
+          </p>
         </section>
         <AdminCapabilityDemo />
       </div>
@@ -136,7 +172,10 @@ export function AdminRouteViewport() {
             <div>当前路径：{pathname}</div>
             <div>
               返回工作台：
-              <Link href="/admin" style={{ color: "#2563eb" }}>
+              <Link
+                href="/admin"
+                style={{ color: "#2563eb" }}
+              >
                 /admin
               </Link>
             </div>

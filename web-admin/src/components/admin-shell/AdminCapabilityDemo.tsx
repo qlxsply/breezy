@@ -32,7 +32,10 @@ export function AdminCapabilityDemo() {
   }
 
   return (
-    <BzCard shadow="never" header={<div style={{ fontWeight: 600 }}>T5 基础能力迁移验证</div>}>
+    <BzCard
+      shadow="never"
+      header={<div style={{ fontWeight: 600 }}>T5 基础能力迁移验证</div>}
+    >
       <div style={{ display: "grid", gap: 16 }}>
         <BzAlert
           title="以下区域用于确认新的 core 能力已经从 Vue 版剥离，并可以在 Next/React 下独立工作。"
@@ -43,7 +46,12 @@ export function AdminCapabilityDemo() {
 
         <BzForm>
           <BzFormItem label="本地存储示例">
-            <BzInput modelValue={text} placeholder="输入任意文本后点保存" clearable onValueChange={setText} />
+            <BzInput
+              modelValue={text}
+              placeholder="输入任意文本后点保存"
+              clearable
+              onValueChange={setText}
+            />
           </BzFormItem>
         </BzForm>
 
@@ -57,11 +65,19 @@ export function AdminCapabilityDemo() {
           >
             保存存储
           </BzButton>
-          <BzButton onClick={() => setText(readJson<string>(DEMO_STORAGE_KEY, ""))}>读取存储</BzButton>
-          <BzButton buttonType="warning" onClick={() => void handleConfirmDemo()}>
+          <BzButton onClick={() => setText(readJson<string>(DEMO_STORAGE_KEY, ""))}>
+            读取存储
+          </BzButton>
+          <BzButton
+            buttonType="warning"
+            onClick={() => void handleConfirmDemo()}
+          >
             确认弹层
           </BzButton>
-          <BzButton buttonType="success" onClick={() => message.success("消息桥接已接通")}>
+          <BzButton
+            buttonType="success"
+            onClick={() => message.success("消息桥接已接通")}
+          >
             消息提示
           </BzButton>
         </div>

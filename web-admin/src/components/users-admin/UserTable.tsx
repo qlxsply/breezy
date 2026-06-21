@@ -1,12 +1,15 @@
+import { formatDateTime } from "../../core/formatter";
 import type { AdminActionItem } from "../../types/admin-action";
 import type { UserEntry } from "../../types/user-admin";
 import { AdminActionBar } from "../admin/AdminActionBar";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
-import { formatDateTime } from "../../core/formatter";
 
-interface UserTypeMeta { label: string; tagType?: string | null }
+interface UserTypeMeta {
+  label: string;
+  tagType?: string | null;
+}
 
 interface UserTableProps {
   rows: UserEntry[];
@@ -24,7 +27,21 @@ interface UserTableProps {
   onRemove: (user: UserEntry) => void;
 }
 
-export function UserTable({ rows, loading, canEdit, canToggle, canReset, canRoles, canDelete, userTypeMetaMap = {}, onEdit, onToggle, onReset, onRoles, onRemove }: UserTableProps) {
+export function UserTable({
+  rows,
+  loading,
+  canEdit,
+  canToggle,
+  canReset,
+  canRoles,
+  canDelete,
+  userTypeMetaMap = {},
+  onEdit,
+  onToggle,
+  onReset,
+  onRoles,
+  onRemove,
+}: UserTableProps) {
   function resolveUserTypeLabel(userType: string): string {
     return userTypeMetaMap[userType]?.label || userType;
   }
@@ -35,31 +52,85 @@ export function UserTable({ rows, loading, canEdit, canToggle, canReset, canRole
   }
   function getActions(user: UserEntry): AdminActionItem[] {
     const actions: AdminActionItem[] = [];
-    if (canEdit) actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => onEdit(user) });
-    if (canToggle) actions.push({ key: "toggle", label: user.status === "ENABLED" ? "停用" : "启用", tone: user.status === "ENABLED" ? "disable" : "enable", handler: () => onToggle(user) });
+    if (canEdit)
+      actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => onEdit(user) });
+    if (canToggle)
+      actions.push({
+        key: "toggle",
+        label: user.status === "ENABLED" ? "停用" : "启用",
+        tone: user.status === "ENABLED" ? "disable" : "enable",
+        handler: () => onToggle(user),
+      });
     if (canReset) actions.push({ key: "reset", label: "重置密码", handler: () => onReset(user) });
-    if (canRoles && user.userType !== "EXTERNAL") actions.push({ key: "roles", label: "角色", handler: () => onRoles(user) });
-    if (canDelete) actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
+    if (canRoles && user.userType !== "EXTERNAL")
+      actions.push({ key: "roles", label: "角色", handler: () => onRoles(user) });
+    if (canDelete)
+      actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
     return actions;
   }
 
   const columns: Array<BzTableColumn<UserEntry>> = [
-    { key: "username", title: "账号", minWidth: 180, render: (row) => <div className="name">{row.username}</div> },
+    {
+      key: "username",
+      title: "账号",
+      minWidth: 180,
+      render: (row) => <div className="name">{row.username}</div>,
+    },
     { key: "nickname", title: "昵称", minWidth: 160, render: (row) => row.nickname || "-" },
-    { key: "userType", title: "类型", width: 120, render: (row) => <BzTag type={resolveUserTypeTagType(row.userType)}>{resolveUserTypeLabel(row.userType)}</BzTag> },
-    { key: "status", title: "状态", width: 110, render: (row) => {
-      const active = row.status === "ENABLED";
-      return <BzTag type={active ? "success" : "warning"}>{active ? "启用" : "停用"}</BzTag>;
-    }},
+    {
+      key: "userType",
+      title: "类型",
+      width: 120,
+      render: (row) => (
+        <BzTag type={resolveUserTypeTagType(row.userType)}>
+          {resolveUserTypeLabel(row.userType)}
+        </BzTag>
+      ),
+    },
+    {
+      key: "status",
+      title: "状态",
+      width: 110,
+      render: (row) => {
+        const active = row.status === "ENABLED";
+        return <BzTag type={active ? "success" : "warning"}>{active ? "启用" : "停用"}</BzTag>;
+      },
+    },
     { key: "createdBy", title: "创建人", width: 140, render: (row) => row.createdBy || "-" },
-    { key: "createdAt", title: "创建时间", width: 170, render: (row) => formatDateTime(row.createdAt) },
+    {
+      key: "createdAt",
+      title: "创建时间",
+      width: 170,
+      render: (row) => formatDateTime(row.createdAt),
+    },
     { key: "updatedBy", title: "更新人", width: 140, render: (row) => row.updatedBy || "-" },
-    { key: "updatedAt", title: "更新时间", width: 170, render: (row) => formatDateTime(row.updatedAt) },
-    { key: "actions", title: "操作", width: 180, render: (row) => {
-      const all = getActions(row);
-      return <AdminActionBar actions={all.filter((a) => a.key === "edit" || a.key === "roles")} />;
-    }},
+    {
+      key: "updatedAt",
+      title: "更新时间",
+      width: 170,
+      render: (row) => formatDateTime(row.updatedAt),
+    },
+    {
+      key: "actions",
+      title: "操作",
+      width: 180,
+      render: (row) => {
+        const all = getActions(row);
+        return (
+          <AdminActionBar actions={all.filter((a) => a.key === "edit" || a.key === "roles")} />
+        );
+      },
+    },
   ];
 
-  return <BzTable data={rows} columns={columns} rowKey="id" loading={loading} emptyText="暂无数据" size="small" />;
+  return (
+    <BzTable
+      data={rows}
+      columns={columns}
+      rowKey="id"
+      loading={loading}
+      emptyText="暂无数据"
+      size="small"
+    />
+  );
 }

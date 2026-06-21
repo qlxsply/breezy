@@ -12,12 +12,12 @@ const USER_DATE_FORMAT = "USER_DATE_FORMAT";
 const USER_DECIMAL_FORMAT = "USER_DECIMAL_FORMAT";
 const USER_TIME_ZONE = "USER_TIME_ZONE";
 
-interface UserConfigOptionItem {
+export interface UserConfigOptionItem {
   code: string;
   value: string;
 }
 
-const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
+export const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
   { code: "ASIA_SHANGHAI", value: "Asia/Shanghai" },
   { code: "UTC", value: "UTC" },
   { code: "ASIA_TOKYO", value: "Asia/Tokyo" },
@@ -25,21 +25,21 @@ const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
   { code: "AMERICA_NEW_YORK", value: "America/New_York" },
 ];
 
-const USER_DATE_TIME_FORMAT_OPTIONS: UserConfigOptionItem[] = [
+export const USER_DATE_TIME_FORMAT_OPTIONS: UserConfigOptionItem[] = [
   { code: "YYYY_MM_DD_HH_MM_SS", value: "yyyy-MM-dd HH:mm:ss" },
   { code: "YYYY_SLASH_MM_DD_HH_MM_SS", value: "yyyy/MM/dd HH:mm:ss" },
   { code: "DD_SLASH_MM_YYYY_HH_MM_SS", value: "dd/MM/yyyy HH:mm:ss" },
   { code: "MM_DD_YYYY_HH_MM", value: "MM-dd-yyyy HH:mm" },
 ];
 
-const USER_DATE_FORMAT_OPTIONS: UserConfigOptionItem[] = [
+export const USER_DATE_FORMAT_OPTIONS: UserConfigOptionItem[] = [
   { code: "YYYY_MM_DD", value: "yyyy-MM-dd" },
   { code: "YYYY_SLASH_MM_DD", value: "yyyy/MM/dd" },
   { code: "DD_SLASH_MM_YYYY", value: "dd/MM/yyyy" },
   { code: "MM_DD_YYYY", value: "MM-dd-yyyy" },
 ];
 
-const USER_DECIMAL_FORMAT_OPTIONS: UserConfigOptionItem[] = [
+export const USER_DECIMAL_FORMAT_OPTIONS: UserConfigOptionItem[] = [
   { code: "COMMA_2", value: "#,##0.00" },
   { code: "COMMA_3", value: "#,##0.000" },
   { code: "PLAIN_2", value: "0.00" },
@@ -59,7 +59,11 @@ interface DateTimeParts {
   second: number;
 }
 
-function findValue(options: UserConfigOptionItem[], code: string | null | undefined, fallback: string): string {
+function findValue(
+  options: UserConfigOptionItem[],
+  code: string | null | undefined,
+  fallback: string,
+): string {
   if (!code) {
     return fallback;
   }
@@ -68,19 +72,19 @@ function findValue(options: UserConfigOptionItem[], code: string | null | undefi
   return matched?.value || fallback;
 }
 
-function resolveUserTimeZoneCode(code: string | null | undefined): string {
+export function resolveUserTimeZoneCode(code: string | null | undefined): string {
   return findValue(USER_TIME_ZONE_OPTIONS, code, "Asia/Shanghai");
 }
 
-function resolveUserDateTimeFormatCode(code: string | null | undefined): string {
+export function resolveUserDateTimeFormatCode(code: string | null | undefined): string {
   return findValue(USER_DATE_TIME_FORMAT_OPTIONS, code, "yyyy-MM-dd HH:mm:ss");
 }
 
-function resolveUserDateFormatCode(code: string | null | undefined): string {
+export function resolveUserDateFormatCode(code: string | null | undefined): string {
   return findValue(USER_DATE_FORMAT_OPTIONS, code, "yyyy-MM-dd");
 }
 
-function resolveUserDecimalFormatCode(code: string | null | undefined): string {
+export function resolveUserDecimalFormatCode(code: string | null | undefined): string {
   return findValue(USER_DECIMAL_FORMAT_OPTIONS, code, "#,##0.00");
 }
 
@@ -112,7 +116,9 @@ export function formatDateTime(value: string | number | Date | null | undefined)
   const date = toDate(value);
   if (!date) return "-";
 
-  const pattern = resolveUserDateTimeFormatCode(getConfigValue(USER_DATE_TIME_FORMAT) || DEFAULT_DATE_TIME_CODE);
+  const pattern = resolveUserDateTimeFormatCode(
+    getConfigValue(USER_DATE_TIME_FORMAT) || DEFAULT_DATE_TIME_CODE,
+  );
   return applyPattern(date, pattern, getUserTimeZone());
 }
 
@@ -130,7 +136,9 @@ export function formatDecimal(value: number | string | null | undefined): string
   const num = typeof value === "number" ? value : Number.parseFloat(value);
   if (Number.isNaN(num)) return "-";
 
-  const pattern = resolveUserDecimalFormatCode(getConfigValue(USER_DECIMAL_FORMAT) || DEFAULT_DECIMAL_CODE);
+  const pattern = resolveUserDecimalFormatCode(
+    getConfigValue(USER_DECIMAL_FORMAT) || DEFAULT_DECIMAL_CODE,
+  );
   const parts = pattern.split(".");
   const fractionDigits = parts.length > 1 ? parts[1].length : 0;
   const useGrouping = pattern.includes(",");
@@ -155,7 +163,17 @@ export function dateTimeInputToNextMinuteEpochMillisString(value: string): strin
   const parsed = parseDateTimeInput(value.trim());
   if (!parsed) return null;
 
-  const nextMinute = new Date(Date.UTC(parsed.year, parsed.month - 1, parsed.day, parsed.hour, parsed.minute, parsed.second, 0));
+  const nextMinute = new Date(
+    Date.UTC(
+      parsed.year,
+      parsed.month - 1,
+      parsed.day,
+      parsed.hour,
+      parsed.minute,
+      parsed.second,
+      0,
+    ),
+  );
   nextMinute.setUTCMinutes(nextMinute.getUTCMinutes() + 1);
 
   const epochMillis = zonedDateTimeToEpochMillis(
@@ -220,7 +238,8 @@ function pad(value: number): string {
 }
 
 function parseDateTimeInput(value: string): DateTimeParts | null {
-  const matched = value.match(DATE_TIME_INPUT_PATTERN) ?? value.match(DATE_TIME_WITH_SECONDS_PATTERN);
+  const matched =
+    value.match(DATE_TIME_INPUT_PATTERN) ?? value.match(DATE_TIME_WITH_SECONDS_PATTERN);
   if (!matched) {
     return null;
   }
@@ -267,7 +286,15 @@ function getZonedParts(date: Date, timeZone: string): DateTimeParts {
 }
 
 function zonedDateTimeToEpochMillis(parts: DateTimeParts, timeZone: string): number {
-  const utcGuess = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second, 0);
+  const utcGuess = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+    0,
+  );
   const offset0 = timeZoneOffsetMillis(timeZone, utcGuess);
   let epoch = utcGuess - offset0;
   const offset1 = timeZoneOffsetMillis(timeZone, epoch);
@@ -277,9 +304,28 @@ function zonedDateTimeToEpochMillis(parts: DateTimeParts, timeZone: string): num
   return epoch;
 }
 
+export function resolveUserConfigLabel(code: string, value: string): string {
+  const trimmed = (value || "").trim();
+  if (code === "USER_TIME_ZONE") return findValue(USER_TIME_ZONE_OPTIONS, trimmed, trimmed);
+  if (code === "USER_DATE_TIME_FORMAT")
+    return findValue(USER_DATE_TIME_FORMAT_OPTIONS, trimmed, trimmed);
+  if (code === "USER_DATE_FORMAT") return findValue(USER_DATE_FORMAT_OPTIONS, trimmed, trimmed);
+  if (code === "USER_DECIMAL_FORMAT")
+    return findValue(USER_DECIMAL_FORMAT_OPTIONS, trimmed, trimmed);
+  return value || "-";
+}
+
 function timeZoneOffsetMillis(timeZone: string, epochMillis: number): number {
   const date = new Date(epochMillis);
   const parts = getZonedParts(date, timeZone);
-  const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second, 0);
+  const asUtc = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+    0,
+  );
   return asUtc - epochMillis;
 }

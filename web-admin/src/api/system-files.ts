@@ -1,3 +1,4 @@
+import { getAuthToken } from "../core/auth-storage";
 import type {
   PhysicalFileDetail,
   StorageListQuery,
@@ -5,7 +6,6 @@ import type {
   StorageSortOrder,
   SystemFileItem,
 } from "../types/file-storage";
-import { getAuthToken } from "../utils/authStorage";
 import { API_BASE_URL, get } from "./http";
 
 const BASE = "/sys/files";

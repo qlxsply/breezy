@@ -12,12 +12,25 @@ export function BzMessageHost() {
   }
 
   return (
-    <div className="bz-message-host" aria-live="polite">
+    <div
+      className="bz-message-host"
+      aria-live="polite"
+    >
       {messages.map((item) => (
-        <div key={item.id} className={["bz-message", `bz-message--${item.type}`].join(" ")}>
-          <BzMessageAutoDismiss id={item.id} duration={item.duration} />
+        <div
+          key={item.id}
+          className={["bz-message", `bz-message--${item.type}`].join(" ")}
+        >
+          <BzMessageAutoDismiss
+            id={item.id}
+            duration={item.duration}
+          />
           <div className="bz-message__content">{item.content}</div>
-          <BzButton className="bz-message__close" link onClick={() => removeMessage(item.id)}>
+          <BzButton
+            className="bz-message__close"
+            link
+            onClick={() => removeMessage(item.id)}
+          >
             <BzIconClose />
           </BzButton>
         </div>

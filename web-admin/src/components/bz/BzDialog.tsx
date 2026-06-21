@@ -133,11 +133,21 @@ export function BzDialog({
         }
       }}
     >
-      <div className="bz-dialog" style={dialogStyle} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="bz-dialog"
+        style={dialogStyle}
+        role="dialog"
+        aria-modal="true"
+        onClick={(event) => event.stopPropagation()}
+      >
         <header className="bz-dialog__header">
           <div className="bz-dialog__title">{title}</div>
           {showClose ? (
-            <button className="bz-dialog__close" type="button" onClick={handleCancel}>
+            <button
+              className="bz-dialog__close"
+              type="button"
+              onClick={handleCancel}
+            >
               <BzIconClose />
             </button>
           ) : null}
@@ -149,7 +159,10 @@ export function BzDialog({
           {footer ?? (
             <>
               <BzButton onClick={handleCancel}>{cancelText}</BzButton>
-              <BzButton buttonType="primary" onClick={onConfirm}>
+              <BzButton
+                buttonType="primary"
+                onClick={onConfirm}
+              >
                 {confirmText}
               </BzButton>
             </>

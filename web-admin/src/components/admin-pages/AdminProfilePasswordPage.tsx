@@ -55,17 +55,36 @@ export function AdminProfilePasswordPage() {
             <div className="password-layout">
               <BzForm className="password-form">
                 <BzFormItem label="当前密码">
-                  <BzInput modelValue={oldPassword} type="password" placeholder="请输入当前密码" onValueChange={setOldPassword} />
+                  <BzInput
+                    modelValue={oldPassword}
+                    type="password"
+                    placeholder="请输入当前密码"
+                    onValueChange={setOldPassword}
+                  />
                 </BzFormItem>
                 <BzFormItem label="新密码">
-                  <BzInput modelValue={newPassword} type="password" placeholder="请输入新密码" onValueChange={setNewPassword} />
+                  <BzInput
+                    modelValue={newPassword}
+                    type="password"
+                    placeholder="请输入新密码"
+                    onValueChange={setNewPassword}
+                  />
                 </BzFormItem>
                 <BzFormItem label="确认新密码">
-                  <BzInput modelValue={confirmPassword} type="password" placeholder="请再次输入新密码" onValueChange={setConfirmPassword} />
+                  <BzInput
+                    modelValue={confirmPassword}
+                    type="password"
+                    placeholder="请再次输入新密码"
+                    onValueChange={setConfirmPassword}
+                  />
                 </BzFormItem>
               </BzForm>
               <div className="password-actions">
-                <BzButton buttonType="primary" loading={saving} onClick={() => void submit()}>
+                <BzButton
+                  buttonType="primary"
+                  loading={saving}
+                  onClick={() => void submit()}
+                >
                   确认
                 </BzButton>
               </div>

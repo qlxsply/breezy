@@ -27,7 +27,10 @@ export function getResourceById(id: string): ResourceEntry | undefined {
   return getResourceMap().get(id);
 }
 
-export function findMenuResourceByCode(code: string, scope?: ResourceScope): ResourceEntry | undefined {
+export function findMenuResourceByCode(
+  code: string,
+  scope?: ResourceScope,
+): ResourceEntry | undefined {
   const trimmed = code.trim().toLowerCase();
   return resourcesStore.getState().find((resource) => {
     if (resource.type !== "MENU") return false;
@@ -38,14 +41,21 @@ export function findMenuResourceByCode(code: string, scope?: ResourceScope): Res
 
 export function findResourceByCode(code: string): ResourceEntry | undefined {
   const trimmed = code.trim().toLowerCase();
-  return resourcesStore.getState().find((resource) => (resource.code || "").toLowerCase() === trimmed);
+  return resourcesStore
+    .getState()
+    .find((resource) => (resource.code || "").toLowerCase() === trimmed);
 }
 
 export function findMenuResourceByUrl(url: string): ResourceEntry | undefined {
   const normalized = normalizeAdminAppPath(url);
   return resourcesStore
     .getState()
-    .find((resource) => resource.type === "MENU" && resource.openMode === "PAGE" && normalizeAdminAppPath(resource.url) === normalized);
+    .find(
+      (resource) =>
+        resource.type === "MENU" &&
+        resource.openMode === "PAGE" &&
+        normalizeAdminAppPath(resource.url) === normalized,
+    );
 }
 
 function normalizeAdminAppPath(url: string): string {

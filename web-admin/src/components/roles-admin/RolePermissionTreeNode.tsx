@@ -18,20 +18,34 @@ interface RolePermissionTreeNodeProps {
   onToggleSelect: (payload: { id: string; checked: boolean }) => void;
 }
 
-function resolveDiffClass(node: RolePermissionTreeNodeView, diffStatusById?: Map<string, DiffStatus>): string {
+function resolveDiffClass(
+  node: RolePermissionTreeNodeView,
+  diffStatusById?: Map<string, DiffStatus>,
+): string {
   const status = diffStatusById?.get(node.row.id);
   if (status === "added") return "is-diff-added";
   if (status === "removed") return "is-diff-removed";
   return "";
 }
 
-function hasSelectedDescendant(node: RolePermissionTreeNodeView, selectedIds: Set<string>): boolean {
-  return node.children.some((child) => selectedIds.has(child.row.id) || hasSelectedDescendant(child, selectedIds));
+function hasSelectedDescendant(
+  node: RolePermissionTreeNodeView,
+  selectedIds: Set<string>,
+): boolean {
+  return node.children.some(
+    (child) => selectedIds.has(child.row.id) || hasSelectedDescendant(child, selectedIds),
+  );
 }
 
 export function RolePermissionTreeNode({
-  node, expandedIds, selectedIds, canEdit, readonly = false, diffStatusById,
-  onToggleExpand, onToggleSelect,
+  node,
+  expandedIds,
+  selectedIds,
+  canEdit,
+  readonly = false,
+  diffStatusById,
+  onToggleExpand,
+  onToggleSelect,
 }: RolePermissionTreeNodeProps) {
   const buttonChildren = node.children.filter((child) => child.row.type === "BUTTON");
   const nestedChildren = node.children.filter((child) => child.row.type !== "BUTTON");
@@ -64,7 +78,9 @@ export function RolePermissionTreeNode({
 
   return (
     <div className="permission-tree-node">
-      <div className={`permission-node-row ${node.row.type === "DIRECTORY" ? "is-directory" : ""} ${diffClass}`}>
+      <div
+        className={`permission-node-row ${node.row.type === "DIRECTORY" ? "is-directory" : ""} ${diffClass}`}
+      >
         <button
           className={`permission-node-toggle${!hasNested ? " is-placeholder" : ""}`}
           type="button"
@@ -81,36 +97,48 @@ export function RolePermissionTreeNode({
             type="checkbox"
             checked={checked}
             disabled={!canEdit || !node.row.enabled}
-            ref={(el) => { if (el) el.indeterminate = indeterminate; }}
+            ref={(el) => {
+              if (el) el.indeterminate = indeterminate;
+            }}
             onChange={(event) => onToggleSelect({ id: node.row.id, checked: event.target.checked })}
           />
         )}
 
         <span className="permission-node-name">{node.row.name}</span>
         <span className={`permission-tag ${typeClass()}`}>{typeLabel()}</span>
-        {!node.row.enabled ? <span className="permission-tag permission-tag-disabled">停用</span> : null}
+        {!node.row.enabled ? (
+          <span className="permission-tag permission-tag-disabled">停用</span>
+        ) : null}
       </div>
 
       {buttonChildren.length > 0 ? (
         <div className="permission-button-tags">
-          {buttonChildren.map((child) => (
+          {buttonChildren.map((child) =>
             readonly ? (
-              <span key={child.row.id} className={`permission-button-tag is-readonly${isNodeChecked(child) ? " is-checked" : ""} ${childDiffClass(child)}`}>
+              <span
+                key={child.row.id}
+                className={`permission-button-tag is-readonly${isNodeChecked(child) ? " is-checked" : ""} ${childDiffClass(child)}`}
+              >
                 <span className="permission-button-tag__name">{child.row.name}</span>
               </span>
             ) : (
-              <label key={child.row.id} className={`permission-button-tag${isNodeChecked(child) ? " is-checked" : ""}${!canEdit || !child.row.enabled ? " is-disabled" : ""}`}>
+              <label
+                key={child.row.id}
+                className={`permission-button-tag${isNodeChecked(child) ? " is-checked" : ""}${!canEdit || !child.row.enabled ? " is-disabled" : ""}`}
+              >
                 <input
                   className="permission-button-tag__checkbox"
                   type="checkbox"
                   checked={isNodeChecked(child)}
                   disabled={!canEdit || !child.row.enabled}
-                  onChange={(event) => onToggleSelect({ id: child.row.id, checked: event.target.checked })}
+                  onChange={(event) =>
+                    onToggleSelect({ id: child.row.id, checked: event.target.checked })
+                  }
                 />
                 <span className="permission-button-tag__name">{child.row.name}</span>
               </label>
-            )
-          ))}
+            ),
+          )}
         </div>
       ) : null}
 

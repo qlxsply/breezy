@@ -2,7 +2,10 @@ import type { ReactNode, SelectHTMLAttributes } from "react";
 
 import { BzIconClose } from "./BzIconClose";
 
-interface BzSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "value" | "onChange"> {
+interface BzSelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "value" | "onChange"
+> {
   modelValue?: string | number | null;
   placeholder?: string;
   clearable?: boolean;
@@ -26,7 +29,9 @@ export function BzSelect({
   const hasValue = selectValue !== "";
 
   return (
-    <div className={["bz-select", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}>
+    <div
+      className={["bz-select", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+    >
       <select
         {...rest}
         className="bz-select__inner"

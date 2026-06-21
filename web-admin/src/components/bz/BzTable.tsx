@@ -27,7 +27,15 @@ function resolveCssSize(value?: number | string): string | undefined {
   return typeof value === "number" ? `${value}px` : value;
 }
 
-export function BzTable<Row>({ data, columns, rowKey, loading = false, emptyText = "暂无数据", size = "medium", onRowDoubleClick }: BzTableProps<Row>) {
+export function BzTable<Row>({
+  data,
+  columns,
+  rowKey,
+  loading = false,
+  emptyText = "暂无数据",
+  size = "medium",
+  onRowDoubleClick,
+}: BzTableProps<Row>) {
   function resolveRowKey(row: Row, rowIndex: number): string | number {
     if (typeof rowKey === "function") return rowKey(row, rowIndex);
     if (rowKey) return String(row[rowKey] as string | number);
@@ -42,14 +50,21 @@ export function BzTable<Row>({ data, columns, rowKey, loading = false, emptyText
   }
 
   return (
-    <BzLoading loading={loading} className="bz-table__loading-wrap">
+    <BzLoading
+      loading={loading}
+      className="bz-table__loading-wrap"
+    >
       <div className={`bz-table bz-table--${size}`}>
         <div className="bz-table__scroll">
           <table className="bz-table__inner">
             <thead>
               <tr>
                 {columns.map((column) => (
-                  <th key={column.key} style={resolveColumnStyle(column)} className={column.headerClassName}>
+                  <th
+                    key={column.key}
+                    style={resolveColumnStyle(column)}
+                    className={column.headerClassName}
+                  >
                     {column.title}
                   </th>
                 ))}
@@ -58,9 +73,16 @@ export function BzTable<Row>({ data, columns, rowKey, loading = false, emptyText
             {data.length > 0 ? (
               <tbody>
                 {data.map((row, rowIndex) => (
-                  <tr key={String(resolveRowKey(row, rowIndex))} onDoubleClick={() => onRowDoubleClick?.(row, rowIndex)}>
+                  <tr
+                    key={String(resolveRowKey(row, rowIndex))}
+                    onDoubleClick={() => onRowDoubleClick?.(row, rowIndex)}
+                  >
                     {columns.map((column) => (
-                      <td key={column.key} style={resolveColumnStyle(column)} className={column.className}>
+                      <td
+                        key={column.key}
+                        style={resolveColumnStyle(column)}
+                        className={column.className}
+                      >
                         {column.render ? column.render(row, rowIndex) : null}
                       </td>
                     ))}
@@ -70,7 +92,10 @@ export function BzTable<Row>({ data, columns, rowKey, loading = false, emptyText
             ) : (
               <tbody>
                 <tr>
-                  <td className="bz-table__empty" colSpan={Math.max(columns.length, 1)}>
+                  <td
+                    className="bz-table__empty"
+                    colSpan={Math.max(columns.length, 1)}
+                  >
                     {emptyText}
                   </td>
                 </tr>

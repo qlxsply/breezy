@@ -1,5 +1,5 @@
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
-import { BzTable, type BzTableColumn,BzTag, BzTooltip } from "@admin/components/bz";
+import { BzTable, type BzTableColumn, BzTag, BzTooltip } from "@admin/components/bz";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { ApiEntry } from "@admin/types/api-admin";
 
@@ -19,32 +19,70 @@ export function ApiTable({
   onDisable: (api: ApiEntry) => void;
 }) {
   const columns: Array<BzTableColumn<ApiEntry>> = [
-    { key: "module", title: "模块", width: 120, render: (row) => <span className="mono">{row.module || "-"}</span> },
-    { key: "protocol", title: "协议", width: 110, render: (row) => <BzTag size="small">{row.protocolLabel || row.protocol}</BzTag> },
+    {
+      key: "module",
+      title: "模块",
+      width: 120,
+      render: (row) => <span className="mono">{row.module || "-"}</span>,
+    },
+    {
+      key: "protocol",
+      title: "协议",
+      width: 110,
+      render: (row) => <BzTag size="small">{row.protocolLabel || row.protocol}</BzTag>,
+    },
     {
       key: "httpMethod",
       title: "方法",
       width: 110,
-      render: (row) => <BzTag size="small" type={methodTagType(row.httpMethod)}>{row.httpMethodLabel || row.httpMethod}</BzTag>,
+      render: (row) => (
+        <BzTag
+          size="small"
+          type={methodTagType(row.httpMethod)}
+        >
+          {row.httpMethodLabel || row.httpMethod}
+        </BzTag>
+      ),
     },
-    { key: "pathPattern", title: "路径", minWidth: 420, render: (row) => <span className="mono">{row.pathPattern}</span> },
+    {
+      key: "pathPattern",
+      title: "路径",
+      minWidth: 420,
+      render: (row) => <span className="mono">{row.pathPattern}</span>,
+    },
     {
       key: "handler",
       title: "处理器",
       minWidth: 380,
-      render: (row) => <span className="mono subdued">{formatHandler(row.handlerClass, row.handlerMethod)}</span>,
+      render: (row) => (
+        <span className="mono subdued">{formatHandler(row.handlerClass, row.handlerMethod)}</span>
+      ),
     },
     {
       key: "permissionDeclared",
       title: "权限声明",
       width: 110,
-      render: (row) => <BzTag size="small" type={row.permissionDeclared ? "success" : "warning"}>{row.permissionDeclared ? "已声明" : "未声明"}</BzTag>,
+      render: (row) => (
+        <BzTag
+          size="small"
+          type={row.permissionDeclared ? "success" : "warning"}
+        >
+          {row.permissionDeclared ? "已声明" : "未声明"}
+        </BzTag>
+      ),
     },
     {
       key: "accessType",
       title: "访问类型",
       width: 130,
-      render: (row) => <BzTag size="small" type={accessTagType(row.accessType)}>{row.accessTypeLabel || row.accessType}</BzTag>,
+      render: (row) => (
+        <BzTag
+          size="small"
+          type={accessTagType(row.accessType)}
+        >
+          {row.accessTypeLabel || row.accessType}
+        </BzTag>
+      ),
     },
     {
       key: "userTypes",
@@ -54,7 +92,11 @@ export function ApiTable({
         row.userTypeLabels?.length ? (
           <div className="tag-stack">
             {row.userTypeLabels.map((label) => (
-              <BzTag key={label} size="small" type="info">
+              <BzTag
+                key={label}
+                size="small"
+                type="info"
+              >
                 {label}
               </BzTag>
             ))}
@@ -70,21 +112,51 @@ export function ApiTable({
       render: (row) => (
         <BzTooltip content={row.auditTooltip || ""}>
           <span>
-            <BzTag size="small" type={row.auditDeclared ? "success" : "info"}>{row.auditDeclared ? "已开启" : "未开启"}</BzTag>
+            <BzTag
+              size="small"
+              type={row.auditDeclared ? "success" : "info"}
+            >
+              {row.auditDeclared ? "已开启" : "未开启"}
+            </BzTag>
           </span>
         </BzTooltip>
       ),
     },
-    { key: "enabled", title: "状态", width: 100, render: (row) => <BzTag size="small" type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag> },
+    {
+      key: "enabled",
+      title: "状态",
+      width: 100,
+      render: (row) => (
+        <BzTag
+          size="small"
+          type={row.enabled ? "success" : "danger"}
+        >
+          {row.enabled ? "启用" : "停用"}
+        </BzTag>
+      ),
+    },
     {
       key: "actions",
       title: "操作",
       width: 88,
-      render: (row) => <AdminActionBar actions={getRowActions(row, canPublish, canDisable, onPublish, onDisable)} />,
+      render: (row) => (
+        <AdminActionBar
+          actions={getRowActions(row, canPublish, canDisable, onPublish, onDisable)}
+        />
+      ),
     },
   ];
 
-  return <BzTable data={rows} columns={columns} rowKey="id" loading={loading} emptyText="暂无数据" size="small" />;
+  return (
+    <BzTable
+      data={rows}
+      columns={columns}
+      rowKey="id"
+      loading={loading}
+      emptyText="暂无数据"
+      size="small"
+    />
+  );
 }
 
 function methodTagType(method?: string): "info" | "success" | "warning" | "danger" {
@@ -125,7 +197,9 @@ function getRowActions(
   onDisable: (api: ApiEntry) => void,
 ): AdminActionItem[] {
   const actions: AdminActionItem[] = [];
-  if (canPublish && !row.enabled) actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
-  if (canDisable && row.enabled) actions.push({ key: "disable", label: "停用", tone: "disable", handler: () => onDisable(row) });
+  if (canPublish && !row.enabled)
+    actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
+  if (canDisable && row.enabled)
+    actions.push({ key: "disable", label: "停用", tone: "disable", handler: () => onDisable(row) });
   return actions;
 }

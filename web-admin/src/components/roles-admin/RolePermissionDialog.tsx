@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { RoleGrantResourceEntry, RoleGrantSelection } from "../../types/role-admin";
 import { BzButton } from "../bz/BzButton";
@@ -19,7 +19,15 @@ interface RolePermissionDialogProps {
   onSubmit: (selection: RoleGrantSelection) => void;
 }
 
-export function RolePermissionDialog({ roleName, resources, selection, loading = false, canSave = true, onClose, onSubmit }: RolePermissionDialogProps) {
+export function RolePermissionDialog({
+  roleName,
+  resources,
+  selection,
+  loading = false,
+  canSave = true,
+  onClose,
+  onSubmit,
+}: RolePermissionDialogProps) {
   const [keyword, setKeyword] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
@@ -55,7 +63,12 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
     });
 
     resources.forEach((r) => {
-      if (r.menuId && menuIdSet.has(r.menuId) && r.type === "MENU" && !functionAncestorMenuNodeIds.has(r.id)) {
+      if (
+        r.menuId &&
+        menuIdSet.has(r.menuId) &&
+        r.type === "MENU" &&
+        !functionAncestorMenuNodeIds.has(r.id)
+      ) {
         menuNodeIds.add(r.id);
       }
     });
@@ -109,11 +122,16 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
 
   const filteredResourceCount = useMemo(() => {
     let count = 0;
-    walkTree(filteredRoots, () => { count += 1; });
+    walkTree(filteredRoots, () => {
+      count += 1;
+    });
     return count;
   }, [filteredRoots]);
 
-  const summarySelection = useMemo(() => buildSubmitSelection(), [selectedNodeIds, selectedFunctionNodeIds, resources]);
+  const summarySelection = useMemo(
+    () => buildSubmitSelection(),
+    [selectedNodeIds, selectedFunctionNodeIds, resources],
+  );
 
   const summaryText = useMemo(() => {
     const menuCount = summarySelection.menuIds.length;
@@ -122,7 +140,10 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
     return `已选择菜单 ${menuCount} 项，按钮权限 ${functionCount} 项`;
   }, [summarySelection]);
 
-  const diff = useMemo(() => buildSelectionDiff(selection, pendingSelection ?? summarySelection), [selection, pendingSelection, summarySelection]);
+  const diff = useMemo(
+    () => buildSelectionDiff(selection, pendingSelection ?? summarySelection),
+    [selection, pendingSelection, summarySelection],
+  );
 
   const diffStatusById = useMemo(() => {
     const map = new Map<string, DiffStatus>();
@@ -162,12 +183,22 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
     return `新增 ${addedCount} 项 / 移除 ${removedCount} 项`;
   }, [diff]);
 
-  function buildTree(parentId: string | null, kw: string, autoExpanded: Set<string>): RolePermissionTreeNodeView[] {
+  function buildTree(
+    parentId: string | null,
+    kw: string,
+    autoExpanded: Set<string>,
+  ): RolePermissionTreeNodeView[] {
     const rows = childrenMap.get(parentId) ?? [];
     return rows
       .map((row) => {
         const children = buildTree(row.id, kw, autoExpanded);
-        const matched = !kw || [row.name, row.code, row.description, ...row.permissionCodes].filter(Boolean).join(" ").toLowerCase().includes(kw);
+        const matched =
+          !kw ||
+          [row.name, row.code, row.description, ...row.permissionCodes]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+            .includes(kw);
         if (!matched && children.length === 0) return null;
         if (kw && children.length > 0) autoExpanded.add(row.id);
         return { row, children } satisfies RolePermissionTreeNodeView;
@@ -187,7 +218,10 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
       .filter((item): item is RolePermissionTreeNodeView => Boolean(item));
   }
 
-  function walkTree(nodes: RolePermissionTreeNodeView[], handler: (node: RolePermissionTreeNodeView) => void) {
+  function walkTree(
+    nodes: RolePermissionTreeNodeView[],
+    handler: (node: RolePermissionTreeNodeView) => void,
+  ) {
     for (const node of nodes) {
       handler(node);
       if (node.children.length > 0) walkTree(node.children, handler);
@@ -293,11 +327,22 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
     const afterFunctionIds = new Set((after.functionIds || []).map(String));
     const addedMenuIds = new Set([...afterMenuIds].filter((id) => !beforeMenuIds.has(id)));
     const removedMenuIds = new Set([...beforeMenuIds].filter((id) => !afterMenuIds.has(id)));
-    const addedFunctionIds = new Set([...afterFunctionIds].filter((id) => !beforeFunctionIds.has(id)));
-    const removedFunctionIds = new Set([...beforeFunctionIds].filter((id) => !afterFunctionIds.has(id)));
+    const addedFunctionIds = new Set(
+      [...afterFunctionIds].filter((id) => !beforeFunctionIds.has(id)),
+    );
+    const removedFunctionIds = new Set(
+      [...beforeFunctionIds].filter((id) => !afterFunctionIds.has(id)),
+    );
     return {
-      addedMenuIds, removedMenuIds, addedFunctionIds, removedFunctionIds,
-      changed: addedMenuIds.size > 0 || removedMenuIds.size > 0 || addedFunctionIds.size > 0 || removedFunctionIds.size > 0,
+      addedMenuIds,
+      removedMenuIds,
+      addedFunctionIds,
+      removedFunctionIds,
+      changed:
+        addedMenuIds.size > 0 ||
+        removedMenuIds.size > 0 ||
+        addedFunctionIds.size > 0 ||
+        removedFunctionIds.size > 0,
     };
   }
 
@@ -339,36 +384,66 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
       title={confirming ? `确认角色权限变更 - ${roleName}` : `角色权限分配 - ${roleName}`}
       width="980px"
       onClose={onClose}
-      footer={(
+      footer={
         <div className="permission-dialog-footer">
           <div className="permission-dialog-footer__summary">
-            {confirming
-              ? "确认保存后，受影响用户需要重新登录后权限才会完全生效。"
-              : summaryText}
+            {confirming ? "确认保存后，受影响用户需要重新登录后权限才会完全生效。" : summaryText}
           </div>
           <div className="permission-dialog-footer__actions">
             {!confirming ? (
               <>
                 <BzButton onClick={onClose}>取消</BzButton>
-                {canSave !== false ? <BzButton buttonType="primary" onClick={handleSubmit}>保存</BzButton> : null}
+                {canSave !== false ? (
+                  <BzButton
+                    buttonType="primary"
+                    onClick={handleSubmit}
+                  >
+                    保存
+                  </BzButton>
+                ) : null}
               </>
             ) : (
               <>
                 <BzButton onClick={backToEdit}>返回</BzButton>
-                <BzButton buttonType="primary" onClick={confirmSubmit}>确认</BzButton>
+                <BzButton
+                  buttonType="primary"
+                  onClick={confirmSubmit}
+                >
+                  确认
+                </BzButton>
               </>
             )}
           </div>
         </div>
-      )}
+      }
     >
       {!confirming ? (
         <div className="permission-dialog-shell">
           <div className="permission-dialog-toolbar">
-            <BzInput modelValue={keyword} placeholder="搜索目录、菜单、按钮或权限码" clearable onValueChange={setKeyword} />
-            <BzButton className="permission-toolbar-button" onClick={expandAll}>全部展开</BzButton>
-            <BzButton className="permission-toolbar-button" onClick={collapseAll}>全部收起</BzButton>
-            <BzButton className="permission-toolbar-button" onClick={clearAll}>清空选择</BzButton>
+            <BzInput
+              modelValue={keyword}
+              placeholder="搜索目录、菜单、按钮或权限码"
+              clearable
+              onValueChange={setKeyword}
+            />
+            <BzButton
+              className="permission-toolbar-button"
+              onClick={expandAll}
+            >
+              全部展开
+            </BzButton>
+            <BzButton
+              className="permission-toolbar-button"
+              onClick={collapseAll}
+            >
+              全部收起
+            </BzButton>
+            <BzButton
+              className="permission-toolbar-button"
+              onClick={clearAll}
+            >
+              清空选择
+            </BzButton>
           </div>
 
           <section className="permission-panel">
@@ -384,7 +459,10 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
               </div>
             </div>
 
-            <BzLoading loading={loading} className="permission-tree-wrap">
+            <BzLoading
+              loading={loading}
+              className="permission-tree-wrap"
+            >
               {filteredRoots.length === 0 ? (
                 <div className="permission-empty">暂无可授权资源</div>
               ) : (
@@ -413,9 +491,7 @@ export function RolePermissionDialog({ roleName, resources, selection, loading =
                   绿色边框表示新增权限；红色删除线表示移除权限；未变化节点仅作为层级路径展示。
                 </div>
               </div>
-              <div className="permission-panel__meta">
-                {diffSummaryText}
-              </div>
+              <div className="permission-panel__meta">{diffSummaryText}</div>
             </div>
 
             <div className="permission-tree-wrap">

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEvent, MouseEvent } from "react";
+
 import { BzIconClose } from "./BzIconClose";
 
 type PickerType = "date" | "datetime";
@@ -70,7 +71,11 @@ export function BzDatePicker({
           onChange={handleChange}
         />
         {clearable && hasValue && !disabled && (
-          <button className="bz-date-picker__clear" type="button" onClick={clearValue}>
+          <button
+            className="bz-date-picker__clear"
+            type="button"
+            onClick={clearValue}
+          >
             <BzIconClose size={20} />
           </button>
         )}

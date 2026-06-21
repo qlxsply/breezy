@@ -1,6 +1,6 @@
 # Breezy
 
-Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java 21，前端采用 Vue 3 + Vite + TypeScript。项目以 DDD 分层为主线，强调清晰的领域边界、统一的 API 响应、资源化的菜单与权限控制，以及可扩展的工具与系统管理能力。
+Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java 21，管理后台前端采用 React + Next.js，用户端前端采用 Vue 3 + Vite + TypeScript。项目以 DDD 分层为主线，强调清晰的领域边界、统一的 API 响应、资源化的菜单与权限控制，以及可扩展的工具与系统管理能力。
 
 ## 技术选型
 
@@ -12,9 +12,9 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - HikariCP、p6spy（SQL 监听）
     - 数据库驱动：H2 / MySQL / PostgreSQL / Oracle
 - 前端
-    - Vue 3 + Vue Router
-    - Vite 6 + TypeScript
-    - Bz UI（`web/src/components/bz` 自研组件体系）
+    - 管理后台（`web-admin/`）：React 19 + Next.js 16 + TypeScript
+    - 用户端（`web/`）：Vue 3 + Vue Router + Vite 6 + TypeScript
+    - Bz UI（`web/src/components/bz` 与 `web-admin/src/components/bz` 自研组件体系）
 
 ## 架构设计
 
@@ -848,7 +848,7 @@ cd web; npm run build
 - 首页搜索只属于用户前端，只搜索用户工具页，不包含后台菜单页、后台壳体级自助页。
 - 后台规范只覆盖账号后台前端，不覆盖用户工具页。
 
-## web-admin Vue3 -> React + Next.js 重构方案（待评估）
+## web-admin Vue3 -> React + Next.js 重构方案（已完成）
 
 ### 一、需求背景
 
@@ -923,9 +923,9 @@ cd web; npm run build
 | T5 | 迁移基础能力：`api`、鉴权存储、bootstrap 配置、格式化工具、消息/确认、SSE 协调、推送与通知能力 | 已完成 |
 | T6 | 迁移 registry 体系：认证、资源树、权限、通知、快捷键、SSE 生命周期、待办提醒 | 已完成 |
 | T7 | 重写路由与动态菜单机制，保证静态页、动态资源页、登录跳转、权限校验与面包屑行为一致 | 已完成 |
-| T8 | 逐页迁移 22 个后台页面及其专属子组件，保持样式、交互、抽屉/弹窗/表格行为不变 | 开发中 |
-| T9 | 清理 Vue 遗留：删除 `.vue` 文件、Vue ESLint/TS 配置、`vite.config.ts`、`index.html`、Vue 相关依赖与无效别名 | 未开始 |
-| T10 | 改造 `Dockerfile`、`nginx.conf`、Maven 前端构建流程，并完成最终构建验证与文档回写 | 未开始 |
+| T8 | 逐页迁移 22 个后台页面及其专属子组件，保持样式、交互、抽屉/弹窗/表格行为不变 | 已完成 |
+| T9 | 清理 Vue 遗留：删除 `.vue` 文件、Vue ESLint/TS 配置、`vite.config.ts`、`index.html`、Vue 相关依赖与无效别名 | 已完成 |
+| T10 | 改造 `Dockerfile`、`nginx.conf`、Maven 前端构建流程，并完成最终构建验证与文档回写 | 已完成 |
 
 - 详细方案文档：`web-admin/docs/web-admin-react-next-refactor.md`
 

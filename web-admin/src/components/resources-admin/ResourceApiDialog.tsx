@@ -19,7 +19,15 @@ interface ResourceApiDialogProps {
   onSubmit: (ids: string[]) => void;
 }
 
-export function ResourceApiDialog({ resourceName, apis, selectedIds, loading = false, canSave = true, onClose, onSubmit }: ResourceApiDialogProps) {
+export function ResourceApiDialog({
+  resourceName,
+  apis,
+  selectedIds,
+  loading = false,
+  canSave = true,
+  onClose,
+  onSubmit,
+}: ResourceApiDialogProps) {
   const [keyword, setKeyword] = useState("");
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
 
@@ -31,7 +39,8 @@ export function ResourceApiDialog({ resourceName, apis, selectedIds, loading = f
     const kw = keyword.trim().toLowerCase();
     const rows = [...apis].sort((left, right) => {
       if (left.module !== right.module) return left.module.localeCompare(right.module);
-      if (left.pathPattern !== right.pathPattern) return left.pathPattern.localeCompare(right.pathPattern);
+      if (left.pathPattern !== right.pathPattern)
+        return left.pathPattern.localeCompare(right.pathPattern);
       return left.httpMethod.localeCompare(right.httpMethod);
     });
     if (!kw) return rows;
@@ -64,36 +73,70 @@ export function ResourceApiDialog({ resourceName, apis, selectedIds, loading = f
       title={`API 绑定 - ${resourceName}`}
       width="900px"
       onClose={onClose}
-      footer={(
+      footer={
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <BzButton onClick={onClose}>取消</BzButton>
-          {canSave !== false ? <BzButton buttonType="primary" onClick={handleSubmit}>保存</BzButton> : null}
+          {canSave !== false ? (
+            <BzButton
+              buttonType="primary"
+              onClick={handleSubmit}
+            >
+              保存
+            </BzButton>
+          ) : null}
         </div>
-      )}
+      }
     >
       <div className="toolbar">
-        <BzInput modelValue={keyword} className="keyword-input" placeholder="搜索路径、应用、处理器" clearable onValueChange={setKeyword} />
+        <BzInput
+          modelValue={keyword}
+          className="keyword-input"
+          placeholder="搜索路径、应用、处理器"
+          clearable
+          onValueChange={setKeyword}
+        />
         <div className="count">已选 {selectedSet.size} 项</div>
       </div>
 
-      <BzLoading loading={loading} className="list">
+      <BzLoading
+        loading={loading}
+        className="list"
+      >
         {!loading && filteredApis.length === 0 ? (
           <BzEmpty description="暂无 API" />
         ) : (
           <div className="rows">
             {filteredApis.map((api) => (
-              <div key={api.id} className="row">
+              <div
+                key={api.id}
+                className="row"
+              >
                 {canSave !== false ? (
-                  <BzCheckbox className="api-checkbox" modelValue={selectedSet.has(api.id)} onChange={(checked) => toggleApi(api.id, checked)} />
+                  <BzCheckbox
+                    className="api-checkbox"
+                    modelValue={selectedSet.has(api.id)}
+                    onChange={(checked) => toggleApi(api.id, checked)}
+                  />
                 ) : (
                   <span className="readonly-mark">{selectedSet.has(api.id) ? "已绑定" : "-"}</span>
                 )}
                 <div className="meta">
                   <div className="meta-main">
-                    <BzTag size="small" type="info" className="method-tag">{api.httpMethodLabel || api.httpMethod}</BzTag>
+                    <BzTag
+                      size="small"
+                      type="info"
+                      className="method-tag"
+                    >
+                      {api.httpMethodLabel || api.httpMethod}
+                    </BzTag>
                     <span className="mono">{api.pathPattern}</span>
                     <BzTag size="small">{api.module}</BzTag>
-                    <BzTag size="small" type={api.enabled ? "success" : "warning"}>{api.enabled ? "启用" : "停用"}</BzTag>
+                    <BzTag
+                      size="small"
+                      type={api.enabled ? "success" : "warning"}
+                    >
+                      {api.enabled ? "启用" : "停用"}
+                    </BzTag>
                   </div>
                   <div className="sub">
                     {api.handlerClass || "-"}
@@ -105,7 +148,6 @@ export function ResourceApiDialog({ resourceName, apis, selectedIds, loading = f
           </div>
         )}
       </BzLoading>
-
     </BzDialog>
   );
 }

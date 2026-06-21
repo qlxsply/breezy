@@ -1,8 +1,15 @@
 "use client";
 
-import { ensureAuthLoaded, getCurrentUser, getCurrentUserType } from "@admin/core/registry/auth-registry";
+import {
+  ensureAuthLoaded,
+  getCurrentUser,
+  getCurrentUserType,
+} from "@admin/core/registry/auth-registry";
 import { ensureRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { bindNotificationRealtime, ensureUnreadLoaded } from "@admin/core/registry/notifications-registry";
+import {
+  bindNotificationRealtime,
+  ensureUnreadLoaded,
+} from "@admin/core/registry/notifications-registry";
 import { ensurePermissionsLoaded } from "@admin/core/registry/permissions-registry";
 import { initSseLifecycle } from "@admin/core/registry/sse-registry";
 import { initTodoReminderPermission } from "@admin/core/registry/todo-reminder-registry";

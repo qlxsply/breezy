@@ -21,13 +21,30 @@ interface ResourceFormDialogProps {
 }
 
 const defaultModel: ResourceEntry = {
-  id: "", parentId: "", name: "", icon: "", description: "",
-  code: "", type: "MENU", scope: "SETTING", openMode: "PAGE",
-  url: "", loadTarget: "", orderNo: 100, level: "CUSTOM",
-  enabled: true, guestAccess: false,
+  id: "",
+  parentId: "",
+  name: "",
+  icon: "",
+  description: "",
+  code: "",
+  type: "MENU",
+  scope: "SETTING",
+  openMode: "PAGE",
+  url: "",
+  loadTarget: "",
+  orderNo: 100,
+  level: "CUSTOM",
+  enabled: true,
+  guestAccess: false,
 };
 
-export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }: ResourceFormDialogProps) {
+export function ResourceFormDialog({
+  mode,
+  model,
+  resources,
+  onClose,
+  onSubmit,
+}: ResourceFormDialogProps) {
   const isLocked = model?.level === "SYSTEM";
   const [form, setForm] = useState<ResourceEntry>(defaultModel);
   const [err, setErr] = useState("");
@@ -90,7 +107,8 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
       const parent = resourceMap.get(parentId);
       if (!parent) return "父级资源不存在";
       if (parent.type !== "MENU") return "父级资源必须是菜单类型";
-      if (form.type !== "MENU" && parent.openMode !== "PAGE") return "非菜单资源必须挂在页面级菜单下";
+      if (form.type !== "MENU" && parent.openMode !== "PAGE")
+        return "非菜单资源必须挂在页面级菜单下";
     }
     if (form.openMode === "PAGE" && !form.url.trim()) return "PAGE 方式需要填写 URL";
     if (form.openMode !== "NONE" && !form.loadTarget.trim()) return "弹窗或页面必须填写加载资源";
@@ -125,18 +143,25 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
       title={mode === "create" ? "新增资源" : "编辑资源"}
       width="720px"
       onClose={onClose}
-      footer={(
+      footer={
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <BzButton onClick={onClose}>取消</BzButton>
-          <BzButton buttonType="primary" disabled={isLocked} onClick={handleSubmit}>
+          <BzButton
+            buttonType="primary"
+            disabled={isLocked}
+            onClick={handleSubmit}
+          >
             {mode === "create" ? "创建" : "保存"}
           </BzButton>
         </div>
-      )}
+      }
     >
       <BzForm>
         <div className="form-grid">
-          <BzFormItem label="名称 *" className="span-2">
+          <BzFormItem
+            label="名称 *"
+            className="span-2"
+          >
             <BzInput
               modelValue={form.name}
               placeholder="例如：JSON 格式化 / 资源管理"
@@ -164,35 +189,84 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
           </BzFormItem>
 
           <BzFormItem label="类型 *">
-            <BzSelect modelValue={form.type} disabled={isLocked} onValueChange={(v) => updateField("type", (v as ResourceEntry["type"]) || "MENU")}>
-              <BzOption label="MENU（菜单）" value="MENU" />
-              <BzOption label="BUTTON（按钮）" value="BUTTON" />
-              <BzOption label="FEATURE（功能）" value="FEATURE" />
-              <BzOption label="DATA（数据）" value="DATA" />
+            <BzSelect
+              modelValue={form.type}
+              disabled={isLocked}
+              onValueChange={(v) => updateField("type", (v as ResourceEntry["type"]) || "MENU")}
+            >
+              <BzOption
+                label="MENU（菜单）"
+                value="MENU"
+              />
+              <BzOption
+                label="BUTTON（按钮）"
+                value="BUTTON"
+              />
+              <BzOption
+                label="FEATURE（功能）"
+                value="FEATURE"
+              />
+              <BzOption
+                label="DATA（数据）"
+                value="DATA"
+              />
             </BzSelect>
           </BzFormItem>
 
           {form.type === "MENU" ? (
             <BzFormItem label="入口范围 *">
-              <BzSelect modelValue={form.scope} disabled={isLocked} onValueChange={(v) => updateField("scope", (v as ResourceEntry["scope"]) || "SETTING")}>
-                <BzOption label="SETTING（设置搜索）" value="SETTING" />
-                <BzOption label="NONE（不进入搜索）" value="NONE" />
+              <BzSelect
+                modelValue={form.scope}
+                disabled={isLocked}
+                onValueChange={(v) =>
+                  updateField("scope", (v as ResourceEntry["scope"]) || "SETTING")
+                }
+              >
+                <BzOption
+                  label="SETTING（设置搜索）"
+                  value="SETTING"
+                />
+                <BzOption
+                  label="NONE（不进入搜索）"
+                  value="NONE"
+                />
               </BzSelect>
             </BzFormItem>
           ) : null}
 
-          <BzFormItem label="父级资源" className="span-2">
-            <BzSelect modelValue={form.parentId ?? ""} disabled={isLocked} clearable onValueChange={(v) => updateField("parentId", v ?? "")}>
-              <BzOption value="" disabled={form.type !== "MENU"} label="无（根节点）" />
+          <BzFormItem
+            label="父级资源"
+            className="span-2"
+          >
+            <BzSelect
+              modelValue={form.parentId ?? ""}
+              disabled={isLocked}
+              clearable
+              onValueChange={(v) => updateField("parentId", v ?? "")}
+            >
+              <BzOption
+                value=""
+                disabled={form.type !== "MENU"}
+                label="无（根节点）"
+              />
               {parentOptions.map((p) => (
-                <BzOption key={p.id} value={p.id} label={`${p.name} (${p.code})`} />
+                <BzOption
+                  key={p.id}
+                  value={p.id}
+                  label={`${p.name} (${p.code})`}
+                />
               ))}
             </BzSelect>
             <div className="tip">按钮/功能建议挂在页面级菜单下</div>
-            {parentDisabledWarning ? <div className="tip warn">父级已停用，子资源启用可能无效</div> : null}
+            {parentDisabledWarning ? (
+              <div className="tip warn">父级已停用，子资源启用可能无效</div>
+            ) : null}
           </BzFormItem>
 
-          <BzFormItem label="快捷编码 *" className="span-2">
+          <BzFormItem
+            label="快捷编码 *"
+            className="span-2"
+          >
             <BzInput
               modelValue={form.code}
               className="mono"
@@ -204,10 +278,25 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
           </BzFormItem>
 
           <BzFormItem label="打开方式 *">
-            <BzSelect modelValue={form.openMode} disabled={isLocked} onValueChange={(v) => updateField("openMode", (v as ResourceEntry["openMode"]) || "NONE")}>
-              <BzOption label="NONE（不跳转）" value="NONE" />
-              <BzOption label="MODAL（弹窗）" value="MODAL" />
-              <BzOption label="PAGE（页面）" value="PAGE" />
+            <BzSelect
+              modelValue={form.openMode}
+              disabled={isLocked}
+              onValueChange={(v) =>
+                updateField("openMode", (v as ResourceEntry["openMode"]) || "NONE")
+              }
+            >
+              <BzOption
+                label="NONE（不跳转）"
+                value="NONE"
+              />
+              <BzOption
+                label="MODAL（弹窗）"
+                value="MODAL"
+              />
+              <BzOption
+                label="PAGE（页面）"
+                value="PAGE"
+              />
             </BzSelect>
           </BzFormItem>
 
@@ -224,7 +313,10 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
           ) : null}
 
           {form.openMode !== "NONE" ? (
-            <BzFormItem label="加载资源 *" className="span-2">
+            <BzFormItem
+              label="加载资源 *"
+              className="span-2"
+            >
               <BzInput
                 modelValue={form.loadTarget}
                 className="mono"
@@ -237,13 +329,28 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
           ) : null}
 
           <BzFormItem label="序号">
-            <BzInputNumber modelValue={form.orderNo} min={0} disabled={isLocked} onValueChange={(v) => updateField("orderNo", v)} />
+            <BzInputNumber
+              modelValue={form.orderNo}
+              min={0}
+              disabled={isLocked}
+              onValueChange={(v) => updateField("orderNo", v)}
+            />
           </BzFormItem>
 
           <BzFormItem label="级别 *">
-            <BzSelect modelValue={form.level} disabled={isLocked || mode === "create"} onValueChange={(v) => updateField("level", (v as ResourceEntry["level"]) || "CUSTOM")}>
-              <BzOption label="SYSTEM（系统内置）" value="SYSTEM" />
-              <BzOption label="CUSTOM（自定义）" value="CUSTOM" />
+            <BzSelect
+              modelValue={form.level}
+              disabled={isLocked || mode === "create"}
+              onValueChange={(v) => updateField("level", (v as ResourceEntry["level"]) || "CUSTOM")}
+            >
+              <BzOption
+                label="SYSTEM（系统内置）"
+                value="SYSTEM"
+              />
+              <BzOption
+                label="CUSTOM（自定义）"
+                value="CUSTOM"
+              />
             </BzSelect>
           </BzFormItem>
 
@@ -274,8 +381,14 @@ export function ResourceFormDialog({ mode, model, resources, onClose, onSubmit }
 
       {isLocked ? <div className="tip locked">系统级资源不可编辑</div> : null}
 
-      {err ? <BzAlert title={err} type="error" showIcon className="form-error" /> : null}
-
+      {err ? (
+        <BzAlert
+          title={err}
+          type="error"
+          showIcon
+          className="form-error"
+        />
+      ) : null}
     </BzDialog>
   );
 }

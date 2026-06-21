@@ -19,7 +19,15 @@ interface UserRoleDialogProps {
   onSubmit: (ids: string[]) => void;
 }
 
-export function UserRoleDialog({ userName, roles, selectedIds, loading = false, canSave = true, onClose, onSubmit }: UserRoleDialogProps) {
+export function UserRoleDialog({
+  userName,
+  roles,
+  selectedIds,
+  loading = false,
+  canSave = true,
+  onClose,
+  onSubmit,
+}: UserRoleDialogProps) {
   const [keyword, setKeyword] = useState("");
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
 
@@ -36,7 +44,8 @@ export function UserRoleDialog({ userName, roles, selectedIds, loading = false, 
   function toggle(id: string) {
     setSelectedSet((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -47,28 +56,65 @@ export function UserRoleDialog({ userName, roles, selectedIds, loading = false, 
   }
 
   return (
-    <BzDialog modelValue={true} title={`角色分配 - ${userName}`} width="720px" onClose={onClose}
-      footer={<div style={{ display: "flex", gap: 8 }}><BzButton onClick={onClose}>取消</BzButton>{canSave !== false ? <BzButton buttonType="primary" onClick={handleSubmit}>保存</BzButton> : null}</div>}>
+    <BzDialog
+      modelValue={true}
+      title={`角色分配 - ${userName}`}
+      width="720px"
+      onClose={onClose}
+      footer={
+        <div style={{ display: "flex", gap: 8 }}>
+          <BzButton onClick={onClose}>取消</BzButton>
+          {canSave !== false ? (
+            <BzButton
+              buttonType="primary"
+              onClick={handleSubmit}
+            >
+              保存
+            </BzButton>
+          ) : null}
+        </div>
+      }
+    >
       <div className="toolbar">
-        <BzInput modelValue={keyword} placeholder="搜索角色编码/名称" clearable onValueChange={setKeyword} />
+        <BzInput
+          modelValue={keyword}
+          placeholder="搜索角色编码/名称"
+          clearable
+          onValueChange={setKeyword}
+        />
         <div className="count">已选 {selectedSet.size} 项</div>
       </div>
-      <BzLoading loading={loading} className="list">
-        {!loading && filtered.length === 0 ? <BzEmpty description="暂无角色" /> : (
-          <div>{filtered.map((role) => (
-            <div key={role.id} className="row">
-              {canSave !== false ? (
-                <BzCheckbox modelValue={selectedSet.has(role.id)} onChange={() => toggle(role.id)} />
-              ) : (
-                <span className="readonly-mark">{selectedSet.has(role.id) ? "已分配" : "-"}</span>
-              )}
-              <div className="meta">
-                <div className="name">{role.name}</div>
-                <div className="code">{role.code}</div>
+      <BzLoading
+        loading={loading}
+        className="list"
+      >
+        {!loading && filtered.length === 0 ? (
+          <BzEmpty description="暂无角色" />
+        ) : (
+          <div>
+            {filtered.map((role) => (
+              <div
+                key={role.id}
+                className="row"
+              >
+                {canSave !== false ? (
+                  <BzCheckbox
+                    modelValue={selectedSet.has(role.id)}
+                    onChange={() => toggle(role.id)}
+                  />
+                ) : (
+                  <span className="readonly-mark">{selectedSet.has(role.id) ? "已分配" : "-"}</span>
+                )}
+                <div className="meta">
+                  <div className="name">{role.name}</div>
+                  <div className="code">{role.code}</div>
+                </div>
+                <BzTag type={role.enabled ? "success" : "warning"}>
+                  {role.enabled ? "启用" : "停用"}
+                </BzTag>
               </div>
-              <BzTag type={role.enabled ? "success" : "warning"}>{role.enabled ? "启用" : "停用"}</BzTag>
-            </div>
-          ))}</div>
+            ))}
+          </div>
         )}
       </BzLoading>
     </BzDialog>

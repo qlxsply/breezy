@@ -3,14 +3,28 @@
 import { disableApi, listApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
-import { BzButton, BzCard, BzForm, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
+import {
+  BzButton,
+  BzCard,
+  BzForm,
+  BzFormItem,
+  BzInput,
+  BzOption,
+  BzPagination,
+  BzSelect,
+} from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import { useEffect, useMemo, useState } from "react";
 
 const API_DICT_CODES = ["API_METHOD", "API_PROTOCOL", "API_ACCESS_TYPE"] as const;
-const USER_TYPE_LABELS: Record<string, string> = { SYSTEM: "系统账号", INTERNAL: "账号", EXTERNAL: "用户", GUEST: "游客" };
+const USER_TYPE_LABELS: Record<string, string> = {
+  SYSTEM: "系统账号",
+  INTERNAL: "账号",
+  EXTERNAL: "用户",
+  GUEST: "游客",
+};
 
 export function ApisAdminPage() {
   const [loading, setLoading] = useState(false);
@@ -38,7 +52,12 @@ export function ApisAdminPage() {
   }, []);
 
   const moduleOptions = useMemo(
-    () => Array.from(new Set(rows.map((item) => item.module?.trim()).filter((item): item is string => Boolean(item)))).sort((a, b) => a.localeCompare(b)),
+    () =>
+      Array.from(
+        new Set(
+          rows.map((item) => item.module?.trim()).filter((item): item is string => Boolean(item)),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
     [rows],
   );
 
@@ -64,7 +83,23 @@ export function ApisAdminPage() {
       if (statusValue === "enabled" && !api.enabled) return false;
       if (statusValue === "disabled" && api.enabled) return false;
       if (!kw) return true;
-      const text = [api.module, api.protocol, api.protocolLabel, api.httpMethod, api.httpMethodLabel, api.pathPattern, api.handlerClass, api.handlerMethod, api.accessType, api.accessTypeLabel, api.userTypes, ...(api.userTypeLabels || []), api.auditResource, api.auditAction, api.auditDescription]
+      const text = [
+        api.module,
+        api.protocol,
+        api.protocolLabel,
+        api.httpMethod,
+        api.httpMethodLabel,
+        api.pathPattern,
+        api.handlerClass,
+        api.handlerMethod,
+        api.accessType,
+        api.accessTypeLabel,
+        api.userTypes,
+        ...(api.userTypeLabels || []),
+        api.auditResource,
+        api.auditAction,
+        api.auditDescription,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -72,7 +107,10 @@ export function ApisAdminPage() {
     });
   }, [appliedKeyword, appliedModule, appliedStatus, enrichedRows]);
 
-  const pagedRows = useMemo(() => filteredRows.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize), [filteredRows, pageNo, pageSize]);
+  const pagedRows = useMemo(
+    () => filteredRows.slice((pageNo - 1) * pageSize, (pageNo - 1) * pageSize + pageSize),
+    [filteredRows, pageNo, pageSize],
+  );
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
@@ -123,13 +161,28 @@ export function ApisAdminPage() {
       <div className="content">
         <div className="admin-page-stack">
           {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <BzForm className={`admin-filter-form${queryCollapsed ? " is-collapsed" : ""}`} onSubmit={(event) => { event.preventDefault(); applyFilters(); }}>
+            <BzCard
+              className="admin-panel admin-filter-card"
+              shadow="never"
+            >
+              <BzForm
+                className={`admin-filter-form${queryCollapsed ? " is-collapsed" : ""}`}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  applyFilters();
+                }}
+              >
                 <BzFormItem className="admin-filter-item">
                   <div className="admin-filter-field">
                     <div className="admin-filter-label">关键字</div>
                     <div className="admin-filter-control">
-                      <BzInput modelValue={keywordDraft} placeholder="搜索模块、路径、处理器、访问类型" clearable onValueChange={setKeywordDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} />
+                      <BzInput
+                        modelValue={keywordDraft}
+                        placeholder="搜索模块、路径、处理器、访问类型"
+                        clearable
+                        onValueChange={setKeywordDraft}
+                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                      />
                     </div>
                   </div>
                 </BzFormItem>
@@ -137,9 +190,18 @@ export function ApisAdminPage() {
                   <div className="admin-filter-field">
                     <div className="admin-filter-label">模块</div>
                     <div className="admin-filter-control">
-                      <BzSelect modelValue={moduleDraft} placeholder="请选择模块" clearable onValueChange={setModuleDraft}>
+                      <BzSelect
+                        modelValue={moduleDraft}
+                        placeholder="请选择模块"
+                        clearable
+                        onValueChange={setModuleDraft}
+                      >
                         {moduleOptions.map((option) => (
-                          <BzOption key={option} label={option} value={option} />
+                          <BzOption
+                            key={option}
+                            label={option}
+                            value={option}
+                          />
                         ))}
                       </BzSelect>
                     </div>
@@ -150,20 +212,49 @@ export function ApisAdminPage() {
                     <div className="admin-filter-field">
                       <div className="admin-filter-label">状态</div>
                       <div className="admin-filter-control">
-                        <BzSelect modelValue={statusDraft} placeholder="请选择状态" clearable onValueChange={setStatusDraft}>
-                          <BzOption label="启用" value="enabled" />
-                          <BzOption label="停用" value="disabled" />
+                        <BzSelect
+                          modelValue={statusDraft}
+                          placeholder="请选择状态"
+                          clearable
+                          onValueChange={setStatusDraft}
+                        >
+                          <BzOption
+                            label="启用"
+                            value="enabled"
+                          />
+                          <BzOption
+                            label="停用"
+                            value="disabled"
+                          />
                         </BzSelect>
                       </div>
                     </div>
                   </BzFormItem>
                 ) : null}
                 <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={resetFilters}>重置</BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">搜索</BzButton>
-                  <button className="admin-filter-toggle" type="button" onClick={() => setQueryCollapsed((value) => !value)}>
+                  <BzButton
+                    className="admin-filter-secondary"
+                    onClick={resetFilters}
+                  >
+                    重置
+                  </BzButton>
+                  <BzButton
+                    className="admin-filter-primary"
+                    buttonType="primary"
+                    nativeType="submit"
+                  >
+                    搜索
+                  </BzButton>
+                  <button
+                    className="admin-filter-toggle"
+                    type="button"
+                    onClick={() => setQueryCollapsed((value) => !value)}
+                  >
                     <span>{queryCollapsed ? "展开" : "收起"}</span>
-                    <i className={`admin-filter-toggle__icon ${queryCollapsed ? "is-down" : "is-up"}`} aria-hidden="true" />
+                    <i
+                      className={`admin-filter-toggle__icon ${queryCollapsed ? "is-down" : "is-up"}`}
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </BzForm>
@@ -173,10 +264,58 @@ export function ApisAdminPage() {
           <BzCard
             className="admin-panel admin-table-card"
             shadow="never"
-            header={<div className="admin-table-header"><div className="admin-table-title">接口列表</div><div className="admin-table-tools"><BzButton className="admin-toolbar-primary" buttonType="primary" onClick={() => void reload()}><span className="admin-toolbar-primary__content"><i className="admin-toolbar-primary__icon admin-toolbar-primary__icon--reload" aria-hidden="true" /><span>刷新接口</span></span></BzButton><button className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`} type="button" title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"} onClick={() => setQueryPanelVisible((value) => !value)}><i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" /></button><button className="admin-vben-circle-button" type="button" title="刷新列表" onClick={() => void reload()}><i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" /></button></div></div>}
+            header={
+              <div className="admin-table-header">
+                <div className="admin-table-title">接口列表</div>
+                <div className="admin-table-tools">
+                  <BzButton
+                    className="admin-toolbar-primary"
+                    buttonType="primary"
+                    onClick={() => void reload()}
+                  >
+                    <span className="admin-toolbar-primary__content">
+                      <i
+                        className="admin-toolbar-primary__icon admin-toolbar-primary__icon--reload"
+                        aria-hidden="true"
+                      />
+                      <span>刷新接口</span>
+                    </span>
+                  </BzButton>
+                  <button
+                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
+                    type="button"
+                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
+                    onClick={() => setQueryPanelVisible((value) => !value)}
+                  >
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <button
+                    className="admin-vben-circle-button"
+                    type="button"
+                    title="刷新列表"
+                    onClick={() => void reload()}
+                  >
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+              </div>
+            }
           >
             <div className="admin-table-surface">
-              <ApiTable rows={pagedRows} loading={loading} canPublish={canPublish} canDisable={canDisable} onPublish={(api) => void onPublish(api)} onDisable={(api) => void onDisable(api)} />
+              <ApiTable
+                rows={pagedRows}
+                loading={loading}
+                canPublish={canPublish}
+                canDisable={canDisable}
+                onPublish={(api) => void onPublish(api)}
+                onDisable={(api) => void onDisable(api)}
+              />
             </div>
             {filteredRows.length > 0 ? (
               <div className="dict-pagination-bar">
@@ -238,11 +377,19 @@ function parseUserTypes(raw?: string): string[] {
   } catch {
     // ignore
   }
-  return normalized.replace(/^\[|\]$/g, "").split(",").map((item) => item.replace(/^["'\s]+|["'\s]+$/g, "")).filter(Boolean);
+  return normalized
+    .replace(/^\[|\]$/g, "")
+    .split(",")
+    .map((item) => item.replace(/^["'\s]+|["'\s]+$/g, ""))
+    .filter(Boolean);
 }
 
 function buildAuditTooltip(api: ApiEntry): string {
   if (!api.auditDeclared) return "";
-  const lines = [api.auditResource ? `审计资源：${api.auditResource}` : "", api.auditAction ? `审计动作：${api.auditAction}` : "", api.auditDescription ? `审计描述：${api.auditDescription}` : ""].filter(Boolean);
+  const lines = [
+    api.auditResource ? `审计资源：${api.auditResource}` : "",
+    api.auditAction ? `审计动作：${api.auditAction}` : "",
+    api.auditDescription ? `审计描述：${api.auditDescription}` : "",
+  ].filter(Boolean);
   return lines.join("\n");
 }

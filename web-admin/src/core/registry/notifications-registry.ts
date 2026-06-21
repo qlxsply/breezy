@@ -1,11 +1,22 @@
 "use client";
 
-import { listNotifications,markAllRead as markAllReadApi, markRead as markReadApi } from "@admin/api/notifications";
+import {
+  listNotifications,
+  markAllRead as markAllReadApi,
+  markRead as markReadApi,
+} from "@admin/api/notifications";
 import { getAuthToken } from "@admin/core/auth-storage";
 import { createStore, useStoreValue } from "@admin/core/client-store";
 import { onSseMessage, type SseMessage } from "@admin/core/registry/sse-registry";
-import { onWebPushMessage, type WebPushMessagePayload } from "@admin/core/registry/todo-reminder-registry";
-import type { NotificationItem, NotificationPriority, NotificationType } from "@admin/types/notification";
+import {
+  onWebPushMessage,
+  type WebPushMessagePayload,
+} from "@admin/core/registry/todo-reminder-registry";
+import type {
+  NotificationItem,
+  NotificationPriority,
+  NotificationType,
+} from "@admin/types/notification";
 
 interface NotificationsState {
   unreadCount: number;
@@ -81,7 +92,11 @@ export async function ensureUnreadLoaded(force = false): Promise<void> {
   loadingPromise = (async () => {
     try {
       const allUnread = await fetchAllUnreadPages();
-      notificationsStore.setState((state) => ({ ...state, unreadList: allUnread, unreadCount: allUnread.length }));
+      notificationsStore.setState((state) => ({
+        ...state,
+        unreadList: allUnread,
+        unreadCount: allUnread.length,
+      }));
       initialized = true;
     } catch (error) {
       console.warn("[notifications] load unread failed", error);
@@ -114,7 +129,11 @@ export async function markAllRead(): Promise<void> {
     await markAllReadApi();
   } catch (error) {
     console.warn("[notifications] mark all read failed", error);
-    notificationsStore.setState((state) => ({ ...state, unreadList: snapshot, unreadCount: snapshot.length }));
+    notificationsStore.setState((state) => ({
+      ...state,
+      unreadList: snapshot,
+      unreadCount: snapshot.length,
+    }));
   }
 }
 
@@ -128,22 +147,39 @@ export async function markRead(id: string): Promise<void> {
 
   const snapshot = notificationsStore.getState().unreadList;
   const next = snapshot.filter((item) => item.id !== targetId);
-  notificationsStore.setState((state) => ({ ...state, unreadList: next, unreadCount: next.length }));
+  notificationsStore.setState((state) => ({
+    ...state,
+    unreadList: next,
+    unreadCount: next.length,
+  }));
   try {
     await markReadApi(targetId);
   } catch (error) {
     console.warn("[notifications] mark read failed", error);
-    notificationsStore.setState((state) => ({ ...state, unreadList: snapshot, unreadCount: snapshot.length }));
+    notificationsStore.setState((state) => ({
+      ...state,
+      unreadList: snapshot,
+      unreadCount: snapshot.length,
+    }));
   }
 }
 
 function applyIncomingSseMessage(msg: SseMessage, source: "SSE" | "WEB_PUSH"): void {
   if (!getAuthToken()) return;
-  console.warn("[notifications] realtime message received", { source, eventId: msg.eventId, notificationId: msg.notificationId, msgType: msg.msgType });
+  console.warn("[notifications] realtime message received", {
+    source,
+    eventId: msg.eventId,
+    notificationId: msg.notificationId,
+    msgType: msg.msgType,
+  });
   const item = convertSseToNotification(msg);
   if (!item) return;
   const nextList = upsertUnread(notificationsStore.getState().unreadList, item);
-  notificationsStore.setState((state) => ({ ...state, unreadList: nextList, unreadCount: nextList.length }));
+  notificationsStore.setState((state) => ({
+    ...state,
+    unreadList: nextList,
+    unreadCount: nextList.length,
+  }));
   if (msg.panelAutoOpen || shouldAutoOpenByPriority(item.priority)) {
     triggerAttention(item.id);
   }

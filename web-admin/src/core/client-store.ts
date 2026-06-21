@@ -27,6 +27,13 @@ export function createStore<T>(initialState: T): Store<T> {
   };
 }
 
-export function useStoreValue<T, Selected>(store: Store<T>, selector: (state: T) => Selected): Selected {
-  return useSyncExternalStore(store.subscribe, () => selector(store.getState()), () => selector(store.getState()));
+export function useStoreValue<T, Selected>(
+  store: Store<T>,
+  selector: (state: T) => Selected,
+): Selected {
+  return useSyncExternalStore(
+    store.subscribe,
+    () => selector(store.getState()),
+    () => selector(store.getState()),
+  );
 }

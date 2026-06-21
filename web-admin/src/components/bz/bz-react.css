@@ -783,7 +783,9 @@
   background: transparent;
   color: #94a3b8;
   cursor: pointer;
-  transition: color 0.16s ease, background-color 0.16s ease;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
 }
 
 .bz-date-picker__clear:hover {
@@ -861,7 +863,9 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background: #fff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .bz-text-field__control.is-textarea {
@@ -921,7 +925,9 @@
   right: 30px;
   top: 50%;
   transform: translateY(-50%);
-  transition: color 0.16s ease, background-color 0.16s ease;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
 }
 
 .bz-text-field__clear:hover {

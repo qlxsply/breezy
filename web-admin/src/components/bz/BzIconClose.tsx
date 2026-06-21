@@ -11,5 +11,11 @@ export function BzIconClose({ size = 16, className }: BzIconCloseProps) {
     height: size,
   };
 
-  return <span className={["bz-icon-close", className].filter(Boolean).join(" ")} style={style} aria-hidden="true" />;
+  return (
+    <span
+      className={["bz-icon-close", className].filter(Boolean).join(" ")}
+      style={style}
+      aria-hidden="true"
+    />
+  );
 }

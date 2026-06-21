@@ -6,9 +6,20 @@ interface BzTagProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
 }
 
-export function BzTag({ type = "info", size = "medium", className, children, ...rest }: BzTagProps) {
+export function BzTag({
+  type = "info",
+  size = "medium",
+  className,
+  children,
+  ...rest
+}: BzTagProps) {
   return (
-    <span {...rest} className={["bz-tag", `bz-tag--${type}`, `bz-tag--${size}`, className].filter(Boolean).join(" ")}>
+    <span
+      {...rest}
+      className={["bz-tag", `bz-tag--${type}`, `bz-tag--${size}`, className]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {children}
     </span>
   );

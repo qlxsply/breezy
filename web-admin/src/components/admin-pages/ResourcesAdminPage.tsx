@@ -1,14 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { listApis } from "@admin/api/apis";
-import { createResource, deleteResource, getResourceApis, listResources, updateResource, updateResourceApis } from "@admin/api/resources";
+import {
+  createResource,
+  deleteResource,
+  getResourceApis,
+  listResources,
+  updateResource,
+  updateResourceApis,
+} from "@admin/api/resources";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import { hasApiPermission, refreshPermissions } from "@admin/registry/permissions.registry";
+import { hasApiPermission, refreshPermissions } from "@admin/core/registry/permissions-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
-import type { ResourceEntry, ResourceEntryCreate, ResourceEntryUpdate } from "@admin/types/resource-admin";
+import type {
+  ResourceEntry,
+  ResourceEntryCreate,
+  ResourceEntryUpdate,
+} from "@admin/types/resource-admin";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzForm } from "../bz/BzForm";
@@ -79,7 +90,13 @@ export function ResourcesAdminPage() {
       const url = (r.url ?? "").toLowerCase();
       const target = (r.loadTarget ?? "").toLowerCase();
       const desc = (r.description ?? "").toLowerCase();
-      return name.includes(kw) || code.includes(kw) || url.includes(kw) || target.includes(kw) || desc.includes(kw);
+      return (
+        name.includes(kw) ||
+        code.includes(kw) ||
+        url.includes(kw) ||
+        target.includes(kw) ||
+        desc.includes(kw)
+      );
     });
 
     const addWithAncestors = (row: ResourceEntry) => {
@@ -101,10 +118,21 @@ export function ResourcesAdminPage() {
     if (!canCreate) return;
     setDialogMode("create");
     setDialogModel({
-      id: "", parentId: "", name: "", icon: "", description: "",
-      code: "", type: "MENU", scope: "SETTING", openMode: "PAGE",
-      url: "", loadTarget: "", orderNo: 100, level: "CUSTOM",
-      enabled: true, guestAccess: false,
+      id: "",
+      parentId: "",
+      name: "",
+      icon: "",
+      description: "",
+      code: "",
+      type: "MENU",
+      scope: "SETTING",
+      openMode: "PAGE",
+      url: "",
+      loadTarget: "",
+      orderNo: 100,
+      level: "CUSTOM",
+      enabled: true,
+      guestAccess: false,
     });
     setDialogOpen(true);
   }
@@ -199,7 +227,14 @@ export function ResourcesAdminPage() {
         <div className="list-page-stack">
           <section className="list-page-actions">
             <div className="list-page-actions-main">
-              {canCreate ? <BzButton buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
+              {canCreate ? (
+                <BzButton
+                  buttonType="primary"
+                  onClick={openCreate}
+                >
+                  新增
+                </BzButton>
+              ) : null}
               <BzButton onClick={onRefreshPermissions}>刷新权限</BzButton>
               <BzButton onClick={reload}>刷新</BzButton>
               <BzButton onClick={expandAllRows}>全部展开</BzButton>
@@ -207,8 +242,14 @@ export function ResourcesAdminPage() {
             </div>
           </section>
 
-          <BzCard className="list-page-query-card" shadow="never">
-            <BzForm className="list-page-filter-form" inline={true}>
+          <BzCard
+            className="list-page-query-card"
+            shadow="never"
+          >
+            <BzForm
+              className="list-page-filter-form"
+              inline={true}
+            >
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">关键词</div>
@@ -218,7 +259,9 @@ export function ResourcesAdminPage() {
                     placeholder="按名称/编码/URL 搜索"
                     clearable
                     onValueChange={setQ}
-                    onKeyUp={(event) => { if (event.key === "Enter") applyFilters(); }}
+                    onKeyUp={(event) => {
+                      if (event.key === "Enter") applyFilters();
+                    }}
                   />
                 </div>
               </BzFormItem>
@@ -226,11 +269,29 @@ export function ResourcesAdminPage() {
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">类型</div>
-                  <BzSelect modelValue={type} className="list-page-filter-control" placeholder="全部类型" clearable onValueChange={(v) => setType(v ?? "")}>
-                    <BzOption label="菜单" value="MENU" />
-                    <BzOption label="按钮" value="BUTTON" />
-                    <BzOption label="功能" value="FEATURE" />
-                    <BzOption label="数据" value="DATA" />
+                  <BzSelect
+                    modelValue={type}
+                    className="list-page-filter-control"
+                    placeholder="全部类型"
+                    clearable
+                    onValueChange={(v) => setType(v ?? "")}
+                  >
+                    <BzOption
+                      label="菜单"
+                      value="MENU"
+                    />
+                    <BzOption
+                      label="按钮"
+                      value="BUTTON"
+                    />
+                    <BzOption
+                      label="功能"
+                      value="FEATURE"
+                    />
+                    <BzOption
+                      label="数据"
+                      value="DATA"
+                    />
                   </BzSelect>
                 </div>
               </BzFormItem>
@@ -238,11 +299,29 @@ export function ResourcesAdminPage() {
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">入口</div>
-                  <BzSelect modelValue={scope} className="list-page-filter-control" placeholder="全部入口" clearable onValueChange={(v) => setScope(v ?? "")}>
-                    <BzOption label="工具入口" value="TOOL" />
-                    <BzOption label="设置入口" value="SETTING" />
-                    <BzOption label="信息入口" value="INFO" />
-                    <BzOption label="非入口" value="NONE" />
+                  <BzSelect
+                    modelValue={scope}
+                    className="list-page-filter-control"
+                    placeholder="全部入口"
+                    clearable
+                    onValueChange={(v) => setScope(v ?? "")}
+                  >
+                    <BzOption
+                      label="工具入口"
+                      value="TOOL"
+                    />
+                    <BzOption
+                      label="设置入口"
+                      value="SETTING"
+                    />
+                    <BzOption
+                      label="信息入口"
+                      value="INFO"
+                    />
+                    <BzOption
+                      label="非入口"
+                      value="NONE"
+                    />
                   </BzSelect>
                 </div>
               </BzFormItem>
@@ -250,15 +329,32 @@ export function ResourcesAdminPage() {
               <BzFormItem className="list-page-filter-item">
                 <div className="list-page-filter-field">
                   <div className="list-page-filter-label">级别</div>
-                  <BzSelect modelValue={level} className="list-page-filter-control" placeholder="全部级别" clearable onValueChange={(v) => setLevel(v ?? "")}>
-                    <BzOption label="系统" value="SYSTEM" />
-                    <BzOption label="自定义" value="CUSTOM" />
+                  <BzSelect
+                    modelValue={level}
+                    className="list-page-filter-control"
+                    placeholder="全部级别"
+                    clearable
+                    onValueChange={(v) => setLevel(v ?? "")}
+                  >
+                    <BzOption
+                      label="系统"
+                      value="SYSTEM"
+                    />
+                    <BzOption
+                      label="自定义"
+                      value="CUSTOM"
+                    />
                   </BzSelect>
                 </div>
               </BzFormItem>
 
               <BzFormItem className="list-page-filter-actions">
-                <BzButton buttonType="primary" onClick={applyFilters}>搜索</BzButton>
+                <BzButton
+                  buttonType="primary"
+                  onClick={applyFilters}
+                >
+                  搜索
+                </BzButton>
                 <BzButton onClick={resetFilters}>重置</BzButton>
               </BzFormItem>
             </BzForm>

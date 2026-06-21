@@ -29,7 +29,10 @@ import {
 import type { BzTableColumn } from "@admin/components/bz/BzTable";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess, useIsPermissionsLoaded } from "@admin/core/registry/permissions-registry";
+import {
+  hasResourceCodeAccess,
+  useIsPermissionsLoaded,
+} from "@admin/core/registry/permissions-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
@@ -49,7 +52,8 @@ type DrawerMode = "detail" | "edit" | "create";
 function buildTokens(current: number, total: number): Array<number | "ellipsis"> {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-  if (current >= total - 3) return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+  if (current >= total - 3)
+    return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
   return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
 }
 
@@ -137,7 +141,14 @@ export function UserFeaturePackagesPage() {
   async function reload() {
     if (!canView) {
       setRows([]);
-      setPage({ pageNo: 1, pageSize, numberOfElements: 0, totalPages: 0, totalElements: 0, elements: [] });
+      setPage({
+        pageNo: 1,
+        pageSize,
+        numberOfElements: 0,
+        totalPages: 0,
+        totalElements: 0,
+        elements: [],
+      });
       return;
     }
     setLoading(true);
@@ -223,7 +234,12 @@ export function UserFeaturePackagesPage() {
       { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
     ];
     if (canEdit) {
-      actions.push({ key: `edit-${row.id}`, label: "编辑", tone: "edit", handler: () => openEdit(row.id) });
+      actions.push({
+        key: `edit-${row.id}`,
+        label: "编辑",
+        tone: "edit",
+        handler: () => openEdit(row.id),
+      });
     }
     return actions;
   }
@@ -247,7 +263,10 @@ export function UserFeaturePackagesPage() {
   }
 
   function hydrateSelections(applicationAccesses: UserFeaturePackageEntry["applicationAccesses"]) {
-    const next: Record<string, { featureAccessScope: UserFeatureAccessScope; featureIds: string[] }> = {};
+    const next: Record<
+      string,
+      { featureAccessScope: UserFeatureAccessScope; featureIds: string[] }
+    > = {};
     for (const access of applicationAccesses) {
       next[access.applicationId] = {
         featureAccessScope: access.featureAccessScope,
@@ -444,9 +463,7 @@ export function UserFeaturePackagesPage() {
         title: "状态",
         width: 100,
         render: (row) => (
-          <BzTag type={row.enabled ? "success" : "warning"}>
-            {row.enabled ? "启用" : "停用"}
-          </BzTag>
+          <BzTag type={row.enabled ? "success" : "warning"}>{row.enabled ? "启用" : "停用"}</BzTag>
         ),
       },
       {
@@ -482,7 +499,10 @@ export function UserFeaturePackagesPage() {
         {drawerMode === "detail" ? "关闭" : "取消"}
       </BzButton>
       {drawerMode !== "detail" ? (
-        <BzButton buttonType="primary" onClick={submitPackage}>
+        <BzButton
+          buttonType="primary"
+          onClick={submitPackage}
+        >
           确定
         </BzButton>
       ) : null}
@@ -494,7 +514,10 @@ export function UserFeaturePackagesPage() {
       <div className="content">
         <div className="admin-page-stack">
           {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
+            <BzCard
+              className="admin-panel admin-filter-card"
+              shadow="never"
+            >
               <BzForm
                 className="admin-filter-form"
                 onSubmit={(e) => {
@@ -524,24 +547,38 @@ export function UserFeaturePackagesPage() {
                         modelValue={enabledDraft}
                         placeholder="全部状态"
                         clearable
-                        onValueChange={(v) =>
-                          setEnabledDraft((v || "") as "" | "true" | "false")
-                        }
+                        onValueChange={(v) => setEnabledDraft((v || "") as "" | "true" | "false")}
                       >
-                        <BzOption label="启用" value="true" />
-                        <BzOption label="停用" value="false" />
+                        <BzOption
+                          label="启用"
+                          value="true"
+                        />
+                        <BzOption
+                          label="停用"
+                          value="false"
+                        />
                       </BzSelect>
                     </div>
                   </div>
                 </BzFormItem>
                 <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={resetFilters}>
+                  <BzButton
+                    className="admin-filter-secondary"
+                    onClick={resetFilters}
+                  >
                     重置
                   </BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">
+                  <BzButton
+                    className="admin-filter-primary"
+                    buttonType="primary"
+                    nativeType="submit"
+                  >
                     搜索
                   </BzButton>
-                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
+                  <div
+                    className="admin-filter-toggle-placeholder"
+                    aria-hidden="true"
+                  />
                 </div>
               </BzForm>
             </BzCard>
@@ -555,7 +592,11 @@ export function UserFeaturePackagesPage() {
                 <div className="admin-table-title">应用包管理</div>
                 <div className="admin-table-tools">
                   {canEdit ? (
-                    <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>
+                    <BzButton
+                      className="admin-toolbar-primary"
+                      buttonType="primary"
+                      onClick={openCreate}
+                    >
                       新增
                     </BzButton>
                   ) : null}
@@ -606,7 +647,10 @@ export function UserFeaturePackagesPage() {
                       onChange={handlePageSizeSelect}
                     >
                       {pageSizeOptions.map((size) => (
-                        <option key={size} value={size}>
+                        <option
+                          key={size}
+                          value={size}
+                        >
                           {size}条/页
                         </option>
                       ))}
@@ -640,7 +684,10 @@ export function UserFeaturePackagesPage() {
                           {token}
                         </button>
                       ) : (
-                        <span key={`e-${i}`} className="dict-page-ellipsis">
+                        <span
+                          key={`e-${i}`}
+                          className="dict-page-ellipsis"
+                        >
                           ...
                         </span>
                       ),
@@ -717,13 +764,14 @@ export function UserFeaturePackagesPage() {
                   </div>
                   <div className="package-access-list">
                     {currentPackage.applicationAccesses.map((access) => (
-                      <div key={access.applicationId} className="package-access-card">
+                      <div
+                        key={access.applicationId}
+                        className="package-access-card"
+                      >
                         <div className="package-access-card__head">
                           <strong>{access.applicationName}</strong>
                           <BzTag
-                            type={
-                              access.featureAccessScope === "FULL" ? "success" : "warning"
-                            }
+                            type={access.featureAccessScope === "FULL" ? "success" : "warning"}
                           >
                             {access.featureAccessScope === "FULL" ? "完整功能" : "部分功能"}
                           </BzTag>
@@ -732,7 +780,10 @@ export function UserFeaturePackagesPage() {
                         {access.features.length > 0 ? (
                           <div className="package-access-card__feature-list">
                             {access.features.map((feature) => (
-                              <span key={feature.id} className="package-feature-chip">
+                              <span
+                                key={feature.id}
+                                className="package-feature-chip"
+                              >
                                 {feature.name}
                               </span>
                             ))}
@@ -769,7 +820,11 @@ export function UserFeaturePackagesPage() {
                           }
                         >
                           {packageTypeOptions.map((opt) => (
-                            <BzOption key={opt.value} label={opt.label} value={opt.value} />
+                            <BzOption
+                              key={opt.value}
+                              label={opt.label}
+                              value={opt.value}
+                            />
                           ))}
                         </BzSelect>
                       </BzFormItem>
@@ -782,19 +837,18 @@ export function UserFeaturePackagesPage() {
                       <BzFormItem label="默认包">
                         <BzSwitch
                           modelValue={form.defaultPackage}
-                          onValueChange={(v) =>
-                            setForm((prev) => ({ ...prev, defaultPackage: v }))
-                          }
+                          onValueChange={(v) => setForm((prev) => ({ ...prev, defaultPackage: v }))}
                         />
                       </BzFormItem>
-                      <BzFormItem label="描述" className="group-form-grid__wide">
+                      <BzFormItem
+                        label="描述"
+                        className="group-form-grid__wide"
+                      >
                         <BzTextField
                           modelValue={form.description || ""}
                           type="textarea"
                           rows={3}
-                          onValueChange={(v) =>
-                            setForm((prev) => ({ ...prev, description: v }))
-                          }
+                          onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))}
                         />
                       </BzFormItem>
                     </div>
@@ -812,17 +866,17 @@ export function UserFeaturePackagesPage() {
                         const selected = isApplicationSelected(application.id);
                         const scope = applicationScopeOf(application.id);
                         return (
-                          <div key={application.id} className="package-config-card">
+                          <div
+                            key={application.id}
+                            className="package-config-card"
+                          >
                             <div className="package-config-card__top">
                               <label className="package-config-card__select">
                                 <input
                                   type="checkbox"
                                   checked={selected}
                                   onChange={(e) =>
-                                    toggleApplicationSelection(
-                                      application.id,
-                                      e.target.checked,
-                                    )
+                                    toggleApplicationSelection(application.id, e.target.checked)
                                   }
                                 />
                                 <div>
@@ -849,9 +903,7 @@ export function UserFeaturePackagesPage() {
                                     name={`scope-${application.id}`}
                                     value="FULL"
                                     checked={scope === "FULL"}
-                                    onChange={() =>
-                                      updateApplicationScope(application.id, "FULL")
-                                    }
+                                    onChange={() => updateApplicationScope(application.id, "FULL")}
                                   />{" "}
                                   完整功能
                                 </label>
@@ -878,10 +930,7 @@ export function UserFeaturePackagesPage() {
                                   >
                                     <input
                                       type="checkbox"
-                                      checked={isFeatureSelected(
-                                        application.id,
-                                        feature.id,
-                                      )}
+                                      checked={isFeatureSelected(application.id, feature.id)}
                                       disabled={!feature.enabled}
                                       onChange={(e) =>
                                         toggleFeatureSelection(

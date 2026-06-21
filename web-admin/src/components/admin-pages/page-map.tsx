@@ -43,7 +43,12 @@ const pageMap = new Map<string, PageRenderer>([
   ["/admin/web-users", () => <WebUsersAdminPage />],
   [
     "/admin/permission-policies",
-    () => <AdminPlaceholderPage title="权限策略" description="当前页面已预留，后续可以在这里补充对应功能。" />,
+    () => (
+      <AdminPlaceholderPage
+        title="权限策略"
+        description="当前页面已预留，后续可以在这里补充对应功能。"
+      />
+    ),
   ],
 ]);
 
@@ -51,3 +56,25 @@ export function renderMappedAdminPage(pathname: string): React.ReactNode | null 
   const renderer = pageMap.get(pathname);
   return renderer ? renderer() : null;
 }
+
+export const KNOWN_ADMIN_SLUGS = [
+  "apis",
+  "audit-logs",
+  "configs",
+  "diagnostic",
+  "dict",
+  "login-logs",
+  "method-stat",
+  "resources",
+  "roles",
+  "system-files",
+  "users",
+  "help",
+  "profile",
+  "profile/password",
+  "profile/preferences",
+  "user-feature-applications",
+  "user-feature-packages",
+  "web-users",
+  "permission-policies",
+];

@@ -14,22 +14,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default [
   {
     ignores: [
-      "dist/**",
       ".next/**",
-      "coverage/**",
+      "dist/**",
       "node_modules/**",
-      "public/mock/**",
-      "public/**",
-      "src/**/*.vue",
-      "src/api/**",
-      "src/assets/**",
-      "src/composables/**",
-      "src/layout/**",
-      "src/pages/**",
-      "src/registry/**",
-      "src/router/**",
-      "src/types/**",
-      "src/utils/**",
       "eslint.config.mjs",
       "prettier.config.mjs",
       "*.min.js",

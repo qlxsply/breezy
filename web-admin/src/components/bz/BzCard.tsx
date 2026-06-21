@@ -8,7 +8,10 @@ interface BzCardProps extends HTMLAttributes<HTMLElement> {
 
 export function BzCard({ shadow = "always", header, children, className, ...rest }: BzCardProps) {
   return (
-    <section {...rest} className={["bz-card", `bz-card--${shadow}`, className].filter(Boolean).join(" ")}>
+    <section
+      {...rest}
+      className={["bz-card", `bz-card--${shadow}`, className].filter(Boolean).join(" ")}
+    >
       {header ? <header className="bz-card__header">{header}</header> : null}
       <div className="bz-card__body">{children}</div>
     </section>

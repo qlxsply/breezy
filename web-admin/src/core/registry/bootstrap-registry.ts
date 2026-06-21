@@ -5,7 +5,13 @@ import { resolveBootstrapUrl } from "@admin/core/bootstrap-config";
 import { createStore, useStoreValue } from "@admin/core/client-store";
 import { API_BASE_URL } from "@admin/core/env";
 import { setResources } from "@admin/core/registry/resources-registry";
-import type { ResourceEntry, ResourceLevel, ResourceOpenMode, ResourceScope, ResourceType } from "@admin/types/resource-admin";
+import type {
+  ResourceEntry,
+  ResourceLevel,
+  ResourceOpenMode,
+  ResourceScope,
+  ResourceType,
+} from "@admin/types/resource-admin";
 
 interface RegistryPayload {
   resources?: unknown;
@@ -16,7 +22,10 @@ interface BootstrapRegistryState {
   loading: boolean;
 }
 
-const bootstrapRegistryStore = createStore<BootstrapRegistryState>({ loaded: false, loading: false });
+const bootstrapRegistryStore = createStore<BootstrapRegistryState>({
+  loaded: false,
+  loading: false,
+});
 let loadingPromise: Promise<void> | null = null;
 
 export function useIsRegistryLoaded(): boolean {
@@ -119,7 +128,10 @@ function normalizeResources(raw: unknown): ResourceEntry[] {
       const level = normalizeLevel(record.level, record.system);
 
       const rawParent = record.parentId ?? record.parent_id ?? null;
-      const parentId = rawParent === null || rawParent === undefined || rawParent === "" ? null : String(rawParent);
+      const parentId =
+        rawParent === null || rawParent === undefined || rawParent === ""
+          ? null
+          : String(rawParent);
 
       return {
         id: String(record.id ?? code),
@@ -157,7 +169,12 @@ function normalizeType(raw: string): ResourceType {
   return "MENU";
 }
 
-function normalizeScope(value: unknown, type: ResourceType, urlValue: unknown, rawType: string): ResourceScope {
+function normalizeScope(
+  value: unknown,
+  type: ResourceType,
+  urlValue: unknown,
+  rawType: string,
+): ResourceScope {
   if (type !== "MENU") return "NONE";
   if (rawType === "DIRECTORY") return "SETTING";
   const raw = String(value ?? "").toUpperCase();

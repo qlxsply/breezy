@@ -4,7 +4,12 @@ import { message } from "./message";
 import type { ApiResponse } from "./types";
 
 function isDirectBody(body: unknown): body is BodyInit {
-  return body instanceof Blob || body instanceof FormData || body instanceof URLSearchParams || typeof body === "string";
+  return (
+    body instanceof Blob ||
+    body instanceof FormData ||
+    body instanceof URLSearchParams ||
+    typeof body === "string"
+  );
 }
 
 function resolveBody(body: unknown): BodyInit | undefined {

@@ -51,7 +51,9 @@ export const BzInput = forwardRef<BzInputRef, BzInputProps>(function BzInput(
   }));
 
   return (
-    <div className={["bz-input", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}>
+    <div
+      className={["bz-input", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+    >
       <input
         ref={inputRef}
         className="bz-input__inner"

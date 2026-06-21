@@ -7,11 +7,30 @@ interface BzCheckboxProps {
   className?: string;
 }
 
-export function BzCheckbox({ modelValue = false, disabled = false, onValueChange, onChange, children, className }: BzCheckboxProps) {
+export function BzCheckbox({
+  modelValue = false,
+  disabled = false,
+  onValueChange,
+  onChange,
+  children,
+  className,
+}: BzCheckboxProps) {
   return (
-    <label className={["bz-checkbox", modelValue ? "is-checked" : "", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}>
+    <label
+      className={[
+        "bz-checkbox",
+        modelValue ? "is-checked" : "",
+        disabled ? "is-disabled" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <span className="bz-checkbox__input">
-        <input type="checkbox" checked={modelValue} disabled={disabled}
+        <input
+          type="checkbox"
+          checked={modelValue}
+          disabled={disabled}
           onChange={(event) => {
             const checked = event.target.checked;
             onValueChange?.(checked);

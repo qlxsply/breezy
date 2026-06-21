@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import {
   createDictItem,
   deleteDictItem,
@@ -11,8 +9,10 @@ import {
 } from "@admin/api/dicts";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { DictItem, DictTypeItem } from "@admin/types/dict-admin";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDialog } from "../bz/BzDialog";
@@ -116,8 +116,7 @@ export function DictAdminPage() {
     const kw = safeTrim(typeSearch).toLowerCase();
     if (!kw) return types;
     return types.filter(
-      (t) =>
-        t.name.toLowerCase().includes(kw) || t.code.toLowerCase().includes(kw),
+      (t) => t.name.toLowerCase().includes(kw) || t.code.toLowerCase().includes(kw),
     );
   }, [types, typeSearch]);
 
@@ -131,23 +130,20 @@ export function DictAdminPage() {
     [filteredTypes],
   );
 
-  const loadItems = useCallback(
-    async (typeId: string) => {
-      if (!typeId) {
-        setItems([]);
-        return;
-      }
-      setItemsLoading(true);
-      try {
-        const result = await listDictItems(typeId);
-        setItems(result);
-        setPageNo(1);
-      } finally {
-        setItemsLoading(false);
-      }
-    },
-    [],
-  );
+  const loadItems = useCallback(async (typeId: string) => {
+    if (!typeId) {
+      setItems([]);
+      return;
+    }
+    setItemsLoading(true);
+    try {
+      const result = await listDictItems(typeId);
+      setItems(result);
+      setPageNo(1);
+    } finally {
+      setItemsLoading(false);
+    }
+  }, []);
 
   const selectType = useCallback(
     (typeId: string) => {
@@ -178,24 +174,8 @@ export function DictAdminPage() {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
     if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
     if (current >= total - 3)
-      return [
-        1,
-        "ellipsis",
-        total - 4,
-        total - 3,
-        total - 2,
-        total - 1,
-        total,
-      ];
-    return [
-      1,
-      "ellipsis",
-      current - 1,
-      current,
-      current + 1,
-      "ellipsis",
-      total,
-    ];
+      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+    return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
   }, [totalPages, pageNo]);
 
   const goToPage = useCallback(
@@ -304,9 +284,7 @@ export function DictAdminPage() {
         key: "itemLabel",
         title: "标签",
         minWidth: 130,
-        render: (row) => (
-          <span style={{ fontWeight: 700 }}>{row.itemLabel}</span>
-        ),
+        render: (row) => <span style={{ fontWeight: 700 }}>{row.itemLabel}</span>,
       },
       {
         key: "itemValue",
@@ -323,9 +301,7 @@ export function DictAdminPage() {
           row.tagType ? (
             <BzTag
               size="small"
-              type={
-                row.tagType as "info" | "success" | "warning" | "danger"
-              }
+              type={row.tagType as "info" | "success" | "warning" | "danger"}
             >
               {TAG_TYPE_LABEL_MAP[row.tagType] || row.tagType}
             </BzTag>
@@ -363,11 +339,17 @@ export function DictAdminPage() {
         width: 80,
         render: (row) =>
           row.enabled ? (
-            <BzTag size="small" type="success">
+            <BzTag
+              size="small"
+              type="success"
+            >
               启用
             </BzTag>
           ) : (
-            <BzTag size="small" type="warning">
+            <BzTag
+              size="small"
+              type="warning"
+            >
               停用
             </BzTag>
           ),
@@ -386,7 +368,11 @@ export function DictAdminPage() {
                     flexWrap: "wrap",
                   }}
                 >
-                  <BzButton size="small" link onClick={() => openEdit(row)}>
+                  <BzButton
+                    size="small"
+                    link
+                    onClick={() => openEdit(row)}
+                  >
                     编辑
                   </BzButton>
                   <BzButton
@@ -450,10 +436,7 @@ export function DictAdminPage() {
                       return (
                         <button
                           type="button"
-                          className={[
-                            "dict-type-tree-item",
-                            isSelected ? "is-selected" : "",
-                          ]
+                          className={["dict-type-tree-item", isSelected ? "is-selected" : ""]
                             .filter(Boolean)
                             .join(" ")}
                           onClick={() => selectType(String(node.id))}
@@ -481,9 +464,7 @@ export function DictAdminPage() {
             header={
               <div className="admin-table-header">
                 <div className="admin-table-title">
-                  {selectedType
-                    ? `${selectedType.name} - 字典项`
-                    : "字典项"}
+                  {selectedType ? `${selectedType.name} - 字典项` : "字典项"}
                 </div>
                 <div className="admin-table-tools">
                   {canEdit && selectedType ? (
@@ -518,18 +499,14 @@ export function DictAdminPage() {
                 columns={columns}
                 rowKey="id"
                 loading={itemsLoading}
-                emptyText={
-                  selectedType ? "暂无字典项" : "请在左侧选择字典类型"
-                }
+                emptyText={selectedType ? "暂无字典项" : "请在左侧选择字典类型"}
                 size="small"
               />
             </div>
 
             {items.length > 0 ? (
               <div className="dict-pagination-bar">
-                <div className="dict-pagination-summary">
-                  共 {items.length} 条记录
-                </div>
+                <div className="dict-pagination-summary">共 {items.length} 条记录</div>
                 <div className="dict-pagination-right">
                   <label className="dict-page-size">
                     <select
@@ -541,7 +518,10 @@ export function DictAdminPage() {
                       }}
                     >
                       {pageSizeOptions.map((s) => (
-                        <option key={s} value={s}>
+                        <option
+                          key={s}
+                          value={s}
+                        >
                           {s}条/页
                         </option>
                       ))}
@@ -575,7 +555,10 @@ export function DictAdminPage() {
                           {token}
                         </button>
                       ) : (
-                        <span key={i} className="dict-page-ellipsis">
+                        <span
+                          key={i}
+                          className="dict-page-ellipsis"
+                        >
                           ...
                         </span>
                       ),
@@ -633,9 +616,7 @@ export function DictAdminPage() {
                   modelValue={itemForm.label}
                   placeholder="显示名称"
                   maxlength={128}
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, label: v }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, label: v }))}
                 />
               </BzFormItem>
               <BzFormItem label="值">
@@ -643,9 +624,7 @@ export function DictAdminPage() {
                   modelValue={itemForm.value}
                   placeholder="实际值"
                   maxlength={512}
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, value: v }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, value: v }))}
                 />
               </BzFormItem>
               <BzFormItem label="标签类型">
@@ -653,12 +632,14 @@ export function DictAdminPage() {
                   modelValue={itemForm.tagType || undefined}
                   placeholder="无"
                   clearable
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, tagType: v ?? "" }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, tagType: v ?? "" }))}
                 >
                   {TAG_TYPE_OPTIONS.map((o) => (
-                    <BzOption key={o.value} label={o.label} value={o.value} />
+                    <BzOption
+                      key={o.value}
+                      label={o.label}
+                      value={o.value}
+                    />
                   ))}
                 </BzSelect>
               </BzFormItem>
@@ -666,9 +647,7 @@ export function DictAdminPage() {
                 <BzInputNumber
                   modelValue={itemForm.sort}
                   min={0}
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, sort: v }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, sort: v }))}
                 />
               </BzFormItem>
             </div>
@@ -678,9 +657,7 @@ export function DictAdminPage() {
                   modelValue={itemForm.enabled}
                   activeText="启用"
                   inactiveText="停用"
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, enabled: v }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, enabled: v }))}
                 />
               </BzFormItem>
             </div>
@@ -693,9 +670,7 @@ export function DictAdminPage() {
                   rows={3}
                   maxlength={255}
                   showCounter
-                  onValueChange={(v) =>
-                    setItemForm((prev) => ({ ...prev, remark: v }))
-                  }
+                  onValueChange={(v) => setItemForm((prev) => ({ ...prev, remark: v }))}
                 />
               </BzFormItem>
             </div>

@@ -6,7 +6,10 @@ interface BzIconProps extends HTMLAttributes<HTMLSpanElement> {
 
 export function BzIcon({ children, className, ...rest }: BzIconProps) {
   return (
-    <span {...rest} className={["bz-icon", className].filter(Boolean).join(" ")}>
+    <span
+      {...rest}
+      className={["bz-icon", className].filter(Boolean).join(" ")}
+    >
       {children}
     </span>
   );

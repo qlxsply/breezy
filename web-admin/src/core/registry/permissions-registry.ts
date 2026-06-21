@@ -1,7 +1,10 @@
 "use client";
 
 import { createStore, useStoreValue } from "@admin/core/client-store";
-import { ensureRegistryLoaded, refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import {
+  ensureRegistryLoaded,
+  refreshRegistryLoaded,
+} from "@admin/core/registry/bootstrap-registry";
 import { findResourceByCode, getResourceMap } from "@admin/core/registry/resources-registry";
 import type { ResourceEntry } from "@admin/types/resource-admin";
 
@@ -38,7 +41,11 @@ export function hasApiPermission(code: string): boolean {
   return hasResourceCodeAccess(code);
 }
 
-function isEnabledWithAncestors(resource: ResourceEntry, map: Map<string, ResourceEntry>, visited = new Set<string>()): boolean {
+function isEnabledWithAncestors(
+  resource: ResourceEntry,
+  map: Map<string, ResourceEntry>,
+  visited = new Set<string>(),
+): boolean {
   if (!resource.enabled) return false;
   if (visited.has(resource.id)) return true;
   visited.add(resource.id);

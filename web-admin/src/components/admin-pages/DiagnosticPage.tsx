@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
 import {
   getDiagnosticCapabilities,
   getDiagnosticEvents,
@@ -14,7 +12,7 @@ import {
 } from "@admin/api/diagnostic";
 import { formatDateTime, formatDecimal } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type {
   DiagnosticCapability,
   DiagnosticConfigPayload,
@@ -23,6 +21,8 @@ import type {
   DiagnosticSession,
   DiagnosticSnapshot,
 } from "@admin/types/diagnostic";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzCheckbox } from "../bz/BzCheckbox";
@@ -264,7 +264,8 @@ export function DiagnosticPage() {
       key: "pool",
       title: "连接池",
       width: 160,
-      render: (row) => `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
+      render: (row) =>
+        `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
     },
     {
       key: "sql",
@@ -281,38 +282,54 @@ export function DiagnosticPage() {
           <section className="list-page-actions">
             <div className="list-page-actions-main">
               {canView ? (
-                <BzButton loading={loading} onClick={() => reloadAll(true)}>
+                <BzButton
+                  loading={loading}
+                  onClick={() => reloadAll(true)}
+                >
                   刷新
                 </BzButton>
               ) : null}
               {canStart && !isActive ? (
-                <BzButton buttonType="primary" loading={actionLoading} onClick={handleStart}>
+                <BzButton
+                  buttonType="primary"
+                  loading={actionLoading}
+                  onClick={handleStart}
+                >
                   开启诊断
                 </BzButton>
               ) : null}
               {canEdit && isActive ? (
-                <BzButton buttonType="primary" loading={actionLoading} onClick={handleUpdate}>
+                <BzButton
+                  buttonType="primary"
+                  loading={actionLoading}
+                  onClick={handleUpdate}
+                >
                   更新配置
                 </BzButton>
               ) : null}
               {canStop && isActive ? (
-                <BzButton buttonType="danger" loading={actionLoading} onClick={handleStop}>
+                <BzButton
+                  buttonType="danger"
+                  loading={actionLoading}
+                  onClick={handleStop}
+                >
                   停止并清空
                 </BzButton>
               ) : null}
             </div>
 
             <div className="list-page-actions-side">
-              <BzTag type={isActive ? "success" : "info"}>
-                {isActive ? "运行中" : "未开启"}
-              </BzTag>
+              <BzTag type={isActive ? "success" : "info"}>{isActive ? "运行中" : "未开启"}</BzTag>
               <span className="status-side-text">
                 剩余 TTL: {status?.remainingTtlSeconds ?? 0} 秒
               </span>
             </div>
           </section>
 
-          <BzCard className="list-page-query-card" shadow="never">
+          <BzCard
+            className="list-page-query-card"
+            shadow="never"
+          >
             {!canView ? (
               <BzEmpty description="无权限查看运行时诊断" />
             ) : (
@@ -395,8 +412,14 @@ export function DiagnosticPage() {
           </BzCard>
 
           {canView ? (
-            <BzCard className="list-page-query-card" shadow="never">
-              <BzForm className="diagnostic-form" onSubmit={(e) => e.preventDefault()}>
+            <BzCard
+              className="list-page-query-card"
+              shadow="never"
+            >
+              <BzForm
+                className="diagnostic-form"
+                onSubmit={(e) => e.preventDefault()}
+              >
                 <div className="config-grid">
                   <BzFormItem label="采样间隔(ms)">
                     <BzInput
@@ -445,9 +468,7 @@ export function DiagnosticPage() {
                     <BzInput
                       modelValue={form.ttlSeconds}
                       type="number"
-                      onValueChange={(v) =>
-                        setForm((prev) => ({ ...prev, ttlSeconds: Number(v) }))
-                      }
+                      onValueChange={(v) => setForm((prev) => ({ ...prev, ttlSeconds: Number(v) }))}
                     />
                   </BzFormItem>
                 </div>

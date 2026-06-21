@@ -1,12 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { pageLoginLogs } from "@admin/api/login-logs";
-import { dateTimeInputToEpochMillisString, dateTimeInputToNextMinuteEpochMillisString, formatDateTime } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
+import {
+  dateTimeInputToEpochMillisString,
+  dateTimeInputToNextMinuteEpochMillisString,
+  formatDateTime,
+} from "@admin/core/formatter";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { LoginLogEntry } from "@admin/types/login-log";
 import type { PageResult } from "@admin/types/page";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
@@ -88,7 +92,7 @@ export function LoginLogsPage() {
       setRows([]);
       setPage({
         pageNo: 1,
-        pageSize: pageSize,
+        pageSize,
         numberOfElements: 0,
         totalPages: 0,
         totalElements: 0,
@@ -107,58 +111,65 @@ export function LoginLogsPage() {
     const current = Math.min(Math.max(pageNo, 1), total);
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
     if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-    if (current >= total - 3) return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+    if (current >= total - 3)
+      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
     return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
   }, [totalPages, pageNo]);
 
-  const columns = useMemo<Array<BzTableColumn<LoginLogEntry>>>(() => [
-    {
-      key: "username",
-      title: "账号",
-      width: 120,
-      render: (row) => <>{row.username || "-"}</>,
-    },
-    {
-      key: "eventType",
-      title: "事件",
-      width: 100,
-      render: (row) => <BzTag size="small">{row.eventType}</BzTag>,
-    },
-    {
-      key: "success",
-      title: "结果",
-      width: 90,
-      render: (row) => (
-        <BzTag size="small" type={row.success ? "success" : "danger"}>
-          {row.success ? "成功" : "失败"}
-        </BzTag>
-      ),
-    },
-    {
-      key: "loginIp",
-      title: "IP",
-      width: 140,
-      render: (row) => <>{row.loginIp || "-"}</>,
-    },
-    {
-      key: "failureReason",
-      title: "失败原因",
-      minWidth: 180,
-      render: (row) => <div className="ua">{row.failureReason || "-"}</div>,
-    },
-    {
-      key: "remark",
-      title: "备注",
-      minWidth: 220,
-      render: (row) => <div className="msg">{row.remark || "-"}</div>,
-    },
-    {
-      key: "occurredAt",
-      title: "时间",
-      width: 180,
-      render: (row) => <>{formatDateTime(row.occurredAt)}</>,
-    },
-  ], []);
+  const columns = useMemo<Array<BzTableColumn<LoginLogEntry>>>(
+    () => [
+      {
+        key: "username",
+        title: "账号",
+        width: 120,
+        render: (row) => <>{row.username || "-"}</>,
+      },
+      {
+        key: "eventType",
+        title: "事件",
+        width: 100,
+        render: (row) => <BzTag size="small">{row.eventType}</BzTag>,
+      },
+      {
+        key: "success",
+        title: "结果",
+        width: 90,
+        render: (row) => (
+          <BzTag
+            size="small"
+            type={row.success ? "success" : "danger"}
+          >
+            {row.success ? "成功" : "失败"}
+          </BzTag>
+        ),
+      },
+      {
+        key: "loginIp",
+        title: "IP",
+        width: 140,
+        render: (row) => <>{row.loginIp || "-"}</>,
+      },
+      {
+        key: "failureReason",
+        title: "失败原因",
+        minWidth: 180,
+        render: (row) => <div className="ua">{row.failureReason || "-"}</div>,
+      },
+      {
+        key: "remark",
+        title: "备注",
+        minWidth: 220,
+        render: (row) => <div className="msg">{row.remark || "-"}</div>,
+      },
+      {
+        key: "occurredAt",
+        title: "时间",
+        width: 180,
+        render: (row) => <>{formatDateTime(row.occurredAt)}</>,
+      },
+    ],
+    [],
+  );
 
   async function applyFilters() {
     setAppliedAccount(accountDraft.trim());
@@ -188,8 +199,17 @@ export function LoginLogsPage() {
       <div className="content">
         <div className="admin-page-stack">
           {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <BzForm className="admin-filter-form" onSubmit={(e) => { e.preventDefault(); applyFilters(); }}>
+            <BzCard
+              className="admin-panel admin-filter-card"
+              shadow="never"
+            >
+              <BzForm
+                className="admin-filter-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  applyFilters();
+                }}
+              >
                 <BzFormItem className="admin-filter-item">
                   <div className="admin-filter-field">
                     <div className="admin-filter-label">账号</div>
@@ -199,7 +219,9 @@ export function LoginLogsPage() {
                         placeholder="按账号搜索"
                         clearable
                         onValueChange={setAccountDraft}
-                        onKeyUp={(e) => { if (e.key === "Enter") applyFilters(); }}
+                        onKeyUp={(e) => {
+                          if (e.key === "Enter") applyFilters();
+                        }}
                       />
                     </div>
                   </div>
@@ -233,9 +255,23 @@ export function LoginLogsPage() {
                   </div>
                 </BzFormItem>
                 <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={resetFilters}>重置</BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">搜索</BzButton>
-                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
+                  <BzButton
+                    className="admin-filter-secondary"
+                    onClick={resetFilters}
+                  >
+                    重置
+                  </BzButton>
+                  <BzButton
+                    className="admin-filter-primary"
+                    buttonType="primary"
+                    nativeType="submit"
+                  >
+                    搜索
+                  </BzButton>
+                  <div
+                    className="admin-filter-toggle-placeholder"
+                    aria-hidden="true"
+                  />
                 </div>
               </BzForm>
             </BzCard>
@@ -254,7 +290,10 @@ export function LoginLogsPage() {
                     title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
                     onClick={() => setQueryPanelVisible((v) => !v)}
                   >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" />
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
+                      aria-hidden="true"
+                    />
                   </button>
                   <button
                     className="admin-vben-circle-button"
@@ -262,7 +301,10 @@ export function LoginLogsPage() {
                     title="刷新列表"
                     onClick={() => reload()}
                   >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </div>
@@ -290,18 +332,36 @@ export function LoginLogsPage() {
                         <select
                           className="dict-page-size__select"
                           value={pageSize}
-                          onChange={(e) => { setPageSize(Number(e.target.value)); setPageNo(1); }}
+                          onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setPageNo(1);
+                          }}
                         >
                           {pageSizeOptions.map((s) => (
-                            <option key={s} value={s}>{s}条/页</option>
+                            <option
+                              key={s}
+                              value={s}
+                            >
+                              {s}条/页
+                            </option>
                           ))}
                         </select>
                       </label>
                       <div className="dict-page-list">
-                        <button className="dict-page-btn dict-page-btn--icon" type="button" disabled={isFirstPage} onClick={() => goToPage(1)}>
+                        <button
+                          className="dict-page-btn dict-page-btn--icon"
+                          type="button"
+                          disabled={isFirstPage}
+                          onClick={() => goToPage(1)}
+                        >
                           <span aria-hidden="true">|&lt;</span>
                         </button>
-                        <button className="dict-page-btn dict-page-btn--icon" type="button" disabled={isFirstPage} onClick={() => goToPage(pageNo - 1)}>
+                        <button
+                          className="dict-page-btn dict-page-btn--icon"
+                          type="button"
+                          disabled={isFirstPage}
+                          onClick={() => goToPage(pageNo - 1)}
+                        >
                           <span aria-hidden="true">&lt;</span>
                         </button>
                         {pageTokens.map((token, i) =>
@@ -315,13 +375,28 @@ export function LoginLogsPage() {
                               {token}
                             </button>
                           ) : (
-                            <span key={i} className="dict-page-ellipsis">...</span>
+                            <span
+                              key={i}
+                              className="dict-page-ellipsis"
+                            >
+                              ...
+                            </span>
                           ),
                         )}
-                        <button className="dict-page-btn dict-page-btn--icon" type="button" disabled={isLastPage} onClick={() => goToPage(pageNo + 1)}>
+                        <button
+                          className="dict-page-btn dict-page-btn--icon"
+                          type="button"
+                          disabled={isLastPage}
+                          onClick={() => goToPage(pageNo + 1)}
+                        >
                           <span aria-hidden="true">&gt;</span>
                         </button>
-                        <button className="dict-page-btn dict-page-btn--icon" type="button" disabled={isLastPage} onClick={() => goToPage(totalPages)}>
+                        <button
+                          className="dict-page-btn dict-page-btn--icon"
+                          type="button"
+                          disabled={isLastPage}
+                          onClick={() => goToPage(totalPages)}
+                        >
                           <span aria-hidden="true">&gt;|</span>
                         </button>
                       </div>

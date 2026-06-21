@@ -2,7 +2,11 @@
 
 import { useCurrentUserType } from "@admin/core/registry/auth-registry";
 import { hasMenuAccess } from "@admin/core/registry/permissions-registry";
-import { getResourceMap, getResources, useResources } from "@admin/core/registry/resources-registry";
+import {
+  getResourceMap,
+  getResources,
+  useResources,
+} from "@admin/core/registry/resources-registry";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 
@@ -60,7 +64,10 @@ export function AdminHomePage() {
     <div className="admin-home">
       <section className="metric-grid">
         {metrics.map((item) => (
-          <article key={item.label} className="metric-card">
+          <article
+            key={item.label}
+            className="metric-card"
+          >
             <div>
               <h2>{item.label}</h2>
               <strong>{item.value}</strong>
@@ -77,17 +84,37 @@ export function AdminHomePage() {
       <section className="chart-panel">
         <header className="panel-header">
           <div className="segmented">
-            <button className="active" type="button">流量趋势</button>
+            <button
+              className="active"
+              type="button"
+            >
+              流量趋势
+            </button>
             <button type="button">月访问量</button>
           </div>
         </header>
         <div className="chart">
           <div className="chart-grid" />
-          <svg viewBox="0 0 1200 260" aria-hidden="true">
-            <path className="area area-blue" d="M0 250 C80 245 120 210 170 175 C230 128 260 65 330 58 C395 50 430 120 480 165 C540 220 610 230 670 190 C735 145 750 78 820 58 C900 36 930 144 1000 175 C1070 205 1130 225 1200 242 L1200 260 L0 260 Z" />
-            <path className="line line-blue" d="M0 250 C80 245 120 210 170 175 C230 128 260 65 330 58 C395 50 430 120 480 165 C540 220 610 230 670 190 C735 145 750 78 820 58 C900 36 930 144 1000 175 C1070 205 1130 225 1200 242" />
-            <path className="area area-green" d="M0 252 C160 250 250 250 330 228 C390 210 430 142 480 218 C560 250 665 244 720 205 C790 155 865 158 930 210 C1000 248 1120 252 1200 252 L1200 260 L0 260 Z" />
-            <path className="line line-green" d="M0 252 C160 250 250 250 330 228 C390 210 430 142 480 218 C560 250 665 244 720 205 C790 155 865 158 930 210 C1000 248 1120 252 1200 252" />
+          <svg
+            viewBox="0 0 1200 260"
+            aria-hidden="true"
+          >
+            <path
+              className="area area-blue"
+              d="M0 250 C80 245 120 210 170 175 C230 128 260 65 330 58 C395 50 430 120 480 165 C540 220 610 230 670 190 C735 145 750 78 820 58 C900 36 930 144 1000 175 C1070 205 1130 225 1200 242 L1200 260 L0 260 Z"
+            />
+            <path
+              className="line line-blue"
+              d="M0 250 C80 245 120 210 170 175 C230 128 260 65 330 58 C395 50 430 120 480 165 C540 220 610 230 670 190 C735 145 750 78 820 58 C900 36 930 144 1000 175 C1070 205 1130 225 1200 242"
+            />
+            <path
+              className="area area-green"
+              d="M0 252 C160 250 250 250 330 228 C390 210 430 142 480 218 C560 250 665 244 720 205 C790 155 865 158 930 210 C1000 248 1120 252 1200 252 L1200 260 L0 260 Z"
+            />
+            <path
+              className="line line-green"
+              d="M0 252 C160 250 250 250 330 228 C390 210 430 142 480 218 C560 250 665 244 720 205 C790 155 865 158 930 210 C1000 248 1120 252 1200 252"
+            />
           </svg>
         </div>
       </section>
@@ -99,7 +126,12 @@ export function AdminHomePage() {
           </header>
           <div className="quick-grid">
             {quickMenus.map((menu) => (
-              <button key={menu.id} className="quick-card" type="button" onClick={() => router.push(menu.url)}>
+              <button
+                key={menu.id}
+                className="quick-card"
+                type="button"
+                onClick={() => router.push(menu.url)}
+              >
                 <span>{menu.parentName || "系统管理"}</span>
                 <strong>{menu.name}</strong>
               </button>
@@ -135,7 +167,12 @@ export function AdminHomePage() {
           </header>
           <div className="quick-grid compact">
             {quickMenus.slice(6).map((menu) => (
-              <button key={menu.id} className="quick-card" type="button" onClick={() => router.push(menu.url)}>
+              <button
+                key={menu.id}
+                className="quick-card"
+                type="button"
+                onClick={() => router.push(menu.url)}
+              >
                 <span>{menu.parentName || "系统管理"}</span>
                 <strong>{menu.name}</strong>
               </button>

@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import {
   listConfigs,
   previewClientIp,
@@ -10,19 +8,6 @@ import {
 } from "@admin/api/configs";
 import { batchListDictOptions, listDictOptions } from "@admin/api/dicts";
 import { previewMsgPush } from "@admin/api/sse";
-import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
-import type {
-  ClientIpMode,
-  ConfigClientIpPreviewRes,
-  ConfigItem,
-  ConfigLevel,
-  ConfigScope,
-  ConfigTimeOffsetPreviewRes,
-  ConfigType,
-} from "@admin/types/config-admin";
-import type { DictItem, DictOption } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
 import {
   resolveUserConfigLabel,
   resolveUserDateFormatCode,
@@ -32,12 +17,24 @@ import {
   USER_DATE_TIME_FORMAT_OPTIONS,
   USER_DECIMAL_FORMAT_OPTIONS,
   USER_TIME_ZONE_OPTIONS,
-} from "@admin/utils/user-config-options";
+  type UserConfigOptionItem,
+} from "@admin/core/formatter";
+import { message } from "@admin/core/message";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import type {
+  ClientIpMode,
+  ConfigClientIpPreviewRes,
+  ConfigItem,
+  ConfigTimeOffsetPreviewRes,
+} from "@admin/types/config-admin";
+import type { DictItem, DictOption } from "@admin/types/dict-admin";
+import type { PageResult } from "@admin/types/page";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzDialog } from "../bz/BzDialog";
-import { BzEmpty } from "../bz/BzEmpty";
 import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzIconActionButton } from "../bz/BzIconActionButton";
@@ -48,7 +45,6 @@ import { BzSelect } from "../bz/BzSelect";
 import { BzSwitch } from "../bz/BzSwitch";
 import { BzTable, type BzTableColumn } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
-import { BzTextField } from "../bz/BzTextField";
 
 interface MsgTypeConfigModel {
   msgType: string;
@@ -138,10 +134,8 @@ function toDictOptions(items?: DictItem[]): DictOption[] {
   }));
 }
 
-function toStaticDictOptions(
-  items: Array<{ label: string; code: string }>,
-): DictOption[] {
-  return items.map((item) => ({ label: item.label, value: item.code }));
+function toStaticDictOptions(items: UserConfigOptionItem[]): DictOption[] {
+  return items.map((item) => ({ label: item.value, value: item.code }));
 }
 
 const DATE_PREVIEW_BASE = new Date(2026, 2, 11, 15, 42, 9);
@@ -169,63 +163,43 @@ export function ConfigsAdminPage() {
     elements: [],
   });
 
-  const [configValueTypeLabelMap, setConfigValueTypeLabelMap] = useState<
-    Record<string, string>
-  >({});
-  const [configLevelLabelMap, setConfigLevelLabelMap] = useState<
-    Record<string, string>
-  >({});
+  const [configValueTypeLabelMap, setConfigValueTypeLabelMap] = useState<Record<string, string>>(
+    {},
+  );
+  const [configLevelLabelMap, setConfigLevelLabelMap] = useState<Record<string, string>>({});
   const [clientIpModeOptions, setClientIpModeOptions] = useState<
     Array<{ value: ClientIpMode; label: string }>
   >([]);
   const [msgTypeOptions, setMsgTypeOptions] = useState<DictOption[]>([]);
-  const [msgPriorityOptions, setMsgPriorityOptions] = useState<DictOption[]>(
-    [],
-  );
-  const [authWhitelistMatchTypeOptions, setAuthWhitelistMatchTypeOptions] =
-    useState<DictOption[]>([...DEFAULT_WHITELIST_TYPE_OPTIONS]);
-  const [userTimeZoneOptions, setUserTimeZoneOptions] = useState<DictOption[]>(
-    [],
-  );
-  const [userDateTimeFormatOptions, setUserDateTimeFormatOptions] = useState<
-    DictOption[]
-  >([]);
-  const [userDateFormatOptions, setUserDateFormatOptions] = useState<
-    DictOption[]
-  >([]);
-  const [userDecimalFormatOptions, setUserDecimalFormatOptions] = useState<
-    DictOption[]
-  >([]);
+  const [msgPriorityOptions, setMsgPriorityOptions] = useState<DictOption[]>([]);
+  const [authWhitelistMatchTypeOptions, setAuthWhitelistMatchTypeOptions] = useState<DictOption[]>([
+    ...DEFAULT_WHITELIST_TYPE_OPTIONS,
+  ]);
+  const [userTimeZoneOptions, setUserTimeZoneOptions] = useState<DictOption[]>([]);
+  const [userDateTimeFormatOptions, setUserDateTimeFormatOptions] = useState<DictOption[]>([]);
+  const [userDateFormatOptions, setUserDateFormatOptions] = useState<DictOption[]>([]);
+  const [userDecimalFormatOptions, setUserDecimalFormatOptions] = useState<DictOption[]>([]);
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorItem, setEditorItem] = useState<ConfigItem | null>(null);
   const [editorRawValue, setEditorRawValue] = useState("");
-  const [editorBoolValue, setEditorBoolValue] = useState<"true" | "false">(
-    "true",
-  );
+  const [editorBoolValue, setEditorBoolValue] = useState<"true" | "false">("true");
   const [editorListValue, setEditorListValue] = useState<string[]>([]);
-  const [editorMsgTypeConfigs, setEditorMsgTypeConfigs] = useState<
-    MsgTypeConfigModel[]
-  >([]);
+  const [editorMsgTypeConfigs, setEditorMsgTypeConfigs] = useState<MsgTypeConfigModel[]>([]);
   const [editorAuthWhitelistRules, setEditorAuthWhitelistRules] = useState<
     AuthWhitelistRuleModel[]
   >([]);
-  const [editorIpMode, setEditorIpMode] =
-    useState<ClientIpMode>("REMOTE_ADDR");
-  const [editorIpPreview, setEditorIpPreview] =
-    useState<ConfigClientIpPreviewRes | null>(null);
-  const [editorTimePreview, setEditorTimePreview] =
-    useState<ConfigTimeOffsetPreviewRes | null>(null);
-  const [editorOffsetSecondsInput, setEditorOffsetSecondsInput] =
-    useState("0");
+  const [editorIpMode, setEditorIpMode] = useState<ClientIpMode>("REMOTE_ADDR");
+  const [editorIpPreview, setEditorIpPreview] = useState<ConfigClientIpPreviewRes | null>(null);
+  const [editorTimePreview, setEditorTimePreview] = useState<ConfigTimeOffsetPreviewRes | null>(
+    null,
+  );
+  const [editorOffsetSecondsInput, setEditorOffsetSecondsInput] = useState("0");
   const [editorTargetDateTime, setEditorTargetDateTime] = useState("");
-  const [editorCalculatedOffsetSeconds, setEditorCalculatedOffsetSeconds] =
-    useState<number | null>(null);
+  const [editorCalculatedOffsetSeconds, setEditorCalculatedOffsetSeconds] = useState<number | null>(
+    null,
+  );
   const [editorPreviewLoading, setEditorPreviewLoading] = useState(false);
-  const [editorValidationError, _setEditorValidationError] = useState<
-    string | null
-  >(null);
-
   const [previewSending, setPreviewSending] = useState(false);
   const [previewMsgType, setPreviewMsgType] = useState("");
 
@@ -246,16 +220,11 @@ export function ConfigsAdminPage() {
   const isListEditor =
     !isMsgTypeConfigsEditor &&
     !isAuthWhitelistEditor &&
-    (editorItem?.valueType === "STR_LIST" ||
-      editorItem?.valueType === "STR_SET");
+    (editorItem?.valueType === "STR_LIST" || editorItem?.valueType === "STR_SET");
 
   const isNumberType = (item: ConfigItem | null): boolean => {
     if (!item) return false;
-    return (
-      item.valueType === "INT" ||
-      item.valueType === "LONG" ||
-      item.valueType === "DEC"
-    );
+    return item.valueType === "INT" || item.valueType === "LONG" || item.valueType === "DEC";
   };
 
   const currentUserFormatOptions = useMemo(() => {
@@ -287,10 +256,7 @@ export function ConfigsAdminPage() {
     return "min(92vw, 760px)";
   }, [isMsgTypeConfigsEditor, isAuthWhitelistEditor]);
 
-  const totalPages = useMemo(
-    () => Math.max(1, page.totalPages || 1),
-    [page.totalPages],
-  );
+  const totalPages = useMemo(() => Math.max(1, page.totalPages || 1), [page.totalPages]);
   const isFirstPage = pageNo <= 1;
   const isLastPage = pageNo >= totalPages;
 
@@ -307,9 +273,7 @@ export function ConfigsAdminPage() {
   const previewSendOptions = useMemo(() => {
     return editorMsgTypeConfigs
       .map((item) => normalizeMsgTypeValue(item.msgType))
-      .filter(
-        (item, index, arr) => item.length > 0 && arr.indexOf(item) === index,
-      )
+      .filter((item, index, arr) => item.length > 0 && arr.indexOf(item) === index)
       .map((msgType) => ({
         label: resolveMsgTypeLabel(msgType),
         value: msgType,
@@ -371,19 +335,13 @@ export function ConfigsAdminPage() {
       : resolveUserDateFormatCode(editorRawValue.trim());
     if (!pattern) return "-";
     return applyDatePattern(DATE_PREVIEW_BASE, pattern);
-  }, [
-    isDateFormatEditor,
-    isDateTimeFormatEditor,
-    editorRawValue,
-  ]);
+  }, [isDateFormatEditor, isDateTimeFormatEditor, editorRawValue]);
 
   const decimalPreviewRows = useMemo(() => {
     const pattern = resolveUserDecimalFormatCode(editorRawValue.trim());
     const error =
       isDecimalFormatEditor &&
-      !currentUserFormatOptions.some(
-        (item) => item.value === editorRawValue.trim(),
-      )
+      !currentUserFormatOptions.some((item) => item.value === editorRawValue.trim())
         ? "小数格式选项无效"
         : null;
     return DECIMAL_PREVIEW_NUMBERS.map((num) => ({
@@ -433,9 +391,7 @@ export function ConfigsAdminPage() {
     try {
       const parsed = JSON.parse(raw || "[]");
       if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map((item) => String(item ?? ""))
-        .filter((item) => item.length > 0);
+      return parsed.map((item) => String(item ?? "")).filter((item) => item.length > 0);
     } catch {
       return [];
     }
@@ -452,10 +408,7 @@ export function ConfigsAdminPage() {
   }
 
   function normalizeMsgTypeConfig(item: unknown): MsgTypeConfigModel {
-    const raw =
-      item && typeof item === "object"
-        ? (item as Record<string, unknown>)
-        : {};
+    const raw = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
     const priority = String(raw.priority ?? "MEDIUM")
       .trim()
       .toUpperCase();
@@ -465,18 +418,11 @@ export function ConfigsAdminPage() {
       msgType: String(raw.msgType ?? ""),
       route: String(raw.route ?? ""),
       priority,
-      sseEnabled:
-        raw.sseEnabled === undefined ? true : Boolean(raw.sseEnabled),
-      webPushEnabled:
-        raw.webPushEnabled === undefined ? isHigh : Boolean(raw.webPushEnabled),
-      panelAutoOpen:
-        raw.panelAutoOpen === undefined
-          ? !isLow
-          : Boolean(raw.panelAutoOpen),
+      sseEnabled: raw.sseEnabled === undefined ? true : Boolean(raw.sseEnabled),
+      webPushEnabled: raw.webPushEnabled === undefined ? isHigh : Boolean(raw.webPushEnabled),
+      panelAutoOpen: raw.panelAutoOpen === undefined ? !isLow : Boolean(raw.panelAutoOpen),
       osNotificationEnabled:
-        raw.osNotificationEnabled === undefined
-          ? isHigh
-          : Boolean(raw.osNotificationEnabled),
+        raw.osNotificationEnabled === undefined ? isHigh : Boolean(raw.osNotificationEnabled),
     };
   }
 
@@ -490,13 +436,8 @@ export function ConfigsAdminPage() {
     }
   }
 
-  function normalizeAuthWhitelistRule(
-    item: unknown,
-  ): AuthWhitelistRuleModel {
-    const raw =
-      item && typeof item === "object"
-        ? (item as Record<string, unknown>)
-        : {};
+  function normalizeAuthWhitelistRule(item: unknown): AuthWhitelistRuleModel {
+    const raw = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
     return {
       type: normalizeWhitelistMatchType(raw.type),
       pattern: String(raw.pattern ?? "").trim(),
@@ -521,9 +462,7 @@ export function ConfigsAdminPage() {
   }
 
   function resolveWhitelistMatchTypeLabel(type: string): string {
-    const matched = authWhitelistMatchTypeOptions.find(
-      (item) => item.value === type,
-    );
+    const matched = authWhitelistMatchTypeOptions.find((item) => item.value === type);
     if (matched) return matched.label;
     return type;
   }
@@ -536,9 +475,7 @@ export function ConfigsAdminPage() {
 
   function normalizeClientIpMode(raw: string): ClientIpMode {
     const value = String(raw ?? "").trim();
-    const matched = clientIpModeOptions.find(
-      (item) => item.value === value,
-    );
+    const matched = clientIpModeOptions.find((item) => item.value === value);
     return matched?.value || "REMOTE_ADDR";
   }
 
@@ -580,27 +517,19 @@ export function ConfigsAdminPage() {
       return null;
     }
     if (isDateFormatEditor)
-      return currentUserFormatOptions.some(
-        (item) => item.value === editorRawValue.trim(),
-      )
+      return currentUserFormatOptions.some((item) => item.value === editorRawValue.trim())
         ? null
         : "日期格式选项无效";
     if (isUserTimeZoneEditor)
-      return currentUserFormatOptions.some(
-        (item) => item.value === editorRawValue.trim(),
-      )
+      return currentUserFormatOptions.some((item) => item.value === editorRawValue.trim())
         ? null
         : "时区选项无效";
     if (isDateTimeFormatEditor)
-      return currentUserFormatOptions.some(
-        (item) => item.value === editorRawValue.trim(),
-      )
+      return currentUserFormatOptions.some((item) => item.value === editorRawValue.trim())
         ? null
         : "日期时间格式选项无效";
     if (isDecimalFormatEditor)
-      return currentUserFormatOptions.some(
-        (item) => item.value === editorRawValue.trim(),
-      )
+      return currentUserFormatOptions.some((item) => item.value === editorRawValue.trim())
         ? null
         : "小数格式选项无效";
     return null;
@@ -611,8 +540,7 @@ export function ConfigsAdminPage() {
     for (const item of editorMsgTypeConfigs) {
       const msgType = normalizeMsgTypeValue(item.msgType);
       if (!msgType) continue;
-      if (used.has(msgType))
-        return `消息类型 ${resolveMsgTypeLabel(msgType)} 重复，请删除重复配置`;
+      if (used.has(msgType)) return `消息类型 ${resolveMsgTypeLabel(msgType)} 重复，请删除重复配置`;
       used.add(msgType);
       const rowError = validateMsgTypeConfigItem(item);
       if (rowError) return rowError;
@@ -627,9 +555,7 @@ export function ConfigsAdminPage() {
       const type = normalizeWhitelistMatchType(item.type);
       const pattern = item.pattern.trim();
       if (!pattern) return `第 ${index + 1} 条规则的路径不能为空`;
-      const exists = authWhitelistMatchTypeOptions.some(
-        (opt) => opt.value === type,
-      );
+      const exists = authWhitelistMatchTypeOptions.some((opt) => opt.value === type);
       if (!exists) return `第 ${index + 1} 条规则的匹配类型无效`;
       const key = `${type}::${pattern}`;
       if (used.has(key)) return `第 ${index + 1} 条规则与其他规则重复`;
@@ -638,9 +564,7 @@ export function ConfigsAdminPage() {
     return null;
   }
 
-  function validateMsgTypeConfigItem(
-    item: MsgTypeConfigModel,
-  ): string | null {
+  function validateMsgTypeConfigItem(item: MsgTypeConfigModel): string | null {
     const msgType = normalizeMsgTypeValue(item.msgType);
     if (!msgType) return null;
     const route = item.route.trim();
@@ -653,8 +577,7 @@ export function ConfigsAdminPage() {
   }
 
   const editorValidationErrorComputed = validateCurrentEditor();
-  const canSaveEditor =
-    canUpdate && !saving && !editorValidationErrorComputed;
+  const canSaveEditor = canUpdate && !saving && !editorValidationErrorComputed;
 
   const loadConfigDictionaries = useCallback(async () => {
     try {
@@ -666,31 +589,19 @@ export function ConfigsAdminPage() {
         "USER_DATE_FORMAT",
         "USER_DECIMAL_FORMAT",
       ]);
-      setConfigValueTypeLabelMap(
-        toDictLabelMap(result.CONFIG_VALUE_TYPE),
-      );
+      setConfigValueTypeLabelMap(toDictLabelMap(result.CONFIG_VALUE_TYPE));
       setConfigLevelLabelMap(toDictLabelMap(result.CONFIG_LEVEL));
       setUserTimeZoneOptions(toDictOptions(result.USER_TIME_ZONE));
-      setUserDateTimeFormatOptions(
-        toDictOptions(result.USER_DATE_TIME_FORMAT),
-      );
+      setUserDateTimeFormatOptions(toDictOptions(result.USER_DATE_TIME_FORMAT));
       setUserDateFormatOptions(toDictOptions(result.USER_DATE_FORMAT));
-      setUserDecimalFormatOptions(
-        toDictOptions(result.USER_DECIMAL_FORMAT),
-      );
+      setUserDecimalFormatOptions(toDictOptions(result.USER_DECIMAL_FORMAT));
     } catch {
       setConfigValueTypeLabelMap({});
       setConfigLevelLabelMap({});
       setUserTimeZoneOptions(toStaticDictOptions(USER_TIME_ZONE_OPTIONS));
-      setUserDateTimeFormatOptions(
-        toStaticDictOptions(USER_DATE_TIME_FORMAT_OPTIONS),
-      );
-      setUserDateFormatOptions(
-        toStaticDictOptions(USER_DATE_FORMAT_OPTIONS),
-      );
-      setUserDecimalFormatOptions(
-        toStaticDictOptions(USER_DECIMAL_FORMAT_OPTIONS),
-      );
+      setUserDateTimeFormatOptions(toStaticDictOptions(USER_DATE_TIME_FORMAT_OPTIONS));
+      setUserDateFormatOptions(toStaticDictOptions(USER_DATE_FORMAT_OPTIONS));
+      setUserDecimalFormatOptions(toStaticDictOptions(USER_DECIMAL_FORMAT_OPTIONS));
     }
   }, []);
 
@@ -716,12 +627,8 @@ export function ConfigsAdminPage() {
     try {
       const types = await listDictOptions("MSG_TYPE");
       const priorities = await listDictOptions("MSG_PRIORITY");
-      setMsgTypeOptions(
-        types.map((t) => ({ label: t.itemLabel, value: t.itemValue })),
-      );
-      setMsgPriorityOptions(
-        priorities.map((p) => ({ label: p.itemLabel, value: p.itemValue })),
-      );
+      setMsgTypeOptions(types.map((t) => ({ label: t.itemLabel, value: t.itemValue })));
+      setMsgPriorityOptions(priorities.map((p) => ({ label: p.itemLabel, value: p.itemValue })));
     } catch {
       message.error("消息配置字典项加载失败");
     }
@@ -735,16 +642,12 @@ export function ConfigsAdminPage() {
         value: item.itemValue,
       }));
       if (opts.length === 0) {
-        setAuthWhitelistMatchTypeOptions(
-          DEFAULT_WHITELIST_TYPE_OPTIONS.map((o) => ({ ...o })),
-        );
+        setAuthWhitelistMatchTypeOptions(DEFAULT_WHITELIST_TYPE_OPTIONS.map((o) => ({ ...o })));
       } else {
         setAuthWhitelistMatchTypeOptions(opts);
       }
     } catch {
-      setAuthWhitelistMatchTypeOptions(
-        DEFAULT_WHITELIST_TYPE_OPTIONS.map((o) => ({ ...o })),
-      );
+      setAuthWhitelistMatchTypeOptions(DEFAULT_WHITELIST_TYPE_OPTIONS.map((o) => ({ ...o })));
       message.error("白名单匹配类型候选项加载失败，已使用默认选项");
     }
   }, []);
@@ -758,29 +661,20 @@ export function ConfigsAdminPage() {
         pageNo: requestedPageNo,
         pageSize,
       });
-      if (
-        clientIpModeOptions.length === 0
-      ) {
+      if (clientIpModeOptions.length === 0) {
         loadClientIpModeOptions();
       }
-      if (
-        msgTypeOptions.length === 0
-      ) {
+      if (msgTypeOptions.length === 0) {
         loadMsgConfigOptions();
       }
-      if (
-        authWhitelistMatchTypeOptions.length === 0
-      ) {
+      if (authWhitelistMatchTypeOptions.length === 0) {
         loadAuthWhitelistMatchTypeOptions();
       }
       setPage(p);
       const newPageSize = p.pageSize || pageSize;
       setPageSize(newPageSize);
 
-      if (
-        p.totalElements > 0 &&
-        requestedPageNo > Math.max(1, p.totalPages)
-      ) {
+      if (p.totalElements > 0 && requestedPageNo > Math.max(1, p.totalPages)) {
         const fallbackPageNo = Math.max(1, p.totalPages);
         setPageNo(fallbackPageNo);
         const fallback = await listConfigs({
@@ -910,9 +804,7 @@ export function ConfigsAdminPage() {
     }
     setEditorPreviewLoading(true);
     try {
-      setEditorTimePreview(
-        await previewTimeOffset({ offsetSeconds }),
-      );
+      setEditorTimePreview(await previewTimeOffset({ offsetSeconds }));
     } finally {
       setEditorPreviewLoading(false);
     }
@@ -981,9 +873,7 @@ export function ConfigsAdminPage() {
   }
 
   function removeAuthWhitelistRule(index: number) {
-    setEditorAuthWhitelistRules((prev) =>
-      prev.filter((_, i) => i !== index),
-    );
+    setEditorAuthWhitelistRules((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addListItem() {
@@ -1000,23 +890,15 @@ export function ConfigsAdminPage() {
     const currentValue = editorMsgTypeConfigs[index]?.msgType?.trim() ?? "";
     const usedByOthers = new Set(
       editorMsgTypeConfigs
-        .map((item, itemIndex) =>
-          itemIndex === index
-            ? ""
-            : normalizeMsgTypeValue(item.msgType),
-        )
+        .map((item, itemIndex) => (itemIndex === index ? "" : normalizeMsgTypeValue(item.msgType)))
         .filter((item) => item.length > 0),
     );
     const options = msgTypeOptions.map((opt) => ({
       label: opt.label,
       value: opt.value,
-      disabled:
-        usedByOthers.has(opt.value) && opt.value !== currentValue,
+      disabled: usedByOthers.has(opt.value) && opt.value !== currentValue,
     }));
-    if (
-      currentValue &&
-      !options.some((opt) => opt.value === currentValue)
-    ) {
+    if (currentValue && !options.some((opt) => opt.value === currentValue)) {
       options.unshift({
         label: resolveMsgTypeLabel(currentValue),
         value: currentValue,
@@ -1129,9 +1011,7 @@ export function ConfigsAdminPage() {
     if (item.valueType === "BOOL") return editorBoolValue;
 
     if (item.valueType === "STR_LIST" || item.valueType === "STR_SET") {
-      const list = editorListValue
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0);
+      const list = editorListValue.map((v) => v.trim()).filter((v) => v.length > 0);
       return JSON.stringify(list);
     }
 
@@ -1170,15 +1050,17 @@ export function ConfigsAdminPage() {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
             <span
               style={{
-                fontFamily:
-                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                 color: "var(--text-muted, #64748b)",
               }}
             >
               {row.code}
             </span>
             {row.personalized ? (
-              <BzTag size="small" type="info">
+              <BzTag
+                size="small"
+                type="info"
+              >
                 个性化
               </BzTag>
             ) : null}
@@ -1213,9 +1095,7 @@ export function ConfigsAdminPage() {
         title: "类型",
         width: 110,
         render: (row) => (
-          <BzTag size="small">
-            {configValueTypeLabelMap[row.valueType] || row.valueType}
-          </BzTag>
+          <BzTag size="small">{configValueTypeLabelMap[row.valueType] || row.valueType}</BzTag>
         ),
       },
       {
@@ -1239,7 +1119,11 @@ export function ConfigsAdminPage() {
               width: 88,
               render: (row: ConfigItem) => (
                 <div style={{ display: "flex", gap: 8 }}>
-                  <BzButton size="small" link onClick={() => openEditor(row)}>
+                  <BzButton
+                    size="small"
+                    link
+                    onClick={() => openEditor(row)}
+                  >
                     编辑
                   </BzButton>
                 </div>
@@ -1331,9 +1215,7 @@ export function ConfigsAdminPage() {
                     className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
                     type="button"
                     title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() =>
-                      setQueryPanelVisible((v) => !v)
-                    }
+                    onClick={() => setQueryPanelVisible((v) => !v)}
                   >
                     <i
                       className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
@@ -1368,9 +1250,7 @@ export function ConfigsAdminPage() {
 
             {page.totalElements > 0 ? (
               <div className="dict-pagination-bar">
-                <div className="dict-pagination-summary">
-                  共 {page.totalElements} 条记录
-                </div>
+                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <label className="dict-page-size">
                     <select
@@ -1379,7 +1259,10 @@ export function ConfigsAdminPage() {
                       onChange={handlePageSizeChange}
                     >
                       {pageSizeOptions.map((s) => (
-                        <option key={s} value={s}>
+                        <option
+                          key={s}
+                          value={s}
+                        >
                           {s}条/页
                         </option>
                       ))}
@@ -1413,7 +1296,10 @@ export function ConfigsAdminPage() {
                           {token}
                         </button>
                       ) : (
-                        <span key={i} className="dict-page-ellipsis">
+                        <span
+                          key={i}
+                          className="dict-page-ellipsis"
+                        >
                           ...
                         </span>
                       ),
@@ -1472,8 +1358,7 @@ export function ConfigsAdminPage() {
               <div
                 className="meta-value"
                 style={{
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                 }}
               >
                 {editorItem?.code}
@@ -1491,9 +1376,7 @@ export function ConfigsAdminPage() {
                 <BzFormItem label="IP 获取方式">
                   <BzSelect
                     modelValue={editorIpMode}
-                    onValueChange={(v) =>
-                      setEditorIpMode((v as ClientIpMode) || "REMOTE_ADDR")
-                    }
+                    onValueChange={(v) => setEditorIpMode((v as ClientIpMode) || "REMOTE_ADDR")}
                   >
                     {clientIpModeOptions.map((opt) => (
                       <BzOption
@@ -1519,35 +1402,23 @@ export function ConfigsAdminPage() {
                     <div className="preview-title">效果预览</div>
                     {editorIpPreview ? (
                       <div className="preview-grid">
-                        <div className="preview-label">
-                          解析后客户端 IP
-                        </div>
+                        <div className="preview-label">解析后客户端 IP</div>
                         <div className="preview-value strong">
                           {showText(editorIpPreview.resolvedIp)}
                         </div>
                         <div className="preview-label">REMOTE_ADDR</div>
-                        <div className="preview-value">
-                          {showText(editorIpPreview.remoteAddr)}
-                        </div>
+                        <div className="preview-value">{showText(editorIpPreview.remoteAddr)}</div>
                         <div className="preview-label">X-Real-IP</div>
-                        <div className="preview-value">
-                          {showText(editorIpPreview.xRealIp)}
-                        </div>
-                        <div className="preview-label">
-                          X-Forwarded-For
-                        </div>
+                        <div className="preview-value">{showText(editorIpPreview.xRealIp)}</div>
+                        <div className="preview-label">X-Forwarded-For</div>
                         <div className="preview-value">
                           {showText(editorIpPreview.xForwardedFor)}
                         </div>
-                        <div className="preview-label">
-                          CF-Connecting-IP
-                        </div>
+                        <div className="preview-label">CF-Connecting-IP</div>
                         <div className="preview-value">
                           {showText(editorIpPreview.cfConnectingIp)}
                         </div>
-                        <div className="preview-label">
-                          True-Client-IP
-                        </div>
+                        <div className="preview-label">True-Client-IP</div>
                         <div className="preview-value">
                           {showText(editorIpPreview.trueClientIp)}
                         </div>
@@ -1578,15 +1449,11 @@ export function ConfigsAdminPage() {
                   >
                     {editorPreviewLoading ? "刷新中..." : "刷新预览"}
                   </BzButton>
-                  <BzButton onClick={resetOffsetSeconds}>
-                    重置为 0
-                  </BzButton>
+                  <BzButton onClick={resetOffsetSeconds}>重置为 0</BzButton>
                 </div>
 
                 <div className="assist-panel">
-                  <div className="assist-title">
-                    辅助计算（不会自动保存）
-                  </div>
+                  <div className="assist-title">辅助计算（不会自动保存）</div>
                   <div className="assist-row">
                     <BzDatePicker
                       modelValue={editorTargetDateTime}
@@ -1603,9 +1470,7 @@ export function ConfigsAdminPage() {
                       计算秒差
                     </BzButton>
                     <BzButton
-                      disabled={
-                        editorCalculatedOffsetSeconds === null
-                      }
+                      disabled={editorCalculatedOffsetSeconds === null}
                       onClick={applyCalculatedOffset}
                     >
                       回填秒数
@@ -1613,9 +1478,7 @@ export function ConfigsAdminPage() {
                     {editorCalculatedOffsetSeconds !== null ? (
                       <div className="assist-result">
                         建议秒差：
-                        <span className="strong">
-                          {editorCalculatedOffsetSeconds}
-                        </span>
+                        <span className="strong">{editorCalculatedOffsetSeconds}</span>
                       </div>
                     ) : null}
                   </div>
@@ -1623,45 +1486,26 @@ export function ConfigsAdminPage() {
 
                 <BzLoading loading={editorPreviewLoading}>
                   <div className="preview-panel">
-                    <div className="preview-title">
-                      效果预览（基于服务器时间）
-                    </div>
+                    <div className="preview-title">效果预览（基于服务器时间）</div>
                     {editorTimePreview ? (
                       <div className="preview-grid">
-                        <div className="preview-label">
-                          服务器当前时间
-                        </div>
+                        <div className="preview-label">服务器当前时间</div>
                         <div className="preview-value">
-                          {formatEpoch(
-                            editorTimePreview.serverNowEpochMillis,
-                          )}
+                          {formatEpoch(editorTimePreview.serverNowEpochMillis)}
                         </div>
-                        <div className="preview-label">
-                          按当前秒数偏移后
-                        </div>
+                        <div className="preview-label">按当前秒数偏移后</div>
                         <div className="preview-value strong">
-                          {formatEpoch(
-                            editorTimePreview.mockedEpochMillis,
-                          )}
+                          {formatEpoch(editorTimePreview.mockedEpochMillis)}
                         </div>
                         <div className="preview-label">当前秒数</div>
-                        <div className="preview-value">
-                          {editorTimePreview.offsetSeconds}
-                        </div>
-                        {editorTimePreview.calculatedOffsetSeconds !==
-                        null ? (
+                        <div className="preview-value">{editorTimePreview.offsetSeconds}</div>
+                        {editorTimePreview.calculatedOffsetSeconds !== null ? (
                           <>
-                            <div className="preview-label">
-                              目标时间
-                            </div>
+                            <div className="preview-label">目标时间</div>
                             <div className="preview-value">
-                              {formatEpoch(
-                                editorTimePreview.targetEpochMillis,
-                              )}
+                              {formatEpoch(editorTimePreview.targetEpochMillis)}
                             </div>
-                            <div className="preview-label">
-                              计算出的秒差
-                            </div>
+                            <div className="preview-label">计算出的秒差</div>
                             <div className="preview-value strong">
                               {editorTimePreview.calculatedOffsetSeconds}
                             </div>
@@ -1669,9 +1513,7 @@ export function ConfigsAdminPage() {
                         ) : null}
                       </div>
                     ) : (
-                      <div className="preview-empty">
-                        输入偏移秒数后可点击"刷新预览"查看效果。
-                      </div>
+                      <div className="preview-empty">输入偏移秒数后可点击"刷新预览"查看效果。</div>
                     )}
                   </div>
                 </BzLoading>
@@ -1693,13 +1535,7 @@ export function ConfigsAdminPage() {
               </BzFormItem>
             ) : isDateFormatEditor || isDateTimeFormatEditor ? (
               <>
-                <BzFormItem
-                  label={
-                    isDateTimeFormatEditor
-                      ? "日期时间格式"
-                      : "日期格式"
-                  }
-                >
+                <BzFormItem label={isDateTimeFormatEditor ? "日期时间格式" : "日期格式"}>
                   <BzSelect
                     modelValue={editorRawValue}
                     onValueChange={(v) => setEditorRawValue(v ?? "")}
@@ -1717,17 +1553,11 @@ export function ConfigsAdminPage() {
                   <div className="preview-title">格式样例</div>
                   <div className="preview-grid">
                     <div className="preview-label">示例时间</div>
-                    <div className="preview-value">
-                      {formatEpoch(DATE_PREVIEW_BASE.getTime())}
-                    </div>
+                    <div className="preview-value">{formatEpoch(DATE_PREVIEW_BASE.getTime())}</div>
                     <div className="preview-label">格式化结果</div>
-                    <div className="preview-value strong">
-                      {dateFormatPreviewValue}
-                    </div>
+                    <div className="preview-value strong">{dateFormatPreviewValue}</div>
                   </div>
-                  <div className="preview-tip">
-                    按统一编码存储，前端按选项语义渲染。
-                  </div>
+                  <div className="preview-tip">按统一编码存储，前端按选项语义渲染。</div>
                 </div>
               </>
             ) : isDecimalFormatEditor ? (
@@ -1749,13 +1579,14 @@ export function ConfigsAdminPage() {
                 <div className="preview-panel">
                   <div className="preview-title">格式样例</div>
                   {decimalPreviewRows.map((sample, i) => (
-                    <div key={i} className="preview-grid">
+                    <div
+                      key={i}
+                      className="preview-grid"
+                    >
                       <div className="preview-label">原始值</div>
                       <div className="preview-value">{sample.source}</div>
                       <div className="preview-label">格式化结果</div>
-                      <div className="preview-value strong">
-                        {sample.formatted}
-                      </div>
+                      <div className="preview-value strong">{sample.formatted}</div>
                     </div>
                   ))}
                 </div>
@@ -1764,12 +1595,16 @@ export function ConfigsAdminPage() {
               <BzFormItem label="配置值">
                 <BzSelect
                   modelValue={editorBoolValue}
-                  onValueChange={(v) =>
-                    setEditorBoolValue((v as "true" | "false") || "true")
-                  }
+                  onValueChange={(v) => setEditorBoolValue((v as "true" | "false") || "true")}
                 >
-                  <BzOption label="true" value="true" />
-                  <BzOption label="false" value="false" />
+                  <BzOption
+                    label="true"
+                    value="true"
+                  />
+                  <BzOption
+                    label="false"
+                    value="false"
+                  />
                 </BzSelect>
               </BzFormItem>
             ) : isMsgTypeConfigsEditor ? (
@@ -1786,7 +1621,10 @@ export function ConfigsAdminPage() {
                 </div>
                 <div className="msg-config-list">
                   {editorMsgTypeConfigs.map((config, index) => (
-                    <div key={index} className="msg-config-item">
+                    <div
+                      key={index}
+                      className="msg-config-item"
+                    >
                       <BzSelect
                         modelValue={config.msgType}
                         placeholder="选择类型"
@@ -1794,9 +1632,7 @@ export function ConfigsAdminPage() {
                         onValueChange={(v) =>
                           setEditorMsgTypeConfigs((prev) =>
                             prev.map((item, i) =>
-                              i === index
-                                ? { ...item, msgType: v ?? "" }
-                                : item,
+                              i === index ? { ...item, msgType: v ?? "" } : item,
                             ),
                           )
                         }
@@ -1816,11 +1652,7 @@ export function ConfigsAdminPage() {
                         className="msg-col-route"
                         onValueChange={(v) =>
                           setEditorMsgTypeConfigs((prev) =>
-                            prev.map((item, i) =>
-                              i === index
-                                ? { ...item, route: v }
-                                : item,
-                            ),
+                            prev.map((item, i) => (i === index ? { ...item, route: v } : item)),
                           )
                         }
                       />
@@ -1831,9 +1663,7 @@ export function ConfigsAdminPage() {
                         onValueChange={(v) =>
                           setEditorMsgTypeConfigs((prev) =>
                             prev.map((item, i) =>
-                              i === index
-                                ? { ...item, priority: v ?? "MEDIUM" }
-                                : item,
+                              i === index ? { ...item, priority: v ?? "MEDIUM" } : item,
                             ),
                           )
                         }
@@ -1852,9 +1682,7 @@ export function ConfigsAdminPage() {
                           onValueChange={(v) =>
                             setEditorMsgTypeConfigs((prev) =>
                               prev.map((item, i) =>
-                                i === index
-                                  ? { ...item, sseEnabled: v }
-                                  : item,
+                                i === index ? { ...item, sseEnabled: v } : item,
                               ),
                             )
                           }
@@ -1866,9 +1694,7 @@ export function ConfigsAdminPage() {
                           onValueChange={(v) =>
                             setEditorMsgTypeConfigs((prev) =>
                               prev.map((item, i) =>
-                                i === index
-                                  ? { ...item, webPushEnabled: v }
-                                  : item,
+                                i === index ? { ...item, webPushEnabled: v } : item,
                               ),
                             )
                           }
@@ -1880,9 +1706,7 @@ export function ConfigsAdminPage() {
                           onValueChange={(v) =>
                             setEditorMsgTypeConfigs((prev) =>
                               prev.map((item, i) =>
-                                i === index
-                                  ? { ...item, panelAutoOpen: v }
-                                  : item,
+                                i === index ? { ...item, panelAutoOpen: v } : item,
                               ),
                             )
                           }
@@ -1935,9 +1759,7 @@ export function ConfigsAdminPage() {
                         className="msg-preview-type"
                         placeholder="选择消息类型"
                         disabled={previewSendOptions.length === 0}
-                        onValueChange={(v) =>
-                          setPreviewMsgType(v ?? "")
-                        }
+                        onValueChange={(v) => setPreviewMsgType(v ?? "")}
                       >
                         {previewSendOptions.map((opt) => (
                           <BzOption
@@ -1964,15 +1786,14 @@ export function ConfigsAdminPage() {
                 <div className="msg-config-preview">
                   <div className="preview-title">规则预览</div>
                   {msgConfigPreviewRows.length === 0 ? (
-                    <div className="preview-empty">
-                      暂无规则，未配置类型将按默认规则处理。
-                    </div>
+                    <div className="preview-empty">暂无规则，未配置类型将按默认规则处理。</div>
                   ) : (
                     msgConfigPreviewRows.map((row) => (
-                      <div key={row.msgType} className="preview-row">
-                        <div className="preview-row-title">
-                          {row.typeLabel}
-                        </div>
+                      <div
+                        key={row.msgType}
+                        className="preview-row"
+                      >
+                        <div className="preview-row-title">{row.typeLabel}</div>
                         <div className="preview-row-meta">
                           路由：{row.routeLabel} ｜ 优先级：
                           {row.priorityLabel} ｜ 渠道：
@@ -1992,29 +1813,28 @@ export function ConfigsAdminPage() {
                 </div>
                 <div className="whitelist-list">
                   {editorAuthWhitelistRules.map((rule, index) => (
-                    <div key={index} className="whitelist-item">
+                    <div
+                      key={index}
+                      className="whitelist-item"
+                    >
                       <BzSelect
                         modelValue={rule.type}
                         className="whitelist-col-type"
                         onValueChange={(v) =>
                           setEditorAuthWhitelistRules((prev) =>
                             prev.map((item, i) =>
-                              i === index
-                                ? { ...item, type: v ?? "" }
-                                : item,
+                              i === index ? { ...item, type: v ?? "" } : item,
                             ),
                           )
                         }
                       >
-                        {authWhitelistMatchTypeOptions.map(
-                          (opt) => (
-                            <BzOption
-                              key={opt.value}
-                              label={opt.label}
-                              value={opt.value}
-                            />
-                          ),
-                        )}
+                        {authWhitelistMatchTypeOptions.map((opt) => (
+                          <BzOption
+                            key={opt.value}
+                            label={opt.label}
+                            value={opt.value}
+                          />
+                        ))}
                       </BzSelect>
                       <BzInput
                         modelValue={rule.pattern}
@@ -2022,11 +1842,7 @@ export function ConfigsAdminPage() {
                         placeholder="例如 /api/auth/login、/api/public/**"
                         onValueChange={(v) =>
                           setEditorAuthWhitelistRules((prev) =>
-                            prev.map((item, i) =>
-                              i === index
-                                ? { ...item, pattern: v }
-                                : item,
-                            ),
+                            prev.map((item, i) => (i === index ? { ...item, pattern: v } : item)),
                           )
                         }
                       />
@@ -2035,9 +1851,7 @@ export function ConfigsAdminPage() {
                           icon="minus"
                           tone="danger"
                           title="删除"
-                          onClick={() =>
-                            removeAuthWhitelistRule(index)
-                          }
+                          onClick={() => removeAuthWhitelistRule(index)}
                         />
                       </div>
                     </div>
@@ -2059,21 +1873,15 @@ export function ConfigsAdminPage() {
                   {authWhitelistPreviewRows.length === 0 ? (
                     <div className="preview-empty">暂无规则。</div>
                   ) : (
-                    authWhitelistPreviewRows.map(
-                      (row, index) => (
-                        <div
-                          key={`${row.type}:${row.pattern}:${index}`}
-                          className="preview-row"
-                        >
-                          <div className="preview-row-title">
-                            {row.typeLabel}
-                          </div>
-                          <div className="preview-row-meta">
-                            {row.pattern}
-                          </div>
-                        </div>
-                      ),
-                    )
+                    authWhitelistPreviewRows.map((row, index) => (
+                      <div
+                        key={`${row.type}:${row.pattern}:${index}`}
+                        className="preview-row"
+                      >
+                        <div className="preview-row-title">{row.typeLabel}</div>
+                        <div className="preview-row-meta">{row.pattern}</div>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
@@ -2081,15 +1889,16 @@ export function ConfigsAdminPage() {
               <BzFormItem label="配置值（列表）">
                 <div className="list-editor">
                   {editorListValue.map((_, index) => (
-                    <div key={index} className="list-item">
+                    <div
+                      key={index}
+                      className="list-item"
+                    >
                       <BzInput
                         modelValue={editorListValue[index]}
                         placeholder="输入项..."
                         onValueChange={(v) =>
                           setEditorListValue((prev) =>
-                            prev.map((item, i) =>
-                              i === index ? v : item,
-                            ),
+                            prev.map((item, i) => (i === index ? v : item)),
                           )
                         }
                       />
@@ -2115,9 +1924,7 @@ export function ConfigsAdminPage() {
               <BzFormItem label="配置值">
                 <BzInput
                   modelValue={editorRawValue}
-                  type={
-                    isNumberType(editorItem) ? "number" : "text"
-                  }
+                  type={isNumberType(editorItem) ? "number" : "text"}
                   clearable
                   onValueChange={setEditorRawValue}
                 />

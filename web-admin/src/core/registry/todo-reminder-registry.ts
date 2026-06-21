@@ -80,7 +80,10 @@ export function onWebPushMessage(handler: (payload: WebPushMessagePayload) => vo
 
 export function initTodoReminderPermission(): void {
   bindServiceWorkerMessageListener();
-  todoReminderStore.setState((state) => ({ ...state, secureContext: typeof window !== "undefined" && window.isSecureContext }));
+  todoReminderStore.setState((state) => ({
+    ...state,
+    secureContext: typeof window !== "undefined" && window.isSecureContext,
+  }));
 
   if (typeof window === "undefined" || !("Notification" in window)) {
     todoReminderStore.setState((state) => ({
@@ -94,7 +97,10 @@ export function initTodoReminderPermission(): void {
   }
 
   if (!window.isSecureContext) {
-    todoReminderStore.setState((state) => ({ ...state, pushLastError: "当前页面不是安全上下文，无法使用 Web Push" }));
+    todoReminderStore.setState((state) => ({
+      ...state,
+      pushLastError: "当前页面不是安全上下文，无法使用 Web Push",
+    }));
   }
 
   todoReminderStore.setState((state) => ({ ...state, permission: Notification.permission }));
@@ -106,7 +112,10 @@ export function initTodoReminderPermission(): void {
 }
 
 export async function requestTodoReminderPermission(): Promise<ReminderPermissionState> {
-  todoReminderStore.setState((state) => ({ ...state, secureContext: typeof window !== "undefined" && window.isSecureContext }));
+  todoReminderStore.setState((state) => ({
+    ...state,
+    secureContext: typeof window !== "undefined" && window.isSecureContext,
+  }));
   if (typeof window === "undefined" || !("Notification" in window)) {
     todoReminderStore.setState((state) => ({
       ...state,
@@ -125,7 +134,10 @@ export async function requestTodoReminderPermission(): Promise<ReminderPermissio
     todoReminderStore.setState((state) => ({
       ...state,
       pushReady: false,
-      pushLastError: permission === "denied" ? "通知权限已被拒绝，请在浏览器设置中手动开启" : state.pushLastError,
+      pushLastError:
+        permission === "denied"
+          ? "通知权限已被拒绝，请在浏览器设置中手动开启"
+          : state.pushLastError,
     }));
   }
 
@@ -156,15 +168,27 @@ export function resetTodoReminderPolling(): void {
 export async function ensureWebPushSubscription(force = false): Promise<void> {
   if (typeof window === "undefined") return;
   if (!window.isSecureContext) {
-    todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: "当前页面不是安全上下文，无法建立 Web Push 订阅" }));
+    todoReminderStore.setState((state) => ({
+      ...state,
+      pushReady: false,
+      pushLastError: "当前页面不是安全上下文，无法建立 Web Push 订阅",
+    }));
     return;
   }
   if (Notification.permission !== "granted") {
-    todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: "通知权限未授权" }));
+    todoReminderStore.setState((state) => ({
+      ...state,
+      pushReady: false,
+      pushLastError: "通知权限未授权",
+    }));
     return;
   }
   if (!getAuthToken()) {
-    todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: "用户未登录，无法保存推送订阅" }));
+    todoReminderStore.setState((state) => ({
+      ...state,
+      pushReady: false,
+      pushLastError: "用户未登录，无法保存推送订阅",
+    }));
     return;
   }
   if (pushSubscriptionSyncPromise && !force) {
@@ -175,7 +199,11 @@ export async function ensureWebPushSubscription(force = false): Promise<void> {
   pushSubscriptionSyncPromise = (async () => {
     const registration = await ensureReminderServiceWorker();
     if (!registration || !("pushManager" in registration)) {
-      todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: "Service Worker 或 PushManager 不可用" }));
+      todoReminderStore.setState((state) => ({
+        ...state,
+        pushReady: false,
+        pushLastError: "Service Worker 或 PushManager 不可用",
+      }));
       return;
     }
 
@@ -198,7 +226,11 @@ export async function ensureWebPushSubscription(force = false): Promise<void> {
     const p256dh = subscriptionJson.keys?.p256dh;
     const auth = subscriptionJson.keys?.auth;
     if (!endpoint || !p256dh || !auth) {
-      todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: "浏览器 PushSubscription 数据不完整" }));
+      todoReminderStore.setState((state) => ({
+        ...state,
+        pushReady: false,
+        pushLastError: "浏览器 PushSubscription 数据不完整",
+      }));
       return;
     }
 
@@ -212,7 +244,11 @@ export async function ensureWebPushSubscription(force = false): Promise<void> {
     todoReminderStore.setState((state) => ({ ...state, pushReady: true, pushLastError: "" }));
   })()
     .catch((error) => {
-      todoReminderStore.setState((state) => ({ ...state, pushReady: false, pushLastError: resolveErrorMessage(error, "同步 Web Push 订阅失败") }));
+      todoReminderStore.setState((state) => ({
+        ...state,
+        pushReady: false,
+        pushLastError: resolveErrorMessage(error, "同步 Web Push 订阅失败"),
+      }));
       console.warn("[todo-reminder] sync web push subscription failed", error);
     })
     .finally(() => {
@@ -258,7 +294,11 @@ async function ensureReminderServiceWorker(): Promise<ServiceWorkerRegistration 
 }
 
 function bindServiceWorkerMessageListener(): void {
-  if (serviceWorkerMessageBound || typeof window === "undefined" || !("serviceWorker" in navigator)) {
+  if (
+    serviceWorkerMessageBound ||
+    typeof window === "undefined" ||
+    !("serviceWorker" in navigator)
+  ) {
     return;
   }
   serviceWorkerMessageBound = true;

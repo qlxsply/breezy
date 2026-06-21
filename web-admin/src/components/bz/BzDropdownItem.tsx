@@ -17,7 +17,12 @@ export function BzDropdownItem({ disabled = false, children, onClick }: BzDropdo
 
   return (
     <li>
-      <button className={["bz-dropdown-item", disabled ? "is-disabled" : ""].filter(Boolean).join(" ")} type="button" disabled={disabled} onClick={handleClick}>
+      <button
+        className={["bz-dropdown-item", disabled ? "is-disabled" : ""].filter(Boolean).join(" ")}
+        type="button"
+        disabled={disabled}
+        onClick={handleClick}
+      >
         {children}
       </button>
     </li>

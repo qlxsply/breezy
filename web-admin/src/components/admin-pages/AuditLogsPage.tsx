@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import {
@@ -9,11 +7,13 @@ import {
   dateTimeInputToNextMinuteEpochMillisString,
   formatDateTime,
 } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/registry/permissions.registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { AdminActionBar } from "../admin/AdminActionBar";
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { BzButton } from "../bz/BzButton";
@@ -113,7 +113,10 @@ export function AuditLogsPage() {
   const [apiProtocolMetaMap, setApiProtocolMetaMap] = useState<Record<string, DictMeta>>({});
   const [userTypeMetaMap, setUserTypeMetaMap] = useState<Record<string, DictMeta>>({});
 
-  const auditResourceOptions = useMemo(() => toOptions(auditResourceMetaMap), [auditResourceMetaMap]);
+  const auditResourceOptions = useMemo(
+    () => toOptions(auditResourceMetaMap),
+    [auditResourceMetaMap],
+  );
   const auditActionOptions = useMemo(() => toOptions(auditActionMetaMap), [auditActionMetaMap]);
   const auditLevelOptions = useMemo(() => toOptions(auditLevelMetaMap), [auditLevelMetaMap]);
 
@@ -148,7 +151,8 @@ export function AuditLogsPage() {
     const current = Math.min(Math.max(pageNo, 1), total);
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
     if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-    if (current >= total - 3) return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
+    if (current >= total - 3)
+      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
     return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
   }, [totalPages, pageNo]);
 
@@ -236,7 +240,19 @@ export function AuditLogsPage() {
 
   useEffect(() => {
     reload();
-  }, [pageNo, pageSize, appliedTraceId, appliedOperatorUsername, appliedAuditResource, appliedAuditAction, appliedAuditLevel, appliedSuccess, appliedStartAt, appliedEndAt, reload]);
+  }, [
+    pageNo,
+    pageSize,
+    appliedTraceId,
+    appliedOperatorUsername,
+    appliedAuditResource,
+    appliedAuditAction,
+    appliedAuditLevel,
+    appliedSuccess,
+    appliedStartAt,
+    appliedEndAt,
+    reload,
+  ]);
 
   function toInstant(value: string): string | undefined {
     return dateTimeInputToEpochMillisString(value) ?? undefined;
@@ -318,7 +334,16 @@ export function AuditLogsPage() {
       title: "用户类型",
       width: 110,
       render: (row) => (
-        <BzTag size="small" type={resolveTagType(userTypeMetaMap, row.operatorUserType) as "info" | "warning" | "danger" | "success"}>
+        <BzTag
+          size="small"
+          type={
+            resolveTagType(userTypeMetaMap, row.operatorUserType) as
+              | "info"
+              | "warning"
+              | "danger"
+              | "success"
+          }
+        >
           {resolveLabel(userTypeMetaMap, row.operatorUserType)}
         </BzTag>
       ),
@@ -327,20 +352,33 @@ export function AuditLogsPage() {
       key: "auditResource",
       title: "资源",
       width: 140,
-      render: (row) => <BzTag size="small">{resolveLabel(auditResourceMetaMap, row.auditResource)}</BzTag>,
+      render: (row) => (
+        <BzTag size="small">{resolveLabel(auditResourceMetaMap, row.auditResource)}</BzTag>
+      ),
     },
     {
       key: "auditAction",
       title: "动作",
       width: 140,
-      render: (row) => <BzTag size="small">{resolveLabel(auditActionMetaMap, row.auditAction)}</BzTag>,
+      render: (row) => (
+        <BzTag size="small">{resolveLabel(auditActionMetaMap, row.auditAction)}</BzTag>
+      ),
     },
     {
       key: "auditLevel",
       title: "等级",
       width: 110,
       render: (row) => (
-        <BzTag size="small" type={resolveTagType(auditLevelMetaMap, row.auditLevel) as "info" | "warning" | "danger" | "success"}>
+        <BzTag
+          size="small"
+          type={
+            resolveTagType(auditLevelMetaMap, row.auditLevel) as
+              | "info"
+              | "warning"
+              | "danger"
+              | "success"
+          }
+        >
           {resolveLabel(auditLevelMetaMap, row.auditLevel)}
         </BzTag>
       ),
@@ -350,7 +388,10 @@ export function AuditLogsPage() {
       title: "结果",
       width: 90,
       render: (row) => (
-        <BzTag size="small" type={row.success ? "success" : "danger"}>
+        <BzTag
+          size="small"
+          type={row.success ? "success" : "danger"}
+        >
           {row.success ? "成功" : "失败"}
         </BzTag>
       ),
@@ -387,7 +428,10 @@ export function AuditLogsPage() {
       <div className="content">
         <div className="admin-page-stack">
           {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
+            <BzCard
+              className="admin-panel admin-filter-card"
+              shadow="never"
+            >
               <BzForm
                 className="admin-filter-form"
                 onSubmit={(e) => {
@@ -440,7 +484,11 @@ export function AuditLogsPage() {
                         onValueChange={(v) => setAuditResourceDraft(v ?? "")}
                       >
                         {auditResourceOptions.map((item) => (
-                          <BzOption key={item.value} label={item.label} value={item.value} />
+                          <BzOption
+                            key={item.value}
+                            label={item.label}
+                            value={item.value}
+                          />
                         ))}
                       </BzSelect>
                     </div>
@@ -458,7 +506,11 @@ export function AuditLogsPage() {
                         onValueChange={(v) => setAuditActionDraft(v ?? "")}
                       >
                         {auditActionOptions.map((item) => (
-                          <BzOption key={item.value} label={item.label} value={item.value} />
+                          <BzOption
+                            key={item.value}
+                            label={item.label}
+                            value={item.value}
+                          />
                         ))}
                       </BzSelect>
                     </div>
@@ -476,7 +528,11 @@ export function AuditLogsPage() {
                         onValueChange={(v) => setAuditLevelDraft((v ?? "") as "" | AuditLevel)}
                       >
                         {auditLevelOptions.map((item) => (
-                          <BzOption key={item.value} label={item.label} value={item.value} />
+                          <BzOption
+                            key={item.value}
+                            label={item.label}
+                            value={item.value}
+                          />
                         ))}
                       </BzSelect>
                     </div>
@@ -493,8 +549,14 @@ export function AuditLogsPage() {
                         clearable
                         onValueChange={(v) => setSuccessDraft((v ?? "") as "" | "true" | "false")}
                       >
-                        <BzOption label="成功" value="true" />
-                        <BzOption label="失败" value="false" />
+                        <BzOption
+                          label="成功"
+                          value="true"
+                        />
+                        <BzOption
+                          label="失败"
+                          value="false"
+                        />
                       </BzSelect>
                     </div>
                   </div>
@@ -531,13 +593,23 @@ export function AuditLogsPage() {
                 </BzFormItem>
 
                 <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={resetFilters}>
+                  <BzButton
+                    className="admin-filter-secondary"
+                    onClick={resetFilters}
+                  >
                     重置
                   </BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">
+                  <BzButton
+                    className="admin-filter-primary"
+                    buttonType="primary"
+                    nativeType="submit"
+                  >
                     搜索
                   </BzButton>
-                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
+                  <div
+                    className="admin-filter-toggle-placeholder"
+                    aria-hidden="true"
+                  />
                 </div>
               </BzForm>
             </BzCard>
@@ -556,7 +628,10 @@ export function AuditLogsPage() {
                     title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
                     onClick={() => setQueryPanelVisible((v) => !v)}
                   >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" />
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
+                      aria-hidden="true"
+                    />
                   </button>
                   <button
                     className="admin-vben-circle-button"
@@ -564,7 +639,10 @@ export function AuditLogsPage() {
                     title="刷新列表"
                     onClick={() => reload()}
                   >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
+                    <i
+                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </div>
@@ -599,7 +677,10 @@ export function AuditLogsPage() {
                           }}
                         >
                           {pageSizeOptions.map((s) => (
-                            <option key={s} value={s}>
+                            <option
+                              key={s}
+                              value={s}
+                            >
                               {s}条/页
                             </option>
                           ))}
@@ -633,7 +714,10 @@ export function AuditLogsPage() {
                               {token}
                             </button>
                           ) : (
-                            <span key={i} className="dict-page-ellipsis">
+                            <span
+                              key={i}
+                              className="dict-page-ellipsis"
+                            >
                               ...
                             </span>
                           ),
@@ -685,7 +769,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-field">
                       <span className="audit-detail-field__label">操作人</span>
-                      <span className="audit-detail-field__value">{detail.operatorUsername || "-"}</span>
+                      <span className="audit-detail-field__value">
+                        {detail.operatorUsername || "-"}
+                      </span>
                     </div>
                     <div className="audit-detail-field">
                       <span className="audit-detail-field__label">用户类型</span>
@@ -713,7 +799,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-field">
                       <span className="audit-detail-field__label">结果</span>
-                      <span className="audit-detail-field__value">{detail.success ? "成功" : "失败"}</span>
+                      <span className="audit-detail-field__value">
+                        {detail.success ? "成功" : "失败"}
+                      </span>
                     </div>
                     <div className="audit-detail-field">
                       <span className="audit-detail-field__label">协议</span>
@@ -733,7 +821,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-field">
                       <span className="audit-detail-field__label">耗时</span>
-                      <span className="audit-detail-field__value">{formatDuration(detail.durationMs)}</span>
+                      <span className="audit-detail-field__value">
+                        {formatDuration(detail.durationMs)}
+                      </span>
                     </div>
                     <div className="audit-detail-field audit-detail-field--wide">
                       <span className="audit-detail-field__label">请求地址</span>
@@ -745,7 +835,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-field audit-detail-field--wide">
                       <span className="audit-detail-field__label">审计描述</span>
-                      <span className="audit-detail-field__value">{detail.auditDescription || "-"}</span>
+                      <span className="audit-detail-field__value">
+                        {detail.auditDescription || "-"}
+                      </span>
                     </div>
                     <div className="audit-detail-field audit-detail-field--wide">
                       <span className="audit-detail-field__label">权限码</span>
@@ -755,7 +847,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-field audit-detail-field--wide">
                       <span className="audit-detail-field__label">记录时间</span>
-                      <span className="audit-detail-field__value">{formatDateTime(detail.createdAt)}</span>
+                      <span className="audit-detail-field__value">
+                        {formatDateTime(detail.createdAt)}
+                      </span>
                     </div>
                   </div>
                 </section>
@@ -765,15 +859,21 @@ export function AuditLogsPage() {
                   <div className="audit-detail-text-grid">
                     <div className="audit-detail-text-block">
                       <div className="audit-detail-text-block__label">请求参数</div>
-                      <pre className="audit-detail-text-block__content">{detail.requestParamSummary || "-"}</pre>
+                      <pre className="audit-detail-text-block__content">
+                        {detail.requestParamSummary || "-"}
+                      </pre>
                     </div>
                     <div className="audit-detail-text-block">
                       <div className="audit-detail-text-block__label">请求体</div>
-                      <pre className="audit-detail-text-block__content">{detail.requestBodySummary || "-"}</pre>
+                      <pre className="audit-detail-text-block__content">
+                        {detail.requestBodySummary || "-"}
+                      </pre>
                     </div>
                     <div className="audit-detail-text-block">
                       <div className="audit-detail-text-block__label">响应体</div>
-                      <pre className="audit-detail-text-block__content">{detail.responseSummary || "-"}</pre>
+                      <pre className="audit-detail-text-block__content">
+                        {detail.responseSummary || "-"}
+                      </pre>
                     </div>
                     <div className="audit-detail-text-block">
                       <div className="audit-detail-text-block__label">错误信息</div>
@@ -783,7 +883,9 @@ export function AuditLogsPage() {
                     </div>
                     <div className="audit-detail-text-block audit-detail-text-block--wide">
                       <div className="audit-detail-text-block__label">User-Agent</div>
-                      <pre className="audit-detail-text-block__content">{detail.userAgent || "-"}</pre>
+                      <pre className="audit-detail-text-block__content">
+                        {detail.userAgent || "-"}
+                      </pre>
                     </div>
                   </div>
                 </section>

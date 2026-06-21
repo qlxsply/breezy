@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+
 import { BzDropdownContext, type BzDropdownContextValue } from "./BzDropdownContext";
 
 interface BzDropdownProps {
@@ -11,7 +12,12 @@ interface BzDropdownProps {
   dropdownContent?: React.ReactNode;
 }
 
-export function BzDropdown({ children, minWidth = 120, offset = 6, dropdownContent }: BzDropdownProps) {
+export function BzDropdown({
+  children,
+  minWidth = 120,
+  offset = 6,
+  dropdownContent,
+}: BzDropdownProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -28,10 +34,14 @@ export function BzDropdown({ children, minWidth = 120, offset = 6, dropdownConte
 
     let left = triggerRect.right + offset;
     if (left + panelRect.width > viewportWidth - margin) {
-      left = Math.min(Math.max(triggerRect.left, margin), Math.max(margin, viewportWidth - margin - panelRect.width));
+      left = Math.min(
+        Math.max(triggerRect.left, margin),
+        Math.max(margin, viewportWidth - margin - panelRect.width),
+      );
     }
     if (left < margin) left = margin;
-    if (left + panelRect.width > viewportWidth - margin) left = Math.max(margin, viewportWidth - margin - panelRect.width);
+    if (left + panelRect.width > viewportWidth - margin)
+      left = Math.max(margin, viewportWidth - margin - panelRect.width);
 
     const spaceBelow = viewportHeight - triggerRect.bottom - margin;
     const spaceAbove = triggerRect.top - margin;
@@ -40,9 +50,15 @@ export function BzDropdown({ children, minWidth = 120, offset = 6, dropdownConte
       top = triggerRect.top - offset - panelRect.height;
     }
     if (top < margin) top = margin;
-    if (top + panelRect.height > viewportHeight - margin) top = Math.max(margin, viewportHeight - margin - panelRect.height);
+    if (top + panelRect.height > viewportHeight - margin)
+      top = Math.max(margin, viewportHeight - margin - panelRect.height);
 
-    setPanelStyle({ position: "fixed", top: `${top}px`, left: `${left}px`, minWidth: `${minWidth}px` });
+    setPanelStyle({
+      position: "fixed",
+      top: `${top}px`,
+      left: `${left}px`,
+      minWidth: `${minWidth}px`,
+    });
   }
 
   const close = useCallback(() => {
@@ -52,15 +68,22 @@ export function BzDropdown({ children, minWidth = 120, offset = 6, dropdownConte
   const contextValue: BzDropdownContextValue = { close };
 
   function toggle() {
-    if (open) { close(); return; }
+    if (open) {
+      close();
+      return;
+    }
     setOpen(true);
     requestAnimationFrame(() => updatePosition());
   }
 
   useEffect(() => {
     if (!open) return;
-    function onScroll() { updatePosition(); }
-    function onResize() { updatePosition(); }
+    function onScroll() {
+      updatePosition();
+    }
+    function onResize() {
+      updatePosition();
+    }
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", onResize);
     return () => {
@@ -91,16 +114,28 @@ export function BzDropdown({ children, minWidth = 120, offset = 6, dropdownConte
 
   return (
     <BzDropdownContext.Provider value={contextValue}>
-      <div ref={rootRef} className="bz-dropdown">
-        <div ref={triggerRef} className="bz-dropdown__trigger" onClick={toggle}>
+      <div
+        ref={rootRef}
+        className="bz-dropdown"
+      >
+        <div
+          ref={triggerRef}
+          className="bz-dropdown__trigger"
+          onClick={toggle}
+        >
           {children}
         </div>
-        {open && createPortal(
-          <div ref={panelRef} className="bz-dropdown__panel" style={panelStyle}>
-            {dropdownContent}
-          </div>,
-          document.body,
-        )}
+        {open &&
+          createPortal(
+            <div
+              ref={panelRef}
+              className="bz-dropdown__panel"
+              style={panelStyle}
+            >
+              {dropdownContent}
+            </div>,
+            document.body,
+          )}
       </div>
     </BzDropdownContext.Provider>
   );
