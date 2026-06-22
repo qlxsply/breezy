@@ -6,7 +6,8 @@ const TYPE_BASE = "/sys/dicts/types";
 const QUERY_BASE = "/sys/dicts";
 
 export interface DictTypePageRequest {
-  keyword?: string;
+  code?: string;
+  name?: string;
   page?: PageRule;
   sort?: SortRule;
 }

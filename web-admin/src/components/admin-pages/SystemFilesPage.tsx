@@ -7,25 +7,16 @@ import {
   listPhysicalFileLogicalRefs,
   listSystemNodes,
 } from "@admin/api/system-files";
+import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
-import type {
-  PhysicalFileDetail,
-  StorageListQuery,
-  StorageSortBy,
-  StorageSortOrder,
-  StorageViewMode,
-  SystemFileItem,
-} from "@admin/types/file-storage";
+import type { AdminActionItem } from "@admin/types/admin-action";
+import type { PhysicalFileDetail, StorageListQuery, StorageSortBy, StorageSortOrder, SystemFileItem } from "@admin/types/file-storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
-import { BzButtonGroup } from "../bz/BzButtonGroup";
 import { BzCard } from "../bz/BzCard";
-import { BzDropdown } from "../bz/BzDropdown";
-import { BzDropdownItem } from "../bz/BzDropdownItem";
-import { BzDropdownMenu } from "../bz/BzDropdownMenu";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
@@ -37,16 +28,6 @@ import { BzTable, type BzTableColumn } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
 const PREVIEW_SIZE_LIMIT = 5 * 1024 * 1024;
-
-type RowActionType = "primary" | "success" | "warning" | "danger" | "default";
-
-interface RowAction {
-  key: string;
-  label: string;
-  type?: RowActionType;
-  disabled?: boolean;
-  handler: () => void;
-}
 
 function formatSize(size?: string | number | null): string {
   const bytes = typeof size === "string" ? Number(size) : size;
@@ -113,9 +94,7 @@ function isTextType(contentType: string): boolean {
   if (!contentType) return false;
   const normalized = contentType.toLowerCase().split(";")[0]!.trim();
   if (normalized.startsWith("text/")) return true;
-  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(
-    normalized,
-  );
+  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(normalized);
 }
 
 export function SystemFilesPage() {
@@ -130,12 +109,12 @@ export function SystemFilesPage() {
   const [items, setItems] = useState<SystemFileItem[]>([]);
   const [currentParentId, setCurrentParentId] = useState<string | undefined>(undefined);
   const [breadcrumbs, setBreadcrumbs] = useState<Array<{ id: string; name: string }>>([]);
+  const [queryPanelVisible, setQueryPanelVisible] = useState(false);
 
   const [keywordInput, setKeywordInput] = useState("");
   const [activeKeyword, setActiveKeyword] = useState("");
   const [sortBy, setSortBy] = useState<StorageSortBy>("NAME");
   const [sortOrder, setSortOrder] = useState<StorageSortOrder>("ASC");
-  const [viewMode, setViewMode] = useState<StorageViewMode>("LIST");
 
   const [previewUrl, setPreviewUrl] = useState("");
   const [previewName, setPreviewName] = useState("");
@@ -159,23 +138,7 @@ export function SystemFilesPage() {
     return `/${breadcrumbs.map((b) => b.name).join("/")}`;
   }, [breadcrumbs]);
 
-  const activeKeywordRef = { current: activeKeyword };
-  activeKeywordRef.current = activeKeyword;
-
-  const currentParentIdRef = { current: currentParentId };
-  currentParentIdRef.current = currentParentId;
-
-  const sortByRef = { current: sortBy };
-  sortByRef.current = sortBy;
-
-  const sortOrderRef = { current: sortOrder };
-  sortOrderRef.current = sortOrder;
-
-  const canPhysicalRef = { current: canPhysical };
-  canPhysicalRef.current = canPhysical;
-
-  const canReverseRef = { current: canReverse };
-  canReverseRef.current = canReverse;
+  const pathSegments = useMemo(() => [{ id: "", name: "/" }, ...breadcrumbs], [breadcrumbs]);
 
   const clearPreview = useCallback(() => {
     if (previewUrl) {
@@ -198,12 +161,12 @@ export function SystemFilesPage() {
     setErrorMessage("");
     try {
       const query: StorageListQuery = {
-        parentId: currentParentIdRef.current,
-        sortBy: sortByRef.current,
-        sortOrder: sortOrderRef.current,
+        parentId: currentParentId,
+        sortBy,
+        sortOrder,
       };
-      if (activeKeywordRef.current.trim()) {
-        query.keyword = activeKeywordRef.current.trim();
+      if (activeKeyword.trim()) {
+        query.keyword = activeKeyword.trim();
         query.recursive = true;
       }
       setItems(await listSystemNodes(query));
@@ -212,36 +175,29 @@ export function SystemFilesPage() {
     } finally {
       setLoading(false);
     }
-  }, [canAdmin, clearPreview]);
+  }, [activeKeyword, canAdmin, clearPreview, currentParentId, sortBy, sortOrder]);
 
-  const _loadReverseRefs = useCallback(async () => {
-    if (!canReverseRef.current || !physicalDetail) return;
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  useEffect(() => {
+    return () => clearPreview();
+  }, [clearPreview]);
+
+  async function loadReverseRefs(detail: PhysicalFileDetail, keyword: string) {
+    if (!canReverse) return;
     setRefsLoading(true);
     setRefsErrorMessage("");
     try {
-      setReverseRefs(
-        await listPhysicalFileLogicalRefs(
-          physicalDetail.physicalFileId,
-          refsKeyword,
-          sortByRef.current,
-          sortOrderRef.current,
-        ),
-      );
+      setReverseRefs(await listPhysicalFileLogicalRefs(detail.physicalFileId, keyword, sortBy, sortOrder));
     } catch (err) {
       setReverseRefs([]);
       setRefsErrorMessage(extractErrorMessage(err, "反向引用查询失败"));
     } finally {
       setRefsLoading(false);
     }
-  }, [physicalDetail, refsKeyword]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  useEffect(() => {
-    return () => clearPreview();
-  }, []);
+  }
 
   function applySearch() {
     setActiveKeyword(keywordInput.trim());
@@ -264,6 +220,15 @@ export function SystemFilesPage() {
     setCurrentParentId(folder.id);
   }
 
+  function clearPhysicalDetail() {
+    setPhysicalDetail(null);
+    setDetailErrorMessage("");
+    setRefsErrorMessage("");
+    setRefsKeywordInput("");
+    setRefsKeyword("");
+    setReverseRefs([]);
+  }
+
   function goRoot() {
     setBreadcrumbs([]);
     setCurrentParentId(undefined);
@@ -279,6 +244,20 @@ export function SystemFilesPage() {
     setCurrentParentId(next.length > 0 ? next[next.length - 1]!.id : undefined);
     setKeywordInput("");
     setActiveKeyword("");
+    clearPhysicalDetail();
+  }
+
+  function goToBreadcrumb(index: number) {
+    if (index <= 0) {
+      goRoot();
+      return;
+    }
+    const next = breadcrumbs.slice(0, index);
+    setBreadcrumbs(next);
+    setCurrentParentId(next[next.length - 1]?.id);
+    setKeywordInput("");
+    setActiveKeyword("");
+    clearPhysicalDetail();
   }
 
   async function previewFile(row: SystemFileItem) {
@@ -293,7 +272,7 @@ export function SystemFilesPage() {
       const blob = await fetchSystemFileView(row.id);
       setPreviewName(row.name);
       setPreviewContentType(row.contentType || blob.type || "");
-      const resolved = resolvePreviewType(row.name, previewContentType || blob.type || "");
+      const resolved = resolvePreviewType(row.name, row.contentType || blob.type || "");
       setPreviewResolvedType(resolved);
       if (resolved) {
         setPreviewContentType(resolved);
@@ -331,7 +310,7 @@ export function SystemFilesPage() {
   }
 
   async function loadPhysicalDetail(item: SystemFileItem) {
-    if (!canPhysicalRef.current || item.type !== "FILE") return;
+    if (!canPhysical || item.type !== "FILE") return;
     setDetailErrorMessage("");
     setRefsErrorMessage("");
     try {
@@ -340,53 +319,12 @@ export function SystemFilesPage() {
       setRefsKeywordInput("");
       setRefsKeyword("");
       setReverseRefs([]);
-      if (canReverseRef.current) {
-        setRefsLoading(true);
-        try {
-          setReverseRefs(
-            await listPhysicalFileLogicalRefs(
-              detail.physicalFileId,
-              "",
-              sortByRef.current,
-              sortOrderRef.current,
-            ),
-          );
-        } catch (err) {
-          setRefsErrorMessage(extractErrorMessage(err, "反向引用查询失败"));
-        } finally {
-          setRefsLoading(false);
-        }
+      if (canReverse) {
+        await loadReverseRefs(detail, "");
       }
     } catch (err) {
       setDetailErrorMessage(extractErrorMessage(err, "物理文件信息加载失败"));
       setPhysicalDetail(null);
-    }
-  }
-
-  function clearPhysicalDetail() {
-    setPhysicalDetail(null);
-    setDetailErrorMessage("");
-    setRefsErrorMessage("");
-    setRefsKeywordInput("");
-    setRefsKeyword("");
-    setReverseRefs([]);
-  }
-
-  function applyRefsSearch() {
-    setRefsKeyword(refsKeywordInput.trim());
-  }
-
-  function clearRefsSearch() {
-    setRefsKeywordInput("");
-    setRefsKeyword("");
-  }
-
-  async function copyId(id: string) {
-    try {
-      await navigator.clipboard.writeText(id);
-      message.success("ID已复制");
-    } catch {
-      message.warning("复制失败，请手动复制");
     }
   }
 
@@ -403,88 +341,69 @@ export function SystemFilesPage() {
     }
   }
 
-  function getItemActions(item: SystemFileItem): RowAction[] {
-    const actions: RowAction[] = [];
+  function applyRefsSearch() {
+    const nextKeyword = refsKeywordInput.trim();
+    setRefsKeyword(nextKeyword);
+    if (physicalDetail) {
+      void loadReverseRefs(physicalDetail, nextKeyword);
+    }
+  }
+
+  function clearRefsSearch() {
+    setRefsKeywordInput("");
+    setRefsKeyword("");
+    if (physicalDetail) {
+      void loadReverseRefs(physicalDetail, "");
+    }
+  }
+
+  function getItemActions(item: SystemFileItem): AdminActionItem[] {
+    const actions: AdminActionItem[] = [];
+    if (item.type === "FOLDER") {
+      actions.push({ key: "enter", label: "进入", tone: "detail", handler: () => enterFolder(item) });
+    }
     if (item.type === "FILE") {
       if (canView) {
-        actions.push({
-          key: "preview",
-          label: "预览",
-          handler: () => {
-            previewFile(item).catch(() => {});
-          },
-        });
+        actions.push({ key: "preview", label: "预览", tone: "detail", handler: () => void previewFile(item) });
       }
       if (canDownload) {
-        actions.push({
-          key: "download",
-          label: "下载",
-          handler: () => {
-            downloadFile(item).catch(() => {});
-          },
-        });
+        actions.push({ key: "download", label: "下载", tone: "neutral", handler: () => void downloadFile(item) });
       }
       if (canPhysical) {
-        actions.push({
-          key: "physical",
-          label: "物理信息",
-          handler: () => {
-            loadPhysicalDetail(item).catch(() => {});
-          },
-        });
+        actions.push({ key: "physical", label: "物理信息", tone: "edit", handler: () => void loadPhysicalDetail(item) });
       }
     }
-    actions.push({
-      key: "copy",
-      label: "复制ID",
-      handler: () => {
-        copyId(item.id).catch(() => {});
-      },
-    });
     return actions;
   }
 
-  function getPrimaryActions(item: SystemFileItem): RowAction[] {
-    const actions = getItemActions(item);
-    if (actions.length <= 3) return actions;
-    return actions.slice(0, 2);
-  }
-
-  function getExtraActions(item: SystemFileItem): RowAction[] {
-    const actions = getItemActions(item);
-    if (actions.length <= 3) return [];
-    return actions.slice(2);
-  }
-
-  const listColumns: BzTableColumn<SystemFileItem>[] = [
+  const listColumns: Array<BzTableColumn<SystemFileItem>> = [
     {
       key: "name",
       title: "名称",
-      minWidth: 260,
-      render: (row) => (
-        <div>
-          {row.type === "FOLDER" ? (
-            <BzButton
-              link
-              onClick={() => enterFolder(row)}
-            >
-              {"📁 "}
-              {row.name}
-            </BzButton>
-          ) : (
-            <span>
-              {"📄 "}
-              {row.name}
-            </span>
-          )}
-          <div className="node-id">{row.id}</div>
-        </div>
-      ),
+      width: 340,
+      render: (row) =>
+        row.type === "FOLDER" ? (
+          <button type="button" className="system-files-link" onClick={() => enterFolder(row)}>
+            <span aria-hidden="true">📁</span>
+            <span>{row.name}</span>
+          </button>
+        ) : (
+          <span className="system-files-name">
+            <span aria-hidden="true">📄</span>
+            <span>{row.name}</span>
+          </span>
+        ),
+    },
+    {
+      key: "id",
+      title: "ID",
+      width: 300,
+      render: (row) => <span className="mono subdued">{row.id}</span>,
     },
     {
       key: "owner",
       title: "Owner",
-      width: 160,
+      width: 300,
       render: (row) => (
         <span>
           {row.ownerType}/{row.ownerId}
@@ -494,7 +413,7 @@ export function SystemFilesPage() {
     {
       key: "type",
       title: "类型",
-      width: 120,
+      width: 100,
       render: (row) => <BzTag size="small">{row.type === "FOLDER" ? "目录" : "文件"}</BzTag>,
     },
     {
@@ -513,59 +432,27 @@ export function SystemFilesPage() {
       key: "actions",
       title: "操作",
       minWidth: 220,
-      render: (row) => {
-        const primary = getPrimaryActions(row);
-        const extra = getExtraActions(row);
-        return (
-          <div className="action-buttons">
-            {primary.map((action) => (
-              <BzButton
-                key={action.key}
-                size="small"
-                buttonType={action.type || "default"}
-                disabled={action.disabled}
-                onClick={action.handler}
-              >
-                {action.label}
-              </BzButton>
-            ))}
-            {extra.length > 0 ? (
-              <BzDropdown
-                dropdownContent={
-                  <BzDropdownMenu>
-                    {extra.map((action) => (
-                      <BzDropdownItem
-                        key={action.key}
-                        disabled={action.disabled}
-                        onClick={action.handler}
-                      >
-                        {action.label}
-                      </BzDropdownItem>
-                    ))}
-                  </BzDropdownMenu>
-                }
-              >
-                <BzButton size="small">更多</BzButton>
-              </BzDropdown>
-            ) : null}
-          </div>
-        );
-      },
+      render: (row) => <AdminActionBar actions={getItemActions(row)} />,
     },
   ];
 
-  const refsColumns: BzTableColumn<SystemFileItem>[] = [
+  const refsColumns: Array<BzTableColumn<SystemFileItem>> = [
     {
       key: "name",
-      title: "文件",
-      minWidth: 260,
+      title: "名称",
+      minWidth: 220,
       render: (row) => (
-        <div>
-          {"📄 "}
-          {row.name}
-          <div className="node-id">{row.id}</div>
-        </div>
+        <span className="system-files-name">
+          <span aria-hidden="true">📄</span>
+          <span>{row.name}</span>
+        </span>
       ),
+    },
+    {
+      key: "id",
+      title: "ID",
+      minWidth: 220,
+      render: (row) => <span className="mono subdued">{row.id}</span>,
     },
     {
       key: "owner",
@@ -586,38 +473,9 @@ export function SystemFilesPage() {
     {
       key: "actions",
       title: "操作",
-      minWidth: 200,
+      minWidth: 180,
       render: (row) => (
-        <div className="row-actions">
-          {canView ? (
-            <BzButton
-              size="small"
-              onClick={() => {
-                previewFile(row).catch(() => {});
-              }}
-            >
-              预览
-            </BzButton>
-          ) : null}
-          {canDownload ? (
-            <BzButton
-              size="small"
-              onClick={() => {
-                downloadFile(row).catch(() => {});
-              }}
-            >
-              下载
-            </BzButton>
-          ) : null}
-          <BzButton
-            size="small"
-            onClick={() => {
-              copyId(row.id).catch(() => {});
-            }}
-          >
-            复制ID
-          </BzButton>
-        </div>
+        <AdminActionBar actions={getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter")} />
       ),
     },
   ];
@@ -625,161 +483,115 @@ export function SystemFilesPage() {
   const showSearchTip = !!activeKeyword;
 
   return (
-    <div className="app-shell">
+    <div className="admin-page">
       <div className="content">
-        <div className="list-page-stack">
-          {canAdmin ? (
-            <section className="list-page-actions">
-              <div className="list-page-actions-main">
-                <BzButton onClick={goRoot}>根目录</BzButton>
-                <BzButton
-                  disabled={breadcrumbs.length === 0}
-                  onClick={goBack}
-                >
-                  返回上级
-                </BzButton>
-                <BzButton onClick={() => reload()}>刷新</BzButton>
-                <span
-                  className="path"
-                  title={currentPath}
-                >
-                  当前路径：{currentPath}
-                </span>
-              </div>
-            </section>
-          ) : null}
-
-          {canAdmin ? (
-            <BzCard
-              className="list-page-query-card"
-              shadow="never"
-            >
+        <div className="admin-page-stack">
+          {canAdmin && queryPanelVisible ? (
+            <BzCard className="admin-panel admin-filter-card" shadow="never">
               <BzForm
-                className="list-page-filter-form is-inline"
+                className="admin-filter-form"
                 onSubmit={(e) => {
                   e.preventDefault();
                   applySearch();
                 }}
               >
-                <BzFormItem className="list-page-filter-item">
-                  <div className="list-page-filter-field">
-                    <div className="list-page-filter-label">搜索</div>
-                    <BzInput
-                      modelValue={keywordInput}
-                      className="list-page-filter-control keyword"
-                      placeholder="按名称搜索当前目录及子目录"
-                      clearable
-                      onValueChange={setKeywordInput}
-                      onKeyUp={(e) => {
-                        if (e.key === "Enter") applySearch();
-                      }}
-                    />
+                <BzFormItem className="admin-filter-item">
+                  <div className="admin-filter-field">
+                    <div className="admin-filter-label">搜索</div>
+                    <div className="admin-filter-control">
+                      <BzInput
+                        modelValue={keywordInput}
+                        placeholder="按名称搜索当前目录及子目录"
+                        clearable
+                        onValueChange={setKeywordInput}
+                        onKeyUp={(e) => {
+                          if (e.key === "Enter") applySearch();
+                        }}
+                      />
+                    </div>
                   </div>
                 </BzFormItem>
-                <BzFormItem className="list-page-filter-actions">
-                  <BzButton
-                    buttonType="primary"
-                    onClick={applySearch}
-                  >
-                    搜索
-                  </BzButton>
-                  <BzButton
-                    disabled={!activeKeyword}
-                    onClick={clearSearch}
-                  >
-                    清空
-                  </BzButton>
-                </BzFormItem>
-                <BzFormItem className="list-page-filter-item">
-                  <div className="list-page-filter-field">
-                    <div className="list-page-filter-label">排序</div>
-                    <div className="list-page-sort-group">
-                      <BzSelect
-                        modelValue={sortBy}
-                        className="sm"
-                        onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}
-                      >
-                        <BzOption
-                          label="名称"
-                          value="NAME"
-                        />
-                        <BzOption
-                          label="大小"
-                          value="SIZE"
-                        />
-                        <BzOption
-                          label="类型"
-                          value="TYPE"
-                        />
-                        <BzOption
-                          label="最新修改"
-                          value="UPDATED_AT"
-                        />
+                <BzFormItem className="admin-filter-item">
+                  <div className="admin-filter-field">
+                    <div className="admin-filter-label">排序</div>
+                    <div className="admin-filter-control" style={{ display: "flex", gap: 8 }}>
+                      <BzSelect modelValue={sortBy} onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}>
+                        <BzOption label="名称" value="NAME" />
+                        <BzOption label="大小" value="SIZE" />
+                        <BzOption label="类型" value="TYPE" />
+                        <BzOption label="最新修改" value="UPDATED_AT" />
                       </BzSelect>
-                      <BzSelect
-                        modelValue={sortOrder}
-                        className="sm"
-                        onValueChange={(v) => setSortOrder((v ?? "ASC") as StorageSortOrder)}
-                      >
-                        <BzOption
-                          label="升序"
-                          value="ASC"
-                        />
-                        <BzOption
-                          label="降序"
-                          value="DESC"
-                        />
+                      <BzSelect modelValue={sortOrder} onValueChange={(v) => setSortOrder((v ?? "ASC") as StorageSortOrder)}>
+                        <BzOption label="升序" value="ASC" />
+                        <BzOption label="降序" value="DESC" />
                       </BzSelect>
                     </div>
                   </div>
                 </BzFormItem>
-                <BzFormItem className="list-page-filter-item">
-                  <div className="list-page-filter-field">
-                    <div className="list-page-filter-label">视图</div>
-                    <BzButtonGroup>
-                      <BzButton
-                        size="small"
-                        buttonType={viewMode === "GRID" ? "primary" : "default"}
-                        onClick={() => setViewMode("GRID")}
-                      >
-                        平铺
-                      </BzButton>
-                      <BzButton
-                        size="small"
-                        buttonType={viewMode === "LIST" ? "primary" : "default"}
-                        onClick={() => setViewMode("LIST")}
-                      >
-                        详细列表
-                      </BzButton>
-                    </BzButtonGroup>
-                  </div>
-                </BzFormItem>
+                <div className="admin-filter-actions">
+                  <BzButton className="admin-filter-secondary" onClick={clearSearch} disabled={!activeKeyword && !keywordInput}>
+                    重置
+                  </BzButton>
+                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">
+                    搜索
+                  </BzButton>
+                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
+                </div>
               </BzForm>
             </BzCard>
           ) : null}
 
           <BzCard
-            className="list-page-result-card board"
+            className="admin-panel admin-table-card"
             shadow="never"
+            header={
+              <div className="admin-table-header">
+                <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+                  <div className="admin-table-title">系统文件</div>
+                  <div className="system-files-breadcrumbs" title={currentPath}>
+                    {pathSegments.map((segment, index) => (
+                      <span key={`${segment.id || "root"}-${index}`} className="system-files-breadcrumbs__segment-wrap">
+                        {index > 0 ? <span className="system-files-breadcrumbs__separator">/</span> : null}
+                        <button
+                          type="button"
+                          className={`system-files-breadcrumbs__segment${index === pathSegments.length - 1 ? " is-current" : ""}`}
+                          onClick={() => goToBreadcrumb(index)}
+                        >
+                          {segment.name}
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="admin-table-tools">
+                  <button
+                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
+                    type="button"
+                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
+                    onClick={() => setQueryPanelVisible((value) => !value)}
+                  >
+                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" />
+                  </button>
+                  <button className="admin-vben-circle-button" type="button" title="返回根目录" onClick={goRoot}>
+                    <span className="system-files-root-icon" aria-hidden="true">/</span>
+                  </button>
+                  <button className="admin-vben-circle-button" type="button" title="返回上级" onClick={goBack} disabled={breadcrumbs.length === 0}>
+                    <span className="system-files-root-icon" aria-hidden="true">..</span>
+                  </button>
+                  <button className="admin-vben-circle-button" type="button" title="刷新列表" onClick={() => void reload()}>
+                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            }
           >
-            <BzLoading
-              loading={loading}
-              text="加载中..."
-            >
+            <BzLoading loading={loading} text="加载中...">
               {!canAdmin ? (
                 <BzEmpty description="无权限查看文件管理页面" />
               ) : errorMessage ? (
                 <div className="state-block">
-                  <BzAlert
-                    title={errorMessage}
-                    type="error"
-                    showIcon
-                  />
-                  <BzButton
-                    size="small"
-                    buttonType="primary"
-                    onClick={() => reload()}
-                  >
+                  <BzAlert title={errorMessage} type="error" showIcon />
+                  <BzButton size="small" buttonType="primary" onClick={() => void reload()}>
                     重试
                   </BzButton>
                 </div>
@@ -788,114 +600,18 @@ export function SystemFilesPage() {
               ) : (
                 <div>
                   {showSearchTip ? (
-                    <BzAlert
-                      className="search-tip"
-                      type="info"
-                      closable={false}
-                      showIcon
-                      title="搜索中：仅显示当前目录及子目录名称匹配结果"
-                    />
+                    <BzAlert className="search-tip" type="info" closable={false} showIcon title="搜索中：仅显示当前目录及子目录名称匹配结果" />
                   ) : null}
-
-                  {viewMode === "GRID" ? (
-                    <div className="grid">
-                      {items.map((item) => {
-                        const primary = getPrimaryActions(item);
-                        const extra = getExtraActions(item);
-                        return (
-                          <BzCard
-                            key={item.id}
-                            className="node-card"
-                            shadow="never"
-                          >
-                            <div className="node-header">
-                              {item.type === "FOLDER" ? (
-                                <BzButton
-                                  link
-                                  className="title"
-                                  onClick={() => enterFolder(item)}
-                                >
-                                  {"📁 "}
-                                  {item.name}
-                                </BzButton>
-                              ) : (
-                                <div className="title">
-                                  {"📄 "}
-                                  {item.name}
-                                </div>
-                              )}
-                              <div
-                                className="node-id"
-                                title={item.id}
-                              >
-                                {item.id}
-                              </div>
-                            </div>
-
-                            <div className="node-meta">
-                              <BzTag size="small">{item.type === "FOLDER" ? "目录" : "文件"}</BzTag>
-                              <span className="meta">
-                                Owner：{item.ownerType}/{item.ownerId}
-                              </span>
-                              <span className="meta">
-                                大小：{item.type === "FILE" ? formatSize(item.size) : "-"}
-                              </span>
-                              <span className="meta">
-                                更新：{formatDateTime(item.updatedAt || item.createdAt || "")}
-                              </span>
-                            </div>
-
-                            <div className="action-buttons">
-                              {primary.map((action) => (
-                                <BzButton
-                                  key={action.key}
-                                  size="small"
-                                  buttonType={action.type || "default"}
-                                  disabled={action.disabled}
-                                  onClick={action.handler}
-                                >
-                                  {action.label}
-                                </BzButton>
-                              ))}
-                              {extra.length > 0 ? (
-                                <BzDropdown
-                                  dropdownContent={
-                                    <BzDropdownMenu>
-                                      {extra.map((action) => (
-                                        <BzDropdownItem
-                                          key={action.key}
-                                          disabled={action.disabled}
-                                          onClick={action.handler}
-                                        >
-                                          {action.label}
-                                        </BzDropdownItem>
-                                      ))}
-                                    </BzDropdownMenu>
-                                  }
-                                >
-                                  <BzButton size="small">更多</BzButton>
-                                </BzDropdown>
-                              ) : null}
-                            </div>
-                          </BzCard>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <BzTable
-                      data={items}
-                      columns={listColumns}
-                      rowKey="id"
-                      size="small"
-                    />
-                  )}
+                  <div className="admin-table-surface">
+                    <BzTable data={items} columns={listColumns} rowKey="id" size="small" />
+                  </div>
                 </div>
               )}
             </BzLoading>
           </BzCard>
 
           {previewName ? (
-            <BzCard className="preview-panel">
+            <BzCard className="preview-panel admin-panel">
               <div className="preview-header">
                 <div>
                   <div className="preview-title">预览：{previewName}</div>
@@ -903,30 +619,18 @@ export function SystemFilesPage() {
                 </div>
                 <div className="row-actions">
                   {previewIsText ? (
-                    <BzButton
-                      size="small"
-                      onClick={() => {
-                        copyPreviewText().catch(() => {});
-                      }}
-                    >
+                    <BzButton size="small" onClick={() => void copyPreviewText()}>
                       复制文本
                     </BzButton>
                   ) : null}
-                  <BzButton
-                    size="small"
-                    onClick={clearPreview}
-                  >
+                  <BzButton size="small" onClick={clearPreview}>
                     关闭
                   </BzButton>
                 </div>
               </div>
               <div className="preview-body">
                 {previewIsImage ? (
-                  <img
-                    src={previewUrl}
-                    alt="preview"
-                    className="preview-image"
-                  />
+                  <img src={previewUrl} alt="preview" className="preview-image" />
                 ) : previewIsText ? (
                   <pre className="preview-text">{previewText}</pre>
                 ) : (
@@ -937,16 +641,13 @@ export function SystemFilesPage() {
           ) : null}
 
           {physicalDetail ? (
-            <BzCard className="physical-panel">
+            <BzCard className="physical-panel admin-panel">
               <div className="physical-header">
                 <div>
                   <div className="preview-title">物理文件详情：{physicalDetail.fileName}</div>
                   <div className="muted">逻辑文件：{physicalDetail.logicalFileName}</div>
                 </div>
-                <BzButton
-                  size="small"
-                  onClick={clearPhysicalDetail}
-                >
+                <BzButton size="small" onClick={clearPhysicalDetail}>
                   关闭
                 </BzButton>
               </div>
@@ -992,14 +693,7 @@ export function SystemFilesPage() {
                 </div>
               </div>
 
-              {detailErrorMessage ? (
-                <BzAlert
-                  title={detailErrorMessage}
-                  type="error"
-                  showIcon
-                  className="detail-error"
-                />
-              ) : null}
+              {detailErrorMessage ? <BzAlert title={detailErrorMessage} type="error" showIcon className="detail-error" /> : null}
 
               <div className="refs-head">
                 <h4>同物理文件逻辑引用</h4>
@@ -1014,10 +708,7 @@ export function SystemFilesPage() {
                     }}
                   />
                   {canReverse ? <BzButton onClick={applyRefsSearch}>查询</BzButton> : null}
-                  <BzButton
-                    disabled={!refsKeyword}
-                    onClick={clearRefsSearch}
-                  >
+                  <BzButton disabled={!refsKeyword && !refsKeywordInput} onClick={clearRefsSearch}>
                     清空
                   </BzButton>
                 </div>
@@ -1026,25 +717,12 @@ export function SystemFilesPage() {
               {!canReverse ? (
                 <BzEmpty description="无权限查看反向引用信息" />
               ) : (
-                <BzLoading
-                  loading={refsLoading}
-                  text="引用查询中..."
-                  className="refs-body"
-                >
+                <BzLoading loading={refsLoading} text="引用查询中..." className="refs-body">
                   {refsErrorMessage ? (
-                    <BzAlert
-                      title={refsErrorMessage}
-                      type="error"
-                      showIcon
-                    />
+                    <BzAlert title={refsErrorMessage} type="error" showIcon />
                   ) : reverseRefs.length > 0 ? (
-                    <div className="refs-table">
-                      <BzTable
-                        data={reverseRefs}
-                        columns={refsColumns}
-                        rowKey="id"
-                        size="small"
-                      />
+                    <div className="refs-table admin-table-surface">
+                      <BzTable data={reverseRefs} columns={refsColumns} rowKey="id" size="small" />
                     </div>
                   ) : !refsLoading ? (
                     <BzEmpty description="未查到引用记录" />

@@ -63,8 +63,8 @@ public class DictAdminService {
                 .map(this::toTypeView).toList();
     }
 
-    public PageData<DictTypeView> pageTypes(String keyword, PageSpec spec) {
-        PageData<DictType> page = dictTypeRepository.page(keyword, withDefaultTypeSort(spec));
+    public PageData<DictTypeView> pageTypes(String code, String name, PageSpec spec) {
+        PageData<DictType> page = dictTypeRepository.page(code, name, withDefaultTypeSort(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(this::toTypeView).toList());
     }

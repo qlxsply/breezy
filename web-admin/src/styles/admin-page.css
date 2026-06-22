@@ -428,6 +428,247 @@
   overflow: hidden;
 }
 
+.admin-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.admin-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-action-link:hover:not(:disabled) {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.admin-action-link.is-detail {
+  color: #475569;
+}
+
+.admin-action-link.is-edit {
+  color: #2563eb;
+}
+
+.admin-action-link.is-enable {
+  color: #15803d;
+}
+
+.admin-action-link.is-disable,
+.admin-action-link.is-delete {
+  color: #b91c1c;
+}
+
+.admin-entity-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+}
+
+.admin-entity-drawer__mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  border: none;
+}
+
+.admin-entity-drawer__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 100vw);
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -16px 0 40px rgba(15, 23, 42, 0.18);
+}
+
+.admin-entity-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-entity-drawer__title-wrap {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-entity-drawer__title {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-entity-drawer__extra {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.admin-entity-drawer__close {
+  width: 32px;
+  height: 32px;
+  color: #64748b;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.admin-entity-drawer__body {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow: auto;
+}
+
+.admin-entity-drawer__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.detail-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.detail-field--wide {
+  grid-column: 1 / -1;
+}
+
+.detail-field__label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detail-field__value {
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.group-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.group-form-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.system-files-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.system-files-breadcrumbs__segment-wrap {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.system-files-breadcrumbs__separator {
+  margin-right: 4px;
+  color: #94a3b8;
+}
+
+.system-files-breadcrumbs__segment {
+  max-width: 240px;
+  padding: 0;
+  overflow: hidden;
+  color: #2563eb;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.system-files-breadcrumbs__segment.is-current {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.system-files-root-icon {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.system-files-link,
+.system-files-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.system-files-link {
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: #2563eb;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.system-files-name {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.system-files-link span:last-child,
+.system-files-name span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dict-pagination-bar {
   display: flex;
   align-items: center;
@@ -589,5 +830,10 @@
     width: 100%;
     justify-content: flex-start;
     margin-left: 0;
+  }
+
+  .detail-grid,
+  .group-form-grid {
+    grid-template-columns: 1fr;
   }
 }

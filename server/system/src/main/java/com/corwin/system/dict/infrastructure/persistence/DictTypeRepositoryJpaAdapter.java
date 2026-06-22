@@ -63,14 +63,25 @@ public class DictTypeRepositoryJpaAdapter implements DictTypeRepository {
     }
 
     @Override
-    public PageData<DictType> page(String keyword, PageSpec spec) {
-        String trimmedKeyword = keyword == null ? null : keyword.trim();
-        if (trimmedKeyword == null || trimmedKeyword.isEmpty()) {
+    public PageData<DictType> page(String code, String name, PageSpec spec) {
+        String trimmedCode = code == null ? null : code.trim();
+        String trimmedName = name == null ? null : name.trim();
+        boolean hasCode = trimmedCode != null && !trimmedCode.isEmpty();
+        boolean hasName = trimmedName != null && !trimmedName.isEmpty();
+        if (!hasCode && !hasName) {
             return JpaPageMapper.toPageData(repo.findAll(JpaPageMapper.toPageable(spec)));
         }
-        return JpaPageMapper.toPageData(
-                repo.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(trimmedKeyword, trimmedKeyword,
-                        JpaPageMapper.toPageable(spec)));
+        if (hasCode && hasName) {
+            return JpaPageMapper.toPageData(
+                    repo.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(trimmedCode, trimmedName,
+                            JpaPageMapper.toPageable(spec)));
+        }
+        if (hasCode) {
+            return JpaPageMapper.toPageData(repo.findByCodeContainingIgnoreCase(trimmedCode,
+                    JpaPageMapper.toPageable(spec)));
+        }
+        return JpaPageMapper.toPageData(repo.findByNameContainingIgnoreCase(trimmedName,
+                JpaPageMapper.toPageable(spec)));
     }
 
     @Override

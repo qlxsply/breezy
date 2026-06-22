@@ -9,6 +9,7 @@ import com.corwin.framework.web.request.SortRuleRequest;
 public record DictTypePageReq(
         PageRuleRequest page,
         SortRuleRequest sort,
-        String keyword
+        String code,
+        String name
 ) {
 }

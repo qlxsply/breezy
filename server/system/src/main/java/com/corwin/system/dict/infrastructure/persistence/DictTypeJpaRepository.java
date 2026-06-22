@@ -17,6 +17,10 @@ public interface DictTypeJpaRepository extends JpaRepository<DictType, String> {
 
     boolean existsByCode(String code);
 
+    Page<DictType> findByCodeContainingIgnoreCase(String code, Pageable pageable);
+
+    Page<DictType> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
     Page<DictType> findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(String code, String name,
             Pageable pageable);
 

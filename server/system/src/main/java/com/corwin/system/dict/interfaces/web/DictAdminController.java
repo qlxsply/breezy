@@ -45,7 +45,7 @@ public class DictAdminController {
     @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
     public ApiResponse<PageResult<DictTypeRes>> list(@RequestBody DictTypePageReq req) {
         return ApiResponse.ok(
-                PageResult.of(dictAdminService.pageTypes(req.keyword(), PageSpecFactory.of(req.page(), req.sort())),
+                PageResult.of(dictAdminService.pageTypes(req.code(), req.name(), PageSpecFactory.of(req.page(), req.sort())),
                         this::toTypeRes));
     }
 

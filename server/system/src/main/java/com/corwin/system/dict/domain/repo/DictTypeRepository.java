@@ -17,7 +17,7 @@ public interface DictTypeRepository extends DomainRepository<DictType, String> {
 
     boolean existsByCode(String code);
 
-    PageData<DictType> page(String keyword, PageSpec spec);
+    PageData<DictType> page(String code, String name, PageSpec spec);
 
     List<DictType> findAllByOrderByNameAsc();
 
