@@ -34,7 +34,7 @@ Breezy 是一个全栈工具型系统。整体采用 **前后端分离架构**�
 ├─ server/                 # 后端聚合模块（pom）
 │  ├─ framework/           # 框架层模块
 │  ├─ system/              # 系统域模块
-│  ├─ business/            # 业务域模块（clinic/datasource/storage/...）
+│  ├─ business/            # 业务域模块（datasource/storage/...）
 ├─ web/                    # Vue 前端
 ├─ pom.xml                 # Maven 父工程
 ├─ README.md               # 项目说明与需求记录
@@ -166,7 +166,6 @@ cd web && npm run build
 ```
 com.corwin.framework    # framework 模块
 com.corwin.system       # system 模块
-com.corwin.clinic       # business 模块
 com.corwin.datasource   # business 模块
 com.corwin.storage      # business 模块
 com.corwin.jsonfmt      # business 模块
@@ -354,7 +353,7 @@ com.corwin.framework
 如果属于业务能力，放在：
 
 ```
-com.corwin.system / com.corwin.clinic / com.corwin.datasource / ...
+com.corwin.system / com.corwin.datasource / ...
 ```
 
 框架层禁止：
@@ -365,7 +364,7 @@ com.corwin.system / com.corwin.clinic / com.corwin.datasource / ...
 
 代码审查规则：
 
-AI 修改框架代码时必须检查是否引用了 `com.corwin.system`、`com.corwin.clinic`、`com.corwin.datasource`、
+AI 修改框架代码时必须检查是否引用了 `com.corwin.system`、`com.corwin.datasource`、
 `com.corwin.storage`、`com.corwin.jsonfmt`、`com.corwin.schemaforge`、`com.corwin.reminder`、`com.corwin.web`，
 若存在则必须移除。
 

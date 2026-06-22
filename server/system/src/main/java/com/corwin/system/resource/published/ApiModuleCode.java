@@ -6,7 +6,6 @@ package com.corwin.system.resource.published;
 public enum ApiModuleCode {
     DEFAULT("default"),
     SYSTEM("system"),
-    CLINIC("clinic"),
     DATASOURCE("datasource"),
     SCHEMAFORGE("schemaforge"),
     REMINDER("reminder"),

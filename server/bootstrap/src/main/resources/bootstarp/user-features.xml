@@ -93,22 +93,5 @@
             </features>
         </application>
 
-        <application code="clinic"
-                     name="诊所业务"
-                     enabled="true"
-                     sortNo="60"
-                     icon="icons/applications/clinic.svg"
-                     routePath="/clinic/management"
-                     componentPath="pages/clinic/ClinicManagementPage.vue">
-            <description>诊所商品、库存、采购、销售与台账能力。</description>
-            <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入诊所业务并使用其核心能力。</description>
-                    <permissions>
-                        <permission code="cln.use"/>
-                    </permissions>
-                </feature>
-            </features>
-        </application>
     </applications>
 </user-features>

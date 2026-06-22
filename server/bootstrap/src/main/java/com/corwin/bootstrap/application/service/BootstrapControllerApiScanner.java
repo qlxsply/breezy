@@ -32,7 +32,6 @@ public class BootstrapControllerApiScanner {
 
     static {
         BASE_PACKAGES.add("com.corwin.system");
-        BASE_PACKAGES.add("com.corwin.clinic");
         BASE_PACKAGES.add("com.corwin.datasource");
         BASE_PACKAGES.add("com.corwin.storage");
         BASE_PACKAGES.add("com.corwin.jsonfmt");

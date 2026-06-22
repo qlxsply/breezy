@@ -39,7 +39,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `resources.xml` 当前仍承载内部资源树定义，但后续设计、页面命名、菜单管理交互与文档说明均以 `目录 -> 菜单 -> 按钮` 为标准，不再以“菜单 -> 功能 -> 按钮”作为面向产品的表达
     - 后端 API 与权限码的关系由控制器注解扫描和权限初始化流程维护，前端只消费返回的资源树控制菜单、功能和按钮可见性
     - 资源粒度以“业务能力”划分：菜单页面默认承载该页面基础查询能力（例如列表查询、搜索、重置、详情读取），这类基础能力不再额外拆分查询按钮资源
-    - 对包含子功能页的场景（如 clinic、schemaforge），基础查询能力应下沉到子页面资源，不绑定到父级容器菜单资源
+    - 对包含子功能页的场景（如 schemaforge），基础查询能力应下沉到子页面资源，不绑定到父级容器菜单资源
 
 ### 管理后台视觉规范（vben 基准）
 
@@ -227,7 +227,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 **重要原则**：`com.corwin.framework` 与 `com.corwin` 业务包之间的依赖必须单向，**禁止反向依赖**。
 
 - **依赖方向**：
-    - `com.corwin.system`、`com.corwin.datasource`、`com.corwin.clinic`、`com.corwin.storage` 等业务包可以依赖 `com.corwin.framework`（业务层依赖框架层）
+    - `com.corwin.system`、`com.corwin.datasource`、`com.corwin.storage` 等业务包可以依赖 `com.corwin.framework`（业务层依赖框架层）
     - `com.corwin.framework` 严禁依赖任意业务包（框架层不能依赖业务层）
 
 - **设计原则**：
@@ -256,7 +256,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 ├─ server/                # 后端聚合模块
 │  ├─ framework/          # 框架层模块
 │  ├─ system/             # 系统域模块（含 MethodStat）
-│  ├─ business/           # 业务域模块（clinic/datasource/storage/...）
+│  ├─ business/           # 业务域模块（datasource/storage/...）
 │  └─ app/                # 应用装配与启动模块
 ├─ web/                   # 用户前端（过渡期仍含部分后台实现）
 ├─ web-admin/             # 账号后台独立前端（拆分进行中）
@@ -282,9 +282,6 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 数据源连接维护、连接测试、元数据刷新与查询
     - 数据源连接参数持久化：认证方式/连接类型/驱动/主机/端口/数据库/服务名等字段入库，复制连接信息直接读取字段，不再解析 JDBC URL
     - JDBC 元数据抽取、连接/表/列的域模型与仓储
-- `com.corwin.clinic`（诊所业务工具）
-    - 诊所商品目录、库存查询、采购管理、销售管理、流水台账
-    - 控制器集中在 `clinic/interfaces/web`，应用服务在 `clinic/application/service`
 - `com.corwin.storage` / `com.corwin.jsonfmt` / `com.corwin.schemaforge` / `com.corwin.reminder` / `com.corwin.web`（业务工具域）
     - 以上包位于 `server/business` 模块，按 DDD 分层组织
     - 各域控制器位于对应模块的 `interfaces/web`，应用服务位于对应模块的 `application/service`

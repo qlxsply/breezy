@@ -222,26 +222,6 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
-        <id>dict-type-clinic-item-category</id>
-        <code>CLINIC_ITEM_CATEGORY</code>
-        <name>诊所商品分类</name>
-        <description>诊所商品分类。</description>
-        <enumClass>com.corwin.clinic.domain.model.ItemCategory</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
-        <id>dict-type-clinic-ledger-biz-type</id>
-        <code>CLINIC_LEDGER_BIZ_TYPE</code>
-        <name>诊所流水业务类型</name>
-        <description>诊所流水业务类型。</description>
-        <enumClass>com.corwin.clinic.domain.model.LedgerBizType</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
         <id>dict-type-reminder-source-type</id>
         <code>REMINDER_SOURCE_TYPE</code>
         <name>提醒来源类型</name>

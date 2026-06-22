@@ -92,12 +92,6 @@ const staticRoutes: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/clinic/management",
-    name: "clinic-management",
-    component: () => import("../pages/clinic/ClinicManagementPage.vue"),
-    meta: { header: { prefix: "工具", title: "诊所管理" }, appArea: "tool" },
-  },
-  {
     path: "/profile",
     name: "profile",
     component: () => import("../pages/ProfilePage.vue"),
@@ -154,7 +148,7 @@ function resolveRouteArea(
     return appArea;
   }
   const name = typeof to.name === "string" ? to.name : "";
-  if (name.startsWith("tools-") || name === "clinic-management") return "tool";
+  if (name.startsWith("tools-")) return "tool";
   return "unknown";
 }
 
