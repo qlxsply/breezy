@@ -42,6 +42,7 @@ node_modules/
 # Next.js 构建产物
 .next/
 out/
+next-env.d.ts
 
 # React / Vite / 通用前端构建产物
 dist/

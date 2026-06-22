@@ -22,6 +22,7 @@ export { BzInputNumber } from "./BzInputNumber";
 export { BzLoading } from "./BzLoading";
 export { BzMessageHost } from "./BzMessageHost";
 export { BzOption } from "./BzOption";
+export { BzOverflowTooltip } from "./BzOverflowTooltip";
 export { BzPagination } from "./BzPagination";
 export { BzSelect } from "./BzSelect";
 export { BzSwitch } from "./BzSwitch";

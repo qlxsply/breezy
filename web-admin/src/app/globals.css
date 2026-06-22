@@ -32,3 +32,97 @@ select,
 textarea {
   font: inherit;
 }
+
+.api-table-scope .bz-table__inner {
+  table-layout: fixed;
+}
+
+.api-table-scope .bz-table__inner th.api-table__header-cell,
+.api-table-scope .bz-table__inner td.api-table__cell {
+  min-width: 4em;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__text {
+  display: block;
+  min-width: 4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__tag-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.api-table-scope .api-table__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4em;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.api-table-scope .api-table__tag-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__actions-cell {
+  overflow: hidden;
+}
+
+.api-table-scope .admin-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.api-table-scope .admin-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4em;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  overflow: hidden;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-table-scope .admin-action-link:hover:not(:disabled) {
+  color: #2563eb;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.api-table-scope .admin-action-link.is-enable {
+  color: #15803d;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.api-table-scope .admin-action-link.is-disable {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}

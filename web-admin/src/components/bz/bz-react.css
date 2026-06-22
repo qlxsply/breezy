@@ -547,6 +547,108 @@
   width: 100%;
 }
 
+.bz-overflow-tooltip__trigger {
+  display: block;
+  min-width: 0;
+}
+
+.bz-overflow-tooltip__popover {
+  position: fixed;
+  z-index: 4000;
+  min-width: 120px;
+  max-width: min(560px, calc(100vw - 16px));
+  padding: 7px 34px 7px 10px;
+  color: #e2e8f0;
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.24);
+}
+
+.bz-overflow-tooltip__popover::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  width: 7px;
+  height: 7px;
+  background: #334155;
+  border-top: 1px solid #475569;
+  border-left: 1px solid #475569;
+  transform: rotate(45deg);
+}
+
+.bz-overflow-tooltip__popover.is-bottom::after {
+  top: -4px;
+}
+
+.bz-overflow-tooltip__popover.is-top::after {
+  bottom: -4px;
+  transform: rotate(225deg);
+}
+
+.bz-overflow-tooltip__content {
+  max-width: 100%;
+  padding-bottom: 1px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  word-break: normal;
+  user-select: text;
+}
+
+.bz-overflow-tooltip__copy {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.bz-overflow-tooltip__copy:hover {
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.bz-overflow-tooltip__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bz-overflow-tooltip__svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  transition:
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.bz-overflow-tooltip__svg.is-copy {
+  color: #cbd5e1;
+}
+
+.bz-overflow-tooltip__svg.is-check {
+  color: #34d399;
+}
+
+.bz-overflow-tooltip__copy:hover .bz-overflow-tooltip__svg.is-copy {
+  color: #93c5fd;
+}
+
+.bz-overflow-tooltip__copy:active .bz-overflow-tooltip__svg {
+  transform: scale(0.94);
+}
+
 .bz-loading-container {
   position: relative;
 }
