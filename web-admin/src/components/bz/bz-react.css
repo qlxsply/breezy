@@ -549,7 +549,11 @@
 
 .bz-overflow-tooltip__trigger {
   display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .bz-overflow-tooltip__popover {

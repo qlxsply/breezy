@@ -1,8 +1,7 @@
 "use client";
 
-import { message } from "@admin/core/message";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 
 type PopoverPlacement = "top" | "bottom";
 
@@ -18,10 +17,13 @@ interface PopoverState {
   top: number;
   left: number;
   placement: PopoverPlacement;
+  ready: boolean;
 }
 
 const VIEWPORT_PADDING = 8;
 const POPOVER_GAP = 10;
+
+let activePopoverCloser: (() => void) | null = null;
 
 export function BzOverflowTooltip({
   text,
@@ -31,7 +33,6 @@ export function BzOverflowTooltip({
 }: BzOverflowTooltipProps) {
   const triggerRef = useRef<HTMLSpanElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
-  const hideTimerRef = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
   const [popover, setPopover] = useState<PopoverState>({
@@ -39,6 +40,7 @@ export function BzOverflowTooltip({
     top: 0,
     left: 0,
     placement: "bottom",
+    ready: false,
   });
 
   const normalizedText = useMemo(() => text || "-", [text]);
@@ -65,31 +67,53 @@ export function BzOverflowTooltip({
   }, [popover.visible]);
 
   useEffect(
-    () => () => {
-      if (hideTimerRef.current !== null) {
-        window.clearTimeout(hideTimerRef.current);
+    () => {
+      if (!popover.visible) {
+        return;
       }
+
+      const handlePointerDown = (event: MouseEvent | globalThis.MouseEvent) => {
+        const trigger = triggerRef.current;
+        const content = popoverRef.current;
+        const target = event.target as Node | null;
+        if (!target) {
+          return;
+        }
+        if (trigger?.contains(target) || content?.contains(target)) {
+          return;
+        }
+        setPopover((current) => ({ ...current, visible: false, ready: false }));
+        setCopied(false);
+      };
+
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key !== "Escape") {
+          return;
+        }
+        setPopover((current) => ({ ...current, visible: false, ready: false }));
+        setCopied(false);
+      };
+
+      document.addEventListener("mousedown", handlePointerDown);
+      document.addEventListener("keydown", handleEscape);
+      return () => {
+        document.removeEventListener("mousedown", handlePointerDown);
+        document.removeEventListener("keydown", handleEscape);
+      };
     },
-    [],
+    [popover.visible],
   );
 
-  function clearHideTimer() {
-    if (hideTimerRef.current !== null) {
-      window.clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = null;
-    }
-  }
-
-  function scheduleHide() {
-    clearHideTimer();
-    hideTimerRef.current = window.setTimeout(() => {
-      setPopover((current) => ({ ...current, visible: false }));
-      setCopied(false);
-    }, 90);
-  }
+  useEffect(() => {
+    return () => {
+      if (activePopoverCloser === hidePopover) {
+        activePopoverCloser = null;
+      }
+    };
+  });
 
   function hasOverflow(): boolean {
-    const element = triggerRef.current;
+    const element = triggerRef.current?.firstElementChild as HTMLElement | null;
     if (!element) {
       return false;
     }
@@ -128,16 +152,38 @@ export function BzOverflowTooltip({
       top,
       left,
       placement,
+      ready: true,
     }));
   }
 
-  function handleMouseEnter() {
-    clearHideTimer();
-    if (!hasOverflow()) {
-      setPopover((current) => ({ ...current, visible: false }));
+  function hidePopover() {
+    setPopover((current) => ({ ...current, visible: false, ready: false }));
+    setCopied(false);
+    if (activePopoverCloser === hidePopover) {
+      activePopoverCloser = null;
+    }
+  }
+
+  function handleTriggerClick(event: MouseEvent<HTMLSpanElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+    const selectedText = window.getSelection()?.toString() ?? "";
+    if (selectedText.trim()) {
       return;
     }
-    setPopover((current) => ({ ...current, visible: true }));
+    if (!hasOverflow()) {
+      hidePopover();
+      return;
+    }
+    if (popover.visible) {
+      hidePopover();
+      return;
+    }
+    if (activePopoverCloser && activePopoverCloser !== hidePopover) {
+      activePopoverCloser();
+    }
+    activePopoverCloser = hidePopover;
+    setPopover((current) => ({ ...current, visible: true, ready: false }));
     requestAnimationFrame(() => {
       updatePosition();
     });
@@ -146,11 +192,9 @@ export function BzOverflowTooltip({
   async function handleCopy() {
     const success = await copyText(normalizedText);
     if (!success) {
-      message.warning("复制失败，请手动复制");
       return;
     }
     setCopied(true);
-    message.success("文本已复制");
     window.setTimeout(() => {
       setCopied(false);
     }, 1200);
@@ -161,8 +205,7 @@ export function BzOverflowTooltip({
       <span
         ref={triggerRef}
         className={["bz-overflow-tooltip__trigger", className].filter(Boolean).join(" ")}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={scheduleHide}
+        onClick={handleTriggerClick}
       >
         {children}
       </span>
@@ -171,9 +214,13 @@ export function BzOverflowTooltip({
             <div
               ref={popoverRef}
               className={["bz-overflow-tooltip__popover", `is-${popover.placement}`].join(" ")}
-              style={{ top: `${popover.top}px`, left: `${popover.left}px`, maxWidth: `${maxWidth}px` }}
-              onMouseEnter={clearHideTimer}
-              onMouseLeave={scheduleHide}
+              style={{
+                top: `${popover.top}px`,
+                left: `${popover.left}px`,
+                maxWidth: `${maxWidth}px`,
+                opacity: popover.ready ? 1 : 0,
+                pointerEvents: popover.ready ? "auto" : "none",
+              }}
             >
               <div className="bz-overflow-tooltip__content">{normalizedText}</div>
               <button
