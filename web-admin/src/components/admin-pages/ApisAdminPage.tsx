@@ -98,30 +98,60 @@ export function ApisAdminPage() {
       return;
     }
 
+    let frame = 0;
+
     const refreshCollapseState = () => {
-      const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
-      if (fields.length === 0) {
-        card.style.removeProperty("--admin-query-collapsed-height");
-        card.style.removeProperty("--admin-query-expanded-height");
-        setQuerySingleRow(true);
-        return;
-      }
+      cancelAnimationFrame(frame);
 
-      const previousMaxHeight = grid.style.maxHeight;
-      grid.style.maxHeight = "none";
+      frame = window.requestAnimationFrame(() => {
+        const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
+        const actions = grid.querySelector<HTMLElement>(".admin-query-actions");
+        const items = actions ? [...fields, actions] : fields;
 
-      const rowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort((left, right) => left - right);
-      const firstRowTop = rowTops[0] || 0;
-      const firstRowFields = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
-      const firstRowBottom = Math.max(...firstRowFields.map((field) => field.offsetTop + field.offsetHeight), 0);
-      const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
-      const expandedHeight = grid.scrollHeight;
+        if (items.length === 0) {
+          card.style.removeProperty("--admin-query-collapsed-height");
+          card.style.removeProperty("--admin-query-expanded-height");
+          setQuerySingleRow(true);
+          return;
+        }
 
-      grid.style.maxHeight = previousMaxHeight;
+        const previousMaxHeight = grid.style.maxHeight;
+        const previousActionGridRow = actions?.style.gridRow || "";
+        const previousActionGridColumn = actions?.style.gridColumn || "";
 
-      card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
-      card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
-      setQuerySingleRow(rowTops.length <= 1);
+        grid.style.maxHeight = "none";
+
+        // Measure natural flow first so the action cell sits after all fields.
+        if (actions) {
+          actions.style.gridRow = "auto";
+          actions.style.gridColumn = "auto";
+        }
+
+        const rowTops = [...new Set(items.map((item) => Math.round(item.offsetTop)))].sort((left, right) => left - right);
+        const firstRowTop = rowTops[0] || 0;
+        const firstRowItems = items.filter((item) => Math.round(item.offsetTop) === firstRowTop);
+        const firstRowBottom = Math.max(...firstRowItems.map((item) => item.offsetTop + item.offsetHeight), 0);
+
+        const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
+        const expandedHeight = grid.scrollHeight;
+
+        grid.style.maxHeight = previousMaxHeight;
+
+        if (actions) {
+          actions.style.gridRow = previousActionGridRow;
+          actions.style.gridColumn = previousActionGridColumn;
+        }
+
+        card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
+        card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
+
+        const nextSingleRow = rowTops.length <= 1;
+        setQuerySingleRow(nextSingleRow);
+
+        if (nextSingleRow) {
+          setQueryExpanded(false);
+        }
+      });
     };
 
     refreshCollapseState();
@@ -131,8 +161,12 @@ export function ApisAdminPage() {
     });
 
     observer.observe(grid);
+    window.addEventListener("resize", refreshCollapseState);
+
     return () => {
+      cancelAnimationFrame(frame);
       observer.disconnect();
+      window.removeEventListener("resize", refreshCollapseState);
     };
   }, [queryPanelVisible]);
 
@@ -259,34 +293,6 @@ export function ApisAdminPage() {
               >
                 <div className="admin-query-header">
                   <div className="admin-query-title">筛选条件</div>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
                 </div>
                 <form
                   ref={queryGridRef}
@@ -439,6 +445,37 @@ export function ApisAdminPage() {
                       </BzSelect>
                     </div>
                   </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      nativeType="button"
+                      onClick={resetFilters}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton
+                      className="admin-filter-primary"
+                      buttonType="primary"
+                      nativeType="button"
+                      onClick={applyFilters}
+                    >
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        aria-expanded={queryExpanded}
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i
+                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : null}
+                  </div>
                 </form>
               </div>
             </BzCard>

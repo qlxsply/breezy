@@ -488,17 +488,32 @@ export function SystemFilesPage() {
         <div className="admin-page-stack">
           {canAdmin && queryPanelVisible ? (
             <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <BzForm
-                className="admin-filter-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  applySearch();
-                }}
-              >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">搜索</div>
-                    <div className="admin-filter-control">
+              <div className="admin-query-layout is-single-row">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      onClick={clearSearch}
+                      disabled={!activeKeyword && !keywordInput}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton className="admin-filter-primary" buttonType="primary" onClick={applySearch}>
+                      搜索
+                    </BzButton>
+                  </div>
+                </div>
+                <BzForm
+                  className="admin-query-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    applySearch();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">搜索</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordInput}
                         placeholder="按名称搜索当前目录及子目录"
@@ -509,12 +524,10 @@ export function SystemFilesPage() {
                         }}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">排序</div>
-                    <div className="admin-filter-control" style={{ display: "flex", gap: 8 }}>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">排序</div>
+                    <div className="admin-query-field__control" style={{ display: "flex", gap: 8 }}>
                       <BzSelect modelValue={sortBy} onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}>
                         <BzOption label="名称" value="NAME" />
                         <BzOption label="大小" value="SIZE" />
@@ -526,18 +539,9 @@ export function SystemFilesPage() {
                         <BzOption label="降序" value="DESC" />
                       </BzSelect>
                     </div>
-                  </div>
-                </BzFormItem>
-                <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={clearSearch} disabled={!activeKeyword && !keywordInput}>
-                    重置
-                  </BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">
-                    搜索
-                  </BzButton>
-                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
-                </div>
-              </BzForm>
+                  </BzFormItem>
+                </BzForm>
+              </div>
             </BzCard>
           ) : null}
 

@@ -164,52 +164,39 @@
 }
 
 .admin-query-layout {
-  container-type: inline-size;
+  --admin-query-collapsed-height: 76px;
+  --admin-query-expanded-height: 999px;
 }
 
 .admin-query-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 16px;
 }
 
 .admin-query-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  color: #0f172a;
+  position: relative;
+  padding-left: 12px;
+  color: #17233d;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .admin-query-title::before {
   content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
   width: 4px;
   height: 16px;
-  border-radius: 999px;
-  background: #2563eb;
-  flex: none;
-}
-
-.admin-query-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex: none;
-  white-space: nowrap;
+  border-radius: 4px;
+  background: #2f7cff;
 }
 
 .admin-query-grid.bz-form {
-  --admin-query-field-width: 300px;
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width)));
-  gap: 14px 16px;
-  justify-content: start;
-  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
   overflow: hidden;
   transition: max-height 0.2s ease;
 }
@@ -239,31 +226,27 @@
 }
 
 .admin-query-field__label {
-  height: 18px;
-  margin-bottom: 6px;
-  color: #344258;
+  margin-bottom: 8px;
+  color: #17233d;
   font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 600;
 }
 
 .admin-query-field__control {
   width: 100%;
 }
 
-.admin-query-field__control .bz-input,
-.admin-query-field__control .bz-select {
-  min-height: 36px;
-  border-color: #d4ddeb;
-  border-radius: 8px;
+.admin-query-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
 }
 
-.admin-query-field__control .bz-input__inner,
-.admin-query-field__control .bz-select__inner {
-  height: 34px;
-  font-size: 13px;
+.admin-query-layout.is-collapsed .admin-query-actions {
+  grid-row: 1;
+  grid-column: -2 / -1;
 }
 
 .admin-table-card .bz-card__header {
@@ -782,13 +765,7 @@
   }
 
   .admin-query-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .admin-query-actions {
-    width: 100%;
-    justify-content: flex-end;
+    align-items: center;
   }
 
   .admin-filter-field {
@@ -835,5 +812,16 @@
   .detail-grid,
   .group-form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-query-grid.bz-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-query-layout.is-collapsed .admin-query-actions {
+    grid-row: auto;
+    grid-column: auto;
   }
 }

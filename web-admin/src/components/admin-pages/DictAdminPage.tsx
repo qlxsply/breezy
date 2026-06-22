@@ -546,17 +546,28 @@ export function DictAdminPage() {
         <div className="admin-page-stack">
           {queryPanelVisible ? (
             <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <BzForm
-                className="admin-filter-form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  applyFilters();
-                }}
-              >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">关键词</div>
-                    <div className="admin-filter-control">
+              <div className="admin-query-layout is-single-row">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                  <div className="admin-query-actions">
+                    <BzButton className="admin-filter-secondary" onClick={resetFilters}>
+                      重置
+                    </BzButton>
+                    <BzButton className="admin-filter-primary" buttonType="primary" onClick={applyFilters}>
+                      搜索
+                    </BzButton>
+                  </div>
+                </div>
+                <BzForm
+                  className="admin-query-grid"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">编码</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={codeDraft}
                         placeholder="请输入字典编码"
@@ -565,12 +576,10 @@ export function DictAdminPage() {
                         onKeyUp={(event) => event.key === "Enter" && applyFilters()}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">名称</div>
-                    <div className="admin-filter-control">
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">名称</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={nameDraft}
                         placeholder="请输入字典名称"
@@ -579,16 +588,9 @@ export function DictAdminPage() {
                         onKeyUp={(event) => event.key === "Enter" && applyFilters()}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-                <div className="admin-filter-actions">
-                  <BzButton className="admin-filter-secondary" onClick={resetFilters}>重置</BzButton>
-                  <BzButton className="admin-filter-primary" buttonType="primary" nativeType="submit">
-                    搜索
-                  </BzButton>
-                  <div className="admin-filter-toggle-placeholder" aria-hidden="true" />
-                </div>
-              </BzForm>
+                  </BzFormItem>
+                </BzForm>
+              </div>
             </BzCard>
           ) : null}
 
