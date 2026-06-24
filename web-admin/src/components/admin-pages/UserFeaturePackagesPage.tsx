@@ -31,10 +31,8 @@ import {
 import type { BzTableColumn } from "@admin/components/bz/BzTable";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import {
-  hasResourceCodeAccess,
-  useIsPermissionsLoaded,
-} from "@admin/core/registry/permissions-registry";
+import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
@@ -86,7 +84,7 @@ function defaultForm(): SaveUserFeaturePackageRequest {
 }
 
 export function UserFeaturePackagesPage() {
-  const permissionsLoaded = useIsPermissionsLoaded();
+  const permissionsLoaded = useIsRegistryLoaded();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<UserFeaturePackageEntry[]>([]);
   const [applications, setApplications] = useState<UserFeatureApplicationEntry[]>([]);

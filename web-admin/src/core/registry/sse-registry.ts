@@ -5,7 +5,7 @@ import { getAuthToken } from "@admin/core/auth-storage";
 import { createStore, useStoreValue } from "@admin/core/client-store";
 import { API_BASE_URL } from "@admin/core/env";
 import type { AuthUser } from "@admin/core/registry/auth-registry";
-import { hasApiPermission, isPermissionsLoaded } from "@admin/core/registry/permissions-registry";
+import { isRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
 
 export interface SseMessage {
   eventId: string;
@@ -102,8 +102,8 @@ export function initSseLifecycle(getCurrentUser: () => AuthUser | null): void {
   const sync = () => {
     const authUser = getCurrentUser();
     const authenticated = Boolean(authUser?.id) && Boolean(getAuthToken());
-    const permissionsReady = isPermissionsLoaded();
-    if (authenticated && permissionsReady && hasApiPermission("sys.use") && authUser?.id) {
+    const permissionsReady = isRegistryLoaded();
+    if (authenticated && permissionsReady && authUser?.id) {
       init(authUser.id);
       return;
     }

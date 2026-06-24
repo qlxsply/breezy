@@ -1,14 +1,14 @@
 "use client";
 
 import { pageLoginLogs } from "@admin/api/login-logs";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   dateTimeInputToEpochMillisString,
   dateTimeInputToNextMinuteEpochMillisString,
   formatDateTime,
 } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { LoginLogEntry } from "@admin/types/login-log";
 import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -17,7 +17,6 @@ import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzEmpty } from "../bz/BzEmpty";
-import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzPagination } from "../bz/BzPagination";

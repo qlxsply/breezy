@@ -58,6 +58,44 @@ export function findMenuResourceByUrl(url: string): ResourceEntry | undefined {
     );
 }
 
+function isEnabledWithAncestors(
+  resource: ResourceEntry,
+  map: Map<string, ResourceEntry>,
+  visited = new Set<string>(),
+): boolean {
+  if (!resource.enabled) return false;
+  if (visited.has(resource.id)) return true;
+  visited.add(resource.id);
+  const parentId = resource.parentId ?? null;
+  if (!parentId) return true;
+  const parent = map.get(parentId);
+  if (!parent) return true;
+  return isEnabledWithAncestors(parent, map, visited);
+}
+
+export function hasMenuAccess(resource: ResourceEntry, map = getResourceMap()): boolean {
+  if (resource.type !== "MENU") return false;
+  if (!isEnabledWithAncestors(resource, map)) return false;
+  return map.has(resource.id);
+}
+
+export function hasActionAccess(resource: ResourceEntry, map = getResourceMap()): boolean {
+  if (!isEnabledWithAncestors(resource, map)) return false;
+  return map.has(resource.id);
+}
+
+export function hasResourceCodeAccess(code: string): boolean {
+  if (!code) return true;
+  const resource = findResourceByCode(code);
+  if (!resource) return false;
+  const map = getResourceMap();
+  return resource.type === "MENU" ? hasMenuAccess(resource, map) : hasActionAccess(resource, map);
+}
+
+export function hasAnyResourceCodeAccess(codes: string[]): boolean {
+  return codes.some((code) => hasResourceCodeAccess(code));
+}
+
 function normalizeAdminAppPath(url: string): string {
   const normalized = url.trim();
   if (normalized === "/admin") {

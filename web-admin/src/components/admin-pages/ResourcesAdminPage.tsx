@@ -11,7 +11,8 @@ import {
 } from "@admin/api/resources";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import { hasApiPermission, refreshPermissions } from "@admin/core/registry/permissions-registry";
+import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type {
   ResourceEntry,
@@ -52,11 +53,11 @@ export function ResourcesAdminPage() {
   const [selectedApiIds, setSelectedApiIds] = useState<string[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
 
-  const canCreate = hasApiPermission("res.add");
-  const canEdit = hasApiPermission("res.edit");
-  const canDelete = hasApiPermission("res.del");
-  const canApiView = hasApiPermission("res.api.view");
-  const canApiEdit = hasApiPermission("res.api.edit");
+  const canCreate = hasResourceCodeAccess("res.add");
+  const canEdit = hasResourceCodeAccess("res.edit");
+  const canDelete = hasResourceCodeAccess("res.del");
+  const canApiView = hasResourceCodeAccess("res.api.view");
+  const canApiEdit = hasResourceCodeAccess("res.api.edit");
   const canApi = canApiView || canApiEdit;
 
   const reload = useCallback(async () => {
@@ -206,7 +207,7 @@ export function ResourcesAdminPage() {
   }
 
   async function onRefreshPermissions() {
-    await refreshPermissions();
+    await refreshRegistryLoaded();
   }
 
   function applyFilters() {

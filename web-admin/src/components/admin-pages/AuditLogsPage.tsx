@@ -2,13 +2,13 @@
 
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   dateTimeInputToEpochMillisString,
   dateTimeInputToNextMinuteEpochMillisString,
   formatDateTime,
 } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
 import type { DictItem } from "@admin/types/dict-admin";
@@ -22,7 +22,6 @@ import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzEmpty } from "../bz/BzEmpty";
-import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";

@@ -23,10 +23,8 @@ import {
 } from "@admin/components/bz";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import {
-  hasResourceCodeAccess,
-  useIsPermissionsLoaded,
-} from "@admin/core/registry/permissions-registry";
+import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { PageResult } from "@admin/types/page";
@@ -36,7 +34,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const pageSizeOptions = [10, 20, 30, 50, 100];
 
 export function UserFeatureApplicationsPage() {
-  const permissionsLoaded = useIsPermissionsLoaded();
+  const permissionsLoaded = useIsRegistryLoaded();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<UserFeatureApplicationEntry[]>([]);
   const [page, setPage] = useState<PageResult<UserFeatureApplicationEntry>>({

@@ -31,13 +31,13 @@ import {
   BzSelect,
   BzSwitch,
   BzTable,
+  type BzTableColumn,
   BzTag,
   BzTextField,
-  type BzTableColumn,
 } from "@admin/components/bz";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { DictItem, DictStructureType, DictTypeItem, DictValueType } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
@@ -861,7 +861,7 @@ export function DictAdminPage() {
                 <BzTextField modelValue={itemForm.label} maxlength={128} onValueChange={(value) => setItemForm((prev) => ({ ...prev, label: value }))} />
               </BzFormItem>
               <BzFormItem label="值">
-                <BzTextField modelValue={itemForm.value} maxlength={512} onValueChange={(value) => setItemForm((prev) => ({ ...prev, value: value }))} />
+                <BzTextField modelValue={itemForm.value} maxlength={512} onValueChange={(value) => setItemForm((prev) => ({ ...prev, value }))} />
               </BzFormItem>
               <BzFormItem label="标签类型">
                 <BzSelect modelValue={itemForm.tagType || undefined} placeholder="无" clearable onValueChange={(value) => setItemForm((prev) => ({ ...prev, tagType: value || "" }))}>

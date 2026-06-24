@@ -26,10 +26,8 @@ import {
 import { bzConfirm } from "@admin/core/confirm";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import {
-  hasResourceCodeAccess,
-  useIsPermissionsLoaded,
-} from "@admin/core/registry/permissions-registry";
+import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { ExternalUserEntry, ExternalUserStatus } from "@admin/types/external-user-admin";
 import type { PageResult } from "@admin/types/page";
@@ -57,7 +55,7 @@ function resolveStatusType(status: ExternalUserStatus): "success" | "warning" | 
 }
 
 export function WebUsersAdminPage() {
-  const permissionsLoaded = useIsPermissionsLoaded();
+  const permissionsLoaded = useIsRegistryLoaded();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<ExternalUserEntry[]>([]);
   const [page, setPage] = useState<PageResult<ExternalUserEntry>>({

@@ -29,7 +29,7 @@ import {
   BzTooltip,
 } from "@admin/components/bz";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type {
   MethodStatMatchMode,
   MethodStatSortBy,

@@ -11,7 +11,7 @@ import { BzButton, BzCard, BzInput, BzPagination, BzTable, BzTag } from "@admin/
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import type { PageResult } from "@admin/types/page";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const pageSizeOptions = [10, 20, 30, 50, 100];
 

@@ -20,7 +20,7 @@ import {
   type UserConfigOptionItem,
 } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type {
   ClientIpMode,
   ConfigClientIpPreviewRes,
@@ -31,9 +31,9 @@ import type { DictItem, DictOption } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
-import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzDialog } from "../bz/BzDialog";
 import { BzForm } from "../bz/BzForm";

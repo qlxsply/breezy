@@ -10,7 +10,7 @@ import {
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { PhysicalFileDetail, StorageListQuery, StorageSortBy, StorageSortOrder, SystemFileItem } from "@admin/types/file-storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +19,6 @@ import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzEmpty } from "../bz/BzEmpty";
-import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzLoading } from "../bz/BzLoading";

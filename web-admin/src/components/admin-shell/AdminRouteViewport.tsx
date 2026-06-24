@@ -14,7 +14,6 @@ import {
   useIsAuthenticated,
 } from "@admin/core/registry/auth-registry";
 import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { useIsPermissionsLoaded } from "@admin/core/registry/permissions-registry";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -50,7 +49,7 @@ export function AdminRouteViewport() {
   const authLoaded = useAuthLoaded();
   const authenticated = useIsAuthenticated();
   const currentUserType = useCurrentUserType();
-  const permissionsLoaded = useIsPermissionsLoaded();
+  const permissionsLoaded = useIsRegistryLoaded();
   const registryLoaded = useIsRegistryLoaded();
   const breadcrumb = useAdminBreadcrumb(pathname);
   const resolved = useAdminRouteResolved(pathname);

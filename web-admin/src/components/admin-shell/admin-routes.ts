@@ -1,7 +1,10 @@
 "use client";
 
-import { hasMenuAccess } from "@admin/core/registry/permissions-registry";
-import { getResources, useResources } from "@admin/core/registry/resources-registry";
+import {
+  getResources,
+  hasMenuAccess,
+  useResources,
+} from "@admin/core/registry/resources-registry";
 import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import type { ResourceEntry, ResourceNodeType } from "@admin/types/resource-admin";
 import { useMemo } from "react";

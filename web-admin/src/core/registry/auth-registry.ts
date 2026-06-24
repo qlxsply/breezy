@@ -10,8 +10,8 @@ import {
 import { createStore, useStoreValue } from "@admin/core/client-store";
 import { clearFormatterConfigs, setFormatterConfigs } from "@admin/core/formatter";
 import { get, post, put } from "@admin/core/http";
+import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
 import { ensureUnreadLoaded } from "@admin/core/registry/notifications-registry";
-import { refreshPermissions } from "@admin/core/registry/permissions-registry";
 import {
   ensureWebPushSubscription,
   initTodoReminderPermission,
@@ -174,7 +174,7 @@ export async function login(
   const user = toAuthUser(payload.user);
   setAuthToken(payload.token);
   setAuthScope(scope);
-  await refreshPermissions();
+  await refreshRegistryLoaded();
 
   authStore.setState({
     currentUser: user,

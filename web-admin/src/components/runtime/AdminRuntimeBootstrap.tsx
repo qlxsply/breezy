@@ -10,7 +10,6 @@ import {
   bindNotificationRealtime,
   ensureUnreadLoaded,
 } from "@admin/core/registry/notifications-registry";
-import { ensurePermissionsLoaded } from "@admin/core/registry/permissions-registry";
 import { initSseLifecycle } from "@admin/core/registry/sse-registry";
 import { initTodoReminderPermission } from "@admin/core/registry/todo-reminder-registry";
 import { useEffect } from "react";
@@ -26,7 +25,6 @@ export function AdminRuntimeBootstrap() {
 
       if (getCurrentUserType() === "INTERNAL") {
         await ensureRegistryLoaded();
-        await ensurePermissionsLoaded();
       }
 
       await ensureUnreadLoaded();

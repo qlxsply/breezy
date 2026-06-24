@@ -5,7 +5,7 @@ import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
 import { BzButton, BzCard, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";

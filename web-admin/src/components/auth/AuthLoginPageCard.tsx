@@ -14,7 +14,6 @@ import {
   resolveLandingPathForUser,
 } from "@admin/core/registry/auth-registry";
 import { ensureRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { ensurePermissionsLoaded } from "@admin/core/registry/permissions-registry";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -72,7 +71,7 @@ export function AuthLoginPageCard({
 
       const current = await login(scope, username.trim(), password);
       await ensureRegistryLoaded(true);
-      await ensurePermissionsLoaded();
+      await ensureRegistryLoaded();
       router.push(resolveRedirectPath(current.userType));
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");

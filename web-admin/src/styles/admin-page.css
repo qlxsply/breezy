@@ -248,6 +248,7 @@
   min-width: 0;
   width: 100%;
   max-width: var(--admin-query-field-width);
+  align-self: end;
 }
 
 .admin-query-layout.is-collapsed .admin-query-actions {

@@ -9,11 +9,11 @@ import {
   updateRole,
   updateRoleGrantSelection,
 } from "@admin/api/roles";
-import { bzConfirm } from "@admin/core/confirm";
-import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { bzConfirm } from "@admin/core/confirm";
+import { message } from "@admin/core/message";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type {
   RoleEntry,
   RoleGrantResourceEntry,
@@ -23,7 +23,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
-import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";
