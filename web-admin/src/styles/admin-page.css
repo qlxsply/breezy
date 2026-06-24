@@ -166,6 +166,7 @@
 .admin-query-layout {
   --admin-query-collapsed-height: 76px;
   --admin-query-expanded-height: 999px;
+  --admin-query-field-width: 320px;
 }
 
 .admin-query-header {
@@ -195,8 +196,10 @@
 
 .admin-query-grid.bz-form {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width)));
   gap: 16px;
+  justify-content: start;
+  align-items: start;
   overflow: hidden;
   transition: max-height 0.2s ease;
 }
@@ -218,6 +221,7 @@
   margin: 0;
   min-width: 0;
   width: 100%;
+  max-width: var(--admin-query-field-width);
 }
 
 .admin-query-field .bz-form-item__content {
@@ -242,6 +246,8 @@
   justify-content: flex-start;
   gap: 8px;
   min-width: 0;
+  width: 100%;
+  max-width: var(--admin-query-field-width);
 }
 
 .admin-query-layout.is-collapsed .admin-query-actions {
@@ -760,6 +766,10 @@
 }
 
 @media (max-width: 768px) {
+  .admin-query-layout {
+    --admin-query-field-width: 300px;
+  }
+
   .admin-filter-form.bz-form {
     grid-template-columns: 1fr;
   }
@@ -816,6 +826,10 @@
 }
 
 @media (max-width: 640px) {
+  .admin-query-layout {
+    --admin-query-field-width: 100%;
+  }
+
   .admin-query-grid.bz-form {
     grid-template-columns: 1fr;
   }
