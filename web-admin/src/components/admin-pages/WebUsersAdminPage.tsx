@@ -51,7 +51,7 @@ function resolveStatusLabel(status: ExternalUserStatus): string {
 
 function resolveStatusType(status: ExternalUserStatus): "success" | "warning" | "danger" {
   if (status === "ACTIVE") return "success";
-  if (status === "DISABLED") return "warning";
+  if (status === "DISABLED") return "danger";
   return "danger";
 }
 

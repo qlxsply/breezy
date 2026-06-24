@@ -197,7 +197,7 @@ export function UserFeatureApplicationsPage() {
         title: "状态",
         width: 100,
         render: (row) => (
-          <BzTag type={row.enabled ? "success" : "warning"}>{row.enabled ? "启用" : "停用"}</BzTag>
+          <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
         ),
       },
       { key: "featureCount", title: "功能数", width: 90 },

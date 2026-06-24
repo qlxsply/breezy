@@ -67,7 +67,7 @@ export function RoleTable({
       title: "状态",
       width: 100,
       render: (row) => (
-        <BzTag type={row.enabled ? "success" : "warning"}>{row.enabled ? "启用" : "停用"}</BzTag>
+        <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
       ),
     },
     { key: "createdBy", title: "创建人", width: 140, render: (row) => row.createdBy || "-" },

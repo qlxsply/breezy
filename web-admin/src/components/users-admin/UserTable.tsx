@@ -93,7 +93,7 @@ export function UserTable({
       width: 110,
       render: (row) => {
         const active = row.status === "ENABLED";
-        return <BzTag type={active ? "success" : "warning"}>{active ? "启用" : "停用"}</BzTag>;
+        return <BzTag type={active ? "success" : "danger"}>{active ? "启用" : "停用"}</BzTag>;
       },
     },
     { key: "createdBy", title: "创建人", width: 140, render: (row) => row.createdBy || "-" },

@@ -144,13 +144,13 @@ export function LoginLogsPage() {
         key: "failureReason",
         title: "失败原因",
         minWidth: 180,
-        render: (row) => <div className="ua">{row.failureReason || "-"}</div>,
+        render: (row) => <>{row.failureReason || "-"}</>,
       },
       {
         key: "remark",
         title: "备注",
         minWidth: 220,
-        render: (row) => <div className="msg">{row.remark || "-"}</div>,
+        render: (row) => <>{row.remark || "-"}</>,
       },
       {
         key: "occurredAt",

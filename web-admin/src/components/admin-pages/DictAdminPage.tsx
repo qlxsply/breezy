@@ -482,7 +482,7 @@ export function DictAdminPage() {
         key: "name",
         title: "名称",
         width: 220,
-        render: (row) => <span style={{ fontWeight: 600 }}>{row.name}</span>,
+        render: (row) => <>{row.name}</>,
       },
       {
         key: "valueType",
@@ -506,7 +506,7 @@ export function DictAdminPage() {
         key: "enabled",
         title: "状态",
         width: 100,
-        render: (row) => <BzTag type={row.enabled ? "success" : "warning"}>{row.enabled ? "启用" : "停用"}</BzTag>,
+        render: (row) => <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>,
       },
       {
         key: "description",
@@ -552,7 +552,7 @@ export function DictAdminPage() {
         key: "itemLabel",
         title: "标签",
         minWidth: 150,
-        render: (row) => <span style={{ fontWeight: 600 }}>{row.itemLabel}</span>,
+        render: (row) => <>{row.itemLabel}</>,
       },
       {
         key: "itemValue",
@@ -583,7 +583,7 @@ export function DictAdminPage() {
         key: "enabled",
         title: "状态",
         width: 90,
-        render: (row) => <BzTag type={row.enabled ? "success" : "warning"}>{row.enabled ? "启用" : "停用"}</BzTag>,
+        render: (row) => <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>,
       },
       {
         key: "description",
