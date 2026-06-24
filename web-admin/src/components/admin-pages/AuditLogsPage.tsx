@@ -8,6 +8,7 @@ import {
   formatDateTime,
 } from "@admin/core/formatter";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
 import type { DictItem } from "@admin/types/dict-admin";
@@ -24,6 +25,7 @@ import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";
+import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
@@ -105,6 +107,8 @@ export function AuditLogsPage() {
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 20, 30, 50, 100];
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
   const [auditResourceMetaMap, setAuditResourceMetaMap] = useState<Record<string, DictMeta>>({});
   const [auditActionMetaMap, setAuditActionMetaMap] = useState<Record<string, DictMeta>>({});
@@ -142,19 +146,6 @@ export function AuditLogsPage() {
   appliedSuccessRef.current = appliedSuccess;
   appliedStartAtRef.current = appliedStartAt;
   appliedEndAtRef.current = appliedEndAt;
-
-  const totalPages = Math.max(1, page.totalPages || 1);
-  const isFirstPage = pageNo <= 1;
-  const isLastPage = pageNo >= totalPages;
-  const pageTokens = useMemo(() => {
-    const total = totalPages;
-    const current = Math.min(Math.max(pageNo, 1), total);
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-    if (current >= total - 3)
-      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
-    return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
-  }, [totalPages, pageNo]);
 
   const loadDictionaries = useCallback(async () => {
     try {
@@ -294,12 +285,6 @@ export function AuditLogsPage() {
     setAppliedEndAt("");
   }
 
-  function goToPage(target: number) {
-    const next = Math.min(Math.max(target, 1), totalPages);
-    if (next === pageNo) return;
-    setPageNo(next);
-  }
-
   function getRowActions(row: AuditLogEntry): AdminActionItem[] {
     return [
       { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
@@ -432,186 +417,93 @@ export function AuditLogsPage() {
               className="admin-panel admin-filter-card"
               shadow="never"
             >
-              <BzForm
-                className="admin-filter-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  applyFilters();
-                }}
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
               >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">追踪ID</div>
-                    <div className="admin-filter-control">
-                      <BzInput
-                        modelValue={traceIdDraft}
-                        placeholder="按追踪ID搜索"
-                        clearable
-                        onValueChange={setTraceIdDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">操作人</div>
-                    <div className="admin-filter-control">
-                      <BzInput
-                        modelValue={operatorUsernameDraft}
-                        placeholder="按操作人搜索"
-                        clearable
-                        onValueChange={setOperatorUsernameDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">资源</div>
-                    <div className="admin-filter-control">
-                      <BzSelect
-                        modelValue={auditResourceDraft}
-                        placeholder="全部资源"
-                        clearable
-                        onValueChange={(v) => setAuditResourceDraft(v ?? "")}
-                      >
-                        {auditResourceOptions.map((item) => (
-                          <BzOption
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">动作</div>
-                    <div className="admin-filter-control">
-                      <BzSelect
-                        modelValue={auditActionDraft}
-                        placeholder="全部动作"
-                        clearable
-                        onValueChange={(v) => setAuditActionDraft(v ?? "")}
-                      >
-                        {auditActionOptions.map((item) => (
-                          <BzOption
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">等级</div>
-                    <div className="admin-filter-control">
-                      <BzSelect
-                        modelValue={auditLevelDraft}
-                        placeholder="全部等级"
-                        clearable
-                        onValueChange={(v) => setAuditLevelDraft((v ?? "") as "" | AuditLevel)}
-                      >
-                        {auditLevelOptions.map((item) => (
-                          <BzOption
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">结果</div>
-                    <div className="admin-filter-control">
-                      <BzSelect
-                        modelValue={successDraft}
-                        placeholder="全部结果"
-                        clearable
-                        onValueChange={(v) => setSuccessDraft((v ?? "") as "" | "true" | "false")}
-                      >
-                        <BzOption
-                          label="成功"
-                          value="true"
-                        />
-                        <BzOption
-                          label="失败"
-                          value="false"
-                        />
-                      </BzSelect>
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">开始时间</div>
-                    <div className="admin-filter-control">
-                      <BzDatePicker
-                        modelValue={startAtDraft}
-                        type="datetime"
-                        placeholder="开始时间"
-                        clearable
-                        onValueChange={setStartAtDraft}
-                      />
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">结束时间</div>
-                    <div className="admin-filter-control">
-                      <BzDatePicker
-                        modelValue={endAtDraft}
-                        type="datetime"
-                        placeholder="结束时间"
-                        clearable
-                        onValueChange={setEndAtDraft}
-                      />
-                    </div>
-                  </div>
-                </BzFormItem>
-
-                <div className="admin-filter-actions">
-                  <BzButton
-                    className="admin-filter-secondary"
-                    onClick={resetFilters}
-                  >
-                    重置
-                  </BzButton>
-                  <BzButton
-                    className="admin-filter-primary"
-                    buttonType="primary"
-                    nativeType="submit"
-                  >
-                    搜索
-                  </BzButton>
-                  <div
-                    className="admin-filter-toggle-placeholder"
-                    aria-hidden="true"
-                  />
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
                 </div>
-              </BzForm>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">追踪ID</div>
+                    <div className="admin-query-field__control">
+                      <BzInput modelValue={traceIdDraft} placeholder="按追踪ID搜索" clearable onValueChange={setTraceIdDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">操作人</div>
+                    <div className="admin-query-field__control">
+                      <BzInput modelValue={operatorUsernameDraft} placeholder="按操作人搜索" clearable onValueChange={setOperatorUsernameDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">资源</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect modelValue={auditResourceDraft} placeholder="全部资源" clearable onValueChange={(v) => setAuditResourceDraft(v ?? "") }>
+                        {auditResourceOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">动作</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect modelValue={auditActionDraft} placeholder="全部动作" clearable onValueChange={(v) => setAuditActionDraft(v ?? "") }>
+                        {auditActionOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">等级</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect modelValue={auditLevelDraft} placeholder="全部等级" clearable onValueChange={(v) => setAuditLevelDraft((v ?? "") as "" | AuditLevel)}>
+                        {auditLevelOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">结果</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect modelValue={successDraft} placeholder="全部结果" clearable onValueChange={(v) => setSuccessDraft((v ?? "") as "" | "true" | "false") }>
+                        <BzOption label="成功" value="true" />
+                        <BzOption label="失败" value="false" />
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">开始时间</div>
+                    <div className="admin-query-field__control">
+                      <BzDatePicker modelValue={startAtDraft} type="datetime" placeholder="开始时间" clearable onValueChange={setStartAtDraft} />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">结束时间</div>
+                    <div className="admin-query-field__control">
+                      <BzDatePicker modelValue={endAtDraft} type="datetime" placeholder="结束时间" clearable onValueChange={setEndAtDraft} />
+                    </div>
+                  </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
+                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
+                    {!querySingleRow ? (
+                      <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                      </button>
+                    ) : null}
+                  </div>
+                </form>
+              </div>
             </BzCard>
           ) : null}
 
@@ -667,78 +559,18 @@ export function AuditLogsPage() {
                   <div className="dict-pagination-bar">
                     <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                     <div className="dict-pagination-right">
-                      <label className="dict-page-size">
-                        <select
-                          className="dict-page-size__select"
-                          value={pageSize}
-                          onChange={(e) => {
-                            setPageSize(Number(e.target.value));
-                            setPageNo(1);
-                          }}
-                        >
-                          {pageSizeOptions.map((s) => (
-                            <option
-                              key={s}
-                              value={s}
-                            >
-                              {s}条/页
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="dict-page-list">
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={isFirstPage}
-                          onClick={() => goToPage(1)}
-                        >
-                          <span aria-hidden="true">|&lt;</span>
-                        </button>
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={isFirstPage}
-                          onClick={() => goToPage(pageNo - 1)}
-                        >
-                          <span aria-hidden="true">&lt;</span>
-                        </button>
-                        {pageTokens.map((token, i) =>
-                          typeof token === "number" ? (
-                            <button
-                              key={i}
-                              className={`dict-page-btn${token === pageNo ? " is-active" : ""}`}
-                              type="button"
-                              onClick={() => goToPage(token)}
-                            >
-                              {token}
-                            </button>
-                          ) : (
-                            <span
-                              key={i}
-                              className="dict-page-ellipsis"
-                            >
-                              ...
-                            </span>
-                          ),
-                        )}
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={isLastPage}
-                          onClick={() => goToPage(pageNo + 1)}
-                        >
-                          <span aria-hidden="true">&gt;</span>
-                        </button>
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={isLastPage}
-                          onClick={() => goToPage(totalPages)}
-                        >
-                          <span aria-hidden="true">&gt;|</span>
-                        </button>
-                      </div>
+                      <BzPagination
+                        total={page.totalElements}
+                        pageSize={pageSize}
+                        currentPage={pageNo}
+                        pageSizes={pageSizeOptions}
+                        onCurrentChange={setPageNo}
+                        onSizeChange={(size) => {
+                          if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                          setPageSize(size);
+                          setPageNo(1);
+                        }}
+                      />
                     </div>
                   </div>
                 ) : null}

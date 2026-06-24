@@ -41,6 +41,7 @@ import { BzIconActionButton } from "../bz/BzIconActionButton";
 import { BzInput } from "../bz/BzInput";
 import { BzLoading } from "../bz/BzLoading";
 import { BzOption } from "../bz/BzOption";
+import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import { BzSwitch } from "../bz/BzSwitch";
 import { BzTable, type BzTableColumn } from "../bz/BzTable";
@@ -263,18 +264,6 @@ export function ConfigsAdminPage() {
   }, [isMsgTypeConfigsEditor, isAuthWhitelistEditor]);
 
   const totalPages = useMemo(() => Math.max(1, page.totalPages || 1), [page.totalPages]);
-  const isFirstPage = pageNo <= 1;
-  const isLastPage = pageNo >= totalPages;
-
-  const pageTokens = useMemo<Array<number | "ellipsis">>(() => {
-    const total = totalPages;
-    const current = Math.min(Math.max(pageNo, 1), total);
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-    if (current >= total - 3)
-      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
-    return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
-  }, [totalPages, pageNo]);
 
   const previewSendOptions = useMemo(() => {
     return editorMsgTypeConfigs
@@ -782,19 +771,6 @@ export function ConfigsAdminPage() {
     setDescriptionLikeDraft("");
     setAppliedCodeLike("");
     setAppliedDescriptionLike("");
-    setPageNo(1);
-  }
-
-  function goToPage(targetPageNo: number) {
-    const nextPage = Math.min(Math.max(targetPageNo, 1), totalPages);
-    if (nextPage === pageNo) return;
-    setPageNo(nextPage);
-  }
-
-  function handlePageSizeChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const value = Number(event.target.value);
-    if (!Number.isFinite(value) || value <= 0 || value === pageSize) return;
-    setPageSize(value);
     setPageNo(1);
   }
 
@@ -1325,75 +1301,18 @@ export function ConfigsAdminPage() {
               <div className="dict-pagination-bar">
                 <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
-                  <label className="dict-page-size">
-                    <select
-                      className="dict-page-size__select"
-                      value={pageSize}
-                      onChange={handlePageSizeChange}
-                    >
-                      {pageSizeOptions.map((s) => (
-                        <option
-                          key={s}
-                          value={s}
-                        >
-                          {s}条/页
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="dict-page-list">
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isFirstPage}
-                      onClick={() => goToPage(1)}
-                    >
-                      <span aria-hidden="true">|&lt;</span>
-                    </button>
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isFirstPage}
-                      onClick={() => goToPage(pageNo - 1)}
-                    >
-                      <span aria-hidden="true">&lt;</span>
-                    </button>
-                    {pageTokens.map((token, i) =>
-                      typeof token === "number" ? (
-                        <button
-                          key={i}
-                          className={`dict-page-btn${token === pageNo ? " is-active" : ""}`}
-                          type="button"
-                          onClick={() => goToPage(token)}
-                        >
-                          {token}
-                        </button>
-                      ) : (
-                        <span
-                          key={i}
-                          className="dict-page-ellipsis"
-                        >
-                          ...
-                        </span>
-                      ),
-                    )}
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isLastPage}
-                      onClick={() => goToPage(pageNo + 1)}
-                    >
-                      <span aria-hidden="true">&gt;</span>
-                    </button>
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isLastPage}
-                      onClick={() => goToPage(totalPages)}
-                    >
-                      <span aria-hidden="true">&gt;|</span>
-                    </button>
-                  </div>
+                  <BzPagination
+                    total={page.totalElements}
+                    pageSize={pageSize}
+                    currentPage={pageNo}
+                    pageSizes={pageSizeOptions}
+                    onCurrentChange={setPageNo}
+                    onSizeChange={(size) => {
+                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                      setPageSize(size);
+                      setPageNo(1);
+                    }}
+                  />
                 </div>
               </div>
             ) : null}

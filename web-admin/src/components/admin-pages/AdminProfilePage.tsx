@@ -7,23 +7,13 @@ import {
   updateAdminProfile,
 } from "@admin/api/admin-profile";
 import type { BzTableColumn } from "@admin/components/bz";
-import { BzButton, BzCard, BzInput, BzTable, BzTag } from "@admin/components/bz";
+import { BzButton, BzCard, BzInput, BzPagination, BzTable, BzTag } from "@admin/components/bz";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const pageSizeOptions = [10, 20, 30, 50, 100];
-
-function buildTokens(currentPageNo: number, totalPageCount: number): Array<number | "ellipsis"> {
-  const total = totalPageCount;
-  const current = Math.min(Math.max(currentPageNo, 1), total);
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-  if (current >= total - 3)
-    return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
-  return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
-}
 
 function userTypeLabel(userType: string): string {
   if (userType === "SYSTEM") return "系统账号";
@@ -65,12 +55,6 @@ export function AdminProfilePage() {
   const activityTotalPages = useMemo(
     () => Math.max(1, activityPage.totalPages || 1),
     [activityPage.totalPages],
-  );
-  const activityIsFirstPage = activityPageNo <= 1;
-  const activityIsLastPage = activityPageNo >= activityTotalPages;
-  const activityPageTokens = useMemo(
-    () => buildTokens(activityPageNo, activityTotalPages),
-    [activityPageNo, activityTotalPages],
   );
 
   async function reloadProfile() {
@@ -129,31 +113,11 @@ export function AdminProfilePage() {
     }
   }
 
-  const goToActivityPage = useCallback(
-    async (nextPage: number) => {
-      const target = Math.min(Math.max(nextPage, 1), activityTotalPages);
-      if (target === activityPageNo) return;
-      setActivityPageNo(target);
-    },
-    [activityTotalPages, activityPageNo],
-  );
-
   useEffect(() => {
     if (loadedRef.current && activityPageNo !== 1) {
       void reloadActivities();
     }
   }, [activityPageNo]);
-
-  const handleActivityPageSizeSelect = useCallback(
-    async (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const nextPageSize = Number(event.target.value);
-      if (!Number.isFinite(nextPageSize) || nextPageSize <= 0 || nextPageSize === activityPageSize)
-        return;
-      setActivityPageSize(nextPageSize);
-      setActivityPageNo(1);
-    },
-    [activityPageSize],
-  );
 
   useEffect(() => {
     if (loadedRef.current) {
@@ -299,75 +263,18 @@ export function AdminProfilePage() {
                       共 {activityPage.totalElements} 条记录
                     </div>
                     <div className="dict-pagination-right">
-                      <label className="dict-page-size">
-                        <select
-                          className="dict-page-size__select"
-                          value={activityPageSize}
-                          onChange={handleActivityPageSizeSelect}
-                        >
-                          {pageSizeOptions.map((size) => (
-                            <option
-                              key={size}
-                              value={size}
-                            >
-                              {size}条/页
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="dict-page-list">
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={activityIsFirstPage}
-                          onClick={() => goToActivityPage(1)}
-                        >
-                          <span aria-hidden="true">|&lt;</span>
-                        </button>
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={activityIsFirstPage}
-                          onClick={() => goToActivityPage(activityPageNo - 1)}
-                        >
-                          <span aria-hidden="true">&lt;</span>
-                        </button>
-                        {activityPageTokens.map((token, tokenIndex) =>
-                          typeof token === "number" ? (
-                            <button
-                              key={`${token}-${tokenIndex}`}
-                              className={`dict-page-btn${token === activityPageNo ? " is-active" : ""}`}
-                              type="button"
-                              onClick={() => goToActivityPage(token)}
-                            >
-                              {token}
-                            </button>
-                          ) : (
-                            <span
-                              key={`e-${tokenIndex}`}
-                              className="dict-page-ellipsis"
-                            >
-                              ...
-                            </span>
-                          ),
-                        )}
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={activityIsLastPage}
-                          onClick={() => goToActivityPage(activityPageNo + 1)}
-                        >
-                          <span aria-hidden="true">&gt;</span>
-                        </button>
-                        <button
-                          className="dict-page-btn dict-page-btn--icon"
-                          type="button"
-                          disabled={activityIsLastPage}
-                          onClick={() => goToActivityPage(activityTotalPages)}
-                        >
-                          <span aria-hidden="true">&gt;|</span>
-                        </button>
-                      </div>
+                      <BzPagination
+                        total={activityPage.totalElements}
+                        pageSize={activityPageSize}
+                        currentPage={activityPageNo}
+                        pageSizes={pageSizeOptions}
+                        onCurrentChange={setActivityPageNo}
+                        onSizeChange={(size) => {
+                          if (!Number.isFinite(size) || size <= 0 || size === activityPageSize) return;
+                          setActivityPageSize(size);
+                          setActivityPageNo(1);
+                        }}
+                      />
                     </div>
                   </div>
                 ) : null}

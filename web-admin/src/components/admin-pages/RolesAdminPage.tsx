@@ -12,6 +12,7 @@ import {
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import type {
   RoleEntry,
   RoleGrantResourceEntry,
@@ -25,6 +26,7 @@ import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";
+import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import { RoleFormDialog } from "../roles-admin/RoleFormDialog";
 import { RolePermissionDialog } from "../roles-admin/RolePermissionDialog";
@@ -42,6 +44,8 @@ export function RolesAdminPage() {
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 20, 30, 50, 100];
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -99,18 +103,6 @@ export function RolesAdminPage() {
   }, [rows, appliedKeyword, appliedEnabled]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-  const isFirstPage = pageNo <= 1;
-  const isLastPage = pageNo >= totalPages;
-
-  const pageTokens = useMemo(() => {
-    const total = totalPages;
-    const current = Math.min(Math.max(pageNo, 1), total);
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    if (current <= 4) return [1, 2, 3, 4, 5, "ellipsis", total];
-    if (current >= total - 3)
-      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
-    return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
-  }, [totalPages, pageNo]);
 
   const pagedRows = useMemo(() => {
     const start = (pageNo - 1) * pageSize;
@@ -129,12 +121,6 @@ export function RolesAdminPage() {
     setAppliedKeyword("");
     setAppliedEnabled("");
     setPageNo(1);
-  }
-
-  function goToPage(nextPage: number) {
-    const target = Math.min(Math.max(nextPage, 1), totalPages);
-    if (target === pageNo) return;
-    setPageNo(target);
   }
 
   function openCreate() {
@@ -209,17 +195,27 @@ export function RolesAdminPage() {
               className="admin-panel admin-filter-card"
               shadow="never"
             >
-              <BzForm
-                className="admin-filter-form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  applyFilters();
-                }}
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
               >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">关键字</div>
-                    <div className="admin-filter-control">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                </div>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">关键字</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordDraft}
                         placeholder="按编码、名称搜索"
@@ -230,52 +226,37 @@ export function RolesAdminPage() {
                         }}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">状态</div>
-                    <div className="admin-filter-control">
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">状态</div>
+                    <div className="admin-query-field__control">
                       <BzSelect
                         modelValue={enabledDraft}
                         placeholder="全部状态"
                         clearable
                         onValueChange={(v) => setEnabledDraft((v ?? "") as "" | "true" | "false")}
                       >
-                        <BzOption
-                          label="启用"
-                          value="true"
-                        />
-                        <BzOption
-                          label="停用"
-                          value="false"
-                        />
+                        <BzOption label="启用" value="true" />
+                        <BzOption label="停用" value="false" />
                       </BzSelect>
                     </div>
+                  </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
+                      重置
+                    </BzButton>
+                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                      </button>
+                    ) : null}
                   </div>
-                </BzFormItem>
-
-                <div className="admin-filter-actions">
-                  <BzButton
-                    className="admin-filter-secondary"
-                    onClick={resetFilters}
-                  >
-                    重置
-                  </BzButton>
-                  <BzButton
-                    className="admin-filter-primary"
-                    buttonType="primary"
-                    nativeType="submit"
-                  >
-                    搜索
-                  </BzButton>
-                  <div
-                    className="admin-filter-toggle-placeholder"
-                    aria-hidden="true"
-                  />
-                </div>
-              </BzForm>
+                </form>
+              </div>
             </BzCard>
           ) : null}
 
@@ -338,78 +319,18 @@ export function RolesAdminPage() {
               <div className="dict-pagination-bar">
                 <div className="dict-pagination-summary">共 {filteredRows.length} 条记录</div>
                 <div className="dict-pagination-right">
-                  <label className="dict-page-size">
-                    <select
-                      className="dict-page-size__select"
-                      value={pageSize}
-                      onChange={(event) => {
-                        setPageSize(Number(event.target.value));
-                        setPageNo(1);
-                      }}
-                    >
-                      {pageSizeOptions.map((size) => (
-                        <option
-                          key={size}
-                          value={size}
-                        >
-                          {size}条/页
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="dict-page-list">
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isFirstPage}
-                      onClick={() => goToPage(1)}
-                    >
-                      <span aria-hidden="true">|&lt;</span>
-                    </button>
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isFirstPage}
-                      onClick={() => goToPage(pageNo - 1)}
-                    >
-                      <span aria-hidden="true">&lt;</span>
-                    </button>
-                    {pageTokens.map((token, index) =>
-                      typeof token === "number" ? (
-                        <button
-                          key={index}
-                          className={`dict-page-btn${token === pageNo ? " is-active" : ""}`}
-                          type="button"
-                          onClick={() => goToPage(token)}
-                        >
-                          {token}
-                        </button>
-                      ) : (
-                        <span
-                          key={index}
-                          className="dict-page-ellipsis"
-                        >
-                          ...
-                        </span>
-                      ),
-                    )}
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isLastPage}
-                      onClick={() => goToPage(pageNo + 1)}
-                    >
-                      <span aria-hidden="true">&gt;</span>
-                    </button>
-                    <button
-                      className="dict-page-btn dict-page-btn--icon"
-                      type="button"
-                      disabled={isLastPage}
-                      onClick={() => goToPage(totalPages)}
-                    >
-                      <span aria-hidden="true">&gt;|</span>
-                    </button>
-                  </div>
+                  <BzPagination
+                    total={filteredRows.length}
+                    pageSize={pageSize}
+                    currentPage={pageNo}
+                    pageSizes={pageSizeOptions}
+                    onCurrentChange={setPageNo}
+                    onSizeChange={(size) => {
+                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                      setPageSize(size);
+                      setPageNo(1);
+                    }}
+                  />
                 </div>
               </div>
             ) : null}
