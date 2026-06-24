@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminActionBar } from "../admin/AdminActionBar";
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
+import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
@@ -514,28 +515,11 @@ export function AuditLogsPage() {
               <div className="admin-table-header">
                 <div className="admin-table-title">审计日志</div>
                 <div className="admin-table-tools">
-                  <button
-                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
-                    type="button"
-                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() => setQueryPanelVisible((v) => !v)}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <button
-                    className="admin-vben-circle-button"
-                    type="button"
-                    title="刷新列表"
-                    onClick={() => reload()}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
-                      aria-hidden="true"
-                    />
-                  </button>
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+                    onRefresh={() => reload()}
+                  />
                 </div>
               </div>
             }

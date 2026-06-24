@@ -16,6 +16,7 @@ import {
 } from "@admin/api/dicts";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import {
   BzButton,
   BzCard,
@@ -704,17 +705,11 @@ export function DictAdminPage() {
               <div className="admin-table-header">
                 <div className="admin-table-title">字典列表</div>
                 <div className="admin-table-tools">
-                  <button
-                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
-                    type="button"
-                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() => setQueryPanelVisible((value) => !value)}
-                  >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" />
-                  </button>
-                  <button className="admin-vben-circle-button" type="button" title="刷新列表" onClick={() => void reload()}>
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
-                  </button>
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                    onRefresh={() => void reload()}
+                  />
                 </div>
               </div>
             }
@@ -831,7 +826,7 @@ export function DictAdminPage() {
                       </BzButton>
                     ) : null}
                     <button className="admin-vben-circle-button" type="button" title="刷新字典项" onClick={() => void refreshDrawerItems()}>
-                      <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M2.5 12a9 9 0 0 1 15.46-6.35L21.5 8" /><path d="M2.5 22v-6h6M21.5 12a9 9 0 0 1-15.46 6.35L2.5 16" /></svg>
                     </button>
                   </div>
                 </div>

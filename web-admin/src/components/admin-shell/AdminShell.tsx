@@ -84,18 +84,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   function closeTab(href: string) {
     setOpenTabs((current) => {
       const index = current.indexOf(href);
-      if (index < 0) {
-        return current;
-      }
+      if (index < 0) return current;
       const nextTabs = current.filter((item) => item !== href);
       if (pathname === href) {
         const nextHref = nextTabs[index] ?? nextTabs[index - 1];
-        if (nextHref) {
-          router.push(nextHref);
-        } else {
-          setBlankMode(true);
-          router.push("/admin");
-        }
+        queueMicrotask(() => {
+          if (nextHref) {
+            router.push(nextHref);
+          } else {
+            setBlankMode(true);
+            router.push("/admin");
+          }
+        });
       }
       return nextTabs;
     });
@@ -430,15 +430,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 title="刷新当前页面"
                 onClick={() => router.refresh()}
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M20 6v5h-5M19 11a7 7 0 1 0 1.22 4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.7"
-                  />
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.92 1 6.73 2.74L21 8" />
+                  <path d="M21 3v5h-5" />
                 </svg>
               </button>
             </div>

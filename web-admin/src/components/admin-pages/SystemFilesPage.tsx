@@ -8,6 +8,7 @@ import {
   listSystemNodes,
 } from "@admin/api/system-files";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
@@ -672,22 +673,16 @@ export function SystemFilesPage() {
                   </div>
                 </div>
                 <div className="admin-table-tools">
-                  <button
-                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
-                    type="button"
-                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() => setQueryPanelVisible((value) => !value)}
-                  >
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search" aria-hidden="true" />
-                  </button>
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                    onRefresh={() => void reload()}
+                  />
                   <button className="admin-vben-circle-button" type="button" title="返回根目录" onClick={goRoot}>
                     <span className="system-files-root-icon" aria-hidden="true">/</span>
                   </button>
                   <button className="admin-vben-circle-button" type="button" title="返回上级" onClick={goBack} disabled={breadcrumbs.length === 0}>
                     <span className="system-files-root-icon" aria-hidden="true">..</span>
-                  </button>
-                  <button className="admin-vben-circle-button" type="button" title="刷新列表" onClick={() => void reload()}>
-                    <i className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh" aria-hidden="true" />
                   </button>
                 </div>
               </div>

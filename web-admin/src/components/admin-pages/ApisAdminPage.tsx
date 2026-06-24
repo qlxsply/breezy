@@ -2,6 +2,7 @@
 
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
 import { BzButton, BzCard, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
@@ -488,28 +489,11 @@ export function ApisAdminPage() {
               <div className="admin-table-header">
                 <div className="admin-table-title">接口列表</div>
                 <div className="admin-table-tools">
-                  <button
-                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
-                    type="button"
-                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() => setQueryPanelVisible((value) => !value)}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <button
-                    className="admin-vben-circle-button"
-                    type="button"
-                    title="刷新列表"
-                    onClick={() => void reload()}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
-                      aria-hidden="true"
-                    />
-                  </button>
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                    onRefresh={() => void reload()}
+                  />
                 </div>
               </div>
             }

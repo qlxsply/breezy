@@ -12,6 +12,7 @@ import {
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/permissions-registry";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import type {
   RoleEntry,
@@ -276,28 +277,11 @@ export function RolesAdminPage() {
                       新增
                     </BzButton>
                   ) : null}
-                  <button
-                    className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
-                    type="button"
-                    title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
-                    onClick={() => setQueryPanelVisible((v) => !v)}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--search"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <button
-                    className="admin-vben-circle-button"
-                    type="button"
-                    title="刷新列表"
-                    onClick={reload}
-                  >
-                    <i
-                      className="admin-vben-circle-button__icon admin-vben-circle-button__icon--refresh"
-                      aria-hidden="true"
-                    />
-                  </button>
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+                    onRefresh={reload}
+                  />
                 </div>
               </div>
             }
