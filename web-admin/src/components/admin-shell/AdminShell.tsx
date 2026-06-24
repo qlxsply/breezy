@@ -431,15 +431,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 onClick={() => router.refresh()}
               >
                 <svg
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 20 20"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="1.7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.92 1 6.73 2.74L21 8" />
-                  <path d="M21 3v5h-5" />
+                  <path d="M17.5 10a7.5 7.5 0 1 1-7.5-7.5c2.1 0 4.1.83 5.61 2.28L17.5 6.67" />
+                  <path d="M17.5 2.5v4.17h-4.17" />
                 </svg>
               </button>
             </div>
