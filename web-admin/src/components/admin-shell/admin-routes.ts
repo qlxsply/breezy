@@ -74,11 +74,6 @@ export function getAdminRoute(pathname: string): AdminRouteMeta | undefined {
   return resourceRoute ?? staticAdminRoutes.find((route) => route.path === normalized);
 }
 
-export function getAdminMenuTree(): AdminMenuNode[] {
-  const resources = getResources();
-  return resources.length > 0 ? buildMenuTreeFromResources(resources) : buildFallbackMenuTree();
-}
-
 export function getAdminBreadcrumb(pathname: string): Array<{ label: string; href?: string }> {
   const normalized = normalizePath(pathname);
   const resources = getResources();
@@ -101,26 +96,6 @@ export function getAdminBreadcrumb(pathname: string): Array<{ label: string; hre
 
 export function getCurrentRouteTitle(pathname: string): string {
   return getAdminRoute(pathname)?.title ?? "页面不存在";
-}
-
-export function getAdminResolvedRoute(pathname: string): AdminResolvedRoute {
-  const normalized = normalizePath(pathname);
-  const route = getAdminRoute(normalized);
-  if (!route) {
-    return { exists: false, accessible: false };
-  }
-
-  if (!route.resourceId) {
-    return { route, exists: true, accessible: true };
-  }
-
-  const resourceMap = new Map(getResources().map((item) => [item.id, item]));
-  const resource = resourceMap.get(route.resourceId);
-  if (!resource) {
-    return { route, exists: true, accessible: false };
-  }
-
-  return { route, exists: true, accessible: hasMenuAccess(resource, resourceMap) };
 }
 
 export function useAdminMenuTree(): AdminMenuNode[] {
@@ -185,7 +160,10 @@ function buildMenuTreeFromResources(resources: ResourceEntry[]): AdminMenuNode[]
       path: isPageMenuResource(resource) ? normalizeResourcePath(resource.url) : undefined,
       order: resource.orderNo ?? 0,
       icon: resource.icon,
-      iconUrl: resolveResourceIconUrl(resource.icon),
+      iconUrl:
+        resolveResourceIconUrl(resource.icon, resource.nodeType ?? resource.type) ??
+        resolveResourceIconUrl(null, resource.nodeType === "DIRECTORY" ? "DIRECTORY" : "MENU") ??
+        "",
       nodeType: resource.nodeType ?? resource.type,
       hidden: false,
       resourceId: resource.id,
@@ -218,7 +196,7 @@ function buildFallbackMenuTree(): AdminMenuNode[] {
         id: key,
         title: route.section,
         order: route.sectionOrder,
-        iconUrl: resolveResourceIconUrl("directory"),
+        iconUrl: resolveResourceIconUrl(null, "DIRECTORY") ?? "",
         nodeType: "DIRECTORY" as ResourceNodeType,
         children: [],
       };
@@ -227,7 +205,7 @@ function buildFallbackMenuTree(): AdminMenuNode[] {
         title: route.title,
         path: route.path,
         order: route.order,
-        iconUrl: resolveResourceIconUrl("menu"),
+        iconUrl: resolveResourceIconUrl(null, "MENU") ?? "",
         nodeType: "MENU",
         resourceId: route.resourceId,
         children: [],
