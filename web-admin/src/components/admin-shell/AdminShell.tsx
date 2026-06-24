@@ -14,11 +14,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  getVisitedTabs,
-  useAdminBreadcrumb,
-  useAdminMenuSections,
-} from "./admin-routes";
+import { type AdminMenuNode, useAdminBreadcrumb, useAdminMenuTree } from "./admin-routes";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathnameValue = usePathname();
@@ -29,6 +25,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [openTabs, setOpenTabs] = useState<string[]>([]);
+  const [blankMode, setBlankMode] = useState(false);
 
   const pathname = pathnameValue ?? "/admin";
 
@@ -37,14 +36,70 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setUserOpen(false);
   }, [pathname]);
 
-  const sections = useAdminMenuSections();
+  const menuTree = useAdminMenuTree();
   const breadcrumbItems = useAdminBreadcrumb(pathname);
-  const visitedTabs = useMemo(() => getVisitedTabs(pathname), [pathname]);
   const previewList = useMemo(() => unreadList.slice(0, 4), [unreadList]);
+  const menuIndex = useMemo(() => buildMenuIndex(menuTree), [menuTree]);
+  const currentMenuEntry = menuIndex.byPath.get(pathname);
+  const activeTabs = useMemo(
+    () => openTabs.map((href) => menuIndex.byPath.get(href)).filter((item): item is MenuPathEntry => Boolean(item)),
+    [menuIndex.byPath, openTabs],
+  );
+  const displayBlankWorkspace = pathname === "/admin" && blankMode;
   const displayUnreadCount = unreadCount > 0;
   const userName = (authUser?.account || authUser?.username || "Admin").trim() || "Admin";
   const userAccount = authUser?.account?.trim() || "账号后台";
   const avatarText = userName.slice(0, 1).toUpperCase() || "A";
+
+  useEffect(() => {
+    if (blankMode || !currentMenuEntry?.node.path) {
+      return;
+    }
+    setOpenTabs((current) =>
+      current.includes(currentMenuEntry.node.path as string)
+        ? current
+        : [...current, currentMenuEntry.node.path as string],
+    );
+  }, [currentMenuEntry, blankMode]);
+
+  useEffect(() => {
+    if (pathname !== "/admin" && blankMode) {
+      setBlankMode(false);
+    }
+  }, [pathname, blankMode]);
+
+  useEffect(() => {
+    if (!currentMenuEntry) {
+      return;
+    }
+    setExpandedIds((current) => Array.from(new Set([...current, ...currentMenuEntry.ancestorIds])));
+  }, [currentMenuEntry]);
+
+  function toggleExpanded(nodeId: string) {
+    setExpandedIds((current) =>
+      current.includes(nodeId) ? current.filter((item) => item !== nodeId) : [...current, nodeId],
+    );
+  }
+
+  function closeTab(href: string) {
+    setOpenTabs((current) => {
+      const index = current.indexOf(href);
+      if (index < 0) {
+        return current;
+      }
+      const nextTabs = current.filter((item) => item !== href);
+      if (pathname === href) {
+        const nextHref = nextTabs[index] ?? nextTabs[index - 1];
+        if (nextHref) {
+          router.push(nextHref);
+        } else {
+          setBlankMode(true);
+          router.push("/admin");
+        }
+      }
+      return nextTabs;
+    });
+  }
 
   return (
     <div className={`admin-shell${sidebarCollapsed ? " collapsed" : ""}`}>
@@ -71,39 +126,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           className="admin-nav"
           aria-label="后台导航"
         >
-          {sections.map((section) => (
-            <div
-              className="nav-node"
-              key={section.id}
-            >
-              {!sidebarCollapsed ? <div className="nav-section-title">{section.title}</div> : null}
-              <div className="nav-children">
-                {section.items.map((item) => {
-                  const active = pathname === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      href={item.path}
-                      className={`nav-item nav-menu${active ? " active" : ""}`}
-                      title={item.title}
-                    >
-                      <span
-                        className="nav-icon"
-                        aria-hidden="true"
-                      >
-                        <svg viewBox="0 0 24 24">
-                          <path
-                            d="M4 6.75A1.75 1.75 0 0 1 5.75 5h12.5A1.75 1.75 0 0 1 20 6.75v10.5A1.75 1.75 0 0 1 18.25 19H5.75A1.75 1.75 0 0 1 4 17.25zm3 1.25a.75.75 0 0 0-.75.75v6.5A.75.75 0 0 0 7 16h10a.75.75 0 0 0 .75-.75v-6.5A.75.75 0 0 0 17 8z"
-                            className="default-menu-icon"
-                          />
-                        </svg>
-                      </span>
-                      {!sidebarCollapsed ? <span className="nav-label">{item.title}</span> : null}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+          {menuTree.map((node) => (
+            <AdminNavItem
+              key={node.id}
+              node={node}
+              pathname={pathname}
+              collapsed={sidebarCollapsed}
+              expandedIds={expandedIds}
+              onToggle={toggleExpanded}
+            />
           ))}
         </nav>
       </aside>
@@ -270,9 +301,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       全部标记为已读
                     </button>
                     <div className="notification-list">
-                      {previewList.length === 0 ? (
-                        <div className="notification-empty">暂无未读消息</div>
-                      ) : null}
+                      {previewList.length === 0 ? <div className="notification-empty">暂无未读消息</div> : null}
                       {previewList.map((item) => (
                         <button
                           key={item.id}
@@ -280,9 +309,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                           type="button"
                           onClick={() => void markRead(item.id)}
                         >
-                          <span className="notification-avatar">
-                            {item.title.slice(0, 1).toUpperCase()}
-                          </span>
+                          <span className="notification-avatar">{item.title.slice(0, 1).toUpperCase()}</span>
                           <span className="notification-body">
                             <strong>{item.title}</strong>
                             <span>{item.content || "暂无摘要内容"}</span>
@@ -351,16 +378,47 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="tabs-row">
             <div className="tabs-scroll">
               <div className="tabs-list">
-                {visitedTabs.map((tab) => {
-                  const active = pathname === tab.href;
+                {activeTabs.map((tab) => {
+                  const active = pathname === tab.node.path;
                   return (
-                    <Link
-                      key={tab.href}
-                      href={tab.href}
-                      className={`tab-item${active ? " active" : ""}${tab.pinned ? " pinned" : ""}`}
+                    <div
+                      key={tab.node.path}
+                      className={`tab-item${active ? " active" : ""}`}
                     >
-                      <span className="tab-title-text">{tab.title}</span>
-                    </Link>
+                      <Link
+                        href={tab.node.path || "/admin"}
+                        className="tab-link"
+                      >
+                        <span className="tab-icon" aria-hidden="true">
+                          <img
+                            src={tab.node.iconUrl}
+                            alt=""
+                          />
+                        </span>
+                        <span className="tab-title-text">{tab.node.title}</span>
+                      </Link>
+                      <button
+                        className="tab-close"
+                        type="button"
+                        title={`关闭 ${tab.node.title}`}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          closeTab(tab.node.path || "/admin");
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            d="M7 7l10 10M17 7 7 17"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="1.8"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -369,20 +427,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <button
                 className="tabbar-tool"
                 type="button"
-                title="刷新当前页"
+                title="刷新当前页面"
                 onClick={() => router.refresh()}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
-                    d="M20 11a8 8 0 1 0 2.25 5.5M20 11V4m0 7h-7"
+                    d="M20 6v5h-5M19 11a7 7 0 1 0 1.22 4"
                     fill="none"
                     stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="1.8"
+                    strokeWidth="1.7"
                   />
                 </svg>
               </button>
@@ -391,9 +446,121 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <main className="admin-content">
-          <div className="admin-workspace">{children}</div>
+          <div className="admin-workspace">
+            {displayBlankWorkspace ? <div className="admin-workspace-blank" /> : children}
+          </div>
         </main>
       </section>
     </div>
   );
+}
+
+interface MenuPathEntry {
+  node: AdminMenuNode;
+  ancestorIds: string[];
+}
+
+function buildMenuIndex(nodes: AdminMenuNode[]): { byPath: Map<string, MenuPathEntry> } {
+  const byPath = new Map<string, MenuPathEntry>();
+
+  const visit = (node: AdminMenuNode, ancestorIds: string[]) => {
+    if (node.nodeType === "MENU" && node.path) {
+      byPath.set(node.path, { node, ancestorIds });
+    }
+    node.children.forEach((child) => visit(child, [...ancestorIds, node.id]));
+  };
+
+  nodes.forEach((node) => visit(node, []));
+  return { byPath };
+}
+
+function AdminNavItem({
+  node,
+  pathname,
+  collapsed,
+  expandedIds,
+  onToggle,
+  depth = 0,
+}: {
+  node: AdminMenuNode;
+  pathname: string;
+  collapsed: boolean;
+  expandedIds: string[];
+  onToggle: (nodeId: string) => void;
+  depth?: number;
+}) {
+  const hasChildren = node.children.length > 0;
+  const expanded = hasChildren && expandedIds.includes(node.id) && !collapsed;
+  const active = Boolean(node.path) && pathname === node.path;
+  const hasActiveDescendant = hasChildren && containsPath(node.children, pathname);
+
+  if (node.nodeType === "DIRECTORY") {
+    return (
+      <div className={`nav-node nav-level-directory`}>
+        <button
+          className={`nav-item nav-directory${expanded ? " expanded" : ""}${hasActiveDescendant && !expanded ? " active-ancestor" : ""}`}
+          type="button"
+          title={node.title}
+          style={!collapsed ? { paddingLeft: `${12 + depth * 14}px` } : undefined}
+          onClick={() => onToggle(node.id)}
+        >
+          <span className="nav-item-main">
+            <span className="nav-icon" aria-hidden="true">
+              <img src={node.iconUrl} alt="" />
+            </span>
+            {!collapsed ? <span className="nav-label">{node.title}</span> : null}
+          </span>
+          {!collapsed ? (
+            <span className="nav-caret" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+              </svg>
+            </span>
+          ) : null}
+        </button>
+        {expanded ? (
+          <div className="nav-children">
+            {node.children.map((child) => (
+              <AdminNavItem key={child.id} node={child} pathname={pathname} collapsed={collapsed} expandedIds={expandedIds} onToggle={onToggle} depth={depth + 1} />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  const activeDescendantExpanded = hasChildren && hasActiveDescendant && expandedIds.includes(node.id);
+
+  return (
+    <div className={`nav-node nav-level-menu`}>
+      <div className={`nav-item nav-menu${active ? " active" : ""}`} style={!collapsed ? { paddingLeft: `${12 + depth * 14}px` } : undefined}>
+        {node.path ? (
+          <Link href={node.path} className="nav-item-main" title={node.title}>
+            <span className="nav-icon" aria-hidden="true">
+              <img src={node.iconUrl} alt="" />
+            </span>
+            {!collapsed ? <span className="nav-label">{node.title}</span> : null}
+          </Link>
+        ) : (
+          <span className="nav-item-main nav-linkless">
+            <span className="nav-icon" aria-hidden="true">
+              <img src={node.iconUrl} alt="" />
+            </span>
+            {!collapsed ? <span className="nav-label">{node.title}</span> : null}
+          </span>
+        )}
+      </div>
+      {activeDescendantExpanded ? (
+        <div className="nav-children">
+          {node.children.map((child) => (
+            <AdminNavItem key={child.id} node={child} pathname={pathname} collapsed={collapsed} expandedIds={expandedIds} onToggle={onToggle} depth={depth + 1} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function containsPath(nodes: AdminMenuNode[], pathname: string): boolean {
+  return nodes.some((node) => node.path === pathname || containsPath(node.children, pathname));
 }

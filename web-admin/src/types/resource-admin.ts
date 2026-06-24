@@ -1,6 +1,7 @@
 // /src/types/resource-admin.ts
 
 export type ResourceType = "MENU" | "BUTTON" | "FEATURE" | "DATA";
+export type ResourceNodeType = "DIRECTORY" | "MENU" | "BUTTON" | "FEATURE" | "DATA";
 export type ResourceScope = "TOOL" | "SETTING" | "INFO" | "NONE";
 export type ResourceOpenMode = "NONE" | "MODAL" | "PAGE";
 export type ResourceLevel = "SYSTEM" | "CUSTOM";
@@ -13,6 +14,7 @@ export type ResourceLevel = "SYSTEM" | "CUSTOM";
 export interface ResourceEntry {
   id: string;
   parentId?: string | null;
+  nodeType?: ResourceNodeType;
   name: string;
   icon?: string;
   description?: string;

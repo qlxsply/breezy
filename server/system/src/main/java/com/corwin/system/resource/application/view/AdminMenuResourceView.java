@@ -1,5 +1,7 @@
 package com.corwin.system.resource.application.view;
 
+import java.util.List;
+
 /**
  * @author Corwin 2026/5/31
  */
@@ -8,16 +10,11 @@ public record AdminMenuResourceView(
         String parentId,
         String name,
         String icon,
-        String description,
         String code,
         String type,
-        String scope,
-        String openMode,
         String url,
         String loadTarget,
         int orderNo,
-        String level,
-        boolean enabled,
-        boolean guestAccess
+        List<AdminMenuResourceView> children
 ) {
 }

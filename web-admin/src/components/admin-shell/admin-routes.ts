@@ -2,7 +2,8 @@
 
 import { hasMenuAccess } from "@admin/core/registry/permissions-registry";
 import { getResources, useResources } from "@admin/core/registry/resources-registry";
-import type { ResourceEntry } from "@admin/types/resource-admin";
+import { resolveResourceIconUrl } from "@admin/core/resource-icon";
+import type { ResourceEntry, ResourceNodeType } from "@admin/types/resource-admin";
 import { useMemo } from "react";
 
 export interface AdminRouteMeta {
@@ -16,10 +17,23 @@ export interface AdminRouteMeta {
   dynamic?: boolean;
 }
 
-export interface AdminMenuSection {
+export interface AdminResolvedRoute {
+  route?: AdminRouteMeta;
+  exists: boolean;
+  accessible: boolean;
+}
+
+export interface AdminMenuNode {
   id: string;
   title: string;
-  items: AdminRouteMeta[];
+  path?: string;
+  order: number;
+  icon?: string;
+  iconUrl: string;
+  nodeType: ResourceNodeType;
+  hidden?: boolean;
+  resourceId?: string;
+  children: AdminMenuNode[];
 }
 
 const staticAdminRoutes: AdminRouteMeta[] = [
@@ -27,115 +41,22 @@ const staticAdminRoutes: AdminRouteMeta[] = [
   { path: "/admin/configs", title: "系统配置", section: "平台管理", sectionOrder: 20, order: 10 },
   { path: "/admin/apis", title: "接口管理", section: "平台管理", sectionOrder: 20, order: 20 },
   { path: "/admin/dicts", title: "数据字典", section: "平台管理", sectionOrder: 20, order: 30 },
-  {
-    path: "/admin/system-files",
-    title: "系统文件",
-    section: "平台管理",
-    sectionOrder: 20,
-    order: 40,
-  },
-  {
-    path: "/admin/diagnostic",
-    title: "诊断工具",
-    section: "平台管理",
-    sectionOrder: 20,
-    order: 50,
-  },
-  {
-    path: "/admin/method-stat",
-    title: "方法统计",
-    section: "平台管理",
-    sectionOrder: 20,
-    order: 90,
-    hidden: true,
-  },
+  { path: "/admin/system-files", title: "系统文件", section: "平台管理", sectionOrder: 20, order: 40 },
+  { path: "/admin/diagnostic", title: "诊断工具", section: "平台管理", sectionOrder: 20, order: 50 },
+  { path: "/admin/method-stat", title: "方法统计", section: "平台管理", sectionOrder: 20, order: 90, hidden: true },
   { path: "/admin/users", title: "账号管理", section: "权限中心", sectionOrder: 30, order: 10 },
   { path: "/admin/roles", title: "角色管理", section: "权限中心", sectionOrder: 30, order: 20 },
-  {
-    path: "/admin/permission-policies",
-    title: "权限策略",
-    section: "权限中心",
-    sectionOrder: 30,
-    order: 30,
-  },
-  {
-    path: "/admin/login-logs",
-    title: "登录日志",
-    section: "权限中心",
-    sectionOrder: 30,
-    order: 40,
-  },
-  {
-    path: "/admin/audit-logs",
-    title: "审计日志",
-    section: "权限中心",
-    sectionOrder: 30,
-    order: 50,
-  },
+  { path: "/admin/permission-policies", title: "权限策略", section: "权限中心", sectionOrder: 30, order: 30 },
+  { path: "/admin/login-logs", title: "登录日志", section: "权限中心", sectionOrder: 30, order: 40 },
+  { path: "/admin/audit-logs", title: "审计日志", section: "权限中心", sectionOrder: 30, order: 50 },
   { path: "/admin/web-users", title: "用户管理", section: "用户中心", sectionOrder: 40, order: 10 },
-  {
-    path: "/admin/user-feature-packages",
-    title: "应用包管理",
-    section: "用户中心",
-    sectionOrder: 40,
-    order: 20,
-  },
-  {
-    path: "/admin/user-feature-applications",
-    title: "应用配置",
-    section: "用户中心",
-    sectionOrder: 40,
-    order: 30,
-  },
-  {
-    path: "/admin/profile",
-    title: "个人中心",
-    section: "个人中心",
-    sectionOrder: 90,
-    order: 10,
-    hidden: true,
-  },
-  {
-    path: "/admin/profile/password",
-    title: "修改密码",
-    section: "个人中心",
-    sectionOrder: 90,
-    order: 20,
-    hidden: true,
-  },
-  {
-    path: "/admin/profile/preferences",
-    title: "偏好设置",
-    section: "个人中心",
-    sectionOrder: 90,
-    order: 30,
-    hidden: true,
-  },
-  {
-    path: "/admin/help",
-    title: "问题与帮助",
-    section: "个人中心",
-    sectionOrder: 90,
-    order: 40,
-    hidden: true,
-  },
+  { path: "/admin/user-feature-packages", title: "应用包管理", section: "用户中心", sectionOrder: 40, order: 20 },
+  { path: "/admin/user-feature-applications", title: "应用配置", section: "用户中心", sectionOrder: 40, order: 30 },
+  { path: "/admin/profile", title: "个人中心", section: "个人中心", sectionOrder: 90, order: 10, hidden: true },
+  { path: "/admin/profile/password", title: "修改密码", section: "个人中心", sectionOrder: 90, order: 20, hidden: true },
+  { path: "/admin/profile/preferences", title: "偏好设置", section: "个人中心", sectionOrder: 90, order: 30, hidden: true },
+  { path: "/admin/help", title: "问题与帮助", section: "个人中心", sectionOrder: 90, order: 40, hidden: true },
 ];
-
-export interface AdminResolvedRoute {
-  route?: AdminRouteMeta;
-  exists: boolean;
-  accessible: boolean;
-}
-
-interface AdminMenuNode {
-  id: string;
-  title: string;
-  path?: string;
-  order: number;
-  hidden?: boolean;
-  resourceId?: string;
-  children: AdminMenuNode[];
-}
 
 function normalizePath(pathname: string): string {
   if (pathname === "/admin/") {
@@ -146,33 +67,13 @@ function normalizePath(pathname: string): string {
 
 export function getAdminRoute(pathname: string): AdminRouteMeta | undefined {
   const normalized = normalizePath(pathname);
-  const resourceRoute = getAdminDynamicRoutes().find((route) => route.path === normalized);
+  const resourceRoute = buildDynamicRouteList(getResources()).find((route) => route.path === normalized);
   return resourceRoute ?? staticAdminRoutes.find((route) => route.path === normalized);
 }
 
-export function getAdminMenuSections(): AdminMenuSection[] {
+export function getAdminMenuTree(): AdminMenuNode[] {
   const resources = getResources();
-  if (resources.length > 0) {
-    return buildMenuSectionsFromResources(resources);
-  }
-
-  const sectionMap = new Map<string, AdminMenuSection>();
-
-  staticAdminRoutes
-    .filter((route) => !route.hidden)
-    .sort((a, b) => a.sectionOrder - b.sectionOrder || a.order - b.order)
-    .forEach((route) => {
-      const key = `${route.sectionOrder}:${route.section}`;
-      const section = sectionMap.get(key) ?? {
-        id: key,
-        title: route.section,
-        items: [],
-      };
-      section.items.push(route);
-      sectionMap.set(key, section);
-    });
-
-  return Array.from(sectionMap.values());
+  return resources.length > 0 ? buildMenuTreeFromResources(resources) : buildFallbackMenuTree();
 }
 
 export function getAdminBreadcrumb(pathname: string): Array<{ label: string; href?: string }> {
@@ -192,21 +93,7 @@ export function getAdminBreadcrumb(pathname: string): Array<{ label: string; hre
   if (route.hidden) {
     return [{ label: route.title }];
   }
-  if (route.path === "/admin") {
-    return [{ label: route.section }, { label: route.title }];
-  }
   return [{ label: route.section }, { label: route.title }];
-}
-
-export function getVisitedTabs(
-  pathname: string,
-): Array<{ title: string; href: string; pinned: boolean }> {
-  const currentRoute = getAdminRoute(pathname);
-  const tabs = [{ title: "工作台", href: "/admin", pinned: true }];
-  if (currentRoute && currentRoute.path !== "/admin") {
-    tabs.push({ title: currentRoute.title, href: currentRoute.path, pinned: false });
-  }
-  return tabs;
 }
 
 export function getCurrentRouteTitle(pathname: string): string {
@@ -224,23 +111,19 @@ export function getAdminResolvedRoute(pathname: string): AdminResolvedRoute {
     return { route, exists: true, accessible: true };
   }
 
-  const resource = getResources().find((item) => item.id === route.resourceId);
+  const resourceMap = new Map(getResources().map((item) => [item.id, item]));
+  const resource = resourceMap.get(route.resourceId);
   if (!resource) {
     return { route, exists: true, accessible: false };
   }
 
-  const accessible = hasMenuAccess(
-    resource,
-    new Map(getResources().map((item) => [item.id, item])),
-  );
-  return { route, exists: true, accessible };
+  return { route, exists: true, accessible: hasMenuAccess(resource, resourceMap) };
 }
 
-export function useAdminMenuSections(): AdminMenuSection[] {
+export function useAdminMenuTree(): AdminMenuNode[] {
   const resources = useResources();
   return useMemo(
-    () =>
-      resources.length > 0 ? buildMenuSectionsFromResources(resources) : getAdminMenuSections(),
+    () => (resources.length > 0 ? buildMenuTreeFromResources(resources) : buildFallbackMenuTree()),
     [resources],
   );
 }
@@ -275,92 +158,105 @@ export function useAdminRouteResolved(pathname: string): AdminResolvedRoute {
     if (!resource) {
       return { route, exists: true, accessible: false };
     }
-    return {
-      route,
-      exists: true,
-      accessible: hasMenuAccess(resource, resourceMap),
-    };
+    return { route, exists: true, accessible: hasMenuAccess(resource, resourceMap) };
   }, [pathname, resources]);
 }
 
-function resolveAdminRoute(
-  pathname: string,
-  resources: ResourceEntry[],
-): AdminRouteMeta | undefined {
-  const dynamicRoute = buildMenuSectionsFromResources(resources)
-    .flatMap((section) => section.items)
-    .find((route) => route.path === pathname);
+function resolveAdminRoute(pathname: string, resources: ResourceEntry[]): AdminRouteMeta | undefined {
+  const dynamicRoute = buildDynamicRouteList(resources).find((route) => route.path === pathname);
   return dynamicRoute ?? staticAdminRoutes.find((route) => route.path === pathname);
 }
 
-function getAdminDynamicRoutes(): AdminRouteMeta[] {
-  return buildMenuSectionsFromResources(getResources()).flatMap((section) => section.items);
+function buildDynamicRouteList(resources: ResourceEntry[]): AdminRouteMeta[] {
+  return flattenMenuRoutes(buildMenuTreeFromResources(resources));
 }
 
-function buildMenuSectionsFromResources(resources: ResourceEntry[]): AdminMenuSection[] {
-  const map = new Map<string, AdminMenuNode>();
+function buildMenuTreeFromResources(resources: ResourceEntry[]): AdminMenuNode[] {
+  const nodes = new Map<string, AdminMenuNode>();
   const roots: AdminMenuNode[] = [];
 
-  resources.filter(isAdminMenuResource).forEach((resource) => {
-    map.set(resource.id, {
+  resources.filter(isAdminTreeResource).forEach((resource) => {
+    nodes.set(resource.id, {
       id: resource.id,
       title: resource.name,
-      path: resource.openMode === "PAGE" ? normalizeResourcePath(resource.url) : undefined,
+      path: isPageMenuResource(resource) ? normalizeResourcePath(resource.url) : undefined,
       order: resource.orderNo ?? 0,
+      icon: resource.icon,
+      iconUrl: resolveResourceIconUrl(resource.icon),
+      nodeType: resource.nodeType ?? resource.type,
       hidden: false,
       resourceId: resource.id,
       children: [],
     });
   });
 
-  resources.filter(isAdminMenuResource).forEach((resource) => {
-    const node = map.get(resource.id);
+  resources.filter(isAdminTreeResource).forEach((resource) => {
+    const node = nodes.get(resource.id);
     if (!node) return;
-    if (!resource.parentId || !map.has(resource.parentId)) {
+    if (!resource.parentId || !nodes.has(resource.parentId)) {
       roots.push(node);
       return;
     }
-    map.get(resource.parentId)?.children.push(node);
+    nodes.get(resource.parentId)?.children.push(node);
   });
 
-  const sections = roots
-    .sort(sortByOrder)
-    .map((root, index) => ({
-      id: root.id,
-      title: root.title,
-      items: flattenMenuLeafRoutes(root, root.title, (index + 1) * 10),
-    }))
-    .filter((section) => section.items.length > 0);
-
-  return sections;
+  return sortMenuTree(roots).filter(isVisibleMenuNode);
 }
 
-function flattenMenuLeafRoutes(
-  node: AdminMenuNode,
-  section: string,
-  sectionOrder: number,
-): AdminRouteMeta[] {
-  if (node.children.length === 0) {
-    if (!node.path) {
-      return [];
-    }
-    return [
-      {
+function buildFallbackMenuTree(): AdminMenuNode[] {
+  const sectionMap = new Map<string, AdminMenuNode>();
+
+  staticAdminRoutes
+    .filter((route) => !route.hidden)
+    .sort((a, b) => a.sectionOrder - b.sectionOrder || a.order - b.order)
+    .forEach((route) => {
+      const key = `${route.sectionOrder}:${route.section}`;
+      const section = sectionMap.get(key) ?? {
+        id: key,
+        title: route.section,
+        order: route.sectionOrder,
+        iconUrl: resolveResourceIconUrl("directory"),
+        nodeType: "DIRECTORY" as ResourceNodeType,
+        children: [],
+      };
+      section.children.push({
+        id: route.path,
+        title: route.title,
+        path: route.path,
+        order: route.order,
+        iconUrl: resolveResourceIconUrl("menu"),
+        nodeType: "MENU",
+        resourceId: route.resourceId,
+        children: [],
+      });
+      sectionMap.set(key, section);
+    });
+
+  return sortMenuTree(Array.from(sectionMap.values()));
+}
+
+function flattenMenuRoutes(nodes: AdminMenuNode[]): AdminRouteMeta[] {
+  const routes: AdminRouteMeta[] = [];
+
+  const visit = (node: AdminMenuNode, chain: AdminMenuNode[]) => {
+    const nextChain = node.nodeType === "DIRECTORY" || node.nodeType === "MENU" ? [...chain, node] : chain;
+    if (node.nodeType === "MENU" && node.path) {
+      routes.push({
         path: node.path,
         title: node.title,
-        section,
-        sectionOrder,
+        section: chain[0]?.title ?? node.title,
+        sectionOrder: chain[0]?.order ?? node.order,
         order: node.order,
         hidden: node.hidden,
         resourceId: node.resourceId,
         dynamic: true,
-      },
-    ];
-  }
+      });
+    }
+    node.children.forEach((child) => visit(child, nextChain));
+  };
 
-  return node.children
-    .sort(sortByOrder)
-    .flatMap((child) => flattenMenuLeafRoutes(child, section, sectionOrder));
+  nodes.forEach((node) => visit(node, []));
+  return routes.sort((a, b) => a.sectionOrder - b.sectionOrder || a.order - b.order);
 }
 
 function buildBreadcrumbFromResources(
@@ -396,17 +292,46 @@ function buildBreadcrumbFromResources(
   }));
 }
 
-function isAdminMenuResource(resource: ResourceEntry): boolean {
-  if (resource.type !== "MENU" || !resource.enabled) return false;
+function sortMenuTree(nodes: AdminMenuNode[]): AdminMenuNode[] {
+  return nodes
+    .sort(sortByOrder)
+    .map((node) => ({
+      ...node,
+      children: sortMenuTree(node.children).filter(isVisibleMenuNode),
+    }));
+}
+
+function isAdminTreeResource(resource: ResourceEntry): boolean {
+  if (!resource.enabled) return false;
+  if (resource.nodeType === "FEATURE" || resource.nodeType === "BUTTON" || resource.type === "FEATURE" || resource.type === "BUTTON") {
+    return false;
+  }
+  if (resource.nodeType === "DIRECTORY") return true;
+  if (resource.type !== "MENU") return false;
   if (resource.openMode === "NONE") return true;
   return Boolean(resource.url?.startsWith("/admin"));
+}
+
+function isPageMenuResource(resource: ResourceEntry): boolean {
+  return resource.type === "MENU" && resource.openMode === "PAGE" && Boolean(resource.url);
+}
+
+function isVisibleMenuNode(node: AdminMenuNode): boolean {
+  if (node.nodeType === "DIRECTORY") {
+    return node.children.length > 0;
+  }
+  if (node.nodeType === "MENU") {
+    return Boolean(node.path) || node.children.length > 0;
+  }
+  return false;
 }
 
 function normalizeResourcePath(url: string): string {
   const normalized = normalizePath(url || "/admin");
   if (normalized === "/admin") return "/admin";
-  if (!normalized.startsWith("/admin"))
+  if (!normalized.startsWith("/admin")) {
     return `/admin${normalized.startsWith("/") ? normalized : `/${normalized}`}`;
+  }
   return normalized;
 }
 

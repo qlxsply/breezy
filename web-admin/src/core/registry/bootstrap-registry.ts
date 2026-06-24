@@ -8,6 +8,7 @@ import { setResources } from "@admin/core/registry/resources-registry";
 import type {
   ResourceEntry,
   ResourceLevel,
+  ResourceNodeType,
   ResourceOpenMode,
   ResourceScope,
   ResourceType,
@@ -114,28 +115,30 @@ function unwrapPayload(raw: unknown): RegistryPayload | null {
 function normalizeResources(raw: unknown): ResourceEntry[] {
   if (!Array.isArray(raw)) return [];
 
-  return raw
-    .map((item, index) => {
-      if (!item || typeof item !== "object") return null;
+  const resources: ResourceEntry[] = [];
+  const visit = (items: unknown[], parentId: string | null) => {
+    items.forEach((item, index) => {
+      if (!item || typeof item !== "object") return;
       const record = item as Record<string, unknown>;
       const code = stringOr(record.code ?? record.shortcut ?? record.cmd, "").trim();
-      if (!code) return null;
+      if (!code) return;
 
+      const id = String(record.id ?? code);
       const rawType = String(record.type ?? "").toUpperCase();
-      const type = normalizeType(rawType);
-      const scope = normalizeScope(record.scope, type, record.url ?? record.path, rawType);
-      const openMode = normalizeOpenMode(record.openMode, type, rawType);
+      const nodeType = normalizeNodeType(rawType);
+      const type = normalizeType(nodeType);
+      const scope = normalizeScope(record.scope, type, record.url ?? record.path, nodeType);
+      const openMode = normalizeOpenMode(record.openMode, type, nodeType);
       const level = normalizeLevel(record.level, record.system);
-
       const rawParent = record.parentId ?? record.parent_id ?? null;
-      const parentId =
-        rawParent === null || rawParent === undefined || rawParent === ""
-          ? null
-          : String(rawParent);
 
-      return {
-        id: String(record.id ?? code),
-        parentId,
+      resources.push({
+        id,
+        parentId:
+          rawParent === null || rawParent === undefined || rawParent === ""
+            ? parentId
+            : String(rawParent),
+        nodeType,
         name: stringOr(record.name, code),
         icon: stringOr(record.icon, ""),
         description: stringOr(record.description, ""),
@@ -149,9 +152,17 @@ function normalizeResources(raw: unknown): ResourceEntry[] {
         level,
         enabled: typeof record.enabled === "boolean" ? record.enabled : true,
         guestAccess: record.guestAccess === true,
-      } as ResourceEntry;
-    })
-    .filter((item): item is ResourceEntry => Boolean(item));
+      });
+
+      const children = Array.isArray(record.children) ? record.children : [];
+      if (children.length > 0) {
+        visit(children, id);
+      }
+    });
+  };
+
+  visit(raw, null);
+  return resources;
 }
 
 function stringOr(value: unknown, fallback: string): string {
@@ -164,8 +175,17 @@ function toNumber(value: unknown, fallback: number): number {
   return Number.isFinite(num) ? num : fallback;
 }
 
-function normalizeType(raw: string): ResourceType {
-  if (raw === "BUTTON" || raw === "FEATURE" || raw === "DATA") return raw as ResourceType;
+function normalizeNodeType(raw: string): ResourceNodeType {
+  if (raw === "DIRECTORY" || raw === "BUTTON" || raw === "FEATURE" || raw === "DATA") {
+    return raw as ResourceNodeType;
+  }
+  return "MENU";
+}
+
+function normalizeType(nodeType: ResourceNodeType): ResourceType {
+  if (nodeType === "BUTTON" || nodeType === "FEATURE" || nodeType === "DATA") {
+    return nodeType;
+  }
   return "MENU";
 }
 
@@ -173,10 +193,10 @@ function normalizeScope(
   value: unknown,
   type: ResourceType,
   urlValue: unknown,
-  rawType: string,
+  nodeType: ResourceNodeType,
 ): ResourceScope {
   if (type !== "MENU") return "NONE";
-  if (rawType === "DIRECTORY") return "SETTING";
+  if (nodeType === "DIRECTORY") return "SETTING";
   const raw = String(value ?? "").toUpperCase();
   if (raw === "TOOL" || raw === "SETTING" || raw === "INFO") return raw as ResourceScope;
   const url = String(urlValue ?? "").trim();
@@ -184,8 +204,12 @@ function normalizeScope(
   return "NONE";
 }
 
-function normalizeOpenMode(value: unknown, type: ResourceType, rawType: string): ResourceOpenMode {
-  if (rawType === "DIRECTORY") return "NONE";
+function normalizeOpenMode(
+  value: unknown,
+  type: ResourceType,
+  nodeType: ResourceNodeType,
+): ResourceOpenMode {
+  if (nodeType === "DIRECTORY") return "NONE";
   const raw = String(value ?? "").toUpperCase();
   if (raw === "MODAL" || raw === "PAGE") return raw as ResourceOpenMode;
   if (raw === "NONE") return "NONE";
