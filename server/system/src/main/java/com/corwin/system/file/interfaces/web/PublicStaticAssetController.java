@@ -1,5 +1,7 @@
 package com.corwin.system.file.interfaces.web;
 
+import com.corwin.framework.error.BaseError;
+import com.corwin.framework.error.BizException;
 import com.corwin.system.auth.published.PermitAll;
 import com.corwin.system.file.application.service.FileQueryService;
 import com.corwin.system.file.application.service.StaticAssetQueryService;
@@ -42,7 +44,7 @@ public class PublicStaticAssetController {
     @PermitAll
     public void viewByCode(@PathVariable String code, HttpServletResponse response) throws Exception {
         String fileId = staticAssetQueryService.resolveFileIdByCode(code)
-                .orElseThrow(() -> new com.corwin.framework.error.BizException(com.corwin.framework.error.BaseError.NOT_FOUND));
+                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
         write(staticAssetQueryService.getStaticAssetByFileId(fileId), response);
     }
 
