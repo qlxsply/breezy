@@ -75,7 +75,7 @@ public class BootstrapSystemFileSyncService {
             ps.setString(2, DefaultUser.SYSTEM.account());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    result.add(rs.getString("folder_name"));
+                    result.add(rs.getString("file_name"));
                 }
             }
         }

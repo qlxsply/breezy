@@ -1,6 +1,7 @@
 package com.corwin.system.file.domain.repo;
 
 import com.corwin.system.file.domain.model.LogicalFile;
+import com.corwin.system.file.domain.model.LogicalNodeType;
 import com.corwin.system.file.published.OwnerType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,12 +13,13 @@ import java.util.Optional;
  */
 public interface LogicalFileRepository extends JpaRepository<LogicalFile, String> {
 
-    List<LogicalFile> findByOwnerTypeAndOwnerIdAndParentId(OwnerType ownerType, String ownerId, String parentId);
+    List<LogicalFile> findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(OwnerType ownerType, String ownerId,
+            String parentId, LogicalNodeType nodeType);
 
-    List<LogicalFile> findByParentId(String parentId);
+    List<LogicalFile> findByParentIdAndNodeType(String parentId, LogicalNodeType nodeType);
 
-    Optional<LogicalFile> findByOwnerTypeAndOwnerIdAndParentIdAndFileName(OwnerType ownerType, String ownerId,
-            String parentId, String fileName);
+    Optional<LogicalFile> findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(OwnerType ownerType,
+            String ownerId, String parentId, LogicalNodeType nodeType, String fileName);
 
     List<LogicalFile> findByPhysicalFileId(String physicalFileId);
 }

@@ -1,9 +1,12 @@
-insert into sys_storage_folder (
+insert into sys_storage_file (
     id,
     owner_type,
     owner_id,
     parent_id,
-    folder_name,
+    node_type,
+    file_name,
+    physical_file_id,
+    purpose,
     created_at,
     updated_at
 ) values (
@@ -11,7 +14,10 @@ insert into sys_storage_folder (
     ?,
     ?,
     null,
+    'FOLDER',
     ?,
+    null,
+    null,
     current_timestamp,
     current_timestamp
 )

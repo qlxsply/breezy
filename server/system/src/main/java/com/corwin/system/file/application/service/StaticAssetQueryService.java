@@ -4,8 +4,8 @@ import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
 import com.corwin.system.file.application.view.LogicalPhysicalFileView;
 import com.corwin.system.file.domain.model.LogicalFile;
+import com.corwin.system.file.domain.model.LogicalNodeType;
 import com.corwin.system.file.domain.repo.LogicalFileRepository;
-import com.corwin.system.file.domain.repo.LogicalFolderRepository;
 import com.corwin.system.file.published.FilePurpose;
 import com.corwin.system.file.published.OwnerType;
 import com.corwin.system.user.domain.model.DefaultUser;
@@ -34,7 +34,6 @@ public class StaticAssetQueryService {
             "image/vnd.microsoft.icon");
 
     private final FileQueryService fileQueryService;
-    private final LogicalFolderRepository logicalFolderRepository;
     private final LogicalFileRepository logicalFileRepository;
 
     public Optional<String> resolveFileIdByCode(String code) {
@@ -43,7 +42,8 @@ public class StaticAssetQueryService {
             return Optional.empty();
         }
         return resolveStaticAssetFolderId().flatMap(folderId -> logicalFileRepository
-                .findByOwnerTypeAndOwnerIdAndParentId(OwnerType.APPLICATION, DefaultUser.SYSTEM.account(), folderId)
+                .findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(OwnerType.APPLICATION, DefaultUser.SYSTEM.account(),
+                        folderId, LogicalNodeType.FILE)
                 .stream()
                 .filter(this::isStaticAsset)
                 .filter(file -> matchesCode(file.getFileName(), normalizedCode))
@@ -73,8 +73,9 @@ public class StaticAssetQueryService {
     }
 
     private Optional<String> resolveStaticAssetFolderId() {
-        return logicalFolderRepository.findByOwnerTypeAndOwnerIdAndParentIdAndFolderName(OwnerType.APPLICATION,
-                DefaultUser.SYSTEM.account(), null, FilePurpose.STATIC_ASSET.name()).map(folder -> folder.getId());
+        return logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(OwnerType.APPLICATION,
+                DefaultUser.SYSTEM.account(), null, LogicalNodeType.FOLDER, FilePurpose.STATIC_ASSET.name())
+                .map(LogicalFile::getId);
     }
 
     private boolean isStaticAsset(LogicalFile file) {
