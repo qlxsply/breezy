@@ -1,13 +1,46 @@
-import { API_BASE_URL } from "@admin/core/env";
 import type { ResourceNodeType } from "@admin/types/resource-admin";
 
-const defaultDirectoryIconUrl = svgToDataUrl(iconDirectoryPlaceholder());
-const defaultMenuIconUrl = svgToDataUrl(iconMenuPlaceholder());
+const defaultDirectoryIconUrl = "/admin-icons/default-directory.svg";
+const defaultMenuIconUrl = "/admin-icons/default-menu.svg";
+
+const resourceIconUrlMap: Record<string, string> = {
+  overview: "/admin-icons/overview.svg",
+  dashboard: "/admin-icons/dashboard.svg",
+  settings: "/admin-icons/settings.svg",
+  setting: "/admin-icons/settings.svg",
+  platform: "/admin-icons/settings.svg",
+  config: "/admin-icons/settings.svg",
+  link: "/admin-icons/link.svg",
+  book: "/admin-icons/book.svg",
+  folder: "/admin-icons/folder.svg",
+  directory: "/admin-icons/folder.svg",
+  monitor: "/admin-icons/monitor.svg",
+  chart: "/admin-icons/chart.svg",
+  analytics: "/admin-icons/chart.svg",
+  report: "/admin-icons/chart.svg",
+  shield: "/admin-icons/shield.svg",
+  role: "/admin-icons/shield.svg",
+  policy: "/admin-icons/shield.svg",
+  permission: "/admin-icons/shield.svg",
+  users: "/admin-icons/users.svg",
+  user: "/admin-icons/users.svg",
+  customer: "/admin-icons/users.svg",
+  "customer-user": "/admin-icons/users.svg",
+  history: "/admin-icons/history.svg",
+  audit: "/admin-icons/audit.svg",
+  log: "/admin-icons/audit.svg",
+  spark: "/admin-icons/spark.svg",
+  feature: "/admin-icons/spark.svg",
+  "customer-chart": "/admin-icons/chart.svg",
+};
 
 export function resolveResourceIconUrl(iconCode?: string | null, nodeType?: ResourceNodeType | null): string | null {
   const normalized = normalizeIconCode(iconCode);
   if (normalized) {
-    return `${API_BASE_URL}/public/static-files/code/${encodeURIComponent(normalized)}`;
+    const mappedUrl = resourceIconUrlMap[normalized];
+    if (mappedUrl) {
+      return mappedUrl;
+    }
   }
 
   if (nodeType === "DIRECTORY") {
@@ -26,52 +59,4 @@ function normalizeIconCode(iconCode?: string | null): string {
     .trim()
     .toLowerCase()
     .replace(/[\s_:/\\-]+/g, "-");
-}
-
-function svgToDataUrl(svg: string): string {
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-function iconDirectoryPlaceholder(): string {
-  return baseIcon(`
-  <path d="M16 5H3"/>
-  <path d="M16 12H3"/>
-  <path d="M16 19H3"/>
-  <path d="M21 5h.01"/>
-  <path d="M21 12h.01"/>
-  <path d="M21 19h.01"/>
-  `);
-}
-
-function iconMenuPlaceholder(): string {
-  return baseIcon(`
-  <path d="M4 5h16"/>
-  <path d="M4 12h16"/>
-  <path d="M4 19h16"/>
-  `);
-}
-
-function baseIcon(pathMarkup: string): string {
-  return `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="1em"
-      height="1em"
-      fill="none"
-      color="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <g
-        stroke="currentColor"
-        stroke-width="1.75"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        vector-effect="non-scaling-stroke"
-      >
-        ${pathMarkup}
-      </g>
-    </svg>
-  `;
 }
