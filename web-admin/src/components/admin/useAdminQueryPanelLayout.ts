@@ -27,9 +27,8 @@ export function useAdminQueryPanelLayout(queryPanelVisible: boolean) {
       frame = window.requestAnimationFrame(() => {
         const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
         const actions = grid.querySelector<HTMLElement>(".admin-query-actions");
-        const items = actions ? [...fields, actions] : fields;
 
-        if (items.length === 0) {
+        if (fields.length === 0) {
           card.style.removeProperty("--admin-query-collapsed-height");
           card.style.removeProperty("--admin-query-expanded-height");
           setQuerySingleRow(true);
@@ -46,9 +45,9 @@ export function useAdminQueryPanelLayout(queryPanelVisible: boolean) {
           actions.style.gridColumn = "auto";
         }
 
-        const rowTops = [...new Set(items.map((item) => Math.round(item.offsetTop)))].sort((left, right) => left - right);
-        const firstRowTop = rowTops[0] || 0;
-        const firstRowItems = items.filter((item) => Math.round(item.offsetTop) === firstRowTop);
+        const fieldRowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort((left, right) => left - right);
+        const firstRowTop = fieldRowTops[0] || 0;
+        const firstRowItems = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
         const firstRowBottom = Math.max(...firstRowItems.map((item) => item.offsetTop + item.offsetHeight), 0);
         const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
         const expandedHeight = grid.scrollHeight;
@@ -62,7 +61,7 @@ export function useAdminQueryPanelLayout(queryPanelVisible: boolean) {
         card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
         card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
 
-        const nextSingleRow = rowTops.length <= 1;
+        const nextSingleRow = fieldRowTops.length <= 1;
         setQuerySingleRow(nextSingleRow);
         if (nextSingleRow) {
           setQueryExpanded(false);

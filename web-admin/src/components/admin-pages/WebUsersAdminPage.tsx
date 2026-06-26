@@ -9,11 +9,11 @@ import {
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
   BzCard,
   BzEmpty,
-  BzForm,
   BzFormItem,
   BzInput,
   BzOption,
@@ -80,7 +80,6 @@ export function WebUsersAdminPage() {
   const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([]);
 
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
-  const [queryCollapsed] = useState(true);
   const [keywordDraft, setKeywordDraft] = useState("");
   const [statusDraft, setStatusDraft] = useState<"" | ExternalUserStatus>("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
@@ -91,6 +90,8 @@ export function WebUsersAdminPage() {
   const [featureOverrideFilter, setFeatureOverrideFilter] = useState<"" | UserFeatureOverrideType>(
     "",
   );
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
   const loadedRef = useRef(false);
 
   const canView = hasResourceCodeAccess("web-user-manage-view");
@@ -449,17 +450,27 @@ export function WebUsersAdminPage() {
               className="admin-panel admin-filter-card"
               shadow="never"
             >
-              <BzForm
-                className={`admin-filter-form${queryCollapsed ? " is-collapsed" : ""}`}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  applyFilters();
-                }}
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
               >
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">关键词</div>
-                    <div className="admin-filter-control">
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                </div>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">关键词</div>
+                    <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordDraft}
                         placeholder="按账号或昵称搜索"
@@ -468,12 +479,10 @@ export function WebUsersAdminPage() {
                         onKeyUp={(e) => e.key === "Enter" && applyFilters()}
                       />
                     </div>
-                  </div>
-                </BzFormItem>
-                <BzFormItem className="admin-filter-item">
-                  <div className="admin-filter-field">
-                    <div className="admin-filter-label">状态</div>
-                    <div className="admin-filter-control">
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">状态</div>
+                    <div className="admin-query-field__control">
                       <BzSelect
                         modelValue={statusDraft}
                         placeholder="全部状态"
@@ -494,28 +503,40 @@ export function WebUsersAdminPage() {
                         />
                       </BzSelect>
                     </div>
+                  </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      nativeType="button"
+                      onClick={resetFilters}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton
+                      className="admin-filter-primary"
+                      buttonType="primary"
+                      nativeType="button"
+                      onClick={applyFilters}
+                    >
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        aria-expanded={queryExpanded}
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i
+                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : null}
                   </div>
-                </BzFormItem>
-                <div className="admin-filter-actions">
-                  <BzButton
-                    className="admin-filter-secondary"
-                    onClick={resetFilters}
-                  >
-                    重置
-                  </BzButton>
-                  <BzButton
-                    className="admin-filter-primary"
-                    buttonType="primary"
-                    nativeType="submit"
-                  >
-                    搜索
-                  </BzButton>
-                  <div
-                    className="admin-filter-toggle-placeholder"
-                    aria-hidden="true"
-                  />
-                </div>
-              </BzForm>
+                </form>
+              </div>
             </BzCard>
           ) : null}
 

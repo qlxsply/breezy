@@ -3,13 +3,14 @@
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
 import { BzButton, BzCard, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const API_DICT_CODES = [
   "API_METHOD",
@@ -32,8 +33,6 @@ export function ApisAdminPage() {
     elements: [],
   });
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
-  const [queryExpanded, setQueryExpanded] = useState(false);
-  const [querySingleRow, setQuerySingleRow] = useState(true);
   const [moduleDraft, setModuleDraft] = useState("");
   const [pathPatternDraft, setPathPatternDraft] = useState("");
   const [handlerClassDraft, setHandlerClassDraft] = useState("");
@@ -65,8 +64,8 @@ export function ApisAdminPage() {
   const canPublish = hasResourceCodeAccess("api-manage-publish");
   const canDisable = hasResourceCodeAccess("api-manage-disable");
   const pageSizeOptions = [10, 20, 30, 50, 100, 200];
-  const queryCardRef = useRef<HTMLDivElement | null>(null);
-  const queryGridRef = useRef<HTMLFormElement | null>(null);
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
   useEffect(() => {
     void loadDictionaries();
@@ -87,89 +86,6 @@ export function ApisAdminPage() {
     pageNo,
     pageSize,
   ]);
-
-  useEffect(() => {
-    if (!queryPanelVisible) {
-      return;
-    }
-
-    const card = queryCardRef.current;
-    const grid = queryGridRef.current;
-    if (!card || !grid) {
-      return;
-    }
-
-    let frame = 0;
-
-    const refreshCollapseState = () => {
-      cancelAnimationFrame(frame);
-
-      frame = window.requestAnimationFrame(() => {
-        const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
-        const actions = grid.querySelector<HTMLElement>(".admin-query-actions");
-        const items = actions ? [...fields, actions] : fields;
-
-        if (items.length === 0) {
-          card.style.removeProperty("--admin-query-collapsed-height");
-          card.style.removeProperty("--admin-query-expanded-height");
-          setQuerySingleRow(true);
-          return;
-        }
-
-        const previousMaxHeight = grid.style.maxHeight;
-        const previousActionGridRow = actions?.style.gridRow || "";
-        const previousActionGridColumn = actions?.style.gridColumn || "";
-
-        grid.style.maxHeight = "none";
-
-        // Measure natural flow first so the action cell sits after all fields.
-        if (actions) {
-          actions.style.gridRow = "auto";
-          actions.style.gridColumn = "auto";
-        }
-
-        const rowTops = [...new Set(items.map((item) => Math.round(item.offsetTop)))].sort((left, right) => left - right);
-        const firstRowTop = rowTops[0] || 0;
-        const firstRowItems = items.filter((item) => Math.round(item.offsetTop) === firstRowTop);
-        const firstRowBottom = Math.max(...firstRowItems.map((item) => item.offsetTop + item.offsetHeight), 0);
-
-        const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
-        const expandedHeight = grid.scrollHeight;
-
-        grid.style.maxHeight = previousMaxHeight;
-
-        if (actions) {
-          actions.style.gridRow = previousActionGridRow;
-          actions.style.gridColumn = previousActionGridColumn;
-        }
-
-        card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
-        card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
-
-        const nextSingleRow = rowTops.length <= 1;
-        setQuerySingleRow(nextSingleRow);
-
-        if (nextSingleRow) {
-          setQueryExpanded(false);
-        }
-      });
-    };
-
-    refreshCollapseState();
-
-    const observer = new ResizeObserver(() => {
-      refreshCollapseState();
-    });
-
-    observer.observe(grid);
-    window.addEventListener("resize", refreshCollapseState);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      window.removeEventListener("resize", refreshCollapseState);
-    };
-  }, [queryPanelVisible]);
 
   const enrichedRows = useMemo(
     () =>

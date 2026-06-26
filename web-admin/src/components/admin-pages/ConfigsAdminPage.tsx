@@ -32,6 +32,7 @@ import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminTableTools } from "../admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "../admin/useAdminQueryPanelLayout";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
@@ -150,8 +151,6 @@ export function ConfigsAdminPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [queryPanelVisible, setQueryPanelVisible] = useState(false);
-  const [queryExpanded, setQueryExpanded] = useState(false);
-  const [querySingleRow, setQuerySingleRow] = useState(true);
   const [codeLikeDraft, setCodeLikeDraft] = useState("");
   const [descriptionLikeDraft, setDescriptionLikeDraft] = useState("");
   const [appliedCodeLike, setAppliedCodeLike] = useState("");
@@ -208,8 +207,8 @@ export function ConfigsAdminPage() {
   const [editorPreviewLoading, setEditorPreviewLoading] = useState(false);
   const [previewSending, setPreviewSending] = useState(false);
   const [previewMsgType, setPreviewMsgType] = useState("");
-  const queryCardRef = useRef<HTMLDivElement | null>(null);
-  const queryGridRef = useRef<HTMLFormElement | null>(null);
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
   const editorTitle = useMemo(() => {
     if (!editorItem) return "编辑配置";
@@ -345,56 +344,6 @@ export function ConfigsAdminPage() {
       formatted: error ? "-" : formatDecimalByPattern(num, pattern),
     }));
   }, [isDecimalFormatEditor, editorRawValue, currentUserFormatOptions]);
-
-  useEffect(() => {
-    if (!queryPanelVisible) {
-      return;
-    }
-    const card = queryCardRef.current;
-    const grid = queryGridRef.current;
-    if (!card || !grid) {
-      return;
-    }
-
-    const refreshCollapseState = () => {
-      const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
-      if (fields.length === 0) {
-        card.style.removeProperty("--admin-query-collapsed-height");
-        card.style.removeProperty("--admin-query-expanded-height");
-        setQuerySingleRow(true);
-        return;
-      }
-
-      const previousMaxHeight = grid.style.maxHeight;
-      grid.style.maxHeight = "none";
-
-      const rowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort(
-        (left, right) => left - right,
-      );
-      const firstRowTop = rowTops[0] || 0;
-      const firstRowFields = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
-      const firstRowBottom = Math.max(
-        ...firstRowFields.map((field) => field.offsetTop + field.offsetHeight),
-        0,
-      );
-      const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
-      const expandedHeight = grid.scrollHeight;
-
-      grid.style.maxHeight = previousMaxHeight;
-      card.style.setProperty("--admin-query-collapsed-height", `${collapsedHeight}px`);
-      card.style.setProperty("--admin-query-expanded-height", `${expandedHeight}px`);
-      setQuerySingleRow(rowTops.length <= 1);
-    };
-
-    refreshCollapseState();
-    const observer = new ResizeObserver(() => {
-      refreshCollapseState();
-    });
-    observer.observe(grid);
-    return () => {
-      observer.disconnect();
-    };
-  }, [queryPanelVisible]);
 
   useEffect(() => {
     if (previewSendOptions.length === 0) {
@@ -1184,34 +1133,6 @@ export function ConfigsAdminPage() {
               >
                 <div className="admin-query-header">
                   <div className="admin-query-title">筛选条件</div>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
                 </div>
                 <form
                   ref={queryGridRef}
@@ -1249,6 +1170,37 @@ export function ConfigsAdminPage() {
                       />
                     </div>
                   </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton
+                      className="admin-filter-secondary"
+                      nativeType="button"
+                      onClick={resetFilters}
+                    >
+                      重置
+                    </BzButton>
+                    <BzButton
+                      className="admin-filter-primary"
+                      buttonType="primary"
+                      nativeType="button"
+                      onClick={applyFilters}
+                    >
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        aria-expanded={queryExpanded}
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i
+                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : null}
+                  </div>
                 </form>
               </div>
             </BzCard>

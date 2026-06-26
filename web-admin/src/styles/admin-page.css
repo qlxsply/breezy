@@ -256,6 +256,12 @@
   grid-column: -2 / -1;
 }
 
+.admin-query-layout.is-expanded .admin-query-actions,
+.admin-query-layout.is-single-row .admin-query-actions {
+  grid-row: auto;
+  grid-column: auto;
+}
+
 .admin-table-card .bz-card__header {
   padding: 10px 20px 10px;
   border-bottom: none;
