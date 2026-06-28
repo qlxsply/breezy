@@ -496,6 +496,277 @@
   border-top: 1px solid #e5e7eb;
 }
 
+.permission-dialog-shell {
+  display: grid;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.permission-dialog-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.permission-dialog-toolbar .bz-input {
+  min-width: min(420px, 100%);
+  flex: 1 1 360px;
+}
+
+.permission-toolbar-button {
+  white-space: nowrap;
+}
+
+.permission-panel {
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+  padding: 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.permission-panel--drawer {
+  min-height: calc(100vh - 220px);
+}
+
+.permission-panel__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.permission-panel__title {
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.permission-panel__hint {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.permission-panel__meta {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.permission-tree-wrap {
+  min-height: 320px;
+  padding: 8px;
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 14px;
+}
+
+.permission-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.permission-tree-node {
+  display: grid;
+  gap: 10px;
+}
+
+.permission-tree-node + .permission-tree-node {
+  margin-top: 8px;
+}
+
+.permission-node-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.permission-node-row--directory {
+  background: #f8fafc;
+}
+
+.permission-node-row--menu {
+  background: #fefefe;
+}
+
+.permission-node-row--function {
+  background: #f8fbff;
+}
+
+.permission-node-row.is-diff-added,
+.permission-button-tag.is-diff-added {
+  border-color: #22c55e;
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.18);
+}
+
+.permission-node-row.is-diff-removed,
+.permission-button-tag.is-diff-removed {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  text-decoration: line-through;
+}
+
+.permission-node-toggle {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.permission-node-toggle.is-placeholder {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.permission-node-checkbox,
+.permission-button-tag__checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.permission-node-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.permission-node-code {
+  color: #64748b;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.permission-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.permission-tag-dir {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.permission-tag-menu {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.permission-tag-function {
+  color: #0369a1;
+  background: #e0f2fe;
+}
+
+.permission-tag-disabled {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.permission-button-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 0 0 56px;
+}
+
+.permission-button-section {
+  display: grid;
+  gap: 8px;
+}
+
+.permission-button-section__hint {
+  padding-left: 56px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.permission-button-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 10px;
+  color: #334155;
+  background: #ffffff;
+  border: 1px solid #dbe1ea;
+  border-radius: 10px;
+}
+
+.permission-button-tag.is-checked {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.permission-button-tag.is-disabled {
+  opacity: 0.55;
+}
+
+.permission-button-tag.is-readonly {
+  cursor: default;
+}
+
+.permission-button-tag__name {
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+.permission-tree-children {
+  display: grid;
+  gap: 8px;
+  padding-left: 28px;
+}
+
+.permission-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.permission-dialog-footer__summary {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.permission-dialog-footer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: auto;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -781,6 +1052,47 @@
   .group-form-grid {
     grid-template-columns: 1fr;
   }
+
+  .permission-panel__head,
+  .permission-dialog-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .permission-dialog-footer__actions {
+    margin-left: 0;
+  }
+
+  .permission-panel--drawer {
+    min-height: calc(100vh - 188px);
+    padding: 16px;
+  }
+
+  .permission-dialog-toolbar {
+    align-items: stretch;
+  }
+
+  .permission-toolbar-button {
+    flex: 1 1 calc(33.333% - 8px);
+  }
+
+  .permission-node-row {
+    padding: 10px;
+  }
+
+  .permission-node-code {
+    width: 100%;
+    padding-left: 34px;
+  }
+
+  .permission-button-section__hint,
+  .permission-button-tags {
+    padding-left: 0;
+  }
+
+  .permission-tree-children {
+    padding-left: 16px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -795,5 +1107,46 @@
   .admin-query-layout.is-collapsed .admin-query-actions {
     grid-row: auto;
     grid-column: auto;
+  }
+
+  .permission-dialog-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .permission-dialog-toolbar .bz-input,
+  .permission-toolbar-button,
+  .permission-dialog-footer__actions,
+  .permission-dialog-footer__actions .bz-button {
+    width: 100%;
+  }
+
+  .permission-dialog-footer__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .permission-panel--drawer {
+    min-height: calc(100vh - 172px);
+    padding: 14px;
+  }
+
+  .permission-tree-wrap {
+    min-height: 260px;
+    padding: 6px;
+  }
+
+  .permission-node-row {
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .permission-node-name {
+    width: calc(100% - 52px);
+  }
+
+  .permission-button-tag {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

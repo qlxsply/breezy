@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { RoleGrantResourceEntry, RoleGrantSelection } from "../../types/role-admin";
+import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { BzButton } from "../bz/BzButton";
-import { BzDialog } from "../bz/BzDialog";
 import { BzInput } from "../bz/BzInput";
-import { BzLoading } from "../bz/BzLoading";
 import { RolePermissionTreeNode, type RolePermissionTreeNodeView } from "./RolePermissionTreeNode";
 
 type DiffStatus = "added" | "removed";
@@ -17,6 +16,10 @@ interface RolePermissionDialogProps {
   canSave?: boolean;
   onClose: () => void;
   onSubmit: (selection: RoleGrantSelection) => void;
+}
+
+function isMenuRow(row: RoleGrantResourceEntry): boolean {
+  return Boolean(row.menuId);
 }
 
 export function RolePermissionDialog({
@@ -32,53 +35,11 @@ export function RolePermissionDialog({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<RoleGrantSelection | null>(null);
-  const [selectedMenuNodeIds, setSelectedMenuNodeIds] = useState<Set<string>>(new Set());
-  const [selectedFunctionNodeIds, setSelectedFunctionNodeIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    const ids = buildSelectedNodeIdSets();
-    setSelectedMenuNodeIds(ids.menuNodeIds);
-    setSelectedFunctionNodeIds(ids.functionNodeIds);
-    setExpandedIds(new Set());
-    setConfirming(false);
-    setPendingSelection(null);
-  }, [selection, resources]);
-
-  function buildSelectedNodeIdSets(): { menuNodeIds: Set<string>; functionNodeIds: Set<string> } {
-    const menuNodeIds = new Set<string>();
-    const functionNodeIds = new Set<string>();
-    const menuIdSet = new Set((selection.menuIds || []).map(String));
-    const functionIdSet = new Set((selection.functionIds || []).map(String));
-
-    resources.forEach((r) => {
-      if (r.functionId && functionIdSet.has(r.functionId)) functionNodeIds.add(r.id);
-    });
-
-    const functionAncestorMenuNodeIds = new Set<string>();
-    functionNodeIds.forEach((fid) => {
-      collectAncestorIds(fid).forEach((aid) => {
-        const a = resourceMap.get(aid);
-        if (a?.type === "MENU") functionAncestorMenuNodeIds.add(aid);
-      });
-    });
-
-    resources.forEach((r) => {
-      if (
-        r.menuId &&
-        menuIdSet.has(r.menuId) &&
-        r.type === "MENU" &&
-        !functionAncestorMenuNodeIds.has(r.id)
-      ) {
-        menuNodeIds.add(r.id);
-      }
-    });
-
-    return { menuNodeIds, functionNodeIds };
-  }
+  const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
 
   const resourceMap = useMemo(() => {
     const map = new Map<string, RoleGrantResourceEntry>();
-    resources.forEach((r) => map.set(r.id, r));
+    resources.forEach((row) => map.set(row.id, row));
     return map;
   }, [resources]);
 
@@ -87,23 +48,26 @@ export function RolePermissionDialog({
     resources.forEach((row) => {
       const list = map.get(row.parentId ?? null) ?? [];
       list.push(row);
-      list.sort((a, b) => a.orderNo - b.orderNo || a.name.localeCompare(b.name));
+      list.sort((left, right) => left.orderNo - right.orderNo || left.name.localeCompare(right.name));
       map.set(row.parentId ?? null, list);
     });
     return map;
   }, [resources]);
 
-  const selectedNodeIds = useMemo(() => {
-    const result = new Set<string>();
-    selectedMenuNodeIds.forEach((id) => result.add(id));
-    selectedFunctionNodeIds.forEach((id) => {
-      result.add(id);
-      collectAncestorIds(id).forEach((aid) => {
-        if (resourceMap.get(aid)?.type === "MENU") result.add(aid);
-      });
+  const defaultExpandedIds = useMemo(() => {
+    const ids = new Set<string>();
+    resources.forEach((row) => {
+      if (row.menuId && (childrenMap.get(row.id) ?? []).length > 0) ids.add(row.id);
     });
-    return result;
-  }, [selectedMenuNodeIds, selectedFunctionNodeIds, resourceMap]);
+    return ids;
+  }, [childrenMap, resources]);
+
+  useEffect(() => {
+    setSelectedResourceIds(buildSelectedResourceIds(selection));
+    setExpandedIds(new Set(defaultExpandedIds));
+    setConfirming(false);
+    setPendingSelection(null);
+  }, [defaultExpandedIds, selection, resources]);
 
   const keywordText = keyword.trim().toLowerCase();
 
@@ -129,15 +93,15 @@ export function RolePermissionDialog({
   }, [filteredRoots]);
 
   const summarySelection = useMemo(
-    () => buildSubmitSelection(),
-    [selectedNodeIds, selectedFunctionNodeIds, resources],
+    () => buildSubmitSelection(selectedResourceIds),
+    [selectedResourceIds, resources],
   );
 
   const summaryText = useMemo(() => {
     const menuCount = summarySelection.menuIds.length;
     const functionCount = summarySelection.functionIds.length;
     if (menuCount === 0 && functionCount === 0) return "未选择权限";
-    return `已选择菜单 ${menuCount} 项，按钮权限 ${functionCount} 项`;
+    return `已选择目录/菜单 ${menuCount} 项，功能 ${functionCount} 项`;
   }, [summarySelection]);
 
   const diff = useMemo(
@@ -147,14 +111,14 @@ export function RolePermissionDialog({
 
   const diffStatusById = useMemo(() => {
     const map = new Map<string, DiffStatus>();
-    resources.forEach((r) => {
-      if (r.type === "MENU" && r.menuId) {
-        if (diff.addedMenuIds.has(r.menuId)) map.set(r.id, "added");
-        else if (diff.removedMenuIds.has(r.menuId)) map.set(r.id, "removed");
+    resources.forEach((row) => {
+      if (row.menuId) {
+        if (diff.addedMenuIds.has(row.menuId)) map.set(row.id, "added");
+        else if (diff.removedMenuIds.has(row.menuId)) map.set(row.id, "removed");
       }
-      if (r.type === "BUTTON" && r.functionId) {
-        if (diff.addedFunctionIds.has(r.functionId)) map.set(r.id, "added");
-        else if (diff.removedFunctionIds.has(r.functionId)) map.set(r.id, "removed");
+      if (row.functionId) {
+        if (diff.addedFunctionIds.has(row.functionId)) map.set(row.id, "added");
+        else if (diff.removedFunctionIds.has(row.functionId)) map.set(row.id, "removed");
       }
     });
     return map;
@@ -165,7 +129,7 @@ export function RolePermissionDialog({
   const diffExpandedIds = useMemo(() => {
     const ids = new Set<string>();
     walkTree(diffRoots, (node) => {
-      if (node.children.some((child) => child.row.type !== "BUTTON")) ids.add(node.row.id);
+      if (node.children.length > 0) ids.add(node.row.id);
     });
     return ids;
   }, [diffRoots]);
@@ -182,6 +146,22 @@ export function RolePermissionDialog({
     const removedCount = diff.removedMenuIds.size + diff.removedFunctionIds.size;
     return `新增 ${addedCount} 项 / 移除 ${removedCount} 项`;
   }, [diff]);
+
+  function buildSelectedResourceIds(currentSelection: RoleGrantSelection): Set<string> {
+    const next = new Set<string>();
+    const menuIds = new Set((currentSelection.menuIds || []).map(String));
+    const functionIds = new Set((currentSelection.functionIds || []).map(String));
+
+    resources.forEach((row) => {
+      if (row.menuId && menuIds.has(row.menuId)) next.add(row.id);
+      if (row.functionId && functionIds.has(row.functionId)) next.add(row.id);
+    });
+
+    Array.from(next).forEach((id) => {
+      collectAncestorIds(id).forEach((ancestorId) => next.add(ancestorId));
+    });
+    return next;
+  }
 
   function buildTree(
     parentId: string | null,
@@ -238,22 +218,33 @@ export function RolePermissionDialog({
     return result;
   }
 
+  function collectDescendantIds(nodeId: string): string[] {
+    const result: string[] = [];
+    (childrenMap.get(nodeId) ?? []).forEach((child) => {
+      result.push(child.id);
+      result.push(...collectDescendantIds(child.id));
+    });
+    return result;
+  }
+
   function collectExpandableIds(): Set<string> {
     const ids = new Set<string>();
     resources.forEach((row) => {
-      const nested = (childrenMap.get(row.id) ?? []).filter((child) => child.type !== "BUTTON");
-      if (nested.length > 0) ids.add(row.id);
+      if ((childrenMap.get(row.id) ?? []).length > 0) ids.add(row.id);
     });
     return ids;
   }
 
-  function collectDescendantButtonIds(nodeId: string): string[] {
-    const result: string[] = [];
-    (childrenMap.get(nodeId) ?? []).forEach((child) => {
-      if (child.type === "BUTTON") result.push(child.id);
-      result.push(...collectDescendantButtonIds(child.id));
-    });
-    return result;
+  function hasSelectedDescendant(nodeId: string, currentIds: Set<string>): boolean {
+    return collectDescendantIds(nodeId).some((childId) => currentIds.has(childId));
+  }
+
+  function pruneEmptyAncestors(nodeId: string, currentIds: Set<string>) {
+    let current = resourceMap.get(nodeId)?.parentId ?? null;
+    while (current) {
+      if (!hasSelectedDescendant(current, currentIds)) currentIds.delete(current);
+      current = resourceMap.get(current)?.parentId ?? null;
+    }
   }
 
   function toggleExpand(nodeId: string) {
@@ -274,48 +265,43 @@ export function RolePermissionDialog({
   }
 
   function clearAll() {
-    setSelectedMenuNodeIds(new Set());
-    setSelectedFunctionNodeIds(new Set());
+    setSelectedResourceIds(new Set());
   }
 
   function toggleSelect(nodeId: string, checked: boolean) {
     if (canSave === false) return;
     const row = resourceMap.get(nodeId);
-    if (!row || !row.enabled || row.type === "DIRECTORY") return;
+    if (!row || !row.enabled) return;
 
-    if (row.type === "BUTTON") {
-      setSelectedFunctionNodeIds((prev) => {
-        const next = new Set(prev);
-        if (checked) next.add(nodeId);
-        else next.delete(nodeId);
-        return next;
-      });
-      return;
-    }
+    setSelectedResourceIds((prev) => {
+      const next = new Set(prev);
+      const descendants = collectDescendantIds(nodeId);
 
-    if (row.type === "MENU") {
-      setSelectedMenuNodeIds((prev) => {
-        const next = new Set(prev);
-        if (checked) next.add(nodeId);
-        else next.delete(nodeId);
+      if (checked) {
+        next.add(nodeId);
+        collectAncestorIds(nodeId).forEach((ancestorId) => next.add(ancestorId));
+        if (isMenuRow(row)) {
+          descendants.forEach((descendantId) => {
+            const descendant = resourceMap.get(descendantId);
+            if (descendant?.enabled) next.add(descendantId);
+          });
+        }
         return next;
-      });
-      if (!checked) {
-        setSelectedFunctionNodeIds((prev) => {
-          const next = new Set(prev);
-          collectDescendantButtonIds(nodeId).forEach((id) => next.delete(id));
-          return next;
-        });
       }
-    }
+
+      next.delete(nodeId);
+      descendants.forEach((descendantId) => next.delete(descendantId));
+      pruneEmptyAncestors(nodeId, next);
+      return next;
+    });
   }
 
-  function buildSubmitSelection(): RoleGrantSelection {
+  function buildSubmitSelection(currentIds: Set<string>): RoleGrantSelection {
     const menuIds = new Set<string>();
     const functionIds = new Set<string>();
-    resources.forEach((r) => {
-      if (r.menuId && selectedNodeIds.has(r.id)) menuIds.add(r.menuId);
-      if (r.functionId && selectedFunctionNodeIds.has(r.id)) functionIds.add(r.functionId);
+    resources.forEach((row) => {
+      if (row.menuId && currentIds.has(row.id)) menuIds.add(row.menuId);
+      if (row.functionId && currentIds.has(row.id)) functionIds.add(row.functionId);
     });
     return { menuIds: Array.from(menuIds), functionIds: Array.from(functionIds) };
   }
@@ -346,20 +332,13 @@ export function RolePermissionDialog({
     };
   }
 
-  function buildNodeIdsFromSelection(s: RoleGrantSelection): Set<string> {
-    const ids = new Set<string>();
-    const menuIds = new Set((s.menuIds || []).map(String));
-    const functionIds = new Set((s.functionIds || []).map(String));
-    resources.forEach((r) => {
-      if (r.menuId && menuIds.has(r.menuId)) ids.add(r.id);
-      if (r.functionId && functionIds.has(r.functionId)) ids.add(r.id);
-    });
-    return ids;
+  function buildNodeIdsFromSelection(currentSelection: RoleGrantSelection): Set<string> {
+    return buildSelectedResourceIds(currentSelection);
   }
 
   function handleSubmit() {
     if (canSave === false) return;
-    const nextSelection = buildSubmitSelection();
+    const nextSelection = buildSubmitSelection(selectedResourceIds);
     const nextDiff = buildSelectionDiff(selection, nextSelection);
     if (!nextDiff.changed) {
       onSubmit(nextSelection);
@@ -378,80 +357,69 @@ export function RolePermissionDialog({
     onSubmit(pendingSelection);
   }
 
+  const footer = (
+    <div className="permission-dialog-footer">
+      <div className="permission-dialog-footer__summary">
+        {confirming ? "确认保存后，受影响用户需要重新登录后权限才会完全生效。" : summaryText}
+      </div>
+      <div className="permission-dialog-footer__actions">
+        {!confirming ? (
+          <>
+            <BzButton onClick={onClose}>取消</BzButton>
+            {canSave !== false ? (
+              <BzButton buttonType="primary" onClick={handleSubmit}>
+                保存
+              </BzButton>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <BzButton onClick={backToEdit}>返回</BzButton>
+            <BzButton buttonType="primary" onClick={confirmSubmit}>
+              确认
+            </BzButton>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <BzDialog
-      modelValue={true}
+    <AdminEntityDrawer
+      open
       title={confirming ? `确认角色权限变更 - ${roleName}` : `角色权限分配 - ${roleName}`}
-      width="980px"
+      width="min(1320px, 100vw)"
+      loading={loading}
       onClose={onClose}
-      footer={
-        <div className="permission-dialog-footer">
-          <div className="permission-dialog-footer__summary">
-            {confirming ? "确认保存后，受影响用户需要重新登录后权限才会完全生效。" : summaryText}
-          </div>
-          <div className="permission-dialog-footer__actions">
-            {!confirming ? (
-              <>
-                <BzButton onClick={onClose}>取消</BzButton>
-                {canSave !== false ? (
-                  <BzButton
-                    buttonType="primary"
-                    onClick={handleSubmit}
-                  >
-                    保存
-                  </BzButton>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <BzButton onClick={backToEdit}>返回</BzButton>
-                <BzButton
-                  buttonType="primary"
-                  onClick={confirmSubmit}
-                >
-                  确认
-                </BzButton>
-              </>
-            )}
-          </div>
-        </div>
-      }
+      footer={footer}
+      extra={confirming ? diffSummaryText : summaryText}
     >
       {!confirming ? (
         <div className="permission-dialog-shell">
           <div className="permission-dialog-toolbar">
             <BzInput
               modelValue={keyword}
-              placeholder="搜索目录、菜单、按钮或权限码"
+              placeholder="搜索目录、菜单、功能或按钮权限码"
               clearable
               onValueChange={setKeyword}
             />
-            <BzButton
-              className="permission-toolbar-button"
-              onClick={expandAll}
-            >
+            <BzButton className="permission-toolbar-button" onClick={expandAll}>
               全部展开
             </BzButton>
-            <BzButton
-              className="permission-toolbar-button"
-              onClick={collapseAll}
-            >
+            <BzButton className="permission-toolbar-button" onClick={collapseAll}>
               全部收起
             </BzButton>
-            <BzButton
-              className="permission-toolbar-button"
-              onClick={clearAll}
-            >
+            <BzButton className="permission-toolbar-button" onClick={clearAll}>
               清空选择
             </BzButton>
           </div>
 
-          <section className="permission-panel">
+          <section className="permission-panel permission-panel--drawer">
             <div className="permission-panel__head">
               <div>
                 <div className="permission-panel__title">可选权限</div>
                 <div className="permission-panel__hint">
-                  目录仅作为分组展示；选择按钮权限时会自动带上所属菜单；选择菜单不会自动选择按钮。
+                  默认展开目录和菜单；勾选目录或菜单会自动勾选全部下级；按钮权限标识跟随功能授权。
                 </div>
               </div>
               <div className="permission-panel__meta">
@@ -459,36 +427,33 @@ export function RolePermissionDialog({
               </div>
             </div>
 
-            <BzLoading
-              loading={loading}
-              className="permission-tree-wrap"
-            >
+            <div className="permission-tree-wrap">
               {filteredRoots.length === 0 ? (
                 <div className="permission-empty">暂无可授权资源</div>
-              ) : (
-                filteredRoots.map((node) => (
-                  <RolePermissionTreeNode
-                    key={node.row.id}
-                    node={node}
-                    expandedIds={displayExpandedIds}
-                    selectedIds={selectedNodeIds}
-                    canEdit={canSave !== false}
-                    onToggleExpand={toggleExpand}
-                    onToggleSelect={(payload) => toggleSelect(payload.id, payload.checked)}
-                  />
-                ))
-              )}
-            </BzLoading>
+              ) : null}
+              {filteredRoots.map((node) => (
+                <RolePermissionTreeNode
+                  key={node.row.id}
+                  node={node}
+                  expandedIds={displayExpandedIds}
+                  selectedIds={selectedResourceIds}
+                  canEdit={canSave !== false}
+                  onToggleExpand={toggleExpand}
+                  onToggleSelect={(payload) => toggleSelect(payload.id, payload.checked)}
+                  onToggleButton={(payload) => toggleSelect(payload.id, payload.checked)}
+                />
+              ))}
+            </div>
           </section>
         </div>
       ) : (
         <div className="permission-dialog-shell">
-          <section className="permission-panel">
+          <section className="permission-panel permission-panel--drawer">
             <div className="permission-panel__head">
               <div>
                 <div className="permission-panel__title">确认权限变更</div>
                 <div className="permission-panel__hint">
-                  绿色边框表示新增权限；红色删除线表示移除权限；未变化节点仅作为层级路径展示。
+                  绿色边框表示新增权限；红色删除线表示移除权限；未变化节点仅用于展示层级路径。
                 </div>
               </div>
               <div className="permission-panel__meta">{diffSummaryText}</div>
@@ -509,6 +474,7 @@ export function RolePermissionDialog({
                     diffStatusById={diffStatusById}
                     onToggleExpand={toggleExpand}
                     onToggleSelect={() => {}}
+                    onToggleButton={() => {}}
                   />
                 ))
               )}
@@ -516,6 +482,6 @@ export function RolePermissionDialog({
           </section>
         </div>
       )}
-    </BzDialog>
+    </AdminEntityDrawer>
   );
 }
