@@ -10,13 +10,14 @@ import {
   updateResourcePermissions,
 } from "@admin/api/resources";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
   BzCard,
   BzFormItem,
   BzInput,
-  BzInputNumber,
   BzOption,
   BzSelect,
   BzSwitch,
@@ -35,7 +36,7 @@ import type {
 } from "@admin/types/resource-manage";
 import { useEffect, useMemo, useState } from "react";
 
-type DrawerPurpose = "create" | "edit" | "permission";
+type DrawerPurpose = "create" | "edit";
 
 interface ResourceTableRow {
   row: ResourceManageEntry;
@@ -104,6 +105,10 @@ export function ResourcesAdminPage() {
   const [rows, setRows] = useState<ResourceManageEntry[]>([]);
   const [permissions, setPermissions] = useState<ResourcePermissionOption[]>([]);
   const [loading, setLoading] = useState(false);
+  const [queryPanelVisible, setQueryPanelVisible] = useState(false);
+  const [keywordDraft, setKeywordDraft] = useState("");
+  const [typeFilterDraft, setTypeFilterDraft] = useState("");
+  const [enabledFilterDraft, setEnabledFilterDraft] = useState("");
   const [keyword, setKeyword] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [enabledFilter, setEnabledFilter] = useState("");
@@ -121,6 +126,8 @@ export function ResourcesAdminPage() {
   const canDelete = hasResourceCodeAccess("resource-manage-delete");
   const canPermissionView = hasResourceCodeAccess("resource-manage-permission-view");
   const canPermissionEdit = hasResourceCodeAccess("resource-manage-permission-edit");
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
   useEffect(() => {
     void reload();
@@ -154,12 +161,10 @@ export function ResourcesAdminPage() {
   const showPermissionArea = form.resourceType === "BUTTON" && (canPermissionView || canPermissionEdit);
   const canSavePermissions = showPermissionArea && canPermissionEdit;
   const readOnly =
-    drawerPurpose === "permission"
-      ? !canPermissionEdit
-      : drawerPurpose === "create"
+    drawerPurpose === "create"
         ? !canCreate
         : !canEdit;
-  const structureReadOnly = drawerPurpose === "permission" || readOnly;
+  const structureReadOnly = readOnly;
 
   async function reload() {
     if (!canView) return;
@@ -179,6 +184,13 @@ export function ResourcesAdminPage() {
 
   function updateForm<K extends keyof ResourceFormState>(key: K, value: ResourceFormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function applyFilters() {
+    setKeyword(keywordDraft.trim());
+    setTypeFilter(typeFilterDraft);
+    setEnabledFilter(enabledFilterDraft);
+    setExpandedIds(new Set(flattenRows(rows).map((item) => item.id)));
   }
 
   function openCreateRoot() {
@@ -208,7 +220,6 @@ export function ResourcesAdminPage() {
 
   async function openEdit(target: ResourceManageEntry, purpose: DrawerPurpose = "edit") {
     if (purpose === "edit" && !canEdit) return;
-    if (purpose === "permission" && !(canPermissionView || canPermissionEdit)) return;
     setDrawerPurpose(purpose);
     setDrawerLoading(true);
     setDrawerOpen(true);
@@ -269,6 +280,9 @@ export function ResourcesAdminPage() {
   }
 
   function resetFilters() {
+    setKeywordDraft("");
+    setTypeFilterDraft("");
+    setEnabledFilterDraft("");
     setKeyword("");
     setTypeFilter("");
     setEnabledFilter("");
@@ -342,11 +356,11 @@ export function ResourcesAdminPage() {
     } else {
       if (!form.id) return;
       await updateResource(form.id, payload);
-      if (drawerPurpose === "permission" || (form.resourceType === "BUTTON" && canSavePermissions)) {
+      if (form.resourceType === "BUTTON" && canSavePermissions) {
         await updateResourcePermissions(form.id, permissionSelection);
       }
       await refreshRegistryLoaded();
-      message.success(drawerPurpose === "permission" ? "权限码绑定已保存" : "资源更新成功");
+      message.success("资源更新成功");
     }
     closeDrawer();
     await reload();
@@ -369,56 +383,120 @@ export function ResourcesAdminPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <BzCard className="admin-panel resource-manage-header-card" shadow="never">
-            <div className="resource-manage-header">
-              <div>
-                <div className="resource-manage-title">资源管理</div>
-                <div className="resource-manage-subtitle">维护后台目录、菜单、功能、按钮资源，以及按钮与权限码绑定关系</div>
+          {queryPanelVisible ? (
+            <BzCard className="admin-panel admin-filter-card" shadow="never">
+              <div
+                ref={queryCardRef}
+                className={[
+                  "admin-query-layout",
+                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                ].join(" ")}
+              >
+                <div className="admin-query-header">
+                  <div className="admin-query-title">筛选条件</div>
+                </div>
+                <form
+                  ref={queryGridRef}
+                  className="bz-form admin-query-grid"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    applyFilters();
+                  }}
+                >
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">关键字</div>
+                    <div className="admin-query-field__control">
+                      <BzInput
+                        modelValue={keywordDraft}
+                        placeholder="搜索资源名称、编码、路径、组件"
+                        clearable
+                        onValueChange={setKeywordDraft}
+                        onKeyUp={(event) => {
+                          if (event.key === "Enter") applyFilters();
+                        }}
+                      />
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">资源类型</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={typeFilterDraft}
+                        placeholder="全部类型"
+                        clearable
+                        onValueChange={(value) => setTypeFilterDraft(value ?? "")}
+                      >
+                        <BzOption value="DIRECTORY" label="目录" />
+                        <BzOption value="MENU" label="菜单" />
+                        <BzOption value="FUNCTION" label="功能" />
+                        <BzOption value="BUTTON" label="按钮" />
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">启用状态</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={enabledFilterDraft}
+                        placeholder="全部状态"
+                        clearable
+                        onValueChange={(value) => setEnabledFilterDraft(value ?? "")}
+                      >
+                        <BzOption value="true" label="启用" />
+                        <BzOption value="false" label="停用" />
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
+                  <div className="admin-query-actions">
+                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
+                      重置
+                    </BzButton>
+                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
+                      搜索
+                    </BzButton>
+                    {!querySingleRow ? (
+                      <button
+                        className="admin-filter-toggle"
+                        type="button"
+                        aria-expanded={queryExpanded}
+                        onClick={() => setQueryExpanded((value) => !value)}
+                      >
+                        <span>{queryExpanded ? "收起" : "展开"}</span>
+                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                      </button>
+                    ) : null}
+                  </div>
+                </form>
               </div>
-              {canCreate ? (
-                <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateRoot}>
-                  新增根资源
-                </BzButton>
-              ) : null}
-            </div>
-          </BzCard>
+            </BzCard>
+          ) : null}
 
-          <BzCard className="admin-panel" shadow="never">
-            <div className="resource-manage-toolbar">
-              <div className="resource-manage-search-area">
-                <BzFormItem className="resource-manage-query-item">
-                  <div className="resource-manage-query-label">关键字</div>
-                  <BzInput
-                    modelValue={keyword}
-                    placeholder="搜索资源名称、编码、路径、组件"
-                    clearable
-                    onValueChange={setKeyword}
+          <BzCard
+            className="admin-panel admin-table-card"
+            shadow="never"
+            header={
+              <div className="admin-table-header">
+                <div>
+                  <div className="admin-table-title">资源管理</div>
+                </div>
+                <div className="admin-table-tools">
+                  <BzButton onClick={expandAll}>全部展开</BzButton>
+                  <BzButton onClick={collapseAll}>全部收起</BzButton>
+                  {canCreate ? (
+                    <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateRoot}>
+                      新增
+                    </BzButton>
+                  ) : null}
+                  <AdminTableTools
+                    queryPanelVisible={queryPanelVisible}
+                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                    onRefresh={() => reload()}
                   />
-                </BzFormItem>
-                <BzFormItem className="resource-manage-query-item">
-                  <div className="resource-manage-query-label">资源类型</div>
-                  <BzSelect modelValue={typeFilter} clearable placeholder="全部类型" onValueChange={(value) => setTypeFilter(value ?? "") }>
-                    <BzOption value="DIRECTORY" label="目录" />
-                    <BzOption value="MENU" label="菜单" />
-                    <BzOption value="FUNCTION" label="功能" />
-                    <BzOption value="BUTTON" label="按钮" />
-                  </BzSelect>
-                </BzFormItem>
-                <BzFormItem className="resource-manage-query-item">
-                  <div className="resource-manage-query-label">启用状态</div>
-                  <BzSelect modelValue={enabledFilter} clearable placeholder="全部状态" onValueChange={(value) => setEnabledFilter(value ?? "") }>
-                    <BzOption value="true" label="启用" />
-                    <BzOption value="false" label="停用" />
-                  </BzSelect>
-                </BzFormItem>
+                </div>
               </div>
-              <div className="resource-manage-toolbar-actions">
-                <BzButton onClick={expandAll}>全部展开</BzButton>
-                <BzButton onClick={collapseAll}>全部收起</BzButton>
-                <BzButton onClick={resetFilters}>重置</BzButton>
-                <BzButton onClick={reload}>刷新</BzButton>
-              </div>
-            </div>
+            }
+          >
+            <div className="admin-table-surface">
 
             <div className="resource-manage-table-wrap">
               <table className="resource-manage-table">
@@ -449,13 +527,10 @@ export function ResourcesAdminPage() {
                       const childrenAllowed = canHaveChildren(row.resourceType);
                       const actions: AdminActionItem[] = [];
                       if (canCreate && childrenAllowed) {
-                        actions.push({ key: "create-child", label: "新增子资源", handler: () => openCreateChild(row) });
+                        actions.push({ key: "create-child", label: "新增子项", handler: () => openCreateChild(row) });
                       }
                       if (canEdit) {
                         actions.push({ key: "edit", label: "编辑", handler: () => void openEdit(row, "edit") });
-                      }
-                      if (row.resourceType === "BUTTON" && (canPermissionView || canPermissionEdit)) {
-                        actions.push({ key: "permission", label: "权限码", handler: () => void openEdit(row, "permission") });
                       }
                       if (canDelete) {
                         actions.push({
@@ -509,6 +584,7 @@ export function ResourcesAdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
             </div>
           </BzCard>
         </div>
@@ -566,7 +642,12 @@ export function ResourcesAdminPage() {
                   </div>
                   <div className="resource-manage-form-item">
                     <div className="resource-manage-form-label">排序号</div>
-                    <BzInputNumber modelValue={form.sortNo} min={0} disabled={structureReadOnly} onValueChange={(value) => updateForm("sortNo", value)} />
+                    <BzInput
+                      modelValue={String(form.sortNo)}
+                      disabled={structureReadOnly}
+                      placeholder="例如：10"
+                      onValueChange={(value) => updateForm("sortNo", Number(value || 0))}
+                    />
                   </div>
                   <div className="resource-manage-form-item resource-manage-form-item--full">
                     <div className="resource-manage-form-label">备注</div>
@@ -807,6 +888,5 @@ function blankToNull(value: string): string | null {
 
 function resolveDrawerTitle(purpose: DrawerPurpose, resourceType: ManageResourceType): string {
   if (purpose === "create") return "新增资源";
-  if (purpose === "permission") return `权限码绑定 - ${RESOURCE_TYPE_LABEL[resourceType]}`;
   return "编辑资源";
 }
