@@ -5,23 +5,18 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.system.auth.published.SecurityContextService;
 import com.corwin.system.resource.application.view.AdminMenuResourceView;
 import com.corwin.system.resource.application.view.AdminMenuResourcesView;
-import com.corwin.system.resource.domain.model.Function;
-import com.corwin.system.resource.domain.model.FunctionType;
-import com.corwin.system.resource.domain.model.Menu;
-import com.corwin.system.resource.domain.model.MenuFunction;
-import com.corwin.system.resource.domain.repo.FunctionRepository;
-import com.corwin.system.resource.domain.repo.MenuFunctionRepository;
-import com.corwin.system.resource.domain.repo.MenuRepository;
-import com.corwin.system.role.domain.model.RoleMenu;
-import com.corwin.system.role.domain.model.RoleFunction;
-import com.corwin.system.role.domain.repo.RoleFunctionRepository;
-import com.corwin.system.role.domain.repo.RoleMenuRepository;
+import com.corwin.system.resource.domain.model.Resource;
+import com.corwin.system.resource.domain.model.ResourceType;
+import com.corwin.system.resource.domain.repo.ResourceRepository;
+import com.corwin.system.role.domain.model.RoleResource;
+import com.corwin.system.role.domain.repo.RoleResourceRepository;
 import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,22 +24,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
- * @author Corwin 2026/5/31
+ * @author Corwin 2026/6/29
  */
 @Service
 @RequiredArgsConstructor
 public class AdminMenuResourceService {
 
     private final SecurityContextService securityContextService;
-    private final MenuRepository menuRepository;
-    private final FunctionRepository functionRepository;
-    private final MenuFunctionRepository menuFunctionRepository;
-    private final RoleFunctionRepository roleFunctionRepository;
-    private final RoleMenuRepository roleMenuRepository;
+    private final ResourceRepository resourceRepository;
+    private final RoleResourceRepository roleResourceRepository;
     private final UserRoleRepository userRoleRepository;
 
     public AdminMenuResourcesView currentAdminMenuResources() {
@@ -63,81 +54,42 @@ public class AdminMenuResourceService {
     }
 
     private List<AdminMenuResourceView> buildAdminResources() {
-        Map<Long, Menu> menuById = menuRepository.findAll().stream().filter(this::menuVisibleAndEnabled)
-                .filter(menu -> menu.getId() != null)
-                .collect(Collectors.toMap(Menu::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
-        List<Menu> menus = menuById.values().stream().sorted(menuComparator()).toList();
-        List<Function> functions = functionRepository.findAll().stream().filter(this::functionEnabled)
-                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left, LinkedHashMap::new))
-                .values().stream().toList();
-        Map<Long, Function> functionById = functions.stream()
-                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
-        List<MenuFunction> menuFunctions = menuFunctionRepository.findAll().stream()
-                .filter(menuFunction -> Boolean.TRUE.equals(menuFunction.getVisible()))
-                .filter(menuFunction -> functionById.containsKey(menuFunction.getFunctionId()))
-                .filter(menuFunction -> menuById.containsKey(menuFunction.getMenuId()))
-                .sorted(menuFunctionComparator()).toList();
-
-        List<AdminMenuResourceView> resources = new ArrayList<>();
-        menus.forEach(menu -> resources.add(toMenuResource(menu)));
-        menuFunctions.forEach(menuFunction -> {
-            Function function = functionById.get(menuFunction.getFunctionId());
-            if (function != null) {
-                resources.add(toFunctionResource(menuFunction, function));
-            }
-        });
-        return resources;
+        return resourceRepository.findAll().stream()
+                .filter(this::resourceVisibleAndEnabled)
+                .filter(resource -> resource.getId() != null)
+                .sorted(resourceComparator())
+                .map(this::toResourceView)
+                .toList();
     }
 
     private List<AdminMenuResourceView> buildInternalResources(Long userId) {
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId)
-                .filter(Objects::nonNull).distinct().toList();
+        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+                .map(UserRole::getRoleId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
         if (roleIds.isEmpty()) {
             return List.of();
         }
 
-        Map<Long, Menu> menuById = menuRepository.findAll().stream().filter(this::menuVisibleAndEnabled)
-                .filter(menu -> menu.getId() != null)
-                .collect(Collectors.toMap(Menu::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
+        Map<Long, Resource> resourceById = resourceRepository.findAll().stream()
+                .filter(this::resourceVisibleAndEnabled)
+                .filter(resource -> resource.getId() != null)
+                .collect(Collectors.toMap(Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
 
-        Map<Long, Function> functionById = functionRepository.findAll().stream().filter(this::functionEnabled)
-                .filter(function -> function.getId() != null)
-                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
-
-        Map<Long, MenuFunction> menuFunctionById = menuFunctionRepository.findAll().stream()
-                .filter(mapping -> mapping.getId() != null).filter(mapping -> Boolean.TRUE.equals(mapping.getVisible()))
-                .filter(mapping -> functionById.containsKey(mapping.getFunctionId()))
-                .filter(mapping -> menuById.containsKey(mapping.getMenuId())).collect(
-                        Collectors.toMap(MenuFunction::getId, value -> value, (left, right) -> left,
-                                LinkedHashMap::new));
-
-        Set<Long> roleFunctionIds = roleFunctionRepository.findByRoleIdIn(roleIds).stream().map(RoleFunction::getFunctionId)
-                .filter(Objects::nonNull).filter(functionById::containsKey)
+        LinkedHashSet<Long> includedIds = roleResourceRepository.findByRoleIdIn(roleIds).stream()
+                .map(RoleResource::getResourceId)
+                .filter(Objects::nonNull)
+                .filter(resourceById::containsKey)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+        includeAncestors(includedIds, resourceById);
 
-        Set<Long> includedMenuFunctionIds = menuFunctionById.values().stream()
-                .filter(mapping -> roleFunctionIds.contains(mapping.getFunctionId())).map(MenuFunction::getId)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        includeMenuFunctionAncestors(includedMenuFunctionIds, menuFunctionById);
-
-        Set<Long> includedMenuIds = roleMenuRepository.findByRoleIdIn(roleIds).stream().map(RoleMenu::getMenuId)
-                .filter(Objects::nonNull).filter(menuById::containsKey)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        includedMenuFunctionIds.stream().map(menuFunctionById::get).filter(Objects::nonNull).map(MenuFunction::getMenuId)
-                .filter(Objects::nonNull).filter(menuById::containsKey).forEach(includedMenuIds::add);
-        includeMenuAncestors(includedMenuIds, menuById);
-
-        List<AdminMenuResourceView> resources = new ArrayList<>();
-        includedMenuIds.stream().map(menuById::get).filter(Objects::nonNull).sorted(menuComparator())
-                .map(this::toMenuResource).forEach(resources::add);
-        includedMenuFunctionIds.stream().map(menuFunctionById::get).filter(Objects::nonNull)
-                .sorted(menuFunctionComparator()).forEach(menuFunction -> {
-                    Function function = functionById.get(menuFunction.getFunctionId());
-                    if (function != null) {
-                        resources.add(toFunctionResource(menuFunction, function));
-                    }
-                });
-        return resources;
+        return includedIds.stream()
+                .map(resourceById::get)
+                .filter(Objects::nonNull)
+                .sorted(resourceComparator())
+                .map(this::toResourceView)
+                .toList();
     }
 
     private List<AdminMenuResourceView> buildTree(List<AdminMenuResourceView> flatResources) {
@@ -159,77 +111,57 @@ public class AdminMenuResourceService {
     private AdminMenuResourceView buildTreeNode(AdminMenuResourceView resource,
             Map<String, List<AdminMenuResourceView>> childrenByParentId) {
         List<AdminMenuResourceView> children = childrenByParentId.getOrDefault(resource.id(), List.of()).stream()
-                .map(child -> buildTreeNode(child, childrenByParentId)).toList();
+                .map(child -> buildTreeNode(child, childrenByParentId))
+                .toList();
         return new AdminMenuResourceView(resource.id(), resource.parentId(), resource.name(), resource.icon(),
                 resource.code(), resource.type(), resource.url(), resource.loadTarget(), resource.orderNo(), children);
     }
 
-    private void includeMenuFunctionAncestors(Set<Long> includedIds, Map<Long, MenuFunction> menuFunctionById) {
+    private void includeAncestors(Set<Long> includedIds, Map<Long, Resource> resourceById) {
         List<Long> queue = new ArrayList<>(includedIds);
         int index = 0;
         while (index < queue.size()) {
-            MenuFunction current = menuFunctionById.get(queue.get(index++));
+            Resource current = resourceById.get(queue.get(index++));
             if (current == null || current.getParentId() == null) {
                 continue;
             }
-            MenuFunction parent = menuFunctionById.get(current.getParentId());
+            Resource parent = resourceById.get(current.getParentId());
             if (parent != null && includedIds.add(parent.getId())) {
                 queue.add(parent.getId());
             }
         }
     }
 
-    private void includeMenuAncestors(Set<Long> includedIds, Map<Long, Menu> menuById) {
-        List<Long> queue = new ArrayList<>(includedIds);
-        int index = 0;
-        while (index < queue.size()) {
-            Menu current = menuById.get(queue.get(index++));
-            if (current == null || current.getParentId() == null) {
-                continue;
-            }
-            Menu parent = menuById.get(current.getParentId());
-            if (parent != null && includedIds.add(parent.getId())) {
-                queue.add(parent.getId());
-            }
-        }
+    private AdminMenuResourceView toResourceView(Resource resource) {
+        return new AdminMenuResourceView(
+                "resource:" + resource.getId(),
+                resource.getParentId() == null ? null : "resource:" + resource.getParentId(),
+                resource.getName(),
+                resource.getIcon(),
+                resource.getCode(),
+                resource.getResourceType().name(),
+                resolveUrl(resource),
+                resolveLoadTarget(resource),
+                resource.getSortNo() == null ? 0 : resource.getSortNo(),
+                List.of());
     }
 
-    private AdminMenuResourceView toMenuResource(Menu menu) {
-        return new AdminMenuResourceView("menu:" + menu.getId(),
-                menu.getParentId() == null ? null : "menu:" + menu.getParentId(), menu.getName(),
-                menu.getIcon(), menu.getCode(), menu.resolveMenuType().name(), blankToEmpty(menu.getPath()),
-                blankToEmpty(menu.getComponent()), menu.getSortNo(), List.of());
+    private boolean resourceVisibleAndEnabled(Resource resource) {
+        return Boolean.TRUE.equals(resource.getEnabled()) && Boolean.TRUE.equals(resource.getVisible());
     }
 
-    private AdminMenuResourceView toFunctionResource(MenuFunction menuFunction, Function function) {
-        return new AdminMenuResourceView("mf:" + menuFunction.getId(),
-                menuFunction.getParentId() == null ? "menu:" + menuFunction.getMenuId() : "mf:" + menuFunction.getParentId(),
-                function.getName(), null, function.getCode(), resolveType(function), "NONE", "NONE",
-                menuFunction.getSortNo() == null ? 0 : menuFunction.getSortNo(), List.of());
+    private Comparator<Resource> resourceComparator() {
+        return Comparator.comparing(Resource::getParentId, Comparator.nullsFirst(Long::compareTo))
+                .thenComparing(Resource::getSortNo, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(Resource::getId, Comparator.nullsLast(Long::compareTo));
     }
 
-    private boolean menuVisibleAndEnabled(Menu menu) {
-        return Boolean.TRUE.equals(menu.getEnabled()) && Boolean.TRUE.equals(menu.getVisible());
+    private String resolveUrl(Resource resource) {
+        return resource.getResourceType() == ResourceType.BUTTON ? "NONE" : blankToEmpty(resource.getPath());
     }
 
-    private boolean functionEnabled(Function function) {
-        return Boolean.TRUE.equals(function.getEnabled());
-    }
-
-    private Comparator<Menu> menuComparator() {
-        return Comparator.comparing(Menu::getSortNo, Comparator.nullsLast(Integer::compareTo))
-                .thenComparing(Menu::getId, Comparator.nullsLast(Long::compareTo));
-    }
-
-    private Comparator<MenuFunction> menuFunctionComparator() {
-        return Comparator.comparing(MenuFunction::getMenuId, Comparator.nullsLast(Long::compareTo))
-                .thenComparing(MenuFunction::getParentId, Comparator.nullsLast(Long::compareTo))
-                .thenComparing(MenuFunction::getSortNo, Comparator.nullsLast(Integer::compareTo))
-                .thenComparing(MenuFunction::getId, Comparator.nullsLast(Long::compareTo));
-    }
-
-    private String resolveType(Function function) {
-        return function.getFunctionType() == FunctionType.BUTTON ? "BUTTON" : "FEATURE";
+    private String resolveLoadTarget(Resource resource) {
+        return resource.getResourceType() == ResourceType.BUTTON ? "NONE" : blankToEmpty(resource.getComponent());
     }
 
     private String blankToEmpty(String value) {

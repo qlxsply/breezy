@@ -23,8 +23,7 @@ interface RolePayload {
 interface RoleGrantResourcePayload {
   id: string;
   parentId?: string | null;
-  menuId?: string | null;
-  functionId?: string | null;
+  resourceId: string;
   name: string;
   code: string;
   type: string;
@@ -32,12 +31,10 @@ interface RoleGrantResourcePayload {
   enabled: boolean;
   selectable: boolean;
   orderNo: number;
-  permissionCodes?: string[];
 }
 
 interface RoleGrantSelectionPayload {
-  menuIds?: Array<string | number>;
-  functionIds?: Array<string | number>;
+  resourceIds?: Array<string | number>;
 }
 
 function toRoleEntry(payload: RolePayload): RoleEntry {
@@ -57,8 +54,7 @@ function toGrantResourceEntry(payload: RoleGrantResourcePayload): RoleGrantResou
   return {
     id: String(payload.id),
     parentId: payload.parentId ?? null,
-    menuId: payload.menuId ?? null,
-    functionId: payload.functionId ?? null,
+    resourceId: String(payload.resourceId),
     name: payload.name,
     code: payload.code,
     type: payload.type,
@@ -66,7 +62,6 @@ function toGrantResourceEntry(payload: RoleGrantResourcePayload): RoleGrantResou
     enabled: Boolean(payload.enabled),
     selectable: Boolean(payload.selectable),
     orderNo: Number(payload.orderNo || 0),
-    permissionCodes: Array.isArray(payload.permissionCodes) ? payload.permissionCodes : [],
   };
 }
 
@@ -97,9 +92,8 @@ export async function listRoleGrantResources(): Promise<RoleGrantResourceEntry[]
 export async function getRoleGrantSelection(id: string): Promise<RoleGrantSelection> {
   const payload = await get<RoleGrantSelectionPayload>(`${BASE}/${encodeURIComponent(id)}/grant`);
   return {
-    menuIds: Array.isArray(payload.menuIds) ? payload.menuIds.map((value) => String(value)) : [],
-    functionIds: Array.isArray(payload.functionIds)
-      ? payload.functionIds.map((value) => String(value))
+    resourceIds: Array.isArray(payload.resourceIds)
+      ? payload.resourceIds.map((value) => String(value))
       : [],
   };
 }
@@ -108,11 +102,8 @@ export function updateRoleGrantSelection(
   id: string,
   selection: RoleGrantSelection,
 ): Promise<boolean> {
-  const menuIds = selection.menuIds
-    .map((menuId) => Number(menuId))
-    .filter((menuId) => Number.isFinite(menuId));
-  const functionIds = selection.functionIds
-    .map((functionId) => Number(functionId))
-    .filter((functionId) => Number.isFinite(functionId));
-  return put<boolean>(`${BASE}/${encodeURIComponent(id)}/grant`, { menuIds, functionIds });
+  const resourceIds = selection.resourceIds
+    .map((resourceId) => Number(resourceId))
+    .filter((resourceId) => Number.isFinite(resourceId));
+  return put<boolean>(`${BASE}/${encodeURIComponent(id)}/grant`, { resourceIds });
 }

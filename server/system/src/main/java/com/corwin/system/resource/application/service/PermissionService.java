@@ -1,49 +1,49 @@
 package com.corwin.system.resource.application.service;
 
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.error.BaseError;
-import com.corwin.framework.error.BizAssert;
-import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.ctx.CtxUtil;
-import com.corwin.system.auth.application.service.InternalPermissionSessionService;
 import com.corwin.system.resource.application.view.MyPermissionsDetailView;
-import com.corwin.system.resource.domain.model.FunctionPermission;
 import com.corwin.system.resource.domain.model.Permission;
 import com.corwin.system.resource.domain.model.PermissionUserScope;
-import com.corwin.system.resource.domain.repo.FunctionPermissionRepository;
+import com.corwin.system.resource.domain.model.Resource;
+import com.corwin.system.resource.domain.model.ResourcePermission;
 import com.corwin.system.resource.domain.repo.PermissionRepository;
+import com.corwin.system.resource.domain.repo.ResourcePermissionRepository;
+import com.corwin.system.resource.domain.repo.ResourceRepository;
 import com.corwin.system.role.domain.model.Role;
-import com.corwin.system.role.domain.model.RoleFunction;
-import com.corwin.system.role.domain.repo.RoleFunctionRepository;
+import com.corwin.system.role.domain.model.RoleResource;
 import com.corwin.system.role.domain.repo.RoleRepository;
+import com.corwin.system.role.domain.repo.RoleResourceRepository;
 import com.corwin.system.user.domain.model.DefaultUser;
-import com.corwin.system.user.domain.model.User;
 import com.corwin.system.user.domain.model.UserRole;
-import com.corwin.system.user.domain.repo.UserRepository;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
 import com.corwin.system.userfeature.application.service.UserFeatureAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author Corwin 2026/1/22
+ * @author Corwin 2026/6/29
  */
 @Service
 @RequiredArgsConstructor
 public class PermissionService {
 
     private final UserRoleRepository userRoleRepository;
-    private final RoleFunctionRepository roleFunctionRepository;
+    private final RoleResourceRepository roleResourceRepository;
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
-    private final FunctionPermissionRepository functionPermissionRepository;
-    private final ApiPermissionCache apiPermissionCache;
-    private final UserRepository userRepository;
+    private final ResourcePermissionRepository resourcePermissionRepository;
+    private final ResourceRepository resourceRepository;
     private final UserFeatureAccessService userFeatureAccessService;
-    private final InternalPermissionSessionService internalPermissionSessionService;
 
     public MyPermissionsDetailView getPermissionDetailForCurrent() {
         Long userId = CtxUtil.getPrincipal().userId();
@@ -53,8 +53,7 @@ public class PermissionService {
             return new MyPermissionsDetailView(username == null ? "GUEST" : username, List.of(), List.of());
         }
         List<String> roleNames = userType == UserType.INTERNAL
-                ? roleRepository.findByIdIn(
-                        userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList())
+                ? roleRepository.findByIdIn(userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList())
                 .stream().map(Role::getName).toList()
                 : List.of();
         List<String> permissionCodes = permissionCodesForUser(userId, userType).stream().sorted().toList();
@@ -80,8 +79,11 @@ public class PermissionService {
         }
         if (DefaultUser.isAdmin(userId)) {
             return permissionRepository.findAll().stream()
-                    .filter(permission -> Boolean.TRUE.equals(permission.getEnabled())).map(Permission::getCode)
-                    .filter(Objects::nonNull).map(String::trim).filter(code -> !code.isBlank())
+                    .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
+                    .map(Permission::getCode)
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .filter(code -> !code.isBlank())
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
         List<Long> permissionIds = internalPermissionIdsForUser(userId);
@@ -92,7 +94,10 @@ public class PermissionService {
                 .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
                 .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
                         || permission.getUserScope() == PermissionUserScope.COMMON)
-                .map(Permission::getCode).filter(Objects::nonNull).map(String::trim).filter(code -> !code.isBlank())
+                .map(Permission::getCode)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(code -> !code.isBlank())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
@@ -127,29 +132,36 @@ public class PermissionService {
         return allowedIds.stream().toList();
     }
 
-    private void requireInternalUser(Long userId) {
-        BizAssert.notNull(userId, BaseError.INVALID_PARAMETER);
-        if (DefaultUser.isAdmin(userId)) {
-            return;
-        }
-        User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        BizAssert.state(user.getUserType() == UserType.INTERNAL, BaseError.INVALID_PARAMETER);
-    }
-
     private List<Long> roleDerivedPermissionIdsForUser(Long userId) {
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList();
+        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+                .map(UserRole::getRoleId)
+                .toList();
         if (roleIds.isEmpty()) {
             return List.of();
         }
-        LinkedHashSet<Long> functionIds = roleFunctionRepository.findByRoleIdIn(roleIds).stream()
-                .map(RoleFunction::getFunctionId)
+        LinkedHashSet<Long> roleResourceIds = roleResourceRepository.findByRoleIdIn(roleIds).stream()
+                .map(RoleResource::getResourceId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        if (functionIds.isEmpty()) {
+        if (roleResourceIds.isEmpty()) {
             return List.of();
         }
-        return functionPermissionRepository.findByFunctionIdIn(functionIds).stream()
-                .map(FunctionPermission::getPermissionId)
+
+        Map<Long, Resource> resourceById = resourceRepository.findAllById(roleResourceIds).stream()
+                .filter(resource -> resource.getId() != null)
+                .filter(resource -> Boolean.TRUE.equals(resource.getEnabled()))
+                .collect(Collectors.toMap(Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
+        LinkedHashSet<Long> buttonResourceIds = resourceById.values().stream()
+                .filter(Resource::canBindPermission)
+                .map(Resource::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (buttonResourceIds.isEmpty()) {
+            return List.of();
+        }
+
+        return resourcePermissionRepository.findByResourceIdIn(buttonResourceIds).stream()
+                .map(ResourcePermission::getPermissionId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();

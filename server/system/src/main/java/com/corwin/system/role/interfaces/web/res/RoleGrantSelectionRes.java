@@ -6,7 +6,6 @@ import java.util.List;
  * @author Corwin 2026/5/19
  */
 public record RoleGrantSelectionRes(
-        List<String> menuIds,
-        List<String> functionIds
+        List<String> resourceIds
 ) {
 }

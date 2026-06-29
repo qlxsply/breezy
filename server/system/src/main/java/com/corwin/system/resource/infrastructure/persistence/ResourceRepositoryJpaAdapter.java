@@ -1,34 +1,35 @@
 package com.corwin.system.resource.infrastructure.persistence;
 
-import com.corwin.system.resource.domain.model.Menu;
-import com.corwin.system.resource.domain.repo.MenuRepository;
+import com.corwin.system.resource.domain.model.Resource;
+import com.corwin.system.resource.domain.repo.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/6/29
  */
 @Repository
 @RequiredArgsConstructor
-public class MenuRepositoryJpaAdapter implements MenuRepository {
+public class ResourceRepositoryJpaAdapter implements ResourceRepository {
 
-    private final MenuJpaRepository repo;
+    private final ResourceJpaRepository repo;
 
     @Override
-    public <S extends Menu> S save(S entity) {
+    public <S extends Resource> S save(S entity) {
         return repo.save(entity);
     }
 
     @Override
-    public <S extends Menu> List<S> saveAll(Iterable<S> entities) {
+    public <S extends Resource> List<S> saveAll(Iterable<S> entities) {
         return repo.saveAll(entities);
     }
 
     @Override
-    public Optional<Menu> findById(Long id) {
+    public Optional<Resource> findById(Long id) {
         return repo.findById(id);
     }
 
@@ -38,7 +39,7 @@ public class MenuRepositoryJpaAdapter implements MenuRepository {
     }
 
     @Override
-    public void delete(Menu entity) {
+    public void delete(Resource entity) {
         repo.delete(entity);
         repo.flush();
     }
@@ -50,7 +51,12 @@ public class MenuRepositoryJpaAdapter implements MenuRepository {
     }
 
     @Override
-    public List<Menu> findAll() {
+    public List<Resource> findAll() {
         return repo.findAll();
+    }
+
+    @Override
+    public List<Resource> findAllById(Collection<Long> ids) {
+        return repo.findAllById(ids);
     }
 }

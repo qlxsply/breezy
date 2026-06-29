@@ -7,21 +7,14 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.InternalPermissionSessionService;
 import com.corwin.system.resource.application.service.ApiPermissionCache;
-import com.corwin.system.resource.domain.model.Function;
-import com.corwin.system.resource.domain.model.Menu;
-import com.corwin.system.resource.domain.model.MenuType;
-import com.corwin.system.resource.domain.model.MenuFunction;
-import com.corwin.system.resource.domain.repo.FunctionRepository;
-import com.corwin.system.resource.domain.repo.MenuFunctionRepository;
-import com.corwin.system.resource.domain.repo.MenuRepository;
+import com.corwin.system.resource.domain.model.Resource;
+import com.corwin.system.resource.domain.repo.ResourceRepository;
 import com.corwin.system.role.application.command.UpdateRoleGrantCommand;
 import com.corwin.system.role.application.view.RoleGrantResourceView;
 import com.corwin.system.role.application.view.RoleGrantSelectionView;
-import com.corwin.system.role.domain.model.RoleFunction;
-import com.corwin.system.role.domain.model.RoleMenu;
-import com.corwin.system.role.domain.repo.RoleFunctionRepository;
-import com.corwin.system.role.domain.repo.RoleMenuRepository;
+import com.corwin.system.role.domain.model.RoleResource;
 import com.corwin.system.role.domain.repo.RoleRepository;
+import com.corwin.system.role.domain.repo.RoleResourceRepository;
 import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,97 +25,41 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/6/29
  */
 @Service
 @RequiredArgsConstructor
 public class RoleGrantService {
 
     private final RoleRepository roleRepository;
-    private final RoleMenuRepository roleMenuRepository;
-    private final RoleFunctionRepository roleFunctionRepository;
+    private final RoleResourceRepository roleResourceRepository;
     private final UserRoleRepository userRoleRepository;
-    private final MenuRepository menuRepository;
-    private final FunctionRepository functionRepository;
-    private final MenuFunctionRepository menuFunctionRepository;
+    private final ResourceRepository resourceRepository;
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
     public RoleGrantSelectionView roleGrantSelection(Long roleId) {
         requireRole(roleId);
-        List<Long> menuIds = roleMenuRepository.findByRoleId(roleId).stream()
-                .map(RoleMenu::getMenuId)
+        List<Long> resourceIds = roleResourceRepository.findByRoleId(roleId).stream()
+                .map(RoleResource::getResourceId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
-        List<Long> functionIds = roleFunctionRepository.findByRoleId(roleId).stream()
-                .map(RoleFunction::getFunctionId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        return new RoleGrantSelectionView(menuIds, functionIds);
+        return new RoleGrantSelectionView(resourceIds);
     }
 
     public List<RoleGrantResourceView> grantResources() {
-        List<Menu> menus = menuRepository.findAll().stream()
-                .filter(menu -> Boolean.TRUE.equals(menu.getVisible()))
-                .sorted(Comparator.comparing(Menu::getSortNo, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(Menu::getId, Comparator.nullsLast(Long::compareTo)))
+        return resourceRepository.findAll().stream()
+                .filter(resource -> resource.getId() != null)
+                .filter(resource -> Boolean.TRUE.equals(resource.getVisible()))
+                .sorted(resourceComparator())
+                .map(this::toGrantResourceView)
                 .toList();
-        Map<Long, Function> functionById = functionRepository.findAll().stream()
-                .filter(function -> function.getId() != null)
-                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left));
-        List<MenuFunction> menuFunctions = menuFunctionRepository.findAll().stream()
-                .filter(mapping -> mapping.getId() != null)
-                .filter(mapping -> Boolean.TRUE.equals(mapping.getVisible()))
-                .filter(mapping -> functionById.containsKey(mapping.getFunctionId()))
-                .sorted(Comparator.comparing(MenuFunction::getMenuId, Comparator.nullsLast(Long::compareTo))
-                        .thenComparing(MenuFunction::getParentId, Comparator.nullsLast(Long::compareTo))
-                        .thenComparing(MenuFunction::getSortNo, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(MenuFunction::getId, Comparator.nullsLast(Long::compareTo)))
-                .toList();
-
-        ArrayList<RoleGrantResourceView> resources = new ArrayList<>();
-        for (Menu menu : menus) {
-            resources.add(new RoleGrantResourceView(
-                    "menu:" + menu.getId(),
-                    menu.getParentId() == null ? null : "menu:" + menu.getParentId(),
-                    String.valueOf(menu.getId()),
-                    null,
-                    menu.getName(),
-                    menu.getCode(),
-                    menu.resolveMenuType().name(),
-                    menu.getRemark(),
-                    Boolean.TRUE.equals(menu.getEnabled()),
-                    true,
-                    menu.getSortNo() == null ? 0 : menu.getSortNo()));
-        }
-        for (MenuFunction menuFunction : menuFunctions) {
-            Function function = functionById.get(menuFunction.getFunctionId());
-            if (function == null) {
-                continue;
-            }
-            resources.add(new RoleGrantResourceView(
-                    "mf:" + menuFunction.getId(),
-                    menuFunction.getParentId() == null ? "menu:" + menuFunction.getMenuId()
-                            : "mf:" + menuFunction.getParentId(),
-                    null,
-                    String.valueOf(function.getId()),
-                    function.getName(),
-                    function.getCode(),
-                    resolveGrantFunctionType(function),
-                    function.getDescription(),
-                    Boolean.TRUE.equals(function.getEnabled()),
-                    true,
-                    menuFunction.getSortNo() == null ? 0 : menuFunction.getSortNo()));
-        }
-        return resources;
     }
 
     @Transactional
@@ -133,21 +70,14 @@ public class RoleGrantService {
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
-        roleMenuRepository.deleteByRoleId(roleId);
-        roleFunctionRepository.deleteByRoleId(roleId);
-        List<Long> menuIds = normalizeMenuIds(cmd == null ? null : cmd.menuIds());
-        List<Long> functionIds = normalizeFunctionIds(cmd == null ? null : cmd.functionIds());
+        roleResourceRepository.deleteByRoleId(roleId);
+        List<Long> resourceIds = normalizeResourceIds(cmd == null ? null : cmd.resourceIds());
         Long operatorId = operatorId();
-        ArrayList<RoleMenu> menus = new ArrayList<>();
-        for (Long menuId : menuIds) {
-            menus.add(new RoleMenu(roleId, menuId, operatorId));
+        ArrayList<RoleResource> next = new ArrayList<>();
+        for (Long resourceId : resourceIds) {
+            next.add(new RoleResource(roleId, resourceId, operatorId));
         }
-        ArrayList<RoleFunction> next = new ArrayList<>();
-        for (Long functionId : functionIds) {
-            next.add(new RoleFunction(roleId, functionId, operatorId));
-        }
-        roleMenuRepository.saveAll(menus);
-        roleFunctionRepository.saveAll(next);
+        roleResourceRepository.saveAll(next);
         apiPermissionCache.clearAll();
         internalPermissionSessionService.kickOutActiveSessions(affectedUserIds, operatorName());
         return true;
@@ -157,46 +87,47 @@ public class RoleGrantService {
         roleRepository.findById(roleId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
-    private List<Long> normalizeMenuIds(List<Long> menuIds) {
-        if (menuIds == null || menuIds.isEmpty()) {
+    private List<Long> normalizeResourceIds(List<Long> resourceIds) {
+        if (resourceIds == null || resourceIds.isEmpty()) {
             return List.of();
         }
-        Set<Long> allowedMenuIds = grantResources().stream()
-                .map(RoleGrantResourceView::menuId)
+        Set<Long> allowedResourceIds = grantResources().stream()
+                .filter(RoleGrantResourceView::selectable)
+                .map(RoleGrantResourceView::resourceId)
                 .filter(Objects::nonNull)
                 .map(Long::valueOf)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+
         LinkedHashSet<Long> normalized = new LinkedHashSet<>();
-        for (Long menuId : menuIds) {
-            if (menuId == null || menuId <= 0) {
+        for (Long resourceId : resourceIds) {
+            if (resourceId == null || resourceId <= 0) {
                 continue;
             }
-            BizAssert.state(allowedMenuIds.contains(menuId), BaseError.INVALID_PARAMETER);
-            normalized.add(menuId);
+            BizAssert.state(allowedResourceIds.contains(resourceId), BaseError.INVALID_PARAMETER);
+            normalized.add(resourceId);
         }
         return List.copyOf(normalized);
     }
 
-    private List<Long> normalizeFunctionIds(List<Long> functionIds) {
-        if (functionIds == null || functionIds.isEmpty()) {
-            return List.of();
-        }
-        Set<Long> allowedFunctionIds = grantResources().stream()
-                .filter(RoleGrantResourceView::selectable)
-                .map(RoleGrantResourceView::functionId)
-                .filter(Objects::nonNull)
-                .map(Long::valueOf)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+    private RoleGrantResourceView toGrantResourceView(Resource resource) {
+        Long resourceId = resource.getId();
+        return new RoleGrantResourceView(
+                "resource:" + resourceId,
+                resource.getParentId() == null ? null : "resource:" + resource.getParentId(),
+                String.valueOf(resourceId),
+                resource.getName(),
+                resource.getCode(),
+                resource.getResourceType().name(),
+                resource.getRemark(),
+                Boolean.TRUE.equals(resource.getEnabled()),
+                true,
+                resource.getSortNo() == null ? 0 : resource.getSortNo());
+    }
 
-        LinkedHashSet<Long> normalized = new LinkedHashSet<>();
-        for (Long functionId : functionIds) {
-            if (functionId == null || functionId <= 0) {
-                continue;
-            }
-            BizAssert.state(allowedFunctionIds.contains(functionId), BaseError.INVALID_PARAMETER);
-            normalized.add(functionId);
-        }
-        return List.copyOf(normalized);
+    private Comparator<Resource> resourceComparator() {
+        return Comparator.comparing(Resource::getParentId, Comparator.nullsFirst(Long::compareTo))
+                .thenComparing(Resource::getSortNo, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(Resource::getId, Comparator.nullsLast(Long::compareTo));
     }
 
     private Long operatorId() {
@@ -214,11 +145,5 @@ public class RoleGrantService {
             return operatorId == null ? "system" : String.valueOf(operatorId);
         }
         return operatorName;
-    }
-
-    private String resolveGrantFunctionType(Function function) {
-        return switch (function.getFunctionType()) {
-            case PAGE, QUERY, ACTION, BUTTON, INVISIBLE -> "BUTTON";
-        };
     }
 }

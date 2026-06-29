@@ -99,18 +99,17 @@ public class RoleAdminController {
     @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.perm.edit"})
     @Audit(resource = AuditResource.ROLE_GRANT, action = AuditAction.GRANT, level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updateRoleGrant(@PathVariable Long id, @RequestBody UpdateRoleGrantReq req) {
-        UpdateRoleGrantCommand cmd = new UpdateRoleGrantCommand(req.menuIds(), req.functionIds());
+        UpdateRoleGrantCommand cmd = new UpdateRoleGrantCommand(req.resourceIds());
         return ApiResponse.ok(roleGrantService.updateRoleGrant(id, cmd));
     }
 
     private RoleGrantResourceRes toGrantRes(RoleGrantResourceView view) {
-        return new RoleGrantResourceRes(view.id(), view.parentId(), view.menuId(), view.functionId(), view.name(), view.code(),
+        return new RoleGrantResourceRes(view.id(), view.parentId(), view.resourceId(), view.name(), view.code(),
                 view.type(), view.description(), view.enabled(), view.selectable(), view.orderNo());
     }
 
     private RoleGrantSelectionRes toGrantSelectionRes(RoleGrantSelectionView view) {
-        return new RoleGrantSelectionRes(view.menuIds().stream().map(String::valueOf).toList(),
-                view.functionIds().stream().map(String::valueOf).toList());
+        return new RoleGrantSelectionRes(view.resourceIds().stream().map(String::valueOf).toList());
     }
 
     private static RoleRes toDto(Role role) {

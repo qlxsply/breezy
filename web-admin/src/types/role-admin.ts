@@ -24,8 +24,7 @@ export interface RoleUpdateRequest {
 export interface RoleGrantResourceEntry {
   id: string;
   parentId?: string | null;
-  menuId?: string | null;
-  functionId?: string | null;
+  resourceId: string;
   name: string;
   code: string;
   type: string;
@@ -33,10 +32,8 @@ export interface RoleGrantResourceEntry {
   enabled: boolean;
   selectable: boolean;
   orderNo: number;
-  permissionCodes: string[];
 }
 
 export interface RoleGrantSelection {
-  menuIds: string[];
-  functionIds: string[];
+  resourceIds: string[];
 }

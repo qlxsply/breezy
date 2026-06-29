@@ -1,7 +1,7 @@
 package com.corwin.system.role.infrastructure.persistence;
 
-import com.corwin.system.role.domain.model.RoleFunction;
-import com.corwin.system.role.domain.repo.RoleFunctionRepository;
+import com.corwin.system.role.domain.model.RoleResource;
+import com.corwin.system.role.domain.repo.RoleResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -9,26 +9,26 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * @author Corwin 2026/5/7
+ * @author Corwin 2026/6/29
  */
 @Repository
 @RequiredArgsConstructor
-public class RoleFunctionRepositoryJpaAdapter implements RoleFunctionRepository {
+public class RoleResourceRepositoryJpaAdapter implements RoleResourceRepository {
 
-    private final RoleFunctionJpaRepository repo;
+    private final RoleResourceJpaRepository repo;
 
     @Override
-    public <S extends RoleFunction> S save(S entity) {
+    public <S extends RoleResource> S save(S entity) {
         return repo.save(entity);
     }
 
     @Override
-    public <S extends RoleFunction> List<S> saveAll(Iterable<S> entities) {
+    public <S extends RoleResource> List<S> saveAll(Iterable<S> entities) {
         return repo.saveAll(entities);
     }
 
     @Override
-    public Optional<RoleFunction> findById(Long id) {
+    public Optional<RoleResource> findById(Long id) {
         return repo.findById(id);
     }
 
@@ -38,7 +38,7 @@ public class RoleFunctionRepositoryJpaAdapter implements RoleFunctionRepository 
     }
 
     @Override
-    public void delete(RoleFunction entity) {
+    public void delete(RoleResource entity) {
         repo.delete(entity);
         repo.flush();
     }
@@ -50,18 +50,17 @@ public class RoleFunctionRepositoryJpaAdapter implements RoleFunctionRepository 
     }
 
     @Override
-    public List<RoleFunction> findByRoleId(Long roleId) {
+    public List<RoleResource> findByRoleId(Long roleId) {
         return repo.findByRoleId(roleId);
     }
 
     @Override
-    public List<RoleFunction> findByRoleIdIn(List<Long> roleIds) {
+    public List<RoleResource> findByRoleIdIn(List<Long> roleIds) {
         return repo.findByRoleIdIn(roleIds);
     }
 
     @Override
     public void deleteByRoleId(Long roleId) {
         repo.deleteByRoleId(roleId);
-        repo.flush();
     }
 }

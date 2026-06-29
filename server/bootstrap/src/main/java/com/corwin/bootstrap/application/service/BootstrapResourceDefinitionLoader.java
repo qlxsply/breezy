@@ -1,6 +1,6 @@
 package com.corwin.bootstrap.application.service;
 
-import com.corwin.system.resource.domain.model.MenuType;
+import com.corwin.system.resource.domain.model.ResourceType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -17,24 +17,26 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Corwin 2026/5/5
+ * @author Corwin 2026/6/29
  */
 @Component
 public class BootstrapResourceDefinitionLoader {
 
-    public List<MenuSeed> loadDefinitions(Resource xmlResource) {
+    public List<ResourceSeed> loadDefinitions(Resource xmlResource) {
         try (InputStream inputStream = xmlResource.getInputStream()) {
             XmlMapper mapper = new XmlMapper();
             ResourceRoot root = mapper.readValue(inputStream, ResourceRoot.class);
-            List<NavNode> nodes = root.allNodes();
-            if (nodes == null || nodes.isEmpty()) {
-                return List.of();
+            LinkedHashSet<String> resourceCodes = new LinkedHashSet<>();
+            ArrayList<ResourceSeed> result = new ArrayList<>();
+            if (root.getDirectories() != null) {
+                for (NavNode directory : root.getDirectories()) {
+                    result.add(toDirectorySeed(directory, resourceCodes));
+                }
             }
-            LinkedHashSet<String> menuCodes = new LinkedHashSet<>();
-            LinkedHashSet<String> functionCodes = new LinkedHashSet<>();
-            List<MenuSeed> result = new ArrayList<>();
-            for (NavNode node : nodes) {
-                result.add(toMenuSeed(node, node.resolveNodeType(), menuCodes, functionCodes));
+            if (root.getMenus() != null) {
+                for (NavNode menu : root.getMenus()) {
+                    result.add(toMenuSeed(menu, resourceCodes));
+                }
             }
             return List.copyOf(result);
         } catch (Exception e) {
@@ -42,63 +44,80 @@ public class BootstrapResourceDefinitionLoader {
         }
     }
 
-    private MenuSeed toMenuSeed(NavNode node, MenuType menuType, Set<String> menuCodes, Set<String> resourceCodes) {
-        validateMenu(node, menuCodes);
-        List<MenuSeed> childMenus = new ArrayList<>();
-        if (node.allNodes() != null) {
-            for (NavNode child : node.allNodes()) {
-                childMenus.add(toMenuSeed(child, child.resolveNodeType(), menuCodes, resourceCodes));
+    private ResourceSeed toDirectorySeed(NavNode node, Set<String> resourceCodes) {
+        validateNavNode(node, resourceCodes, "directory");
+        ArrayList<ResourceSeed> children = new ArrayList<>();
+        if (node.getDirectories() != null) {
+            for (NavNode child : node.getDirectories()) {
+                children.add(toDirectorySeed(child, resourceCodes));
             }
         }
-        List<FunctionSeed> functions = new ArrayList<>();
+        if (node.getMenus() != null) {
+            for (NavNode child : node.getMenus()) {
+                children.add(toMenuSeed(child, resourceCodes));
+            }
+        }
+        return new ResourceSeed(node.getCode().trim(), node.getName().trim(), ResourceType.DIRECTORY,
+                null, null, trimToNull(node.getIcon()), defaultInt(node.getSortNo()),
+                defaultBoolean(node.getVisible(), true), defaultBoolean(node.getEnabled(), true), false,
+                trimToNull(node.getRemark()), List.of(), List.copyOf(children));
+    }
+
+    private ResourceSeed toMenuSeed(NavNode node, Set<String> resourceCodes) {
+        validateNavNode(node, resourceCodes, "menu");
+        ArrayList<ResourceSeed> children = new ArrayList<>();
+        if (node.getMenus() != null) {
+            for (NavNode child : node.getMenus()) {
+                children.add(toMenuSeed(child, resourceCodes));
+            }
+        }
         if (node.getFunctions() != null) {
             int index = 0;
             for (FunctionNode functionNode : node.getFunctions()) {
-                functions.add(toFunctionSeed(functionNode, resourceCodes, index++));
+                children.add(toFunctionSeed(functionNode, resourceCodes, index++));
             }
         }
-        List<ButtonSeed> buttons = new ArrayList<>();
         if (node.getButtons() != null) {
             for (ButtonNode buttonNode : node.getButtons()) {
-                buttons.add(toButtonSeed(buttonNode, resourceCodes));
+                children.add(toButtonSeed(buttonNode, resourceCodes));
             }
         }
-        return new MenuSeed(node.getCode().trim(), node.getName().trim(), trimToNull(node.getPath()),
-                trimToNull(node.getComponent()), trimToNull(node.getIcon()), menuType,
-                defaultInt(node.getSortNo()),
-                defaultBoolean(node.getVisible(), true), defaultBoolean(node.getEnabled(), true),
-                trimToNull(node.getRemark()), List.copyOf(childMenus), List.copyOf(functions), List.copyOf(buttons));
+        return new ResourceSeed(node.getCode().trim(), node.getName().trim(), ResourceType.MENU,
+                trimToNull(node.getPath()), trimToNull(node.getComponent()), trimToNull(node.getIcon()),
+                defaultInt(node.getSortNo()), defaultBoolean(node.getVisible(), true),
+                defaultBoolean(node.getEnabled(), true), false, trimToNull(node.getRemark()), List.of(),
+                List.copyOf(children));
     }
 
-    private FunctionSeed toFunctionSeed(FunctionNode node, Set<String> resourceCodes, int index) {
+    private ResourceSeed toFunctionSeed(FunctionNode node, Set<String> resourceCodes, int index) {
         validateFunction(node, resourceCodes);
-        List<ButtonSeed> buttons = new ArrayList<>();
+        ArrayList<ResourceSeed> children = new ArrayList<>();
         if (node.getButtons() != null) {
             for (ButtonNode buttonNode : node.getButtons()) {
-                buttons.add(toButtonSeed(buttonNode, resourceCodes));
+                children.add(toButtonSeed(buttonNode, resourceCodes));
             }
         }
-        return new FunctionSeed(node.getCode().trim(), node.getName().trim(), trimToNull(node.getDescription()),
-                (index + 1) * 10, List.copyOf(buttons));
+        return new ResourceSeed(node.getCode().trim(), node.getName().trim(), ResourceType.FUNCTION,
+                null, null, null, (index + 1) * 10, true, true, false, trimToNull(node.getDescription()), List.of(),
+                List.copyOf(children));
     }
 
-    private ButtonSeed toButtonSeed(ButtonNode node, Set<String> resourceCodes) {
+    private ResourceSeed toButtonSeed(ButtonNode node, Set<String> resourceCodes) {
         validateButton(node, resourceCodes);
-        List<String> permissionCodes = normalizePermissionCodes(node.getPermissions());
-        return new ButtonSeed(node.getCode().trim(), node.getName().trim(),
-                trimToNull(node.getDescription()), defaultInt(node.getSortNo()),
-                defaultBoolean(node.getVisible(), true), permissionCodes);
+        return new ResourceSeed(node.getCode().trim(), node.getName().trim(), ResourceType.BUTTON,
+                null, null, null, defaultInt(node.getSortNo()), defaultBoolean(node.getVisible(), true), true,
+                false, trimToNull(node.getDescription()), normalizePermissionCodes(node.getPermissions()), List.of());
     }
 
-    private void validateMenu(NavNode node, Set<String> menuCodes) {
+    private void validateNavNode(NavNode node, Set<String> resourceCodes, String type) {
         if (node.getCode() == null || node.getCode().isBlank()) {
-            throw new IllegalStateException("menu code must not be blank");
+            throw new IllegalStateException(type + " code must not be blank");
         }
-        if (!menuCodes.add(node.getCode().trim())) {
-            throw new IllegalStateException("Duplicate menu code: " + node.getCode());
+        if (!resourceCodes.add(node.getCode().trim())) {
+            throw new IllegalStateException("Duplicate resource code: " + node.getCode());
         }
         if (node.getName() == null || node.getName().isBlank()) {
-            throw new IllegalStateException("menu name must not be blank: " + node.getCode());
+            throw new IllegalStateException(type + " name must not be blank: " + node.getCode());
         }
     }
 
@@ -107,7 +126,7 @@ public class BootstrapResourceDefinitionLoader {
             throw new IllegalStateException("function code must not be blank");
         }
         if (!resourceCodes.add(node.getCode().trim())) {
-            throw new IllegalStateException("Duplicate function code: " + node.getCode());
+            throw new IllegalStateException("Duplicate resource code: " + node.getCode());
         }
         if (node.getName() == null || node.getName().isBlank()) {
             throw new IllegalStateException("function name must not be blank: " + node.getCode());
@@ -122,7 +141,7 @@ public class BootstrapResourceDefinitionLoader {
             throw new IllegalStateException("button code must not be blank");
         }
         if (!resourceCodes.add(node.getCode().trim())) {
-            throw new IllegalStateException("Duplicate function code: " + node.getCode());
+            throw new IllegalStateException("Duplicate resource code: " + node.getCode());
         }
         if (node.getName() == null || node.getName().isBlank()) {
             throw new IllegalStateException("button name must not be blank: " + node.getCode());
@@ -159,39 +178,20 @@ public class BootstrapResourceDefinitionLoader {
         return value == null ? defaultValue : value;
     }
 
-    public record MenuSeed(
+    public record ResourceSeed(
             String code,
             String name,
+            ResourceType resourceType,
             String path,
             String component,
             String icon,
-            MenuType menuType,
             int sortNo,
             boolean visible,
             boolean enabled,
+            boolean defaultEntry,
             String remark,
-            List<MenuSeed> children,
-            List<FunctionSeed> functions,
-            List<ButtonSeed> buttons
-    ) {
-    }
-
-    public record FunctionSeed(
-            String code,
-            String name,
-            String description,
-            int sortNo,
-            List<ButtonSeed> buttons
-    ) {
-    }
-
-    public record ButtonSeed(
-            String code,
-            String name,
-            String description,
-            int sortNo,
-            boolean visible,
-            List<String> permissionCodes
+            List<String> permissionCodes,
+            List<ResourceSeed> children
     ) {
     }
 
@@ -206,17 +206,6 @@ public class BootstrapResourceDefinitionLoader {
         @JacksonXmlProperty(localName = "directory")
         @JacksonXmlElementWrapper(useWrapping = false)
         private List<NavNode> directories;
-
-        private List<NavNode> allNodes() {
-            List<NavNode> nodes = new ArrayList<>();
-            if (directories != null) {
-                nodes.addAll(directories);
-            }
-            if (menus != null) {
-                nodes.addAll(menus);
-            }
-            return nodes;
-        }
     }
 
     @Getter
@@ -237,9 +226,6 @@ public class BootstrapResourceDefinitionLoader {
 
         @JacksonXmlProperty(isAttribute = true)
         private String icon;
-
-        @JacksonXmlProperty(isAttribute = true)
-        private MenuType menuType;
 
         @JacksonXmlProperty(isAttribute = true)
         private Integer sortNo;
@@ -268,26 +254,6 @@ public class BootstrapResourceDefinitionLoader {
         @JacksonXmlProperty(localName = "button")
         @JacksonXmlElementWrapper(localName = "buttons")
         private List<ButtonNode> buttons;
-
-        private List<NavNode> allNodes() {
-            List<NavNode> nodes = new ArrayList<>();
-            if (directories != null) {
-                nodes.addAll(directories);
-            }
-            if (menus != null) {
-                nodes.addAll(menus);
-            }
-            return nodes;
-        }
-
-        private MenuType resolveNodeType() {
-            if (menuType != null) {
-                return menuType;
-            }
-            return (path == null || path.isBlank()) && (component == null || component.isBlank())
-                    ? MenuType.DIRECTORY
-                    : MenuType.MENU;
-        }
     }
 
     @Getter

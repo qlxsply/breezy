@@ -10,9 +10,8 @@ import com.corwin.system.resource.application.service.ApiPermissionCache;
 import com.corwin.system.role.application.command.CreateRoleCommand;
 import com.corwin.system.role.application.command.UpdateRoleCommand;
 import com.corwin.system.role.domain.model.Role;
-import com.corwin.system.role.domain.repo.RoleFunctionRepository;
-import com.corwin.system.role.domain.repo.RoleMenuRepository;
 import com.corwin.system.role.domain.repo.RoleRepository;
+import com.corwin.system.role.domain.repo.RoleResourceRepository;
 import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +29,7 @@ import java.util.Objects;
 public class RoleAdminService {
 
     private final RoleRepository roleRepository;
-    private final RoleMenuRepository roleMenuRepository;
-    private final RoleFunctionRepository roleFunctionRepository;
+    private final RoleResourceRepository roleResourceRepository;
     private final UserRoleRepository userRoleRepository;
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
@@ -84,8 +82,7 @@ public class RoleAdminService {
                 .distinct()
                 .toList();
         roleRepository.delete(role);
-        roleMenuRepository.deleteByRoleId(id);
-        roleFunctionRepository.deleteByRoleId(id);
+        roleResourceRepository.deleteByRoleId(id);
         userRoleRepository.deleteByRoleId(id);
         apiPermissionCache.clearAll();
         internalPermissionSessionService.kickOutActiveSessions(affectedUserIds, operatorName());

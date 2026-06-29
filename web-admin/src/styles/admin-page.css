@@ -560,7 +560,7 @@
 }
 
 .permission-tree-wrap {
-  min-height: 320px;
+  min-height: 0;
   padding: 8px;
   overflow: auto;
   background: #ffffff;
@@ -682,6 +682,11 @@
 .permission-tag-function {
   color: #0369a1;
   background: #e0f2fe;
+}
+
+.permission-tag-button {
+  color: #9a3412;
+  background: #ffedd5;
 }
 
 .permission-tag-disabled {

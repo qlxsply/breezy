@@ -2,17 +2,25 @@ package com.corwin.bootstrap.application.service;
 
 import com.corwin.bootstrap.application.BootstrapTaskKey;
 import com.corwin.bootstrap.application.BootstrapTaskReport;
-import com.corwin.system.resource.domain.model.FunctionType;
 import com.corwin.system.resource.domain.model.PermissionUserScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * @author Corwin 2026/5/5
+ * @author Corwin 2026/6/29
  */
 @Service
 @RequiredArgsConstructor
@@ -30,19 +38,18 @@ public class BootstrapResourceSyncService {
         xmlValidationService.validate(definitionResources.resourcesXml(), definitionResources.resourcesXsd());
         xmlValidationService.validate(definitionResources.userFeaturesXml(), definitionResources.userFeaturesXsd());
 
-        List<BootstrapResourceDefinitionLoader.MenuSeed> menus = resourceDefinitionLoader.loadDefinitions(
+        List<BootstrapResourceDefinitionLoader.ResourceSeed> resources = resourceDefinitionLoader.loadDefinitions(
                 definitionResources.resourcesXml());
         BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures = userFeatureDefinitionLoader.loadDefinitions(
                 definitionResources.userFeaturesXml());
-        ResourceStats expectedStats = summarize(menus, userFeatures);
+        ResourceStats expectedStats = summarize(resources, userFeatures);
 
-        ResourceStats stats = dryRun ? validateOnly(menus, userFeatures,
-                expectedStats) : BootstrapJdbcTransactionSupport.execute(dataSource,
-                connection -> rebuild(connection, menus, userFeatures));
+        ResourceStats stats = dryRun ? validateOnly(resources, userFeatures, expectedStats)
+                : BootstrapJdbcTransactionSupport.execute(dataSource,
+                        connection -> rebuild(connection, resources, userFeatures));
 
-        String message = "menus=" + stats.menuCount
-                + "; functions=" + stats.functionCount
-                + "; functionPermissions=" + stats.functionPermissionCount
+        String message = "resources=" + stats.resourceCount
+                + "; resourcePermissions=" + stats.resourcePermissionCount
                 + "; applications=" + stats.applicationCount
                 + "; features=" + stats.featureCount
                 + "; featurePermissions=" + stats.featurePermissionCount
@@ -51,43 +58,40 @@ public class BootstrapResourceSyncService {
                 System.currentTimeMillis() - startedAt, message);
     }
 
-    private ResourceStats validateOnly(List<BootstrapResourceDefinitionLoader.MenuSeed> menus,
+    private ResourceStats validateOnly(List<BootstrapResourceDefinitionLoader.ResourceSeed> resources,
             BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures, ResourceStats expectedStats) {
         return BootstrapJdbcTransactionSupport.execute(dataSource, connection -> {
             Map<String, PermissionRef> permissionByCode = loadPermissionByCode(connection,
                     sqlTemplateService.load("resource_select_permission_code_id.sql"));
-            validatePermissionReferences(permissionByCode, menus, userFeatures);
+            validatePermissionReferences(permissionByCode, resources, userFeatures);
             return expectedStats;
         });
     }
 
-    private ResourceStats rebuild(Connection connection, List<BootstrapResourceDefinitionLoader.MenuSeed> menus,
+    private ResourceStats rebuild(Connection connection, List<BootstrapResourceDefinitionLoader.ResourceSeed> resources,
             BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures) throws SQLException {
         Map<String, PermissionRef> permissionByCode = loadPermissionByCode(connection,
                 sqlTemplateService.load("resource_select_permission_code_id.sql"));
-        validatePermissionReferences(permissionByCode, menus, userFeatures);
+        validatePermissionReferences(permissionByCode, resources, userFeatures);
 
-        executeDelete(connection, "resource_delete_role_functions.sql");
-        executeDelete(connection, "resource_delete_role_menus.sql");
-        executeDelete(connection, "resource_delete_function_permissions.sql");
-        executeDelete(connection, "resource_delete_menu_functions.sql");
-        executeDelete(connection, "resource_delete_functions.sql");
-        executeDelete(connection, "resource_delete_menus.sql");
+        executeDelete(connection, "resource_delete_role_resources.sql");
+        executeDelete(connection, "resource_delete_resource_permissions.sql");
+        executeDelete(connection, "resource_delete_resources.sql");
 
         ResourceStats stats = new ResourceStats();
-        for (BootstrapResourceDefinitionLoader.MenuSeed menu : menus) {
-            insertMenuTree(connection, menu, null, permissionByCode, stats);
+        for (BootstrapResourceDefinitionLoader.ResourceSeed resource : resources) {
+            insertResourceTree(connection, null, resource, permissionByCode, stats);
         }
         upsertUserFeatures(connection, userFeatures, permissionByCode, stats);
         return stats;
     }
 
     private void validatePermissionReferences(Map<String, PermissionRef> permissionByCode,
-            List<BootstrapResourceDefinitionLoader.MenuSeed> menus,
+            List<BootstrapResourceDefinitionLoader.ResourceSeed> resources,
             BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures) {
         LinkedHashSet<String> internalPermissionCodes = new LinkedHashSet<>();
-        for (BootstrapResourceDefinitionLoader.MenuSeed menu : menus) {
-            collectInternalPermissionCodes(menu, internalPermissionCodes);
+        for (BootstrapResourceDefinitionLoader.ResourceSeed resource : resources) {
+            collectInternalPermissionCodes(resource, internalPermissionCodes);
         }
         LinkedHashSet<String> externalPermissionCodes = new LinkedHashSet<>();
         for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : userFeatures.applications()) {
@@ -108,76 +112,38 @@ public class BootstrapResourceSyncService {
         for (String permissionCode : externalPermissionCodes) {
             PermissionRef permission = permissionByCode.get(permissionCode);
             if (permission == null) {
-                throw new IllegalStateException(
-                        "user feature permission missing in sys_permission: " + permissionCode);
+                throw new IllegalStateException("user feature permission missing in sys_permission: " + permissionCode);
             }
             if (permission.userScope() == PermissionUserScope.INTERNAL) {
-                throw new IllegalStateException(
-                        "user feature permission must not be INTERNAL-only: " + permissionCode);
+                throw new IllegalStateException("user feature permission must not be INTERNAL-only: " + permissionCode);
             }
         }
     }
 
-    private void collectInternalPermissionCodes(BootstrapResourceDefinitionLoader.MenuSeed menu,
+    private void collectInternalPermissionCodes(BootstrapResourceDefinitionLoader.ResourceSeed resource,
             Set<String> collector) {
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
-            collector.addAll(button.permissionCodes());
+        if (resource.resourceType().canBindPermission()) {
+            collector.addAll(resource.permissionCodes());
         }
-        for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
-            collectFunctionPermissionCodes(function, collector);
-        }
-        for (BootstrapResourceDefinitionLoader.MenuSeed child : menu.children()) {
+        for (BootstrapResourceDefinitionLoader.ResourceSeed child : resource.children()) {
             collectInternalPermissionCodes(child, collector);
         }
     }
 
-    private void collectFunctionPermissionCodes(BootstrapResourceDefinitionLoader.FunctionSeed function,
-            Set<String> collector) {
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
-            collector.addAll(button.permissionCodes());
-        }
-    }
-
-    private void insertMenuTree(Connection connection, BootstrapResourceDefinitionLoader.MenuSeed menu,
-            Long parentMenuId, Map<String, PermissionRef> permissionByCode, ResourceStats stats) throws SQLException {
-        Long menuId = insertMenu(connection, menu, parentMenuId);
-        stats.menuCount++;
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
-            insertButtonBinding(connection, menuId, null, button, permissionByCode, stats);
-        }
-        for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
-            insertFunctionGroup(connection, menuId, function, permissionByCode, stats);
-        }
-        for (BootstrapResourceDefinitionLoader.MenuSeed child : menu.children()) {
-            insertMenuTree(connection, child, menuId, permissionByCode, stats);
-        }
-    }
-
-    private void insertFunctionGroup(Connection connection, Long menuId,
-            BootstrapResourceDefinitionLoader.FunctionSeed function, Map<String, PermissionRef> permissionByCode,
+    private void insertResourceTree(Connection connection, Long parentId,
+            BootstrapResourceDefinitionLoader.ResourceSeed resource, Map<String, PermissionRef> permissionByCode,
             ResourceStats stats) throws SQLException {
-        Long functionId = insertFunction(connection, function.code(), function.name(), FunctionType.INVISIBLE,
-                function.description());
-        stats.functionCount++;
-        Long menuFunctionId = insertMenuFunction(connection, menuId, functionId, null, function.sortNo(), true,
-                false, function.code());
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
-            insertButtonBinding(connection, menuId, menuFunctionId, button, permissionByCode, stats);
+        Long resourceId = insertResource(connection, parentId, resource);
+        stats.resourceCount++;
+        if (resource.resourceType().canBindPermission()) {
+            for (String permissionCode : resource.permissionCodes()) {
+                PermissionRef permission = permissionByCode.get(permissionCode);
+                insertResourcePermission(connection, resourceId, permission.id());
+                stats.resourcePermissionCount++;
+            }
         }
-    }
-
-    private void insertButtonBinding(Connection connection, Long menuId, Long parentMenuFunctionId,
-            BootstrapResourceDefinitionLoader.ButtonSeed button, Map<String, PermissionRef> permissionByCode,
-            ResourceStats stats) throws SQLException {
-        Long functionId = insertFunction(connection, button.code(), button.name(), FunctionType.BUTTON,
-                button.description());
-        stats.functionCount++;
-        insertMenuFunction(connection, menuId, functionId, parentMenuFunctionId, button.sortNo(), button.visible(),
-                false, button.code());
-        for (String permissionCode : button.permissionCodes()) {
-            PermissionRef permission = permissionByCode.get(permissionCode);
-            insertFunctionPermission(connection, functionId, permission.id());
-            stats.functionPermissionCount++;
+        for (BootstrapResourceDefinitionLoader.ResourceSeed child : resource.children()) {
+            insertResourceTree(connection, resourceId, child, permissionByCode, stats);
         }
     }
 
@@ -214,66 +180,41 @@ public class BootstrapResourceSyncService {
         executeSql(connection, "delete from sys_product_application");
     }
 
-    private Long insertMenu(Connection connection, BootstrapResourceDefinitionLoader.MenuSeed menu,
-            Long parentMenuId) throws SQLException {
-        String sql = sqlTemplateService.load("resource_insert_menu.sql");
+    private Long insertResource(Connection connection, Long parentId,
+            BootstrapResourceDefinitionLoader.ResourceSeed resource) throws SQLException {
+        String sql = sqlTemplateService.load("resource_insert_resource.sql");
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, menu.code());
-            bindNullableLong(ps, 2, parentMenuId);
-            ps.setString(3, menu.name());
-            ps.setString(4, menu.path());
-            ps.setString(5, menu.component());
-            ps.setString(6, menu.icon());
-            ps.setString(7, menu.menuType().name());
-            ps.setInt(8, menu.sortNo());
-            ps.setBoolean(9, menu.visible());
-            ps.setBoolean(10, menu.enabled());
-            ps.setString(11, menu.remark());
+            ps.setString(1, resource.code());
+            bindNullableLong(ps, 2, parentId);
+            ps.setString(3, resource.name());
+            ps.setString(4, resource.resourceType().name());
+            ps.setString(5, resource.path());
+            ps.setString(6, resource.component());
+            ps.setString(7, resource.icon());
+            ps.setInt(8, resource.sortNo());
+            ps.setBoolean(9, resource.visible());
+            ps.setBoolean(10, resource.enabled());
+            ps.setBoolean(11, resource.defaultEntry());
+            ps.setString(12, resource.remark());
             ps.executeUpdate();
-            return readGeneratedKey(ps, "menu", menu.code());
+            return readGeneratedKey(ps, "resource", resource.code());
         }
     }
 
-    private Long insertFunction(Connection connection, String code, String name, FunctionType functionType,
-            String description) throws SQLException {
-        String sql = sqlTemplateService.load("resource_insert_function.sql");
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, code);
-            ps.setString(2, name);
-            ps.setString(3, functionType.name());
-            ps.setString(4, description);
-            ps.executeUpdate();
-            return readGeneratedKey(ps, "function", code);
-        }
-    }
-
-    private Long insertMenuFunction(Connection connection, Long menuId, Long functionId, Long parentMenuFunctionId,
-            int sortNo, boolean visible, boolean defaultEntry, String code) throws SQLException {
-        String sql = sqlTemplateService.load("resource_insert_menu_function.sql");
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setLong(1, menuId);
-            ps.setLong(2, functionId);
-            bindNullableLong(ps, 3, parentMenuFunctionId);
-            ps.setInt(4, sortNo);
-            ps.setBoolean(5, visible);
-            ps.setBoolean(6, defaultEntry);
-            ps.executeUpdate();
-            return readGeneratedKey(ps, "menuFunction", code);
-        }
-    }
-
-    private void insertFunctionPermission(Connection connection, Long functionId, Long permissionId) throws
-            SQLException {
-        String sql = sqlTemplateService.load("resource_insert_function_permission.sql");
+    private void insertResourcePermission(Connection connection, Long resourceId, Long permissionId)
+            throws SQLException {
+        String sql = sqlTemplateService.load("resource_insert_resource_permission.sql");
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setLong(1, functionId);
+            ps.setLong(1, resourceId);
             ps.setLong(2, permissionId);
             ps.executeUpdate();
         }
     }
 
-    private Long upsertApplication(Connection connection, BootstrapUserFeatureDefinitionLoader.ApplicationSeed seed) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_update_application_by_code.sql"))) {
+    private Long upsertApplication(Connection connection, BootstrapUserFeatureDefinitionLoader.ApplicationSeed seed)
+            throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(
+                sqlTemplateService.load("user_feature_update_application_by_code.sql"))) {
             ps.setString(1, seed.name());
             ps.setString(2, seed.description());
             ps.setString(3, seed.icon());
@@ -286,7 +227,8 @@ public class BootstrapResourceSyncService {
             ps.setTimestamp(10, new Timestamp(System.currentTimeMillis()));
             ps.setString(11, seed.code());
             if (ps.executeUpdate() == 0) {
-                try (PreparedStatement insertPs = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_application.sql"))) {
+                try (PreparedStatement insertPs = connection.prepareStatement(
+                        sqlTemplateService.load("user_feature_insert_application.sql"))) {
                     insertPs.setString(1, seed.code());
                     insertPs.setString(2, seed.name());
                     insertPs.setString(3, seed.description());
@@ -304,12 +246,14 @@ public class BootstrapResourceSyncService {
                 }
             }
         }
-        return selectIdByCode(connection, "user_feature_select_application_id_by_code.sql", seed.code(), "application");
+        return selectIdByCode(connection, "user_feature_select_application_id_by_code.sql", seed.code(),
+                "application");
     }
 
     private Long upsertFeature(Connection connection, Long applicationId,
             BootstrapUserFeatureDefinitionLoader.FeatureSeed seed) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_update_feature_by_application_and_code.sql"))) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                sqlTemplateService.load("user_feature_update_feature_by_application_and_code.sql"))) {
             ps.setString(1, seed.name());
             ps.setString(2, seed.description());
             ps.setBoolean(3, seed.enabled());
@@ -320,7 +264,8 @@ public class BootstrapResourceSyncService {
             ps.setLong(8, applicationId);
             ps.setString(9, seed.code());
             if (ps.executeUpdate() == 0) {
-                try (PreparedStatement insertPs = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_feature.sql"))) {
+                try (PreparedStatement insertPs = connection.prepareStatement(
+                        sqlTemplateService.load("user_feature_insert_feature.sql"))) {
                     insertPs.setLong(1, applicationId);
                     insertPs.setString(2, seed.code());
                     insertPs.setString(3, seed.name());
@@ -353,7 +298,8 @@ public class BootstrapResourceSyncService {
     }
 
     private Long selectFeatureId(Connection connection, Long applicationId, String code) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_select_feature_id_by_application_and_code.sql"))) {
+        try (PreparedStatement ps = connection.prepareStatement(
+                sqlTemplateService.load("user_feature_select_feature_id_by_application_and_code.sql"))) {
             ps.setLong(1, applicationId);
             ps.setString(2, code);
             try (ResultSet rs = ps.executeQuery()) {
@@ -365,8 +311,10 @@ public class BootstrapResourceSyncService {
         throw new IllegalStateException("read feature id failed: " + applicationId + ":" + code);
     }
 
-    private void insertFeaturePermissionBinding(Connection connection, Long applicationId, Long featureId, Long permissionId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(sqlTemplateService.load("user_feature_insert_feature_permission_binding.sql"))) {
+    private void insertFeaturePermissionBinding(Connection connection, Long applicationId, Long featureId,
+            Long permissionId) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(
+                sqlTemplateService.load("user_feature_insert_feature_permission_binding.sql"))) {
             ps.setLong(1, applicationId);
             ps.setLong(2, featureId);
             ps.setLong(3, permissionId);
@@ -416,11 +364,11 @@ public class BootstrapResourceSyncService {
         ps.setLong(index, value);
     }
 
-    private ResourceStats summarize(List<BootstrapResourceDefinitionLoader.MenuSeed> menus,
+    private ResourceStats summarize(List<BootstrapResourceDefinitionLoader.ResourceSeed> resources,
             BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures) {
         ResourceStats stats = new ResourceStats();
-        for (BootstrapResourceDefinitionLoader.MenuSeed menu : menus) {
-            summarizeMenu(menu, stats);
+        for (BootstrapResourceDefinitionLoader.ResourceSeed resource : resources) {
+            summarizeResource(resource, stats);
         }
         stats.applicationCount = userFeatures.applications().size();
         for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : userFeatures.applications()) {
@@ -432,25 +380,13 @@ public class BootstrapResourceSyncService {
         return stats;
     }
 
-    private void summarizeMenu(BootstrapResourceDefinitionLoader.MenuSeed menu, ResourceStats stats) {
-        stats.menuCount++;
-        stats.functionCount += menu.buttons().size();
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
-            stats.functionPermissionCount += button.permissionCodes().size();
+    private void summarizeResource(BootstrapResourceDefinitionLoader.ResourceSeed resource, ResourceStats stats) {
+        stats.resourceCount++;
+        if (resource.resourceType().canBindPermission()) {
+            stats.resourcePermissionCount += resource.permissionCodes().size();
         }
-        for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
-            summarizeFunction(function, stats);
-        }
-        for (BootstrapResourceDefinitionLoader.MenuSeed child : menu.children()) {
-            summarizeMenu(child, stats);
-        }
-    }
-
-    private void summarizeFunction(BootstrapResourceDefinitionLoader.FunctionSeed function, ResourceStats stats) {
-        stats.functionCount++;
-        stats.functionCount += function.buttons().size();
-        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
-            stats.functionPermissionCount += button.permissionCodes().size();
+        for (BootstrapResourceDefinitionLoader.ResourceSeed child : resource.children()) {
+            summarizeResource(child, stats);
         }
     }
 
@@ -461,9 +397,8 @@ public class BootstrapResourceSyncService {
     }
 
     private static final class ResourceStats {
-        private int menuCount;
-        private int functionCount;
-        private int functionPermissionCount;
+        private int resourceCount;
+        private int resourcePermissionCount;
         private int applicationCount;
         private int featureCount;
         private int featurePermissionCount;

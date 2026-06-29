@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { RoleGrantResourceEntry, RoleGrantSelection } from "../../types/role-admin";
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
@@ -18,10 +18,6 @@ interface RolePermissionDialogProps {
   onSubmit: (selection: RoleGrantSelection) => void;
 }
 
-function isMenuRow(row: RoleGrantResourceEntry): boolean {
-  return Boolean(row.menuId);
-}
-
 export function RolePermissionDialog({
   roleName,
   resources,
@@ -36,6 +32,7 @@ export function RolePermissionDialog({
   const [confirming, setConfirming] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<RoleGrantSelection | null>(null);
   const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
+  const treeWrapRef = useRef<HTMLDivElement | null>(null);
 
   const resourceMap = useMemo(() => {
     const map = new Map<string, RoleGrantResourceEntry>();
@@ -57,7 +54,7 @@ export function RolePermissionDialog({
   const defaultExpandedIds = useMemo(() => {
     const ids = new Set<string>();
     resources.forEach((row) => {
-      if (row.menuId && (childrenMap.get(row.id) ?? []).length > 0) ids.add(row.id);
+      if ((childrenMap.get(row.id) ?? []).length > 0) ids.add(row.id);
     });
     return ids;
   }, [childrenMap, resources]);
@@ -98,10 +95,9 @@ export function RolePermissionDialog({
   );
 
   const summaryText = useMemo(() => {
-    const menuCount = summarySelection.menuIds.length;
-    const functionCount = summarySelection.functionIds.length;
-    if (menuCount === 0 && functionCount === 0) return "未选择权限";
-    return `已选择目录/菜单 ${menuCount} 项，功能 ${functionCount} 项`;
+    const resourceCount = summarySelection.resourceIds.length;
+    if (resourceCount === 0) return "未选择权限";
+    return `已选择资源 ${resourceCount} 项`;
   }, [summarySelection]);
 
   const diff = useMemo(
@@ -112,14 +108,8 @@ export function RolePermissionDialog({
   const diffStatusById = useMemo(() => {
     const map = new Map<string, DiffStatus>();
     resources.forEach((row) => {
-      if (row.menuId) {
-        if (diff.addedMenuIds.has(row.menuId)) map.set(row.id, "added");
-        else if (diff.removedMenuIds.has(row.menuId)) map.set(row.id, "removed");
-      }
-      if (row.functionId) {
-        if (diff.addedFunctionIds.has(row.functionId)) map.set(row.id, "added");
-        else if (diff.removedFunctionIds.has(row.functionId)) map.set(row.id, "removed");
-      }
+      if (diff.addedResourceIds.has(row.resourceId)) map.set(row.id, "added");
+      else if (diff.removedResourceIds.has(row.resourceId)) map.set(row.id, "removed");
     });
     return map;
   }, [resources, diff]);
@@ -142,19 +132,17 @@ export function RolePermissionDialog({
   }, [selection, pendingSelection, summarySelection]);
 
   const diffSummaryText = useMemo(() => {
-    const addedCount = diff.addedMenuIds.size + diff.addedFunctionIds.size;
-    const removedCount = diff.removedMenuIds.size + diff.removedFunctionIds.size;
+    const addedCount = diff.addedResourceIds.size;
+    const removedCount = diff.removedResourceIds.size;
     return `新增 ${addedCount} 项 / 移除 ${removedCount} 项`;
   }, [diff]);
 
   function buildSelectedResourceIds(currentSelection: RoleGrantSelection): Set<string> {
     const next = new Set<string>();
-    const menuIds = new Set((currentSelection.menuIds || []).map(String));
-    const functionIds = new Set((currentSelection.functionIds || []).map(String));
+    const resourceIds = new Set((currentSelection.resourceIds || []).map(String));
 
     resources.forEach((row) => {
-      if (row.menuId && menuIds.has(row.menuId)) next.add(row.id);
-      if (row.functionId && functionIds.has(row.functionId)) next.add(row.id);
+      if (resourceIds.has(row.resourceId)) next.add(row.id);
     });
 
     Array.from(next).forEach((id) => {
@@ -174,7 +162,7 @@ export function RolePermissionDialog({
         const children = buildTree(row.id, kw, autoExpanded);
         const matched =
           !kw ||
-          [row.name, row.code, row.description, ...row.permissionCodes]
+          [row.name, row.code, row.description, row.type]
             .filter(Boolean)
             .join(" ")
             .toLowerCase()
@@ -262,6 +250,7 @@ export function RolePermissionDialog({
 
   function collapseAll() {
     setExpandedIds(new Set());
+    treeWrapRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }
 
   function clearAll() {
@@ -280,12 +269,10 @@ export function RolePermissionDialog({
       if (checked) {
         next.add(nodeId);
         collectAncestorIds(nodeId).forEach((ancestorId) => next.add(ancestorId));
-        if (isMenuRow(row)) {
-          descendants.forEach((descendantId) => {
-            const descendant = resourceMap.get(descendantId);
-            if (descendant?.enabled) next.add(descendantId);
-          });
-        }
+        descendants.forEach((descendantId) => {
+          const descendant = resourceMap.get(descendantId);
+          if (descendant?.enabled) next.add(descendantId);
+        });
         return next;
       }
 
@@ -297,38 +284,22 @@ export function RolePermissionDialog({
   }
 
   function buildSubmitSelection(currentIds: Set<string>): RoleGrantSelection {
-    const menuIds = new Set<string>();
-    const functionIds = new Set<string>();
+    const resourceIds = new Set<string>();
     resources.forEach((row) => {
-      if (row.menuId && currentIds.has(row.id)) menuIds.add(row.menuId);
-      if (row.functionId && currentIds.has(row.id)) functionIds.add(row.functionId);
+      if (currentIds.has(row.id)) resourceIds.add(row.resourceId);
     });
-    return { menuIds: Array.from(menuIds), functionIds: Array.from(functionIds) };
+    return { resourceIds: Array.from(resourceIds) };
   }
 
   function buildSelectionDiff(before: RoleGrantSelection, after: RoleGrantSelection) {
-    const beforeMenuIds = new Set((before.menuIds || []).map(String));
-    const afterMenuIds = new Set((after.menuIds || []).map(String));
-    const beforeFunctionIds = new Set((before.functionIds || []).map(String));
-    const afterFunctionIds = new Set((after.functionIds || []).map(String));
-    const addedMenuIds = new Set([...afterMenuIds].filter((id) => !beforeMenuIds.has(id)));
-    const removedMenuIds = new Set([...beforeMenuIds].filter((id) => !afterMenuIds.has(id)));
-    const addedFunctionIds = new Set(
-      [...afterFunctionIds].filter((id) => !beforeFunctionIds.has(id)),
-    );
-    const removedFunctionIds = new Set(
-      [...beforeFunctionIds].filter((id) => !afterFunctionIds.has(id)),
-    );
+    const beforeResourceIds = new Set((before.resourceIds || []).map(String));
+    const afterResourceIds = new Set((after.resourceIds || []).map(String));
+    const addedResourceIds = new Set([...afterResourceIds].filter((id) => !beforeResourceIds.has(id)));
+    const removedResourceIds = new Set([...beforeResourceIds].filter((id) => !afterResourceIds.has(id)));
     return {
-      addedMenuIds,
-      removedMenuIds,
-      addedFunctionIds,
-      removedFunctionIds,
-      changed:
-        addedMenuIds.size > 0 ||
-        removedMenuIds.size > 0 ||
-        addedFunctionIds.size > 0 ||
-        removedFunctionIds.size > 0,
+      addedResourceIds,
+      removedResourceIds,
+      changed: addedResourceIds.size > 0 || removedResourceIds.size > 0,
     };
   }
 
@@ -399,7 +370,7 @@ export function RolePermissionDialog({
           <div className="permission-dialog-toolbar">
             <BzInput
               modelValue={keyword}
-              placeholder="搜索目录、菜单、功能或按钮权限码"
+              placeholder="搜索目录、菜单、功能或按钮"
               clearable
               onValueChange={setKeyword}
             />
@@ -424,7 +395,7 @@ export function RolePermissionDialog({
               </div>
             </div>
 
-            <div className="permission-tree-wrap">
+            <div className="permission-tree-wrap" ref={treeWrapRef}>
               {filteredRoots.length === 0 ? (
                 <div className="permission-empty">暂无可授权资源</div>
               ) : null}

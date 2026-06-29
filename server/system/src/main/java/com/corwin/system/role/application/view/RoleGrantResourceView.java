@@ -6,8 +6,7 @@ package com.corwin.system.role.application.view;
 public record RoleGrantResourceView(
         String id,
         String parentId,
-        String menuId,
-        String functionId,
+        String resourceId,
         String name,
         String code,
         String type,

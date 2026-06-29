@@ -332,11 +332,11 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
-        <id>dict-type-function-type</id>
-        <code>FUNCTION_TYPE</code>
-        <name>功能类型</name>
-        <description>菜单功能类型。</description>
-        <enumClass>com.corwin.system.resource.domain.model.FunctionType</enumClass>
+        <id>dict-type-resource-type</id>
+        <code>RESOURCE_TYPE</code>
+        <name>资源类型</name>
+        <description>资源类型。</description>
+        <enumClass>com.corwin.system.resource.domain.model.ResourceType</enumClass>
         <valueType>STRING</valueType>
         <structureType>FLAT</structureType>
         <enabled>true</enabled>

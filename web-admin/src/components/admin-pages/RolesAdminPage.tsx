@@ -54,8 +54,7 @@ export function RolesAdminPage() {
   const [grantOpen, setGrantOpen] = useState(false);
   const [grantTarget, setGrantTarget] = useState<RoleEntry | null>(null);
   const [grantSelection, setGrantSelection] = useState<RoleGrantSelection>({
-    menuIds: [],
-    functionIds: [],
+    resourceIds: [],
   });
   const [grantLoading, setGrantLoading] = useState(false);
   const [grantResourcesLoading, setGrantResourcesLoading] = useState(false);
@@ -181,7 +180,7 @@ export function RolesAdminPage() {
   async function onGrantSubmit(selection: RoleGrantSelection) {
     if (!grantTarget || !canGrantEdit) return;
     await updateRoleGrantSelection(grantTarget.id, selection);
-    setGrantSelection({ menuIds: [...selection.menuIds], functionIds: [...selection.functionIds] });
+    setGrantSelection({ resourceIds: [...selection.resourceIds] });
     message.success("角色授权已保存，受影响用户需要重新登录");
     setGrantOpen(false);
   }
