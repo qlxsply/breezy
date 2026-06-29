@@ -1,7 +1,5 @@
 package com.corwin.system.role.application.view;
 
-import java.util.List;
-
 /**
  * @author Corwin 2026/5/7
  */
@@ -16,7 +14,6 @@ public record RoleGrantResourceView(
         String description,
         boolean enabled,
         boolean selectable,
-        int orderNo,
-        List<String> permissionCodes
+        int orderNo
 ) {
 }

@@ -418,9 +418,6 @@ export function RolePermissionDialog({
             <div className="permission-panel__head">
               <div>
                 <div className="permission-panel__title">可选权限</div>
-                <div className="permission-panel__hint">
-                  默认展开目录和菜单；勾选目录或菜单会自动勾选全部下级；按钮权限标识跟随功能授权。
-                </div>
               </div>
               <div className="permission-panel__meta">
                 {filteredResourceCount} / {resources.length} 项

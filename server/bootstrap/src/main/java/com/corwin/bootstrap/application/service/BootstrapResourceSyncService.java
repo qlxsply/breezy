@@ -2,6 +2,7 @@ package com.corwin.bootstrap.application.service;
 
 import com.corwin.bootstrap.application.BootstrapTaskKey;
 import com.corwin.bootstrap.application.BootstrapTaskReport;
+import com.corwin.system.resource.domain.model.FunctionType;
 import com.corwin.system.resource.domain.model.PermissionUserScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -119,6 +120,9 @@ public class BootstrapResourceSyncService {
 
     private void collectInternalPermissionCodes(BootstrapResourceDefinitionLoader.MenuSeed menu,
             Set<String> collector) {
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
+            collector.addAll(button.permissionCodes());
+        }
         for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
             collectFunctionPermissionCodes(function, collector);
         }
@@ -129,9 +133,8 @@ public class BootstrapResourceSyncService {
 
     private void collectFunctionPermissionCodes(BootstrapResourceDefinitionLoader.FunctionSeed function,
             Set<String> collector) {
-        collector.addAll(function.permissionCodes());
-        for (BootstrapResourceDefinitionLoader.FunctionSeed child : function.children()) {
-            collectFunctionPermissionCodes(child, collector);
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
+            collector.addAll(button.permissionCodes());
         }
     }
 
@@ -139,27 +142,42 @@ public class BootstrapResourceSyncService {
             Long parentMenuId, Map<String, PermissionRef> permissionByCode, ResourceStats stats) throws SQLException {
         Long menuId = insertMenu(connection, menu, parentMenuId);
         stats.menuCount++;
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
+            insertButtonBinding(connection, menuId, null, button, permissionByCode, stats);
+        }
         for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
-            insertFunctionTree(connection, menuId, null, function, permissionByCode, stats);
+            insertFunctionGroup(connection, menuId, function, permissionByCode, stats);
         }
         for (BootstrapResourceDefinitionLoader.MenuSeed child : menu.children()) {
             insertMenuTree(connection, child, menuId, permissionByCode, stats);
         }
     }
 
-    private void insertFunctionTree(Connection connection, Long menuId, Long parentMenuFunctionId,
+    private void insertFunctionGroup(Connection connection, Long menuId,
             BootstrapResourceDefinitionLoader.FunctionSeed function, Map<String, PermissionRef> permissionByCode,
             ResourceStats stats) throws SQLException {
-        Long functionId = insertFunction(connection, function);
+        Long functionId = insertFunction(connection, function.code(), function.name(), FunctionType.INVISIBLE,
+                function.description());
         stats.functionCount++;
-        Long menuFunctionId = insertMenuFunction(connection, menuId, functionId, parentMenuFunctionId, function);
-        for (String permissionCode : function.permissionCodes()) {
+        Long menuFunctionId = insertMenuFunction(connection, menuId, functionId, null, function.sortNo(), true,
+                false, function.code());
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
+            insertButtonBinding(connection, menuId, menuFunctionId, button, permissionByCode, stats);
+        }
+    }
+
+    private void insertButtonBinding(Connection connection, Long menuId, Long parentMenuFunctionId,
+            BootstrapResourceDefinitionLoader.ButtonSeed button, Map<String, PermissionRef> permissionByCode,
+            ResourceStats stats) throws SQLException {
+        Long functionId = insertFunction(connection, button.code(), button.name(), FunctionType.BUTTON,
+                button.description());
+        stats.functionCount++;
+        insertMenuFunction(connection, menuId, functionId, parentMenuFunctionId, button.sortNo(), button.visible(),
+                false, button.code());
+        for (String permissionCode : button.permissionCodes()) {
             PermissionRef permission = permissionByCode.get(permissionCode);
             insertFunctionPermission(connection, functionId, permission.id());
             stats.functionPermissionCount++;
-        }
-        for (BootstrapResourceDefinitionLoader.FunctionSeed child : function.children()) {
-            insertFunctionTree(connection, menuId, menuFunctionId, child, permissionByCode, stats);
         }
     }
 
@@ -209,37 +227,38 @@ public class BootstrapResourceSyncService {
             ps.setString(7, menu.menuType().name());
             ps.setInt(8, menu.sortNo());
             ps.setBoolean(9, menu.visible());
-            ps.setString(10, menu.remark());
+            ps.setBoolean(10, menu.enabled());
+            ps.setString(11, menu.remark());
             ps.executeUpdate();
             return readGeneratedKey(ps, "menu", menu.code());
         }
     }
 
-    private Long insertFunction(Connection connection, BootstrapResourceDefinitionLoader.FunctionSeed function) throws
-            SQLException {
+    private Long insertFunction(Connection connection, String code, String name, FunctionType functionType,
+            String description) throws SQLException {
         String sql = sqlTemplateService.load("resource_insert_function.sql");
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, function.code());
-            ps.setString(2, function.name());
-            ps.setString(3, function.functionType().name());
-            ps.setString(4, function.description());
+            ps.setString(1, code);
+            ps.setString(2, name);
+            ps.setString(3, functionType.name());
+            ps.setString(4, description);
             ps.executeUpdate();
-            return readGeneratedKey(ps, "function", function.code());
+            return readGeneratedKey(ps, "function", code);
         }
     }
 
     private Long insertMenuFunction(Connection connection, Long menuId, Long functionId, Long parentMenuFunctionId,
-            BootstrapResourceDefinitionLoader.FunctionSeed function) throws SQLException {
+            int sortNo, boolean visible, boolean defaultEntry, String code) throws SQLException {
         String sql = sqlTemplateService.load("resource_insert_menu_function.sql");
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, menuId);
             ps.setLong(2, functionId);
             bindNullableLong(ps, 3, parentMenuFunctionId);
-            ps.setInt(4, function.sortNo());
-            ps.setBoolean(5, function.visible());
-            ps.setBoolean(6, function.defaultEntry());
+            ps.setInt(4, sortNo);
+            ps.setBoolean(5, visible);
+            ps.setBoolean(6, defaultEntry);
             ps.executeUpdate();
-            return readGeneratedKey(ps, "menuFunction", function.code());
+            return readGeneratedKey(ps, "menuFunction", code);
         }
     }
 
@@ -415,6 +434,10 @@ public class BootstrapResourceSyncService {
 
     private void summarizeMenu(BootstrapResourceDefinitionLoader.MenuSeed menu, ResourceStats stats) {
         stats.menuCount++;
+        stats.functionCount += menu.buttons().size();
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : menu.buttons()) {
+            stats.functionPermissionCount += button.permissionCodes().size();
+        }
         for (BootstrapResourceDefinitionLoader.FunctionSeed function : menu.functions()) {
             summarizeFunction(function, stats);
         }
@@ -425,9 +448,9 @@ public class BootstrapResourceSyncService {
 
     private void summarizeFunction(BootstrapResourceDefinitionLoader.FunctionSeed function, ResourceStats stats) {
         stats.functionCount++;
-        stats.functionPermissionCount += function.permissionCodes().size();
-        for (BootstrapResourceDefinitionLoader.FunctionSeed child : function.children()) {
-            summarizeFunction(child, stats);
+        stats.functionCount += function.buttons().size();
+        for (BootstrapResourceDefinitionLoader.ButtonSeed button : function.buttons()) {
+            stats.functionPermissionCount += button.permissionCodes().size();
         }
     }
 

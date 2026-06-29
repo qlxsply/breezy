@@ -1,6 +1,5 @@
 package com.corwin.bootstrap.application.service;
 
-import com.corwin.system.resource.domain.model.FunctionType;
 import com.corwin.system.resource.domain.model.MenuType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -43,53 +42,52 @@ public class BootstrapResourceDefinitionLoader {
         }
     }
 
-    private MenuSeed toMenuSeed(NavNode node, MenuType menuType, Set<String> menuCodes, Set<String> functionCodes) {
+    private MenuSeed toMenuSeed(NavNode node, MenuType menuType, Set<String> menuCodes, Set<String> resourceCodes) {
         validateMenu(node, menuCodes);
         List<MenuSeed> childMenus = new ArrayList<>();
         if (node.allNodes() != null) {
             for (NavNode child : node.allNodes()) {
-                childMenus.add(toMenuSeed(child, child.resolveNodeType(), menuCodes, functionCodes));
+                childMenus.add(toMenuSeed(child, child.resolveNodeType(), menuCodes, resourceCodes));
             }
         }
         List<FunctionSeed> functions = new ArrayList<>();
         if (node.getFunctions() != null) {
+            int index = 0;
             for (FunctionNode functionNode : node.getFunctions()) {
-                functions.add(toFunctionSeed(functionNode, functionCodes));
+                functions.add(toFunctionSeed(functionNode, resourceCodes, index++));
             }
         }
+        List<ButtonSeed> buttons = new ArrayList<>();
         if (node.getButtons() != null) {
             for (ButtonNode buttonNode : node.getButtons()) {
-                functions.add(toButtonSeed(buttonNode, functionCodes));
+                buttons.add(toButtonSeed(buttonNode, resourceCodes));
             }
         }
         return new MenuSeed(node.getCode().trim(), node.getName().trim(), trimToNull(node.getPath()),
                 trimToNull(node.getComponent()), trimToNull(node.getIcon()), menuType,
                 defaultInt(node.getSortNo()),
-                defaultBoolean(node.getVisible(), true), trimToNull(node.getRemark()), List.copyOf(childMenus),
-                List.copyOf(functions));
+                defaultBoolean(node.getVisible(), true), defaultBoolean(node.getEnabled(), true),
+                trimToNull(node.getRemark()), List.copyOf(childMenus), List.copyOf(functions), List.copyOf(buttons));
     }
 
-    private FunctionSeed toFunctionSeed(FunctionNode node, Set<String> functionCodes) {
-        validateFunction(node, functionCodes);
-        List<String> permissionCodes = normalizePermissionCodes(node.getPermissions());
-        List<FunctionSeed> children = new ArrayList<>();
-        if (node.getFunctions() != null) {
-            for (FunctionNode child : node.getFunctions()) {
-                children.add(toFunctionSeed(child, functionCodes));
+    private FunctionSeed toFunctionSeed(FunctionNode node, Set<String> resourceCodes, int index) {
+        validateFunction(node, resourceCodes);
+        List<ButtonSeed> buttons = new ArrayList<>();
+        if (node.getButtons() != null) {
+            for (ButtonNode buttonNode : node.getButtons()) {
+                buttons.add(toButtonSeed(buttonNode, resourceCodes));
             }
         }
-        return new FunctionSeed(node.getCode().trim(), node.getName().trim(), node.getType(),
-                trimToNull(node.getDescription()), defaultInt(node.getSortNo()),
-                defaultBoolean(node.getVisible(), true), defaultBoolean(node.getDefaultEntry(), false), permissionCodes,
-                List.copyOf(children));
+        return new FunctionSeed(node.getCode().trim(), node.getName().trim(), trimToNull(node.getDescription()),
+                (index + 1) * 10, List.copyOf(buttons));
     }
 
-    private FunctionSeed toButtonSeed(ButtonNode node, Set<String> functionCodes) {
-        validateButton(node, functionCodes);
+    private ButtonSeed toButtonSeed(ButtonNode node, Set<String> resourceCodes) {
+        validateButton(node, resourceCodes);
         List<String> permissionCodes = normalizePermissionCodes(node.getPermissions());
-        return new FunctionSeed(node.getCode().trim(), node.getName().trim(), FunctionType.BUTTON,
+        return new ButtonSeed(node.getCode().trim(), node.getName().trim(),
                 trimToNull(node.getDescription()), defaultInt(node.getSortNo()),
-                defaultBoolean(node.getVisible(), true), false, permissionCodes, List.of());
+                defaultBoolean(node.getVisible(), true), permissionCodes);
     }
 
     private void validateMenu(NavNode node, Set<String> menuCodes) {
@@ -104,26 +102,26 @@ public class BootstrapResourceDefinitionLoader {
         }
     }
 
-    private void validateFunction(FunctionNode node, Set<String> functionCodes) {
+    private void validateFunction(FunctionNode node, Set<String> resourceCodes) {
         if (node.getCode() == null || node.getCode().isBlank()) {
             throw new IllegalStateException("function code must not be blank");
         }
-        if (!functionCodes.add(node.getCode().trim())) {
+        if (!resourceCodes.add(node.getCode().trim())) {
             throw new IllegalStateException("Duplicate function code: " + node.getCode());
         }
         if (node.getName() == null || node.getName().isBlank()) {
             throw new IllegalStateException("function name must not be blank: " + node.getCode());
         }
-        if (node.getType() == null) {
-            throw new IllegalStateException("function type must not be blank: " + node.getCode());
+        if (node.getButtons() == null || node.getButtons().isEmpty()) {
+            throw new IllegalStateException("function buttons must not be empty: " + node.getCode());
         }
     }
 
-    private void validateButton(ButtonNode node, Set<String> functionCodes) {
+    private void validateButton(ButtonNode node, Set<String> resourceCodes) {
         if (node.getCode() == null || node.getCode().isBlank()) {
             throw new IllegalStateException("button code must not be blank");
         }
-        if (!functionCodes.add(node.getCode().trim())) {
+        if (!resourceCodes.add(node.getCode().trim())) {
             throw new IllegalStateException("Duplicate function code: " + node.getCode());
         }
         if (node.getName() == null || node.getName().isBlank()) {
@@ -170,22 +168,30 @@ public class BootstrapResourceDefinitionLoader {
             MenuType menuType,
             int sortNo,
             boolean visible,
+            boolean enabled,
             String remark,
             List<MenuSeed> children,
-            List<FunctionSeed> functions
+            List<FunctionSeed> functions,
+            List<ButtonSeed> buttons
     ) {
     }
 
     public record FunctionSeed(
             String code,
             String name,
-            FunctionType functionType,
+            String description,
+            int sortNo,
+            List<ButtonSeed> buttons
+    ) {
+    }
+
+    public record ButtonSeed(
+            String code,
+            String name,
             String description,
             int sortNo,
             boolean visible,
-            boolean defaultEntry,
-            List<String> permissionCodes,
-            List<FunctionSeed> children
+            List<String> permissionCodes
     ) {
     }
 
@@ -241,7 +247,10 @@ public class BootstrapResourceDefinitionLoader {
         @JacksonXmlProperty(isAttribute = true)
         private Boolean visible;
 
-        @JacksonXmlProperty(localName = "remark")
+        @JacksonXmlProperty(isAttribute = true)
+        private Boolean enabled;
+
+        @JacksonXmlProperty(isAttribute = true)
         private String remark;
 
         @JacksonXmlProperty(localName = "directory")
@@ -291,28 +300,12 @@ public class BootstrapResourceDefinitionLoader {
         @JacksonXmlProperty(isAttribute = true)
         private String name;
 
-        @JacksonXmlProperty(isAttribute = true, localName = "type")
-        private FunctionType type;
-
         @JacksonXmlProperty(isAttribute = true)
-        private Integer sortNo;
-
-        @JacksonXmlProperty(isAttribute = true)
-        private Boolean visible;
-
-        @JacksonXmlProperty(isAttribute = true)
-        private Boolean defaultEntry;
-
-        @JacksonXmlProperty(localName = "description")
         private String description;
 
-        @JacksonXmlProperty(localName = "permission")
-        @JacksonXmlElementWrapper(localName = "permissions")
-        private List<PermissionNode> permissions;
-
-        @JacksonXmlProperty(localName = "function")
-        @JacksonXmlElementWrapper(localName = "functions")
-        private List<FunctionNode> functions;
+        @JacksonXmlProperty(localName = "button")
+        @JacksonXmlElementWrapper(localName = "buttons")
+        private List<ButtonNode> buttons;
     }
 
     @Getter

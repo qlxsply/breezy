@@ -105,8 +105,7 @@ public class RoleAdminController {
 
     private RoleGrantResourceRes toGrantRes(RoleGrantResourceView view) {
         return new RoleGrantResourceRes(view.id(), view.parentId(), view.menuId(), view.functionId(), view.name(), view.code(),
-                view.type(), view.description(), view.enabled(), view.selectable(), view.orderNo(),
-                view.permissionCodes());
+                view.type(), view.description(), view.enabled(), view.selectable(), view.orderNo());
     }
 
     private RoleGrantSelectionRes toGrantSelectionRes(RoleGrantSelectionView view) {

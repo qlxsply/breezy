@@ -2,19 +2,40 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            elementFormDefault="qualified">
 
-    <!-- API 权限码引用。只允许挂在 button 下 -->
+    <!--
+        API 权限码引用。
+        说明：
+        1. permission 不是资源树节点。
+        2. permission 只是 button 资源关联的 API 权限码引用。
+        3. permission 只允许挂在 button 的 permissions 集合下。
+        4. directory、menu、function 均不允许直接配置 permission。
+    -->
     <xs:complexType name="PermissionRefType">
         <xs:attribute name="code" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <!-- 权限码集合。button 可选配置 -->
+    <!--
+        权限码集合。
+        说明：
+        1. 只能出现在 button 下。
+        2. 一个 button 可以关联一个或多个 permission。
+        3. 用于描述该按钮操作需要绑定的后端 API 权限码。
+    -->
     <xs:complexType name="PermissionsType">
         <xs:sequence>
             <xs:element name="permission" type="PermissionRefType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <!-- 按钮资源：最低层级资源，不允许再有子项 -->
+    <!--
+        按钮资源。
+        说明：
+        1. button 是资源树的最低层级资源。
+        2. button 不允许再包含 directory、menu、function、button 等子资源。
+        3. button 可以配置 permissions。
+        4. permission 不是 button 的子资源节点，而是 button 的权限码引用集合。
+        5. 只有 button 可以配置 permissions。
+    -->
     <xs:complexType name="ButtonType">
         <xs:sequence>
             <xs:element name="description" type="xs:string" minOccurs="0"/>
@@ -27,24 +48,67 @@
         <xs:attribute name="visible" type="xs:boolean" use="optional"/>
     </xs:complexType>
 
-    <!-- 按钮集合。只能出现在 menu 下 -->
+    <!--
+        按钮集合。
+        说明：
+        1. buttons 可以出现在 menu 下。
+        2. buttons 可以出现在 function 下。
+        3. buttons 不允许出现在 directory 下。
+    -->
     <xs:complexType name="ButtonsType">
         <xs:sequence>
             <xs:element name="button" type="ButtonType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <!-- 菜单资源：
-         1. 可以有子菜单
-         2. 可以有按钮
-         3. path/component 可选
-         4. 是否是页面由 path/component 是否存在判断
-         5. menu 不允许直接配置 permission
+    <!--
+        功能资源。
+        说明：
+        1. function 表示 menu 下的子页面能力、功能分组或页面内业务能力。
+        2. function 只能出现在 menu 下。
+        3. function 下只能配置 buttons。
+        4. function 不允许包含 directory、menu、function 等子资源。
+        5. function 不允许直接配置 permission。
+        6. function 下的权限仍然通过 button -> permissions -> permission 表达。
+        7. path/component 可选，用于 function 需要表达隐藏子页面、子路由或子组件时使用。
+    -->
+    <xs:complexType name="FunctionType">
+        <xs:sequence>
+            <xs:element name="buttons" type="ButtonsType" minOccurs="1"/>
+        </xs:sequence>
+
+        <xs:attribute name="code" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="description" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!--
+        功能集合。
+        说明：
+        1. functions 只能出现在 menu 下。
+        2. 一个 menu 下可以有一个或多个 function。
+        3. function 下只能继续配置 buttons。
+    -->
+    <xs:complexType name="FunctionsType">
+        <xs:sequence>
+            <xs:element name="function" type="FunctionType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        菜单资源：
+        1. 可以有子菜单。
+        2. 可以有功能。
+        3. 可以有按钮。
+        4. path/component 可选。
+        5. 是否是页面由 path/component 是否存在判断。
+        6. menu 不允许直接配置 permission。
+        7. menu 下的权限必须通过 button -> permissions -> permission 表达。
+        8. menu 下可以直接配置 buttons，表示当前菜单页面自身的操作按钮。
+        9. menu 下可以配置 functions，表示当前菜单页面下的子页面能力、功能分组或页面内业务能力。
     -->
     <xs:complexType name="MenuType">
         <xs:sequence>
-            <xs:element name="remark" type="xs:string" minOccurs="0"/>
-
             <xs:element name="menus" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
@@ -52,6 +116,8 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+
+            <xs:element name="functions" type="FunctionsType" minOccurs="0"/>
 
             <xs:element name="buttons" type="ButtonsType" minOccurs="0"/>
         </xs:sequence>
@@ -63,19 +129,21 @@
         <xs:attribute name="icon" type="xs:string" use="optional"/>
         <xs:attribute name="sortNo" type="xs:int" use="required"/>
         <xs:attribute name="visible" type="xs:boolean" use="optional"/>
-        <xs:attribute name="defaultEntry" type="xs:boolean" use="optional"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="remark" type="xs:string" use="optional"/>
     </xs:complexType>
 
-    <!-- 目录资源：
-         1. 可以有子目录
-         2. 可以有菜单
-         3. 不允许有按钮
-         4. 不允许配置 permission
+    <!--
+        目录资源：
+        1. 可以有子目录。
+        2. 可以有菜单。
+        3. 不允许有功能。
+        4. 不允许有按钮。
+        5. 不允许配置 permission。
+        6. directory 主要用于导航分组或资源分组。
     -->
     <xs:complexType name="DirectoryType">
         <xs:sequence>
-            <xs:element name="remark" type="xs:string" minOccurs="0"/>
-
             <xs:element name="directories" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
@@ -98,9 +166,25 @@
         <xs:attribute name="icon" type="xs:string" use="optional"/>
         <xs:attribute name="sortNo" type="xs:int" use="required"/>
         <xs:attribute name="visible" type="xs:boolean" use="optional"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+        <xs:attribute name="remark" type="xs:string" use="optional"/>
     </xs:complexType>
 
-    <!-- 根节点 -->
+    <!--
+        根节点。
+        说明：
+        1. resources 是整个资源定义文档的根节点。
+        2. resources 下可以直接配置 directory。
+        3. resources 下也可以直接配置 menu。
+        4. resources 下不允许直接配置 function、button、permission。
+        5. 完整支持以下结构：
+           - directory -> directory -> menu -> menu -> button -> permission
+           - directory -> menu -> button -> permission
+           - directory -> menu -> function -> button -> permission
+           - menu -> button -> permission
+           - menu -> function -> button -> permission
+           - menu -> menu -> function -> button -> permission
+    -->
     <xs:element name="resources">
         <xs:complexType>
             <xs:sequence>

@@ -11,7 +11,7 @@
                   icon="dashboard"
                   sortNo="10"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="workbench-view" name="查看工作台" sortNo="10" visible="true"/>
                 </buttons>
@@ -28,7 +28,7 @@
                   icon="settings"
                   sortNo="10"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="config-system-view" name="查看配置" sortNo="10" visible="true">
                         <permissions>
@@ -55,7 +55,7 @@
                   icon="link"
                   sortNo="20"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="api-manage-view" name="查看接口" sortNo="10" visible="true">
                         <permissions>
@@ -82,7 +82,7 @@
                   icon="book"
                   sortNo="30"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="dict-manage-view" name="查看字典" sortNo="10" visible="true">
                         <permissions>
@@ -104,7 +104,7 @@
                   icon="folder"
                   sortNo="40"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="system-file-admin-view" name="查看逻辑文件" sortNo="10" visible="true">
                         <permissions>
@@ -141,7 +141,7 @@
                   icon="monitor"
                   sortNo="50"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="diagnostic-view" name="查看诊断" sortNo="10" visible="true">
                         <permissions>
@@ -173,7 +173,7 @@
                   icon="chart"
                   sortNo="90"
                   visible="false"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="method-stat-switch-view" name="查看统计开关" sortNo="10" visible="true">
                         <permissions>
@@ -209,7 +209,7 @@
                   icon="users"
                   sortNo="10"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="user-manage-view" name="查看账号" sortNo="10" visible="true">
                         <permissions>
@@ -256,7 +256,7 @@
                   icon="role"
                   sortNo="20"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="role-manage-view" name="查看角色" sortNo="10" visible="true">
                         <permissions>
@@ -298,7 +298,7 @@
                   icon="policy"
                   sortNo="30"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="permission-policy-view" name="查看权限策略" sortNo="10" visible="true"/>
                 </buttons>
@@ -311,7 +311,7 @@
                   icon="history"
                   sortNo="40"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="login-log-view" name="查看登录日志" sortNo="10" visible="true">
                         <permissions>
@@ -328,7 +328,7 @@
                   icon="audit"
                   sortNo="50"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="audit-log-view" name="查看审计日志" sortNo="10" visible="true">
                         <permissions>
@@ -349,7 +349,7 @@
                   icon="customer-user"
                   sortNo="10"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="web-user-manage-view" name="查看用户" sortNo="10" visible="true">
                         <permissions>
@@ -371,7 +371,7 @@
                   icon="customer-chart"
                   sortNo="20"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="user-feature-package-view" name="查看应用包" sortNo="10" visible="true">
                         <permissions>
@@ -393,7 +393,7 @@
                   icon="spark"
                   sortNo="30"
                   visible="true"
-                  defaultEntry="true">
+                  enabled="true">
                 <buttons>
                     <button code="user-feature-application-view" name="查看应用配置" sortNo="10" visible="true">
                         <permissions>

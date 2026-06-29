@@ -8,17 +8,12 @@ import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.InternalPermissionSessionService;
 import com.corwin.system.resource.application.service.ApiPermissionCache;
 import com.corwin.system.resource.domain.model.Function;
-import com.corwin.system.resource.domain.model.FunctionPermission;
 import com.corwin.system.resource.domain.model.Menu;
 import com.corwin.system.resource.domain.model.MenuType;
 import com.corwin.system.resource.domain.model.MenuFunction;
-import com.corwin.system.resource.domain.model.Permission;
-import com.corwin.system.resource.domain.model.PermissionUserScope;
-import com.corwin.system.resource.domain.repo.FunctionPermissionRepository;
 import com.corwin.system.resource.domain.repo.FunctionRepository;
 import com.corwin.system.resource.domain.repo.MenuFunctionRepository;
 import com.corwin.system.resource.domain.repo.MenuRepository;
-import com.corwin.system.resource.domain.repo.PermissionRepository;
 import com.corwin.system.role.application.command.UpdateRoleGrantCommand;
 import com.corwin.system.role.application.view.RoleGrantResourceView;
 import com.corwin.system.role.application.view.RoleGrantSelectionView;
@@ -35,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +51,6 @@ public class RoleGrantService {
     private final MenuRepository menuRepository;
     private final FunctionRepository functionRepository;
     private final MenuFunctionRepository menuFunctionRepository;
-    private final FunctionPermissionRepository functionPermissionRepository;
-    private final PermissionRepository permissionRepository;
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
@@ -85,7 +77,7 @@ public class RoleGrantService {
                 .toList();
         Map<Long, Function> functionById = functionRepository.findAll().stream()
                 .filter(function -> function.getId() != null)
-                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
+                .collect(Collectors.toMap(Function::getId, value -> value, (left, right) -> left));
         List<MenuFunction> menuFunctions = menuFunctionRepository.findAll().stream()
                 .filter(mapping -> mapping.getId() != null)
                 .filter(mapping -> Boolean.TRUE.equals(mapping.getVisible()))
@@ -95,11 +87,6 @@ public class RoleGrantService {
                         .thenComparing(MenuFunction::getSortNo, Comparator.nullsLast(Integer::compareTo))
                         .thenComparing(MenuFunction::getId, Comparator.nullsLast(Long::compareTo)))
                 .toList();
-
-        Map<Long, List<String>> permissionCodesByFunctionId = permissionCodesByFunctionId(menuFunctions.stream()
-                .map(MenuFunction::getFunctionId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new)));
 
         ArrayList<RoleGrantResourceView> resources = new ArrayList<>();
         for (Menu menu : menus) {
@@ -114,8 +101,7 @@ public class RoleGrantService {
                     menu.getRemark(),
                     Boolean.TRUE.equals(menu.getEnabled()),
                     true,
-                    menu.getSortNo() == null ? 0 : menu.getSortNo(),
-                    List.of()));
+                    menu.getSortNo() == null ? 0 : menu.getSortNo()));
         }
         for (MenuFunction menuFunction : menuFunctions) {
             Function function = functionById.get(menuFunction.getFunctionId());
@@ -134,8 +120,7 @@ public class RoleGrantService {
                     function.getDescription(),
                     Boolean.TRUE.equals(function.getEnabled()),
                     true,
-                    menuFunction.getSortNo() == null ? 0 : menuFunction.getSortNo(),
-                    permissionCodesByFunctionId.getOrDefault(function.getId(), List.of())));
+                    menuFunction.getSortNo() == null ? 0 : menuFunction.getSortNo()));
         }
         return resources;
     }
@@ -212,42 +197,6 @@ public class RoleGrantService {
             normalized.add(functionId);
         }
         return List.copyOf(normalized);
-    }
-
-    private Map<Long, List<String>> permissionCodesByFunctionId(Set<Long> functionIds) {
-        if (functionIds.isEmpty()) {
-            return Map.of();
-        }
-        List<FunctionPermission> mappings = functionPermissionRepository.findByFunctionIdIn(functionIds);
-        if (mappings.isEmpty()) {
-            return Map.of();
-        }
-        LinkedHashSet<Long> permissionIds = mappings.stream()
-                .map(FunctionPermission::getPermissionId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        Map<Long, String> permissionCodeById = permissionRepository.findAllById(permissionIds).stream()
-                .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
-                .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
-                        || permission.getUserScope() == PermissionUserScope.COMMON)
-                .filter(permission -> permission.getCode() != null && !permission.getCode().isBlank())
-                .collect(Collectors.toMap(Permission::getId, permission -> permission.getCode().trim(),
-                        (left, right) -> left, LinkedHashMap::new));
-
-        LinkedHashMap<Long, LinkedHashSet<String>> grouped = new LinkedHashMap<>();
-        for (FunctionPermission mapping : mappings) {
-            String permissionCode = permissionCodeById.get(mapping.getPermissionId());
-            if (permissionCode == null) {
-                continue;
-            }
-            grouped.computeIfAbsent(mapping.getFunctionId(), __ -> new LinkedHashSet<>()).add(permissionCode);
-        }
-
-        LinkedHashMap<Long, List<String>> result = new LinkedHashMap<>();
-        for (Map.Entry<Long, LinkedHashSet<String>> entry : grouped.entrySet()) {
-            result.put(entry.getKey(), List.copyOf(entry.getValue()));
-        }
-        return result;
     }
 
     private Long operatorId() {
