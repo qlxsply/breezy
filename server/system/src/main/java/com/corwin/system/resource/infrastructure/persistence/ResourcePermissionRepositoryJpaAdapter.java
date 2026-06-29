@@ -59,4 +59,10 @@ public class ResourcePermissionRepositoryJpaAdapter implements ResourcePermissio
     public List<ResourcePermission> findByResourceIdIn(Collection<Long> resourceIds) {
         return repo.findByResourceIdIn(resourceIds);
     }
+
+    @Override
+    public void deleteByResourceIdIn(Collection<Long> resourceIds) {
+        repo.deleteByResourceIdIn(resourceIds);
+        repo.flush();
+    }
 }

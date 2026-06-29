@@ -59,4 +59,14 @@ public class ResourceRepositoryJpaAdapter implements ResourceRepository {
     public List<Resource> findAllById(Collection<Long> ids) {
         return repo.findAllById(ids);
     }
+
+    @Override
+    public Optional<Resource> findByCode(String code) {
+        return repo.findByCode(code);
+    }
+
+    @Override
+    public boolean existsByCode(String code) {
+        return repo.existsByCode(code);
+    }
 }

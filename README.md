@@ -31,12 +31,13 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 系统资源定义文件为 `server/bootstrap/src/main/resources/bootstarp/resources.xml`（历史目录名为 `bootstarp`，保持与现有工程一致）
     - `resources.xml` 必须以“页面当前实际功能”为准维护，不做历史兼容保留
     - 新增、修改、移除页面菜单/按钮/权限点时，必须同步更新 `resources.xml`，否则前端资源树与权限点不会完整注册
-    - 当前实现层仍使用 `sys_menu + sys_function + sys_menu_function + sys_function_permission` 维护资源树；其中“功能”是过渡期内部实现概念，不再作为后台产品设计标准继续扩散
-    - 后续管理后台的资源心智模型统一收敛为 `目录 -> 菜单 -> 按钮 -> 权限码`
+    - 当前后台资源模型已统一到 `sys_resource + sys_resource_permission`
+    - 管理后台的资源心智模型统一为 `目录 -> 菜单 -> 功能 -> 按钮 -> 权限码`
         - 目录：仅用于导航分组与层级组织，不直接对应页面
         - 菜单：对应可访问的页面路由与页面级资源
-        - 按钮：对应页面内可授权操作
-    - `resources.xml` 当前仍承载内部资源树定义，但后续设计、页面命名、菜单管理交互与文档说明均以 `目录 -> 菜单 -> 按钮` 为标准，不再以“菜单 -> 功能 -> 按钮”作为面向产品的表达
+        - 功能：对应菜单下的隐藏页面、子功能页或中间能力节点
+        - 按钮：对应页面内可授权操作，且只有按钮允许绑定权限码
+    - `resources.xml` 当前承载后台资源树定义，后续设计、页面命名、菜单管理交互与文档说明统一以 `目录 -> 菜单 -> 功能 -> 按钮` 为标准
     - 后端 API 与权限码的关系由控制器注解扫描和权限初始化流程维护，前端只消费返回的资源树控制菜单、功能和按钮可见性
     - 资源粒度以“业务能力”划分：菜单页面默认承载该页面基础查询能力（例如列表查询、搜索、重置、详情读取），这类基础能力不再额外拆分查询按钮资源
     - 对包含子功能页的场景（如 schemaforge），基础查询能力应下沉到子页面资源，不绑定到父级容器菜单资源
@@ -142,6 +143,10 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 示例：`关键字筛选项`、`状态筛选项`、`主刷新按钮`、`查询面板开关按钮`、`操作列`、`详情弹窗`、`编辑弹窗`
 - `/admin/apis` 页面可作为当前标准参考页，其页面结构默认按上述术语理解和沟通。
 - `/admin/apis` 当前前端列表接口应直接调用分页接口 `/api/apis/page`，不再拉全量列表后做前端本地分页；`/api/apis` 可保留给其他非分页场景复用。
+- `/admin/resources` 为平台管理下的资源管理页：
+    - 用于维护目录、菜单、功能、按钮资源树
+    - 支持资源基础信息、路由信息、状态配置、按钮权限码绑定维护
+    - 核心校验规则统一在后端执行：父子类型约束、按钮权限码约束、编码唯一、系统内置资源删除保护
 - 后台壳体级自助页面约定
     - 例如：`/admin/profile`、`/admin/profile/password`、`/admin/profile/preferences`、`/admin/help`
     - 这类页面属于 `user-panel` 下拉菜单入口，不属于后台侧边导航区菜单
@@ -466,7 +471,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 
 - 管理后台静态路由主干（当前已接入）
     - 概览：`/admin`
-    - 平台管理：`/admin/configs`、`/admin/apis`、`/admin/dicts`、`/admin/system-files`、`/admin/diagnostic`
+    - 平台管理：`/admin/configs`、`/admin/apis`、`/admin/resources`、`/admin/dicts`、`/admin/system-files`、`/admin/diagnostic`
     - 权限中心：`/admin/users`、`/admin/roles`、`/admin/login-logs`、`/admin/audit-logs`
     - 客户中心：`/admin/web-users`、`/admin/normal-features`
     - 隐藏页（不直接出现在侧边栏，通常由权限跳转进入）：`/admin/method-stat`、`/admin/user-permissions`
@@ -1017,15 +1022,12 @@ cd web; npm run build
 
 - 当前引导顺序扩展为：数据库与表结构初始化 -> 系统配置初始化 -> 数据字典初始化 -> API 与权限初始化 -> 资源初始化。
 - 账号资源定义文件为 `server/bootstrap/src/main/resources/bootstarp/resources.xml`，结构由同目录 `resources.xsd` 约束。
-- `resources.xml` 当前实现仍不直接声明 API 绑定，而是通过 `sys_menu + sys_function + sys_menu_function + sys_function_permission` 维护内部资源树。
-- 管理后台产品心智与后续菜单管理设计统一采用 `目录 -> 菜单 -> 按钮 -> 权限码`：
+- `resources.xml` 当前不直接声明 API 绑定，而是通过 `sys_resource + sys_resource_permission` 维护后台资源树与按钮权限码关系。
+- 管理后台产品心智与后续菜单管理设计统一采用 `目录 -> 菜单 -> 功能 -> 按钮 -> 权限码`：
   - 目录对应导航分组
   - 菜单对应页面路由
-  - 按钮对应页面内操作
-- 现阶段数据库实现与 XML 结构仍保留“菜单/功能/按钮”过渡表达，后续资源域重构时应逐步向“目录/菜单/按钮”收敛：
-  - `sys_menu` 保存菜单节点
-  - `sys_function` 保存页面功能与按钮功能
-  - `sys_menu_function` 保存菜单挂载关系与功能树关系
+  - 功能对应菜单下的子功能页或隐藏能力节点
+  - 按钮对应页面内操作与权限码绑定点
   - `sys_function_permission` 保存按钮/功能到权限码的关联
 - 每次执行资源初始化时，会先清空 `sys_role_function`、`sys_role_menu`、`sys_function_permission`、`sys_menu_function`、`sys_function`、`sys_menu`，再按 XML 全量重建。
 - 用户功能定义文件为 `server/bootstrap/src/main/resources/bootstarp/normal-features.xml`，结构由同目录 `normal-features.xsd` 约束。

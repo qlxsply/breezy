@@ -12,4 +12,6 @@ import java.util.List;
 public interface ResourcePermissionJpaRepository extends JpaRepository<ResourcePermission, Long> {
 
     List<ResourcePermission> findByResourceIdIn(Collection<Long> resourceIds);
+
+    void deleteByResourceIdIn(Collection<Long> resourceIds);
 }

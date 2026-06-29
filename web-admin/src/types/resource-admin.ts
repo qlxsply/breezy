@@ -1,7 +1,7 @@
 // /src/types/resource-admin.ts
 
-export type ResourceType = "MENU" | "BUTTON" | "FEATURE" | "DATA";
-export type ResourceNodeType = "DIRECTORY" | "MENU" | "BUTTON" | "FEATURE" | "DATA";
+export type ResourceType = "MENU" | "BUTTON" | "FUNCTION" | "FEATURE" | "DATA";
+export type ResourceNodeType = "DIRECTORY" | "MENU" | "BUTTON" | "FUNCTION" | "FEATURE" | "DATA";
 export type ResourceScope = "TOOL" | "SETTING" | "INFO" | "NONE";
 export type ResourceOpenMode = "NONE" | "MODAL" | "PAGE";
 export type ResourceLevel = "SYSTEM" | "CUSTOM";

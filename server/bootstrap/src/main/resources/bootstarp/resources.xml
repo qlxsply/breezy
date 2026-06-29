@@ -75,12 +75,54 @@
                 </buttons>
             </menu>
 
+            <menu code="resource-center"
+                  name="资源管理"
+                  path="/admin/resources"
+                  component="pages/ResourcesAdminPage.vue"
+                  icon="tree"
+                  sortNo="30"
+                  visible="true"
+                  enabled="true">
+                <buttons>
+                    <button code="resource-manage-view" name="查看资源" sortNo="10" visible="true">
+                        <permissions>
+                            <permission code="res.view"/>
+                        </permissions>
+                    </button>
+                    <button code="resource-manage-create" name="新增资源" sortNo="20" visible="true">
+                        <permissions>
+                            <permission code="res.add"/>
+                        </permissions>
+                    </button>
+                    <button code="resource-manage-edit" name="编辑资源" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="res.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="resource-manage-delete" name="删除资源" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="res.del"/>
+                        </permissions>
+                    </button>
+                    <button code="resource-manage-permission-view" name="查看按钮权限码" sortNo="50" visible="true">
+                        <permissions>
+                            <permission code="res.perm.view"/>
+                        </permissions>
+                    </button>
+                    <button code="resource-manage-permission-edit" name="维护按钮权限码" sortNo="60" visible="true">
+                        <permissions>
+                            <permission code="res.perm.edit"/>
+                        </permissions>
+                    </button>
+                </buttons>
+            </menu>
+
             <menu code="dict-center"
                   name="数据字典"
                   path="/admin/dicts"
                   component="pages/DictAdminPage.vue"
                   icon="book"
-                  sortNo="30"
+                  sortNo="40"
                   visible="true"
                   enabled="true">
                 <buttons>
@@ -102,7 +144,7 @@
                   path="/admin/system-files"
                   component="pages/SystemFilesAdminPage.vue"
                   icon="folder"
-                  sortNo="40"
+                  sortNo="50"
                   visible="true"
                   enabled="true">
                 <buttons>
@@ -139,7 +181,7 @@
                   path="/admin/diagnostic"
                   component="pages/DiagnosticAdminPage.vue"
                   icon="monitor"
-                  sortNo="50"
+                  sortNo="60"
                   visible="true"
                   enabled="true">
                 <buttons>

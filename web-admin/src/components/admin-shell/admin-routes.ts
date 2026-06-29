@@ -43,9 +43,10 @@ const staticAdminRoutes: AdminRouteMeta[] = [
   { path: "/admin", title: "工作台", section: "概览", sectionOrder: 10, order: 10 },
   { path: "/admin/configs", title: "系统配置", section: "平台管理", sectionOrder: 20, order: 10 },
   { path: "/admin/apis", title: "接口管理", section: "平台管理", sectionOrder: 20, order: 20 },
-  { path: "/admin/dicts", title: "数据字典", section: "平台管理", sectionOrder: 20, order: 30 },
-  { path: "/admin/system-files", title: "系统文件", section: "平台管理", sectionOrder: 20, order: 40 },
-  { path: "/admin/diagnostic", title: "诊断工具", section: "平台管理", sectionOrder: 20, order: 50 },
+  { path: "/admin/resources", title: "资源管理", section: "平台管理", sectionOrder: 20, order: 30 },
+  { path: "/admin/dicts", title: "数据字典", section: "平台管理", sectionOrder: 20, order: 40 },
+  { path: "/admin/system-files", title: "系统文件", section: "平台管理", sectionOrder: 20, order: 50 },
+  { path: "/admin/diagnostic", title: "诊断工具", section: "平台管理", sectionOrder: 20, order: 60 },
   { path: "/admin/method-stat", title: "方法统计", section: "平台管理", sectionOrder: 20, order: 90, hidden: true },
   { path: "/admin/users", title: "账号管理", section: "权限中心", sectionOrder: 30, order: 10 },
   { path: "/admin/roles", title: "角色管理", section: "权限中心", sectionOrder: 30, order: 20 },
@@ -284,7 +285,14 @@ function sortMenuTree(nodes: AdminMenuNode[]): AdminMenuNode[] {
 
 function isAdminTreeResource(resource: ResourceEntry): boolean {
   if (!resource.enabled) return false;
-  if (resource.nodeType === "FEATURE" || resource.nodeType === "BUTTON" || resource.type === "FEATURE" || resource.type === "BUTTON") {
+  if (
+    resource.nodeType === "FUNCTION" ||
+    resource.nodeType === "FEATURE" ||
+    resource.nodeType === "BUTTON" ||
+    resource.type === "FUNCTION" ||
+    resource.type === "FEATURE" ||
+    resource.type === "BUTTON"
+  ) {
     return false;
   }
   if (resource.nodeType === "DIRECTORY") return true;

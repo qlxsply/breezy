@@ -309,6 +309,16 @@ public class Resource {
         touch();
     }
 
+    public void changeCode(String code) {
+        this.code = requireNotBlank(code, "资源编码不能为空");
+        touch();
+    }
+
+    public void changeType(ResourceType resourceType) {
+        this.resourceType = requireNonNull(resourceType, "资源类型不能为空");
+        touch();
+    }
+
     /**
      * 修改前端路由信息。
      *
@@ -395,6 +405,16 @@ public class Resource {
      */
     public void cancelDefaultEntry() {
         this.defaultEntry = false;
+        touch();
+    }
+
+    public void markSystemBuiltin() {
+        this.systemBuiltin = true;
+        touch();
+    }
+
+    public void cancelSystemBuiltin() {
+        this.systemBuiltin = false;
         touch();
     }
 

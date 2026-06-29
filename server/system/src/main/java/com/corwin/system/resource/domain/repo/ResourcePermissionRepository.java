@@ -14,4 +14,6 @@ public interface ResourcePermissionRepository extends DomainRepository<ResourceP
     List<ResourcePermission> findAll();
 
     List<ResourcePermission> findByResourceIdIn(Collection<Long> resourceIds);
+
+    void deleteByResourceIdIn(Collection<Long> resourceIds);
 }
