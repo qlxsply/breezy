@@ -62,5 +62,6 @@ public class RoleResourceRepositoryJpaAdapter implements RoleResourceRepository 
     @Override
     public void deleteByRoleId(Long roleId) {
         repo.deleteByRoleId(roleId);
+        repo.flush();
     }
 }

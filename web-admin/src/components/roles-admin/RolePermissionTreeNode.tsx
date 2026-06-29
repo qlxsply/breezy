@@ -16,7 +16,7 @@ interface RolePermissionTreeNodeProps {
   diffStatusById?: Map<string, DiffStatus>;
   onToggleExpand: (id: string) => void;
   onToggleSelect: (payload: { id: string; checked: boolean }) => void;
-  onToggleButton: (payload: { id: string; checked: boolean; permissionCode: string }) => void;
+  onToggleButton: (payload: { id: string; checked: boolean }) => void;
 }
 
 function resolveDiffClass(nodeId: string, diffStatusById?: Map<string, DiffStatus>): string {
@@ -54,12 +54,14 @@ export function RolePermissionTreeNode({
   onToggleButton,
 }: RolePermissionTreeNodeProps) {
   const kind = resolveNodeKind(node.row);
-  const nestedChildren = node.children;
-  const hasNested = nestedChildren.length > 0;
+  const buttonChildren = node.children.filter((child) => child.row.type === "BUTTON");
+  const nestedChildren = node.children.filter((child) => child.row.type !== "BUTTON");
+  const hasNested = node.children.length > 0;
   const expanded = expandedIds.has(node.row.id);
   const checked = selectedIds.has(node.row.id);
   const indeterminate = !checked && hasSelectedDescendant(node, selectedIds);
   const diffClass = resolveDiffClass(node.row.id, diffStatusById);
+
   function typeLabel() {
     if (kind === "DIRECTORY") return "目录";
     if (kind === "MENU") return "菜单";
@@ -99,11 +101,37 @@ export function RolePermissionTreeNode({
         <span className="permission-node-name">{node.row.name}</span>
         <span className={`permission-tag ${typeClass()}`}>{typeLabel()}</span>
         {!node.row.enabled ? <span className="permission-tag permission-tag-disabled">停用</span> : null}
-        {node.row.code ? <span className="permission-node-code">{node.row.code}</span> : null}
       </div>
 
-      {expanded && nestedChildren.length > 0 ? (
+      {expanded && hasNested ? (
         <div className="permission-tree-children">
+          {buttonChildren.length > 0 ? (
+            <div className="permission-button-group" role="group" aria-label={`${node.row.name}按钮权限`}>
+              {buttonChildren.map((child) => {
+                const buttonChecked = selectedIds.has(child.row.id);
+                return (
+                  <label
+                    key={child.row.id}
+                    className={`permission-button-chip${buttonChecked ? " is-checked" : ""}${readonly || !canEdit || !child.row.enabled ? " is-disabled" : ""} ${resolveDiffClass(child.row.id, diffStatusById)}`}
+                  >
+                    <input
+                      className="permission-button-chip__checkbox"
+                      type="checkbox"
+                      checked={buttonChecked}
+                      disabled={readonly || !canEdit || !child.row.enabled}
+                      onChange={(event) =>
+                        onToggleButton({
+                          id: child.row.id,
+                          checked: event.target.checked,
+                        })
+                      }
+                    />
+                    <span className="permission-button-chip__name">{child.row.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          ) : null}
           {nestedChildren.map((child) => (
             <RolePermissionTreeNode
               key={child.row.id}

@@ -66,6 +66,12 @@ export function RolePermissionDialog({
     setPendingSelection(null);
   }, [defaultExpandedIds, selection, resources]);
 
+  useEffect(() => {
+    if (expandedIds.size === 0) {
+      treeWrapRef.current?.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [expandedIds]);
+
   const keywordText = keyword.trim().toLowerCase();
 
   const filteredTreeResult = useMemo(() => {
@@ -114,7 +120,14 @@ export function RolePermissionDialog({
     return map;
   }, [resources, diff]);
 
-  const diffRoots = useMemo(() => buildDiffTree(null), [childrenMap, diffStatusById]);
+  const diffVisibleNodeIds = useMemo(() => {
+    const ids = new Set<string>();
+    buildNodeIdsFromSelection(selection).forEach((id) => ids.add(id));
+    buildNodeIdsFromSelection(pendingSelection ?? summarySelection).forEach((id) => ids.add(id));
+    return ids;
+  }, [selection, pendingSelection, summarySelection]);
+
+  const diffRoots = useMemo(() => buildDiffTree(null), [childrenMap, diffVisibleNodeIds]);
 
   const diffExpandedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -124,12 +137,7 @@ export function RolePermissionDialog({
     return ids;
   }, [diffRoots]);
 
-  const diffSelectedNodeIds = useMemo(() => {
-    const ids = new Set<string>();
-    buildNodeIdsFromSelection(selection).forEach((id) => ids.add(id));
-    buildNodeIdsFromSelection(pendingSelection ?? summarySelection).forEach((id) => ids.add(id));
-    return ids;
-  }, [selection, pendingSelection, summarySelection]);
+  const diffSelectedNodeIds = diffVisibleNodeIds;
 
   const diffSummaryText = useMemo(() => {
     const addedCount = diff.addedResourceIds.size;
@@ -179,8 +187,8 @@ export function RolePermissionDialog({
     return rows
       .map((row) => {
         const children = buildDiffTree(row.id);
-        const changed = diffStatusById.has(row.id);
-        if (!changed && children.length === 0) return null;
+        const visible = diffVisibleNodeIds.has(row.id);
+        if (!visible && children.length === 0) return null;
         return { row, children } satisfies RolePermissionTreeNodeView;
       })
       .filter((item): item is RolePermissionTreeNodeView => Boolean(item));
@@ -286,7 +294,7 @@ export function RolePermissionDialog({
   function buildSubmitSelection(currentIds: Set<string>): RoleGrantSelection {
     const resourceIds = new Set<string>();
     resources.forEach((row) => {
-      if (currentIds.has(row.id)) resourceIds.add(row.resourceId);
+      if (currentIds.has(row.id) && row.selectable) resourceIds.add(row.resourceId);
     });
     return { resourceIds: Array.from(resourceIds) };
   }
