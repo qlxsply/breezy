@@ -21,7 +21,10 @@ import {
   BzOption,
   BzSelect,
   BzSwitch,
+  BzTable,
+  BzTag,
 } from "@admin/components/bz";
+import type { BzTableColumn } from "@admin/components/bz";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
 import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
@@ -66,13 +69,6 @@ const RESOURCE_TYPE_LABEL: Record<ManageResourceType, string> = {
   MENU: "菜单",
   FUNCTION: "功能",
   BUTTON: "按钮",
-};
-
-const RESOURCE_TYPE_CLASS: Record<ManageResourceType, string> = {
-  DIRECTORY: "is-directory",
-  MENU: "is-menu",
-  FUNCTION: "is-function",
-  BUTTON: "is-button",
 };
 
 const ALLOWED_CHILDREN: Record<ManageResourceType, ManageResourceType[]> = {
@@ -160,11 +156,119 @@ export function ResourcesAdminPage() {
   const canHaveChildren = (resourceType: ManageResourceType) => ALLOWED_CHILDREN[resourceType].length > 0;
   const showPermissionArea = form.resourceType === "BUTTON" && (canPermissionView || canPermissionEdit);
   const canSavePermissions = showPermissionArea && canPermissionEdit;
-  const readOnly =
-    drawerPurpose === "create"
-        ? !canCreate
-        : !canEdit;
+  const readOnly = drawerPurpose === "create" ? !canCreate : !canEdit;
   const structureReadOnly = readOnly;
+
+  const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(
+    () => [
+      {
+        key: "name",
+        title: "资源名称",
+        width: 320,
+        render: ({ row, level }) => {
+          const hasChildren = row.children.length > 0;
+          const expanded = expandedIds.has(row.id);
+          return (
+            <div className="resource-name-cell">
+              <span className="resource-indent" style={{ width: `${level * 24}px` }} />
+              <button
+                className={`resource-toggle${!hasChildren ? " is-placeholder" : ""}`}
+                type="button"
+                onClick={() => hasChildren && toggleExpand(row.id)}
+              >
+                {hasChildren ? (expanded || hasActiveFilter ? "▾" : "▸") : "▸"}
+              </button>
+              <span className="resource-name-main">{row.name}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: "type",
+        title: "类型",
+        width: 88,
+        render: ({ row }) => <BzTag size="small">{RESOURCE_TYPE_LABEL[row.resourceType]}</BzTag>,
+      },
+      {
+        key: "code",
+        title: "编码",
+        width: 180,
+        render: ({ row }) => <span className="resource-mono">{row.code}</span>,
+      },
+      {
+        key: "path",
+        title: "路由路径",
+        minWidth: 160,
+        render: ({ row }) => <span className="resource-muted">{row.path || "-"}</span>,
+      },
+      {
+        key: "component",
+        title: "组件路径",
+        minWidth: 200,
+        render: ({ row }) => <span className="resource-muted">{row.component || "-"}</span>,
+      },
+      {
+        key: "sortNo",
+        title: "排序",
+        width: 72,
+        render: ({ row }) => row.sortNo,
+      },
+      {
+        key: "visible",
+        title: "可见",
+        width: 72,
+        render: ({ row }) => (row.visible ? "是" : "否"),
+      },
+      {
+        key: "enabled",
+        title: "启用",
+        width: 72,
+        render: ({ row }) => (
+          <span className={row.enabled ? "resource-status-on" : "resource-status-off"}>
+            {row.enabled ? "启用" : "停用"}
+          </span>
+        ),
+      },
+      {
+        key: "defaultEntry",
+        title: "默认入口",
+        width: 88,
+        render: ({ row }) => (row.defaultEntry ? "是" : "否"),
+      },
+      {
+        key: "systemBuiltin",
+        title: "内置",
+        width: 72,
+        render: ({ row }) => (row.systemBuiltin ? "是" : "否"),
+      },
+      {
+        key: "actions",
+        title: "操作",
+        width: 220,
+        render: ({ row }) => {
+          const childrenAllowed = canHaveChildren(row.resourceType);
+          const actions: AdminActionItem[] = [];
+          if (canCreate && childrenAllowed) {
+            actions.push({ key: "create-child", label: "新增子项", tone: "neutral", handler: () => openCreateChild(row) });
+          }
+          if (canEdit) {
+            actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => void openEdit(row, "edit") });
+          }
+          if (canDelete) {
+            actions.push({
+              key: "delete",
+              label: "删除",
+              tone: "delete",
+              disabled: row.systemBuiltin,
+              handler: () => void onDelete(row),
+            });
+          }
+          return <AdminActionBar actions={actions} />;
+        },
+      },
+    ],
+    [canCreate, canDelete, canEdit, expandedIds, hasActiveFilter],
+  );
 
   async function reload() {
     if (!canView) return;
@@ -497,94 +601,14 @@ export function ResourcesAdminPage() {
             }
           >
             <div className="admin-table-surface">
-
-            <div className="resource-manage-table-wrap">
-              <table className="resource-manage-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: "320px" }}>资源名称</th>
-                    <th>类型</th>
-                    <th>编码</th>
-                    <th>路由路径</th>
-                    <th>组件路径</th>
-                    <th>排序</th>
-                    <th>可见</th>
-                    <th>启用</th>
-                    <th>默认入口</th>
-                    <th>内置</th>
-                    <th style={{ width: "260px" }}>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableRows.length === 0 ? (
-                    <tr>
-                      <td colSpan={11}>
-                        <div className="resource-manage-empty">暂无资源数据</div>
-                      </td>
-                    </tr>
-                  ) : (
-                    tableRows.map(({ row, level }) => {
-                      const childrenAllowed = canHaveChildren(row.resourceType);
-                      const actions: AdminActionItem[] = [];
-                      if (canCreate && childrenAllowed) {
-                        actions.push({ key: "create-child", label: "新增子项", handler: () => openCreateChild(row) });
-                      }
-                      if (canEdit) {
-                        actions.push({ key: "edit", label: "编辑", handler: () => void openEdit(row, "edit") });
-                      }
-                      if (canDelete) {
-                        actions.push({
-                          key: "delete",
-                          label: "删除",
-                          tone: "delete",
-                          disabled: row.systemBuiltin,
-                          handler: () => void onDelete(row),
-                        });
-                      }
-                      const hasChildren = row.children.length > 0;
-                      const expanded = expandedIds.has(row.id);
-                      return (
-                        <tr key={row.id}>
-                          <td>
-                            <div className="resource-name-cell">
-                              <span className="resource-indent" style={{ width: `${level * 24}px` }} />
-                              <button
-                                className={`resource-toggle${!hasChildren ? " is-placeholder" : ""}`}
-                                type="button"
-                                onClick={() => hasChildren && toggleExpand(row.id)}
-                              >
-                                {hasChildren ? (expanded || hasActiveFilter ? "▾" : "▸") : "▸"}
-                              </button>
-                              <span className="resource-name-main">{row.name}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className={`resource-type-tag ${RESOURCE_TYPE_CLASS[row.resourceType]}`}>
-                              {RESOURCE_TYPE_LABEL[row.resourceType]}
-                            </span>
-                          </td>
-                          <td className="resource-mono">{row.code}</td>
-                          <td className="resource-muted">{row.path || "-"}</td>
-                          <td className="resource-muted">{row.component || "-"}</td>
-                          <td>{row.sortNo}</td>
-                          <td>{row.visible ? "是" : "否"}</td>
-                          <td>
-                            <span className={row.enabled ? "resource-status-on" : "resource-status-off"}>
-                              {row.enabled ? "启用" : "停用"}
-                            </span>
-                          </td>
-                          <td>{row.defaultEntry ? "是" : "否"}</td>
-                          <td>{row.systemBuiltin ? "是" : "否"}</td>
-                          <td>
-                            <AdminActionBar actions={actions} />
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+              <BzTable
+                data={tableRows}
+                columns={columns}
+                rowKey={(item) => item.row.id}
+                loading={loading}
+                emptyText="暂无资源数据"
+                size="small"
+              />
             </div>
           </BzCard>
         </div>
@@ -716,29 +740,24 @@ export function ResourcesAdminPage() {
               <section className="resource-manage-section detail-field detail-field--wide">
                 <div className="resource-manage-section__title">权限码绑定</div>
                 {showPermissionArea ? (
-                  <>
-                    <div className="resource-manage-permission-box">
-                      {permissions.map((permission) => {
-                        const checked = form.permissionIds.includes(permission.id);
-                        return (
-                          <label key={permission.id} className="resource-manage-permission-item">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              disabled={!canSavePermissions}
-                              onChange={(event) => togglePermission(permission.id, event.target.checked)}
-                            />
-                            <span>{permission.name}</span>
-                            <span className="resource-manage-permission-code">({permission.code})</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                    <div className="resource-manage-tip">只有 BUTTON 类型资源允许绑定权限码。保存时会建立按钮资源与权限码的关联关系。</div>
-                  </>
-                ) : (
-                  <div className="resource-manage-tip">只有 BUTTON 类型资源允许绑定权限码。</div>
-                )}
+                  <div className="resource-manage-permission-box">
+                    {permissions.map((permission) => {
+                      const checked = form.permissionIds.includes(permission.id);
+                      return (
+                        <label key={permission.id} className="resource-manage-permission-item">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={!canSavePermissions}
+                            onChange={(event) => togglePermission(permission.id, event.target.checked)}
+                          />
+                          <span>{permission.name}</span>
+                          <span className="resource-manage-permission-code">({permission.code})</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </section>
 
               {formError ? <div className="resource-manage-error">{formError}</div> : null}
