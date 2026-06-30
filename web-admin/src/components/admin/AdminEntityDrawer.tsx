@@ -9,7 +9,6 @@ interface AdminEntityDrawerProps {
   width?: string;
   loading?: boolean;
   children?: ReactNode;
-  extra?: ReactNode;
   footer?: ReactNode;
   onClose: () => void;
 }
@@ -20,7 +19,6 @@ export function AdminEntityDrawer({
   width = "960px",
   loading = false,
   children,
-  extra,
   footer,
   onClose,
 }: AdminEntityDrawerProps) {
@@ -37,11 +35,10 @@ export function AdminEntityDrawer({
       <section
         className="admin-entity-drawer__panel"
         style={{ width }}
-      >
+        >
         <header className="admin-entity-drawer__header">
           <div className="admin-entity-drawer__title-wrap">
             <div className="admin-entity-drawer__title">{title}</div>
-            {extra ? <div className="admin-entity-drawer__extra">{extra}</div> : null}
           </div>
           <button
             className="admin-entity-drawer__close"

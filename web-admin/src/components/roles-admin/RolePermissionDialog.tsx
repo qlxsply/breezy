@@ -371,7 +371,6 @@ export function RolePermissionDialog({
       loading={loading}
       onClose={onClose}
       footer={footer}
-      extra={confirming ? diffSummaryText : summaryText}
     >
       {!confirming ? (
         <div className="permission-dialog-shell">

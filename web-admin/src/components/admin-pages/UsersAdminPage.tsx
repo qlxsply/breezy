@@ -31,7 +31,7 @@ import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import { PasswordResetDialog } from "../users-admin/PasswordResetDialog";
 import { UserFormDialog } from "../users-admin/UserFormDialog";
-import { UserRoleDialog } from "../users-admin/UserRoleDialog";
+import { UserManageDrawer } from "../users-admin/UserManageDrawer";
 import { UserTable } from "../users-admin/UserTable";
 
 function toDictMetaMap(
@@ -80,8 +80,8 @@ export function UsersAdminPage() {
   const [resetOpen, setResetOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<UserEntry | null>(null);
 
-  const [roleOpen, setRoleOpen] = useState(false);
-  const [roleTarget, setRoleTarget] = useState<UserEntry | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageTarget, setManageTarget] = useState<UserEntry | null>(null);
   const [roleList, setRoleList] = useState<RoleEntry[]>([]);
   const [roleSelected, setRoleSelected] = useState<string[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
@@ -177,10 +177,8 @@ export function UsersAdminPage() {
   }
 
   function openEdit(user: UserEntry) {
-    if (!canEdit) return;
-    setDialogMode("edit");
-    setDialogModel({ ...user });
-    setDialogOpen(true);
+    if (!canEdit && !canRoles) return;
+    void openManage(user);
   }
 
   async function onSubmit(payload: {
@@ -220,24 +218,32 @@ export function UsersAdminPage() {
     setResetOpen(false);
   }
 
-  async function openRoles(user: UserEntry) {
-    if (!canRoles) return;
-    if (user.userType === "EXTERNAL") return;
-    setRoleTarget(user);
-    setRoleOpen(true);
+  async function openManage(user: UserEntry) {
+    setManageTarget(user);
+    setManageOpen(true);
+    if (user.userType === "EXTERNAL" || !canRoles) {
+      setRoleSelected([]);
+      return;
+    }
     setRoleLoading(true);
     try {
-      if (roleList.length === 0) setRoleList(await listRoles());
+      if (roleList.length === 0) setRoleList((await listRoles()).filter((role) => role.enabled));
       setRoleSelected(await getUserRoles(user.id));
     } finally {
       setRoleLoading(false);
     }
   }
 
-  async function onRoleSubmit(roleIds: string[]) {
-    if (!roleTarget || !canRoleEdit) return;
-    await updateUserRoles(roleTarget.id, roleIds);
-    setRoleOpen(false);
+  async function onManageSubmit(payload: { nickname: string; status: UserStatus; roleIds: string[] }) {
+    if (!manageTarget) return;
+    if (canEdit) {
+      await updateUser(manageTarget.id, { nickname: payload.nickname, status: payload.status });
+    }
+    if (canRoleEdit && manageTarget.userType !== "EXTERNAL") {
+      await updateUserRoles(manageTarget.id, payload.roleIds);
+    }
+    setManageOpen(false);
+    await reload();
   }
 
   async function onRemove(user: UserEntry) {
@@ -370,7 +376,6 @@ export function UsersAdminPage() {
                 onEdit={openEdit}
                 onToggle={onToggle}
                 onReset={openReset}
-                onRoles={openRoles}
                 onRemove={onRemove}
               />
             </div>
@@ -410,15 +415,18 @@ export function UsersAdminPage() {
               onSubmit={onResetSubmit}
             />
           ) : null}
-          {roleOpen ? (
-            <UserRoleDialog
-              userName={roleTarget?.username || ""}
+          {manageOpen ? (
+            <UserManageDrawer
+              open={manageOpen}
+              model={manageTarget}
               roles={roleList}
               selectedIds={roleSelected}
               loading={roleLoading}
-              canSave={canRoleEdit}
-              onClose={() => setRoleOpen(false)}
-              onSubmit={onRoleSubmit}
+              canEditBasic={canEdit}
+              canEditRoles={canRoleEdit}
+              canViewRoles={canRoles}
+              onClose={() => setManageOpen(false)}
+              onSubmit={onManageSubmit}
             />
           ) : null}
         </div>

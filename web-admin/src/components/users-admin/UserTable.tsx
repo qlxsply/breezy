@@ -23,7 +23,6 @@ interface UserTableProps {
   onEdit: (user: UserEntry) => void;
   onToggle: (user: UserEntry) => void;
   onReset: (user: UserEntry) => void;
-  onRoles: (user: UserEntry) => void;
   onRemove: (user: UserEntry) => void;
 }
 
@@ -39,7 +38,6 @@ export function UserTable({
   onEdit,
   onToggle,
   onReset,
-  onRoles,
   onRemove,
 }: UserTableProps) {
   function resolveUserTypeLabel(userType: string): string {
@@ -52,8 +50,8 @@ export function UserTable({
   }
   function getActions(user: UserEntry): AdminActionItem[] {
     const actions: AdminActionItem[] = [];
-    if (canEdit)
-      actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => onEdit(user) });
+    if (canEdit || canRoles)
+      actions.push({ key: "edit", label: "维护", tone: "edit", handler: () => onEdit(user) });
     if (canToggle)
       actions.push({
         key: "toggle",
@@ -62,8 +60,6 @@ export function UserTable({
         handler: () => onToggle(user),
       });
     if (canReset) actions.push({ key: "reset", label: "重置密码", handler: () => onReset(user) });
-    if (canRoles && user.userType !== "EXTERNAL")
-      actions.push({ key: "roles", label: "角色", handler: () => onRoles(user) });
     if (canDelete)
       actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
     return actions;
@@ -117,7 +113,7 @@ export function UserTable({
       render: (row) => {
         const all = getActions(row);
         return (
-          <AdminActionBar actions={all.filter((a) => a.key === "edit" || a.key === "roles")} />
+          <AdminActionBar actions={all.filter((a) => a.key === "edit")} />
         );
       },
     },
