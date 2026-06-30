@@ -9,11 +9,13 @@ import {
   updateResource,
   updateResourcePermissions,
 } from "@admin/api/resources";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import {AdminActionBar} from "@admin/components/admin/AdminActionBar";
+import {AdminTableTools} from "@admin/components/admin/AdminTableTools";
+import {AdminEntityDrawer} from "@admin/components/admin/AdminEntityDrawer";
+import {useAdminQueryPanelLayout} from "@admin/components/admin/useAdminQueryPanelLayout";
+import type {BzTableColumn} from "@admin/components/bz";
 import {
+  BzChevronIcon,
   BzButton,
   BzCard,
   BzFormItem,
@@ -24,12 +26,11 @@ import {
   BzTable,
   BzTag,
 } from "@admin/components/bz";
-import type { BzTableColumn } from "@admin/components/bz";
-import { bzConfirm } from "@admin/core/confirm";
-import { message } from "@admin/core/message";
-import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
+import {bzConfirm} from "@admin/core/confirm";
+import {message} from "@admin/core/message";
+import {refreshRegistryLoaded} from "@admin/core/registry/bootstrap-registry";
+import {hasResourceCodeAccess} from "@admin/core/registry/resources-registry";
+import type {AdminActionItem} from "@admin/types/admin-action";
 import type {
   ManageResourceType,
   ResourceManageEntry,
@@ -37,9 +38,9 @@ import type {
   ResourceManageSaveRequest,
   ResourcePermissionOption,
 } from "@admin/types/resource-manage";
-import { useEffect, useMemo, useState } from "react";
+import {useEffect, useMemo, useState} from "react";
 
-type DrawerPurpose = "create" | "edit";
+type DrawerPurpose = "create" | "detail" | "edit";
 
 interface ResourceTableRow {
   row: ResourceManageEntry;
@@ -154,9 +155,15 @@ export function ResourcesAdminPage() {
   const currentParent = form.parentId ? rowMap.get(form.parentId) : undefined;
   const allowedTypes = currentParent ? ALLOWED_CHILDREN[currentParent.resourceType] : ROOT_ALLOWED_TYPES;
   const canHaveChildren = (resourceType: ManageResourceType) => ALLOWED_CHILDREN[resourceType].length > 0;
+  const isDetailDrawer = drawerPurpose === "detail";
   const showPermissionArea = form.resourceType === "BUTTON" && (canPermissionView || canPermissionEdit);
-  const canSavePermissions = showPermissionArea && canPermissionEdit;
-  const readOnly = drawerPurpose === "create" ? !canCreate : !canEdit;
+  const canSavePermissions = drawerPurpose !== "detail" && showPermissionArea && canPermissionEdit;
+  const selectedPermissions = useMemo(
+    () => permissions.filter((permission) => form.permissionIds.includes(permission.id)),
+    [form.permissionIds, permissions],
+  );
+  const readOnly =
+    drawerPurpose === "detail" ? true : drawerPurpose === "create" ? !canCreate : !canEdit;
   const structureReadOnly = readOnly;
 
   const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(
@@ -164,19 +171,22 @@ export function ResourcesAdminPage() {
       {
         key: "name",
         title: "资源名称",
-        width: 320,
+        width: 400,
         render: ({ row, level }) => {
           const hasChildren = row.children.length > 0;
           const expanded = expandedIds.has(row.id);
           return (
             <div className="resource-name-cell">
-              <span className="resource-indent" style={{ width: `${level * 24}px` }} />
+              <span
+                className="resource-indent"
+                style={{ width: `${level * 24}px` }}
+              />
               <button
                 className={`resource-toggle${!hasChildren ? " is-placeholder" : ""}`}
                 type="button"
                 onClick={() => hasChildren && toggleExpand(row.id)}
               >
-                {hasChildren ? (expanded || hasActiveFilter ? "▾" : "▸") : "▸"}
+                <BzChevronIcon direction={expanded || hasActiveFilter ? "down" : "right"} />
               </button>
               <span className="resource-name-main">{row.name}</span>
             </div>
@@ -248,11 +258,19 @@ export function ResourcesAdminPage() {
         render: ({ row }) => {
           const childrenAllowed = canHaveChildren(row.resourceType);
           const actions: AdminActionItem[] = [];
-          if (canCreate && childrenAllowed) {
-            actions.push({ key: "create-child", label: "新增子项", tone: "neutral", handler: () => openCreateChild(row) });
-          }
+          actions.push({
+            key: "detail",
+            label: "详情",
+            tone: "detail",
+            handler: () => void openEdit(row, "detail"),
+          });
           if (canEdit) {
-            actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => void openEdit(row, "edit") });
+            actions.push({
+              key: "edit",
+              label: "编辑",
+              tone: "edit",
+              handler: () => void openEdit(row, "edit"),
+            });
           }
           if (canDelete) {
             actions.push({
@@ -261,6 +279,15 @@ export function ResourcesAdminPage() {
               tone: "delete",
               disabled: row.systemBuiltin,
               handler: () => void onDelete(row),
+            });
+          }
+          if (canCreate) {
+            actions.push({
+              key: "create-child",
+              label: "新增子项",
+              tone: "neutral",
+              disabled: !childrenAllowed,
+              handler: () => openCreateChild(row),
             });
           }
           return <AdminActionBar actions={actions} />;
@@ -324,6 +351,7 @@ export function ResourcesAdminPage() {
 
   async function openEdit(target: ResourceManageEntry, purpose: DrawerPurpose = "edit") {
     if (purpose === "edit" && !canEdit) return;
+    if (purpose === "detail" && !canView) return;
     setDrawerPurpose(purpose);
     setDrawerLoading(true);
     setDrawerOpen(true);
@@ -737,9 +765,23 @@ export function ResourcesAdminPage() {
                 </div>
               </section>
 
-              <section className="resource-manage-section detail-field detail-field--wide">
-                <div className="resource-manage-section__title">权限码绑定</div>
-                {showPermissionArea ? (
+              {showPermissionArea ? (
+                <section className="resource-manage-section detail-field detail-field--wide">
+                  <div className="resource-manage-section__title">权限码绑定</div>
+                  {isDetailDrawer ? (
+                    <div className="resource-manage-permission-box is-readonly">
+                      {selectedPermissions.length > 0 ? (
+                        selectedPermissions.map((permission) => (
+                          <div key={permission.id} className="resource-manage-permission-item is-readonly">
+                            <span>{permission.name}</span>
+                            <span className="resource-manage-permission-code">({permission.code})</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="resource-manage-tip">暂无权限码绑定</div>
+                      )}
+                    </div>
+                  ) : (
                   <div className="resource-manage-permission-box">
                     {permissions.map((permission) => {
                       const checked = form.permissionIds.includes(permission.id);
@@ -757,8 +799,9 @@ export function ResourcesAdminPage() {
                       );
                     })}
                   </div>
-                ) : null}
-              </section>
+                  )}
+                </section>
+              ) : null}
 
               {formError ? <div className="resource-manage-error">{formError}</div> : null}
             </div>
@@ -907,5 +950,6 @@ function blankToNull(value: string): string | null {
 
 function resolveDrawerTitle(purpose: DrawerPurpose, resourceType: ManageResourceType): string {
   if (purpose === "create") return "新增资源";
+  if (purpose === "detail") return `${RESOURCE_TYPE_LABEL[resourceType]}详情`;
   return "编辑资源";
 }

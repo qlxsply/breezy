@@ -3,6 +3,7 @@ export { BzButton } from "./BzButton";
 export { BzButtonGroup } from "./BzButtonGroup";
 export { BzCard } from "./BzCard";
 export { BzCheckbox } from "./BzCheckbox";
+export { BzChevronIcon } from "./BzChevronIcon";
 export { BzConfirmHost } from "./BzConfirmHost";
 export { BzDatePicker } from "./BzDatePicker";
 export { BzDialog } from "./BzDialog";

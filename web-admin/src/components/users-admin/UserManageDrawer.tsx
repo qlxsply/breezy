@@ -88,10 +88,12 @@ export function UserManageDrawer({
     });
   }
 
+  const canSubmit = canEditBasic || canEditRoles;
+
   const footer = (
     <div style={{ display: "flex", gap: 8 }}>
-      <BzButton onClick={onClose}>取消</BzButton>
-      {canEditBasic || canEditRoles ? (
+      <BzButton onClick={onClose}>{canSubmit ? "取消" : "关闭"}</BzButton>
+      {canSubmit ? (
         <BzButton buttonType="primary" onClick={handleSubmit}>
           保存
         </BzButton>
@@ -102,7 +104,7 @@ export function UserManageDrawer({
   return (
     <AdminEntityDrawer
       open={open}
-      title={model ? `用户维护 - ${model.username}` : "用户维护"}
+      title="用户维护"
       width="920px"
       loading={loading}
       onClose={onClose}
@@ -119,6 +121,14 @@ export function UserManageDrawer({
               <BzFormItem label="用户类型">
                 <BzInput modelValue={model?.userType || "-"} disabled readOnly />
               </BzFormItem>
+            </div>
+          </BzForm>
+        </section>
+
+        <section className="user-manage-panel">
+          <div className="user-manage-panel__title">维护配置</div>
+          <BzForm>
+            <div className="user-manage-grid">
               <BzFormItem label="昵称 *">
                 <BzInput
                   modelValue={nickname}
@@ -147,8 +157,9 @@ export function UserManageDrawer({
             <div className="user-manage-panel__header">
               <div>
                 <div className="user-manage-panel__title">角色分配</div>
+                <div className="user-manage-panel__hint">按角色控制该用户可访问的后台能力。</div>
               </div>
-                      <div className="user-manage-panel__meta">已选 {selectedSet.size} 项</div>
+              <div className="user-manage-panel__meta">已选 {selectedSet.size} 项</div>
             </div>
 
             <div className="user-role-toolbar">
@@ -194,7 +205,7 @@ export function UserManageDrawer({
           border: 1px solid #e2e8f0;
           border-radius: 16px;
           background: #fff;
-          padding: 16px;
+          padding: 18px;
         }
 
         .user-manage-panel__header {
@@ -209,20 +220,24 @@ export function UserManageDrawer({
           color: #0f172a;
           font-size: 16px;
           font-weight: 700;
-          margin-bottom: 14px;
+          margin-bottom: 8px;
         }
 
         .user-manage-panel__hint,
         .user-manage-panel__meta {
           color: #64748b;
-          font-size: 12px;
-          margin-top: 4px;
+          font-size: 13px;
+          line-height: 1.6;
+        }
+
+        .user-manage-panel__hint {
+          margin-bottom: 16px;
         }
 
         .user-manage-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 4px 16px;
+          gap: 8px 16px;
         }
 
         .user-role-toolbar {
