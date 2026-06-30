@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import {
   getDiagnosticCapabilities,
   getDiagnosticEvents,
@@ -21,7 +22,7 @@ import type {
   DiagnosticSession,
   DiagnosticSnapshot,
 } from "@admin/types/diagnostic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
@@ -35,14 +36,14 @@ import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
-const itemOptions: Array<{ label: string; value: DiagnosticItem }> = [
-  { label: "JVM", value: "JVM" },
-  { label: "操作系统", value: "OS" },
-  { label: "线程", value: "THREAD" },
-  { label: "HTTP", value: "HTTP" },
-  { label: "连接池", value: "DB_POOL" },
-  { label: "SQL", value: "SQL" },
-  { label: "JFR", value: "JFR" },
+const itemOptions: Array<{ label: string; value: DiagnosticItem; description: string }> = [
+  { label: "JVM", value: "JVM", description: "关注堆、非堆、GC 与进程 CPU。" },
+  { label: "操作系统", value: "OS", description: "采集主机、CPU、内存与磁盘概况。" },
+  { label: "线程", value: "THREAD", description: "采集线程数量、阻塞、等待与死锁情况。" },
+  { label: "HTTP", value: "HTTP", description: "统计请求量、延迟分位与慢请求。" },
+  { label: "连接池", value: "DB_POOL", description: "采集连接池活跃连接、空闲连接与等待线程。" },
+  { label: "SQL", value: "SQL", description: "聚合 SQL 执行次数、耗时与慢 SQL。" },
+  { label: "JFR", value: "JFR", description: "采集 JFR 事件，如 GC、异常与线程阻塞。" },
 ];
 
 function formatBytes(value: number | null | undefined): string {
@@ -69,6 +70,13 @@ function formatPercent(value: number | null | undefined): string {
   return `${(value * 100).toFixed(2)}%`;
 }
 
+function formatInteger(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "-";
+  }
+  return value.toLocaleString("zh-CN");
+}
+
 function renderEventDetails(details: Record<string, unknown>): string {
   const entries = Object.entries(details ?? {});
   if (entries.length === 0) {
@@ -80,16 +88,8 @@ function renderEventDetails(details: Record<string, unknown>): string {
     .join(" | ");
 }
 
-export function DiagnosticPage() {
-  const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [status, setStatus] = useState<DiagnosticSession | null>(null);
-  const [capability, setCapability] = useState<DiagnosticCapability | null>(null);
-  const [latestSnapshot, setLatestSnapshot] = useState<DiagnosticSnapshot | null>(null);
-  const [events, setEvents] = useState<DiagnosticEvent[]>([]);
-  const [history, setHistory] = useState<DiagnosticSnapshot[]>([]);
-
-  const [form, setForm] = useState<DiagnosticConfigPayload>({
+function createDefaultConfig(): DiagnosticConfigPayload {
+  return {
     intervalMs: 5000,
     historyCapacity: 180,
     eventCapacity: 300,
@@ -98,7 +98,82 @@ export function DiagnosticPage() {
     slowRequestThresholdMs: 1000,
     slowSqlThresholdMs: 500,
     ttlSeconds: 1800,
-  });
+  };
+}
+
+function ToolIcon({ kind }: { kind: "refresh" | "settings" | "start" | "stop" }) {
+  if (kind === "refresh") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 11a8 8 0 0 0-13.66-5.66L4 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 4v4h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 13a8 8 0 0 0 13.66 5.66L20 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M20 20v-4h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "settings") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M10.4 2.8h3.2l.64 2.27c.35.11.69.25 1.02.42l2.08-1.04 2.26 2.26-1.04 2.08c.17.33.31.67.42 1.02l2.27.64v3.2l-2.27.64c-.11.35-.25.69-.42 1.02l1.04 2.08-2.26 2.26-2.08-1.04c-.33.17-.67.31-1.02.42l-.64 2.27h-3.2l-.64-2.27a6.8 6.8 0 0 1-1.02-.42l-2.08 1.04-2.26-2.26 1.04-2.08a6.8 6.8 0 0 1-.42-1.02l-2.27-.64v-3.2l2.27-.64c.11-.35.25-.69.42-1.02L4.45 6.71l2.26-2.26 2.08 1.04c.33-.17.67-.31 1.02-.42z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+  if (kind === "start") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8 6.5v11l9-5.5-9-5.5z" fill="currentColor" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ToolButton({
+  title,
+  kind,
+  disabled = false,
+  active = false,
+  danger = false,
+  onClick,
+}: {
+  title: string;
+  kind: "refresh" | "settings" | "start" | "stop";
+  disabled?: boolean;
+  active?: boolean;
+  danger?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`admin-vben-circle-button diagnostic-tool-button${active ? " is-active" : ""}${danger ? " is-danger" : ""}`}
+      type="button"
+      title={title}
+      aria-label={title}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <ToolIcon kind={kind} />
+    </button>
+  );
+}
+
+export function DiagnosticPage() {
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [status, setStatus] = useState<DiagnosticSession | null>(null);
+  const [capability, setCapability] = useState<DiagnosticCapability | null>(null);
+  const [latestSnapshot, setLatestSnapshot] = useState<DiagnosticSnapshot | null>(null);
+  const [events, setEvents] = useState<DiagnosticEvent[]>([]);
+  const [history, setHistory] = useState<DiagnosticSnapshot[]>([]);
+  const [config, setConfig] = useState<DiagnosticConfigPayload>(createDefaultConfig());
+  const [drawerForm, setDrawerForm] = useState<DiagnosticConfigPayload>(createDefaultConfig());
 
   const canView = hasResourceCodeAccess("diagnostic-view");
   const canStart = hasResourceCodeAccess("diagnostic-start");
@@ -110,17 +185,18 @@ export function DiagnosticPage() {
   canViewRef.current = canView;
 
   const syncForm = useCallback((nextStatus: DiagnosticSession) => {
-    const config = nextStatus.config;
-    setForm({
-      intervalMs: config.intervalMs,
-      historyCapacity: config.historyCapacity,
-      eventCapacity: config.eventCapacity,
-      items: [...config.items],
-      deepMode: config.deepMode,
-      slowRequestThresholdMs: config.slowRequestThresholdMs,
-      slowSqlThresholdMs: config.slowSqlThresholdMs,
-      ttlSeconds: config.ttlSeconds,
-    });
+    const nextConfig = {
+      intervalMs: nextStatus.config.intervalMs,
+      historyCapacity: nextStatus.config.historyCapacity,
+      eventCapacity: nextStatus.config.eventCapacity,
+      items: [...nextStatus.config.items],
+      deepMode: nextStatus.config.deepMode,
+      slowRequestThresholdMs: nextStatus.config.slowRequestThresholdMs,
+      slowSqlThresholdMs: nextStatus.config.slowSqlThresholdMs,
+      ttlSeconds: nextStatus.config.ttlSeconds,
+    };
+    setConfig(nextConfig);
+    setDrawerForm(nextConfig);
   }, []);
 
   const reloadAll = useCallback(
@@ -158,10 +234,10 @@ export function DiagnosticPage() {
   );
 
   useEffect(() => {
-    reloadAll(true);
+    void reloadAll(true);
     const timer = window.setInterval(() => {
       if (canViewRef.current) {
-        reloadAll(false);
+        void reloadAll(false);
       }
     }, 5000);
     return () => {
@@ -172,7 +248,7 @@ export function DiagnosticPage() {
   async function handleStart() {
     setActionLoading(true);
     try {
-      const result = await startDiagnostic({ ...form, items: [...form.items] });
+      const result = await startDiagnostic({ ...config, items: [...config.items] });
       setStatus(result);
       message.success("运行时诊断已开启");
       await reloadAll(false);
@@ -184,8 +260,11 @@ export function DiagnosticPage() {
   async function handleUpdate() {
     setActionLoading(true);
     try {
-      const result = await updateDiagnosticConfig({ ...form, items: [...form.items] });
+      const payload = { ...drawerForm, items: [...drawerForm.items] };
+      const result = await updateDiagnosticConfig(payload);
       setStatus(result);
+      syncForm(result);
+      setDrawerOpen(false);
       message.success("诊断配置已更新");
       await reloadAll(false);
     } finally {
@@ -204,14 +283,21 @@ export function DiagnosticPage() {
     }
   }
 
-  function toggleItem(item: DiagnosticItem, checked: boolean) {
-    setForm((prev) => {
+  function openDrawer() {
+    setDrawerForm({ ...config, items: [...config.items] });
+    setDrawerOpen(true);
+  }
+
+  function toggleDrawerItem(item: DiagnosticItem, checked: boolean) {
+    setDrawerForm((prev) => {
       if (checked) {
         return { ...prev, items: [...prev.items, item] };
       }
-      return { ...prev, items: prev.items.filter((v) => v !== item) };
+      return { ...prev, items: prev.items.filter((value) => value !== item) };
     });
   }
+
+  const activeItems = useMemo(() => new Set(drawerForm.items), [drawerForm.items]);
 
   const eventColumns: Array<BzTableColumn<DiagnosticEvent>> = [
     { key: "type", title: "类型", width: 180, render: (row) => row.type },
@@ -264,8 +350,7 @@ export function DiagnosticPage() {
       key: "pool",
       title: "连接池",
       width: 160,
-      render: (row) =>
-        `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
+      render: (row) => `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
     },
     {
       key: "sql",
@@ -275,265 +360,587 @@ export function DiagnosticPage() {
     },
   ];
 
+  const summaryCards = [
+    {
+      key: "heap",
+      title: "JVM 堆使用",
+      value: formatBytes(latestSnapshot?.jvm?.heapUsedBytes),
+      accent: formatPercent(latestSnapshot?.jvm?.processCpuLoad),
+      note: `GC ${latestSnapshot?.jvm?.gcCollectionCount ?? 0} 次`,
+    },
+    {
+      key: "threads",
+      title: "线程健康度",
+      value: `${latestSnapshot?.thread?.threadCount ?? 0}`,
+      accent: `${latestSnapshot?.thread?.blockedCount ?? 0} 阻塞`,
+      note: `死锁 ${latestSnapshot?.thread?.deadlockedThreadIds.length ?? 0} 个`,
+    },
+    {
+      key: "http",
+      title: "HTTP 延迟",
+      value: `${latestSnapshot?.http?.p95DurationMs ?? 0} ms`,
+      accent: `P99 ${latestSnapshot?.http?.p99DurationMs ?? 0} ms`,
+      note: `${latestSnapshot?.http?.totalRequests ?? 0} 总请求`,
+    },
+    {
+      key: "sql",
+      title: "数据库负载",
+      value: `${latestSnapshot?.sql?.totalExecutions ?? 0}`,
+      accent: `${latestSnapshot?.dbPool?.activeConnections ?? 0} 活跃连接`,
+      note: `${latestSnapshot?.sql?.slowSqlCount ?? 0} 条慢 SQL`,
+    },
+  ];
+
+  const spotlightMetrics = [
+    { label: "运行状态", value: isActive ? "采集中" : "未开启", emphasize: true },
+    { label: "剩余 TTL", value: `${status?.remainingTtlSeconds ?? 0} 秒` },
+    {
+      label: "最近采样",
+      value: latestSnapshot?.capturedAt ? formatDateTime(latestSnapshot.capturedAt) : "-",
+    },
+    { label: "JFR", value: capability?.jfrAvailable ? "可用" : "不可用" },
+    {
+      label: "数据源",
+      value: capability?.dataSourceNames?.length ? capability.dataSourceNames.join(" / ") : "-",
+    },
+    { label: "采集项", value: status?.config.items.length ? status.config.items.join(" / ") : "-" },
+  ];
+
+  const runtimeDetails = [
+    {
+      title: "JVM",
+      rows: [
+        ["堆使用", formatBytes(latestSnapshot?.jvm?.heapUsedBytes)],
+        ["非堆使用", formatBytes(latestSnapshot?.jvm?.nonHeapUsedBytes)],
+        ["GC 总耗时", `${latestSnapshot?.jvm?.gcCollectionTimeMs ?? 0} ms`],
+        ["进程 CPU", formatPercent(latestSnapshot?.jvm?.processCpuLoad)],
+      ],
+    },
+    {
+      title: "线程",
+      rows: [
+        ["总线程数", formatInteger(latestSnapshot?.thread?.threadCount)],
+        ["峰值线程", formatInteger(latestSnapshot?.thread?.peakThreadCount)],
+        ["阻塞线程", formatInteger(latestSnapshot?.thread?.blockedCount)],
+        ["等待线程", formatInteger(latestSnapshot?.thread?.waitingCount)],
+      ],
+    },
+    {
+      title: "HTTP",
+      rows: [
+        ["总请求", formatInteger(latestSnapshot?.http?.totalRequests)],
+        ["进行中", formatInteger(latestSnapshot?.http?.inFlightRequests)],
+        ["慢请求", formatInteger(latestSnapshot?.http?.slowRequestCount)],
+        ["错误请求", formatInteger(latestSnapshot?.http?.errorRequestCount)],
+      ],
+    },
+    {
+      title: "数据库",
+      rows: [
+        ["连接池数", formatInteger(latestSnapshot?.dbPool?.poolCount)],
+        ["活跃连接", formatInteger(latestSnapshot?.dbPool?.activeConnections)],
+        ["等待线程", formatInteger(latestSnapshot?.dbPool?.waitingThreads)],
+        ["SQL 次数", formatInteger(latestSnapshot?.sql?.totalExecutions)],
+      ],
+    },
+  ];
+
+  const drawerFooter = (
+    <>
+      <BzButton onClick={() => setDrawerOpen(false)}>取消</BzButton>
+      <BzButton buttonType="primary" loading={actionLoading} onClick={handleUpdate}>
+        确认
+      </BzButton>
+    </>
+  );
+
   return (
     <div className="app-shell">
       <div className="content">
         <div className="list-page-stack">
-          <section className="list-page-actions">
-            <div className="list-page-actions-main">
-              {canView ? (
-                <BzButton
-                  loading={loading}
-                  onClick={() => reloadAll(true)}
-                >
-                  刷新
-                </BzButton>
-              ) : null}
-              {canStart && !isActive ? (
-                <BzButton
-                  buttonType="primary"
-                  loading={actionLoading}
-                  onClick={handleStart}
-                >
-                  开启诊断
-                </BzButton>
-              ) : null}
-              {canEdit && isActive ? (
-                <BzButton
-                  buttonType="primary"
-                  loading={actionLoading}
-                  onClick={handleUpdate}
-                >
-                  更新配置
-                </BzButton>
-              ) : null}
-              {canStop && isActive ? (
-                <BzButton
-                  buttonType="danger"
-                  loading={actionLoading}
-                  onClick={handleStop}
-                >
-                  停止并清空
-                </BzButton>
-              ) : null}
-            </div>
-
-            <div className="list-page-actions-side">
-              <BzTag type={isActive ? "success" : "info"}>{isActive ? "运行中" : "未开启"}</BzTag>
-              <span className="status-side-text">
-                剩余 TTL: {status?.remainingTtlSeconds ?? 0} 秒
-              </span>
-            </div>
-          </section>
-
           <BzCard
-            className="list-page-query-card"
+            className="admin-table-card"
             shadow="never"
+            header={
+              <div className="admin-table-header">
+                <div className="admin-table-title">诊断工具</div>
+                <div className="admin-table-tools">
+                  {canEdit && isActive ? <ToolButton title="诊断设置" kind="settings" disabled={actionLoading} onClick={openDrawer} /> : null}
+                  {canStart && !isActive ? <ToolButton title="开启诊断" kind="start" disabled={actionLoading} onClick={() => void handleStart()} /> : null}
+                  {canStop && isActive ? <ToolButton title="停止诊断" kind="stop" active disabled={actionLoading} onClick={() => void handleStop()} /> : null}
+                  {canView ? <ToolButton title="刷新数据" kind="refresh" disabled={loading || actionLoading} onClick={() => void reloadAll(true)} /> : null}
+                </div>
+              </div>
+            }
           >
             {!canView ? (
               <BzEmpty description="无权限查看运行时诊断" />
             ) : (
-              <>
-                <div className="headline-row">
-                  <div className="headline-block">
-                    <div className="headline-label">JFR</div>
-                    <BzTag type={capability?.jfrAvailable ? "success" : "info"}>
-                      {capability?.jfrAvailable ? "可用" : "不可用"}
-                    </BzTag>
-                  </div>
-                  <div className="headline-block">
-                    <div className="headline-label">数据源</div>
-                    <div className="headline-value">
-                      {capability?.dataSourceNames?.join(" / ") || "-"}
+              <div className="diagnostic-hero">
+                <div className="diagnostic-spotlight-grid">
+                  {spotlightMetrics.map((metric) => (
+                    <div key={metric.label} className={`diagnostic-spotlight-item${metric.emphasize ? " is-emphasize" : ""}`}>
+                      <div className="diagnostic-spotlight-label">{metric.label}</div>
+                      <div className="diagnostic-spotlight-value">{metric.value}</div>
                     </div>
-                  </div>
-                  <div className="headline-block">
-                    <div className="headline-label">采集项</div>
-                    <div className="headline-value">{status?.config.items.join(" / ") || "-"}</div>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="summary-grid">
-                  <div className="summary-card">
-                    <div className="summary-title">JVM</div>
-                    <div className="summary-line">
-                      堆使用: {formatBytes(latestSnapshot?.jvm?.heapUsedBytes)}
+                <div className="diagnostic-summary-grid">
+                  {summaryCards.map((card) => (
+                    <div key={card.key} className="diagnostic-summary-card">
+                      <div className="diagnostic-summary-title">{card.title}</div>
+                      <div className="diagnostic-summary-value">{card.value}</div>
+                      <div className="diagnostic-summary-accent">{card.accent}</div>
+                      <div className="diagnostic-summary-note">{card.note}</div>
                     </div>
-                    <div className="summary-line">
-                      GC 次数: {latestSnapshot?.jvm?.gcCollectionCount ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      进程 CPU: {formatPercent(latestSnapshot?.jvm?.processCpuLoad)}
-                    </div>
-                  </div>
-
-                  <div className="summary-card">
-                    <div className="summary-title">线程</div>
-                    <div className="summary-line">
-                      线程总数: {latestSnapshot?.thread?.threadCount ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      阻塞线程: {latestSnapshot?.thread?.blockedCount ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      死锁数: {latestSnapshot?.thread?.deadlockedThreadIds.length ?? 0}
-                    </div>
-                  </div>
-
-                  <div className="summary-card">
-                    <div className="summary-title">HTTP</div>
-                    <div className="summary-line">
-                      进行中: {latestSnapshot?.http?.inFlightRequests ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      总请求: {latestSnapshot?.http?.totalRequests ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      P95 / P99: {latestSnapshot?.http?.p95DurationMs ?? 0} /{" "}
-                      {latestSnapshot?.http?.p99DurationMs ?? 0} ms
-                    </div>
-                  </div>
-
-                  <div className="summary-card">
-                    <div className="summary-title">数据库</div>
-                    <div className="summary-line">
-                      连接池: {latestSnapshot?.dbPool?.poolCount ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      活跃连接: {latestSnapshot?.dbPool?.activeConnections ?? 0}
-                    </div>
-                    <div className="summary-line">
-                      SQL 次数: {latestSnapshot?.sql?.totalExecutions ?? 0}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </>
+              </div>
             )}
           </BzCard>
 
           {canView ? (
-            <BzCard
-              className="list-page-query-card"
-              shadow="never"
-            >
-              <BzForm
-                className="diagnostic-form"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <div className="config-grid">
-                  <BzFormItem label="采样间隔(ms)">
-                    <BzInput
-                      modelValue={form.intervalMs}
-                      type="number"
-                      onValueChange={(v) => setForm((prev) => ({ ...prev, intervalMs: Number(v) }))}
-                    />
-                  </BzFormItem>
-                  <BzFormItem label="历史容量">
-                    <BzInput
-                      modelValue={form.historyCapacity}
-                      type="number"
-                      onValueChange={(v) =>
-                        setForm((prev) => ({ ...prev, historyCapacity: Number(v) }))
-                      }
-                    />
-                  </BzFormItem>
-                  <BzFormItem label="事件容量">
-                    <BzInput
-                      modelValue={form.eventCapacity}
-                      type="number"
-                      onValueChange={(v) =>
-                        setForm((prev) => ({ ...prev, eventCapacity: Number(v) }))
-                      }
-                    />
-                  </BzFormItem>
-                  <BzFormItem label="慢请求阈值(ms)">
-                    <BzInput
-                      modelValue={form.slowRequestThresholdMs}
-                      type="number"
-                      onValueChange={(v) =>
-                        setForm((prev) => ({ ...prev, slowRequestThresholdMs: Number(v) }))
-                      }
-                    />
-                  </BzFormItem>
-                  <BzFormItem label="慢 SQL 阈值(ms)">
-                    <BzInput
-                      modelValue={form.slowSqlThresholdMs}
-                      type="number"
-                      onValueChange={(v) =>
-                        setForm((prev) => ({ ...prev, slowSqlThresholdMs: Number(v) }))
-                      }
-                    />
-                  </BzFormItem>
-                  <BzFormItem label="最长持续时间(秒)">
-                    <BzInput
-                      modelValue={form.ttlSeconds}
-                      type="number"
-                      onValueChange={(v) => setForm((prev) => ({ ...prev, ttlSeconds: Number(v) }))}
-                    />
-                  </BzFormItem>
+            <div className="diagnostic-board-main">
+              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
+                <div className="section-header">
+                  <span>核心运行视图</span>
+                  <span className="section-subtitle">高价值指标优先展示</span>
                 </div>
 
-                <div className="config-row">
-                  <div className="config-label">深度模式</div>
-                  <BzSwitch
-                    modelValue={form.deepMode}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, deepMode: v }))}
-                  />
+                <div className="diagnostic-runtime-grid">
+                  {runtimeDetails.map((section) => (
+                    <section key={section.title} className="diagnostic-runtime-panel">
+                      <div className="diagnostic-runtime-title">{section.title}</div>
+                      <div className="diagnostic-runtime-rows">
+                        {section.rows.map(([label, value]) => (
+                          <div key={label} className="diagnostic-runtime-row">
+                            <span>{label}</span>
+                            <strong>{value}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </BzCard>
+
+              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
+                <div className="section-header">
+                  <span>最近事件</span>
+                  <span className="section-subtitle">最新 {events.length} 条</span>
                 </div>
 
-                <div className="config-row">
-                  <div className="config-label">采集项</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "12px 24px" }}>
-                    {itemOptions.map((item) => (
-                      <BzCheckbox
-                        key={item.value}
-                        modelValue={form.items.includes(item.value)}
-                        onValueChange={(checked) => toggleItem(item.value, checked)}
-                      >
-                        {item.label}
-                      </BzCheckbox>
-                    ))}
-                  </div>
+                <BzTable loading={loading} data={events} columns={eventColumns} emptyText="暂无事件" size="small" />
+              </BzCard>
+
+              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
+                <div className="section-header">
+                  <span>快照历史</span>
+                  <span className="section-subtitle">最新 {history.length} 条</span>
                 </div>
-              </BzForm>
-            </BzCard>
-          ) : null}
 
-          {canView ? (
-            <BzCard className="list-page-result-card">
-              <div className="section-header">
-                <span>最近事件</span>
-                <span className="section-subtitle">最新 {events.length} 条</span>
-              </div>
-
-              <BzTable
-                loading={loading}
-                data={events}
-                columns={eventColumns}
-                emptyText="暂无事件"
-                size="small"
-              />
-            </BzCard>
-          ) : null}
-
-          {canView ? (
-            <BzCard className="list-page-result-card">
-              <div className="section-header">
-                <span>快照历史</span>
-                <span className="section-subtitle">最新 {history.length} 条</span>
-              </div>
-
-              <BzTable
-                loading={loading}
-                data={history}
-                columns={historyColumns}
-                emptyText="暂无快照"
-                size="small"
-              />
-            </BzCard>
+                <BzTable loading={loading} data={history} columns={historyColumns} emptyText="暂无快照" size="small" />
+              </BzCard>
+            </div>
           ) : null}
         </div>
       </div>
+
+      <AdminEntityDrawer
+        open={drawerOpen}
+        title="诊断设置"
+        width="560px"
+        loading={actionLoading}
+        onClose={() => setDrawerOpen(false)}
+        footer={drawerFooter}
+      >
+        <div className="diagnostic-drawer-shell">
+          <section className="diagnostic-config-block">
+            <div className="diagnostic-config-block__title">通用配置</div>
+            <BzForm onSubmit={(event) => event.preventDefault()}>
+              <div className="diagnostic-config-grid">
+                <BzFormItem label="采样间隔(ms)">
+                  <BzInput modelValue={drawerForm.intervalMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, intervalMs: Number(value) }))} />
+                </BzFormItem>
+                <BzFormItem label="历史容量">
+                  <BzInput modelValue={drawerForm.historyCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, historyCapacity: Number(value) }))} />
+                </BzFormItem>
+                <BzFormItem label="事件容量">
+                  <BzInput modelValue={drawerForm.eventCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, eventCapacity: Number(value) }))} />
+                </BzFormItem>
+                <BzFormItem label="最长持续时间(秒)">
+                  <BzInput modelValue={drawerForm.ttlSeconds} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, ttlSeconds: Number(value) }))} />
+                </BzFormItem>
+              </div>
+
+              <div className="diagnostic-config-switch-row">
+                <div>
+                  <div className="diagnostic-config-switch-row__title">深度模式</div>
+                  <div className="diagnostic-config-switch-row__desc">适合短时间排障，会带来更高采样成本。</div>
+                </div>
+                <BzSwitch modelValue={drawerForm.deepMode} onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, deepMode: value }))} />
+              </div>
+            </BzForm>
+          </section>
+
+          <section className="diagnostic-config-block">
+            <div className="diagnostic-config-block__title">采集项配置</div>
+            <div className="diagnostic-config-tree">
+              {itemOptions.map((item) => {
+                const checked = activeItems.has(item.value);
+                const isHttp = item.value === "HTTP";
+                const isSql = item.value === "SQL";
+                return (
+                  <section key={item.value} className={`diagnostic-item-panel${checked ? " is-active" : ""}`}>
+                    <div className="diagnostic-item-panel__header">
+                      <div className="diagnostic-item-panel__main">
+                        <BzCheckbox modelValue={checked} onValueChange={(value) => toggleDrawerItem(item.value, value)}>
+                          {item.label}
+                        </BzCheckbox>
+                        <div className="diagnostic-item-panel__desc">{item.description}</div>
+                      </div>
+                      <BzTag type={checked ? "success" : "info"}>{checked ? "已开启" : "未开启"}</BzTag>
+                    </div>
+
+                    <div className="diagnostic-item-panel__body">
+                      {isHttp ? (
+                        <BzFormItem label="慢请求阈值(ms)">
+                          <BzInput disabled={!checked} modelValue={drawerForm.slowRequestThresholdMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, slowRequestThresholdMs: Number(value) }))} />
+                        </BzFormItem>
+                      ) : null}
+
+                      {isSql ? (
+                        <BzFormItem label="慢 SQL 阈值(ms)">
+                          <BzInput disabled={!checked} modelValue={drawerForm.slowSqlThresholdMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, slowSqlThresholdMs: Number(value) }))} />
+                        </BzFormItem>
+                      ) : null}
+
+                      {!isHttp && !isSql ? <div className="diagnostic-item-panel__placeholder">当前采集项暂无专属阈值配置，仅控制采集启用状态。</div> : null}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      </AdminEntityDrawer>
+
+      <style jsx>{`
+        .diagnostic-tool-button.is-danger {
+          color: #dc2626;
+        }
+
+        .diagnostic-tool-button.is-active {
+          color: #ffffff;
+          background: #22c55e;
+          box-shadow: 0 10px 20px rgba(34, 197, 94, 0.24);
+        }
+
+        .diagnostic-tool-button.is-active:hover {
+          color: #ffffff;
+          background: #16a34a;
+        }
+
+        .diagnostic-tool-button:disabled {
+          opacity: 0.48;
+          cursor: not-allowed;
+        }
+
+        .diagnostic-status-banner {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .diagnostic-status-banner__left {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .diagnostic-status-banner__title {
+          color: #0f172a;
+          font-size: 28px;
+          font-weight: 700;
+          line-height: 1.15;
+        }
+
+        .diagnostic-status-banner__desc {
+          color: #475569;
+          font-size: 14px;
+          line-height: 1.7;
+          max-width: 760px;
+        }
+
+        .diagnostic-status-banner__right {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .diagnostic-eyebrow {
+          color: #3b82f6;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+        }
+
+        .diagnostic-hero {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .diagnostic-spotlight-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .diagnostic-spotlight-item {
+          border: 1px solid #dbe7ff;
+          border-radius: 16px;
+          background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+          padding: 14px 16px;
+        }
+
+        .diagnostic-spotlight-item.is-emphasize {
+          border-color: #93c5fd;
+          background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+          box-shadow: 0 12px 24px rgba(59, 130, 246, 0.08);
+        }
+
+        .diagnostic-spotlight-label {
+          color: #64748b;
+          font-size: 12px;
+        }
+
+        .diagnostic-spotlight-value {
+          margin-top: 6px;
+          color: #0f172a;
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.5;
+        }
+
+        .diagnostic-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .diagnostic-summary-card {
+          border-radius: 18px;
+          background: #0f172a;
+          color: #e2e8f0;
+          padding: 18px;
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+        }
+
+        .diagnostic-summary-title {
+          color: #93c5fd;
+          font-size: 12px;
+          letter-spacing: 0.04em;
+        }
+
+        .diagnostic-summary-value {
+          margin-top: 10px;
+          color: #ffffff;
+          font-size: 28px;
+          font-weight: 700;
+          line-height: 1.15;
+        }
+
+        .diagnostic-summary-accent {
+          margin-top: 8px;
+          color: #cbd5e1;
+          font-size: 13px;
+        }
+
+        .diagnostic-summary-note {
+          margin-top: 6px;
+          color: #94a3b8;
+          font-size: 12px;
+        }
+
+        .diagnostic-board-main {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          min-width: 0;
+        }
+
+        .diagnostic-section-card {
+          border-radius: 18px;
+        }
+
+        .diagnostic-runtime-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .diagnostic-runtime-panel {
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          background: #f8fafc;
+          padding: 16px;
+        }
+
+        .diagnostic-runtime-title {
+          margin-bottom: 12px;
+          color: #0f172a;
+          font-size: 15px;
+          font-weight: 700;
+        }
+
+        .diagnostic-runtime-rows {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .diagnostic-runtime-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: #475569;
+          font-size: 13px;
+        }
+
+        .diagnostic-runtime-row strong {
+          color: #0f172a;
+          font-size: 14px;
+        }
+
+        .diagnostic-drawer-shell {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .diagnostic-config-block {
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          background: #fff;
+          padding: 16px;
+        }
+
+        .diagnostic-config-block__title {
+          color: #0f172a;
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .diagnostic-config-block__desc {
+          margin-top: 6px;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        .diagnostic-config-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 6px 16px;
+          margin-top: 14px;
+        }
+
+        .diagnostic-config-switch-row {
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px dashed #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .diagnostic-config-switch-row__title {
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .diagnostic-config-switch-row__desc {
+          margin-top: 4px;
+          color: #64748b;
+          font-size: 12px;
+        }
+
+        .diagnostic-config-tree {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 14px;
+        }
+
+        .diagnostic-item-panel {
+          border: 1px solid #e5e7eb;
+          border-radius: 14px;
+          background: #f8fafc;
+          padding: 14px;
+          transition: border-color 0.18s ease, background-color 0.18s ease;
+        }
+
+        .diagnostic-item-panel.is-active {
+          border-color: #93c5fd;
+          background: #ffffff;
+        }
+
+        .diagnostic-item-panel__header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .diagnostic-item-panel__main {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 0;
+        }
+
+        .diagnostic-item-panel__desc {
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.6;
+          padding-left: 28px;
+        }
+
+        .diagnostic-item-panel__body {
+          margin-top: 14px;
+          padding-left: 28px;
+        }
+
+        .diagnostic-item-panel__placeholder {
+          color: #94a3b8;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        @media (max-width: 960px) {
+          .diagnostic-status-banner,
+          .diagnostic-config-switch-row,
+          .diagnostic-item-panel__header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .diagnostic-spotlight-grid,
+          .diagnostic-summary-grid,
+          .diagnostic-runtime-grid,
+          .diagnostic-config-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 }
