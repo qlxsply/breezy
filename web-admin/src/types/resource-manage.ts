@@ -4,9 +4,7 @@ export interface ResourcePermissionOption {
   id: string;
   code: string;
   name: string;
-  description?: string;
-  enabled: boolean;
-  userScope?: string;
+  userScope: "INTERNAL" | "EXTERNAL";
 }
 
 export interface ResourceManageEntry {

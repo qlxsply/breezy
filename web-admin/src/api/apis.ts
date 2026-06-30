@@ -14,7 +14,7 @@ interface ApiPayload {
   handlerMethod?: string;
   permissionDeclared: boolean;
   accessType: string;
-  userTypes?: string;
+  userType?: string;
   auditDeclared: boolean;
   auditResource?: string;
   auditAction?: string;
@@ -47,7 +47,7 @@ function toApiEntry(payload: ApiPayload): ApiEntry {
     handlerMethod: payload.handlerMethod,
     permissionDeclared: Boolean(payload.permissionDeclared),
     accessType: payload.accessType,
-    userTypes: payload.userTypes,
+    userType: payload.userType,
     auditDeclared: Boolean(payload.auditDeclared),
     auditResource: payload.auditResource,
     auditAction: payload.auditAction,

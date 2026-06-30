@@ -12,7 +12,7 @@ export interface ApiEntry {
   handlerMethod?: string;
   permissionDeclared: boolean;
   accessType: ApiAccessType | string;
-  userTypes?: string;
+  userType?: string;
   auditDeclared: boolean;
   auditResource?: string;
   auditAction?: string;
@@ -21,6 +21,6 @@ export interface ApiEntry {
   protocolLabel?: string;
   httpMethodLabel?: string;
   accessTypeLabel?: string;
-  userTypeLabels?: string[];
+  userTypeLabel?: string;
   auditTooltip?: string;
 }

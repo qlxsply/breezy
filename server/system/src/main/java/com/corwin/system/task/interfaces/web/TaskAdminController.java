@@ -27,34 +27,34 @@ public class TaskAdminController {
     private final TaskAppService taskAppService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"task.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"task.view"})
     public ApiResponse<List<TaskRes>> list() {
         return ApiResponse.ok(taskAppService.listTasks().stream().map(TaskAdminController::toRes).toList());
     }
 
     @PutMapping("/{code}/config")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"task.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"task.edit"})
     public ApiResponse<Boolean> updateConfig(@PathVariable String code, @RequestBody UpdateTaskConfigReq req) {
         taskAppService.updateTaskConfig(code, req.cronExpr());
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{code}/publish")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"task.publish"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"task.publish"})
     public ApiResponse<Boolean> publish(@PathVariable String code) {
         taskAppService.publishTask(code);
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{code}/stop")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"task.publish"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"task.publish"})
     public ApiResponse<Boolean> stop(@PathVariable String code) {
         taskAppService.stopTask(code);
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{code}/run")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"task.run"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"task.run"})
     public ApiResponse<Boolean> run(@PathVariable String code) {
         taskAppService.runTask(code);
         return ApiResponse.ok(true);

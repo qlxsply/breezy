@@ -48,7 +48,7 @@ public class ConfigController {
     private final NotificationDispatcher notificationDispatcher;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"cfg.view"})
     public ApiResponse<PageResult<ConfigRes>> list(@RequestParam(required = false) String codeLike,
             @RequestParam(required = false) String descriptionLike,
             @RequestParam(defaultValue = "1") Integer pageNo,
@@ -58,7 +58,7 @@ public class ConfigController {
     }
 
     @PutMapping("/{code}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"cfg.edit"})
     @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updateValue(@PathVariable String code, @RequestBody UpdateConfigReq req) {
         boolean result = appService.updateValue(new UpdateConfigValueCommand(code, req.value()));
@@ -66,7 +66,7 @@ public class ConfigController {
     }
 
     @PostMapping("/preview/client-ip")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"cfg.view"})
     public ApiResponse<ConfigClientIpPreviewRes> previewClientIp(@RequestBody ConfigClientIpPreviewReq req,
             HttpServletRequest request) {
         ConfigClientIpPreviewView view = appService.previewClientIp(req.mode(), request.getRemoteAddr(),
@@ -76,14 +76,14 @@ public class ConfigController {
     }
 
     @PostMapping("/preview/time-offset")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"cfg.view"})
     public ApiResponse<ConfigTimeOffsetPreviewRes> previewTimeOffset(@RequestBody ConfigTimeOffsetPreviewReq req) {
         ConfigTimeOffsetPreviewView view = appService.previewTimeOffset(req.offsetSeconds(), req.targetEpochMillis());
         return ApiResponse.ok(toTimeOffsetPreviewRes(view));
     }
 
     @PostMapping("/preview/msg-push")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"cfg.preview.push"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"cfg.preview.push"})
     public ApiResponse<String> previewMsgPush(@RequestBody PreviewMsgPushReq req) {
         if (req == null) {
             req = new PreviewMsgPushReq(null, null, null, null, null, null, null);

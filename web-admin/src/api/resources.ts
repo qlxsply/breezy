@@ -32,9 +32,7 @@ interface PermissionPayload {
   id: string | number;
   code: string;
   name: string;
-  description?: string;
-  enabled?: boolean;
-  userScope?: string;
+  userScope: "INTERNAL" | "EXTERNAL";
 }
 
 interface PermissionSelectionPayload {
@@ -107,8 +105,6 @@ export async function listPermissions(): Promise<ResourcePermissionOption[]> {
     id: String(payload.id),
     code: payload.code,
     name: payload.name,
-    description: payload.description,
-    enabled: payload.enabled !== false,
     userScope: payload.userScope,
   }));
 }

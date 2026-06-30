@@ -27,7 +27,7 @@ public class SystemPermissionAdminController {
     private final PermissionService permissionService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
+    @Authorize(userType = UserType.INTERNAL, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {
         return ApiResponse.ok(permissionService.assignablePermissionsForInternal().stream()
                 .map(SystemPermissionAdminController::toRes)
@@ -36,6 +36,6 @@ public class SystemPermissionAdminController {
 
     private static PermissionRes toRes(Permission permission) {
         return new PermissionRes(permission.getId(), permission.getCode(), permission.getName(),
-                permission.getUserScope(), permission.getDescription(), Boolean.TRUE.equals(permission.getEnabled()));
+                permission.getUserScope());
     }
 }

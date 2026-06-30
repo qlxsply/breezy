@@ -29,7 +29,7 @@ public class MethodStatQueryController {
     private final MethodStatQueryAppService queryAppService;
 
     @PostMapping("/stats/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"mst.stat.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"mst.stat.view"})
     public ApiResponse<PageResult<MethodStatStatsRes>> pageStats(@RequestBody MethodStatStatsPageReq req) {
         SortSpec sortSpec = firstSort(req);
         var pageSpec = PageSpecFactory.of(req.page(), req.sort());
@@ -41,7 +41,7 @@ public class MethodStatQueryController {
     }
 
     @GetMapping("/stats/detail")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"mst.stat.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"mst.stat.view"})
     public ApiResponse<MethodStatStatsRes> methodStatsDetail(@RequestParam("key") String key) {
         return ApiResponse.ok(toStatsRes(queryAppService.getMethodStats(key)));
     }

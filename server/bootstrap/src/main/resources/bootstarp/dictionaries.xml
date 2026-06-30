@@ -342,16 +342,6 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
-        <id>dict-type-permission-user-scope</id>
-        <code>PERMISSION_USER_SCOPE</code>
-        <name>权限适用用户范围</name>
-        <description>权限适用用户范围。</description>
-        <enumClass>com.corwin.system.resource.domain.model.PermissionUserScope</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
         <id>dict-type-user-application-package-type</id>
         <code>USER_APPLICATION_PACKAGE_TYPE</code>
         <name>用户应用包类型</name>

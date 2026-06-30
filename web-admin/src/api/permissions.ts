@@ -19,8 +19,6 @@ interface PermissionPayload {
   code: string;
   name: string;
   userScope: PermissionUserScope;
-  description?: string;
-  enabled: boolean;
 }
 
 function toPermissionEntry(payload: PermissionPayload): PermissionEntry {
@@ -29,8 +27,6 @@ function toPermissionEntry(payload: PermissionPayload): PermissionEntry {
     code: payload.code,
     name: payload.name,
     userScope: payload.userScope,
-    description: payload.description,
-    enabled: Boolean(payload.enabled),
   };
 }
 

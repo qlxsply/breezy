@@ -77,7 +77,6 @@ public class BootstrapApiSyncService {
                 ps.setString(1, permission.code());
                 ps.setString(2, permission.name());
                 ps.setString(3, permission.userScope().name());
-                ps.setString(4, permission.description());
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -100,7 +99,7 @@ public class BootstrapApiSyncService {
                 ps.setString(6, api.handlerMethod());
                 ps.setBoolean(7, api.permissionDeclared());
                 ps.setString(8, api.accessType().name());
-                ps.setString(9, api.userTypesJson());
+                ps.setString(9, api.userType());
                 ps.setBoolean(10, api.auditDeclared());
                 ps.setString(11, api.auditResource());
                 ps.setString(12, api.auditAction());

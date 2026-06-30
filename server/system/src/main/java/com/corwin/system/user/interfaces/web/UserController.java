@@ -42,20 +42,20 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @Authenticated(userTypes = {UserType.EXTERNAL})
+    @Authenticated(userType = UserType.EXTERNAL)
     public ApiResponse<UserProfileRes> me() {
         return ApiResponse.ok(toRes(userService.currentProfile()));
     }
 
     @PutMapping("/me")
-    @Authenticated(userTypes = {UserType.EXTERNAL})
+    @Authenticated(userType = UserType.EXTERNAL)
     @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE_PROFILE, description = "用户修改个人资料", level = AuditLevel.MEDIUM)
     public ApiResponse<UserProfileRes> updateMyProfile(@RequestBody UpdateMyProfileReq req) {
         return ApiResponse.ok(toRes(userService.updateMyProfile(new UpdateMyProfileCommand(req.nickname()))));
     }
 
     @PutMapping("/me/password")
-    @Authenticated(userTypes = {UserType.EXTERNAL})
+    @Authenticated(userType = UserType.EXTERNAL)
     @Audit(resource = AuditResource.USER, action = AuditAction.CHANGE_PASSWORD, description = "用户修改密码", level = AuditLevel.HIGH)
     public ApiResponse<Boolean> changeMyPassword(@RequestBody ChangeMyPasswordReq req) {
         ChangePasswordCommand cmd = new ChangePasswordCommand(req.oldPassword(), req.newPassword());
@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @PostMapping("/me/logout")
-    @Authenticated(userTypes = {UserType.EXTERNAL})
+    @Authenticated(userType = UserType.EXTERNAL)
     @Audit(resource = AuditResource.USER, action = AuditAction.LOGOUT, description = "用户退出登录", level = AuditLevel.MEDIUM)
     public ApiResponse<Boolean> logout() {
         return ApiResponse.ok(userService.logout());

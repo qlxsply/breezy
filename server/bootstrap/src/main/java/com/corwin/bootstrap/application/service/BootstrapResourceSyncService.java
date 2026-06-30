@@ -2,7 +2,7 @@ package com.corwin.bootstrap.application.service;
 
 import com.corwin.bootstrap.application.BootstrapTaskKey;
 import com.corwin.bootstrap.application.BootstrapTaskReport;
-import com.corwin.system.resource.domain.model.PermissionUserScope;
+import com.corwin.framework.constant.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -105,8 +105,8 @@ public class BootstrapResourceSyncService {
             if (permission == null) {
                 throw new IllegalStateException("resource permission missing in sys_permission: " + permissionCode);
             }
-            if (permission.userScope() == PermissionUserScope.EXTERNAL) {
-                throw new IllegalStateException("resource permission must not be EXTERNAL-only: " + permissionCode);
+            if (permission.userScope() != UserType.INTERNAL) {
+                throw new IllegalStateException("resource permission must be INTERNAL-only: " + permissionCode);
             }
         }
         for (String permissionCode : externalPermissionCodes) {
@@ -114,8 +114,8 @@ public class BootstrapResourceSyncService {
             if (permission == null) {
                 throw new IllegalStateException("user feature permission missing in sys_permission: " + permissionCode);
             }
-            if (permission.userScope() == PermissionUserScope.INTERNAL) {
-                throw new IllegalStateException("user feature permission must not be INTERNAL-only: " + permissionCode);
+            if (permission.userScope() != UserType.EXTERNAL) {
+                throw new IllegalStateException("user feature permission must be EXTERNAL-only: " + permissionCode);
             }
         }
     }
@@ -329,7 +329,7 @@ public class BootstrapResourceSyncService {
         try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.put(rs.getString("code"),
-                        new PermissionRef(rs.getLong("id"), PermissionUserScope.valueOf(rs.getString("user_scope"))));
+                        new PermissionRef(rs.getLong("id"), UserType.valueOf(rs.getString("user_scope"))));
             }
         }
         return result;
@@ -392,7 +392,7 @@ public class BootstrapResourceSyncService {
 
     private record PermissionRef(
             Long id,
-            PermissionUserScope userScope
+            UserType userScope
     ) {
     }
 

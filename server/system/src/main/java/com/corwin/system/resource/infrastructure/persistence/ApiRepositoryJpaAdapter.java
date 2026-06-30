@@ -90,7 +90,7 @@ public class ApiRepositoryJpaAdapter implements ApiRepository {
                 .eqIf(query != null && query.permissionDeclared() != null, Api::getPermissionDeclared,
                         query.permissionDeclared())
                 .eqIf(query != null && query.accessType() != null, Api::getAccessType, query.accessType())
-                .likeIf(StrUtil.isNotBlank(userType), Api::getUserTypes, "%" + userType + "%")
+                .eqIf(StrUtil.isNotBlank(userType), Api::getUserType, userType)
                 .eqIf(query != null && query.auditDeclared() != null, Api::getAuditDeclared, query.auditDeclared())
                 .eqIf(query != null && query.enabled() != null, Api::getEnabled, query.enabled());
         applySort(dynamicQuery, resolvedSpec);

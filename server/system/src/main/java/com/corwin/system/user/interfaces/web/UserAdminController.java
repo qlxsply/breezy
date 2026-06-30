@@ -40,13 +40,13 @@ public class UserAdminController {
     private final UserRoleService userRoleService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.view"})
     public ApiResponse<List<UserRes>> list() {
         return ApiResponse.ok(userAdminService.list().stream().map(UserAdminController::toDto).toList());
     }
 
     @PostMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.add"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.add"})
     @Audit(resource = AuditResource.USER, action = AuditAction.CREATE, level = AuditLevel.HIGH)
     public ApiResponse<UserRes> create(@RequestBody CreateUserReq req) {
         CreateUserCommand cmd = new CreateUserCommand(req.getUsername(), req.getNickname(), req.getPassword());
@@ -54,20 +54,20 @@ public class UserAdminController {
     }
 
     @GetMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.view"})
     public ApiResponse<UserRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDto(userAdminService.get(id)));
     }
 
     @PostMapping("/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.view"})
     public ApiResponse<PageResult<UserRes>> page(@RequestBody UserPageReq req) {
         var page = userAdminService.page(req.status(), req.usernameLike(), PageSpecFactory.of(req.page(), req.sort()));
         return ApiResponse.ok(PageResult.of(page, UserAdminController::toDto));
     }
 
     @PutMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.edit"})
     @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<UserRes> update(@PathVariable Long id, @RequestBody UpdateUserReq req) {
         UpdateUserCommand cmd = new UpdateUserCommand(req.getNickname(), req.getStatus());
@@ -75,7 +75,7 @@ public class UserAdminController {
     }
 
     @PostMapping("/{id}/reset-password")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.pwd.reset"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.pwd.reset"})
     @Audit(resource = AuditResource.USER, action = AuditAction.RESET_PASSWORD, level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> resetPassword(@PathVariable Long id) {
         userAdminService.resetPassword(id);
@@ -83,13 +83,13 @@ public class UserAdminController {
     }
 
     @GetMapping("/{id}/roles")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.role.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.role.view"})
     public ApiResponse<List<String>> userRoles(@PathVariable Long id) {
         return ApiResponse.ok(userRoleService.userRoles(id).stream().map(String::valueOf).toList());
     }
 
     @PutMapping("/{id}/roles")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.perm.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.perm.edit"})
     @Audit(resource = AuditResource.USER_ROLE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updateUserRoles(@PathVariable Long id, @RequestBody UpdateUserRolesReq req) {
         UpdateUserRolesCommand cmd = new UpdateUserRolesCommand(req.getRoleIds());
@@ -97,7 +97,7 @@ public class UserAdminController {
     }
 
     @DeleteMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.del"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.del"})
     @Audit(resource = AuditResource.USER, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         userAdminService.delete(id);

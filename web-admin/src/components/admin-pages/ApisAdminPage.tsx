@@ -94,7 +94,7 @@ export function ApisAdminPage() {
         protocolLabel: protocolLabelMap[api.protocol] || api.protocol,
         httpMethodLabel: methodLabelMap[api.httpMethod] || api.httpMethod,
         accessTypeLabel: accessTypeLabelMap[api.accessType] || api.accessType,
-        userTypeLabels: resolveUserTypeLabels(api.userTypes, userTypeLabelMap),
+        userTypeLabel: resolveUserTypeLabel(api.userType, userTypeLabelMap),
         auditTooltip: buildAuditTooltip(api),
       })),
     [accessTypeLabelMap, methodLabelMap, page.elements, protocolLabelMap, userTypeLabelMap],
@@ -471,28 +471,14 @@ function toLabelMap(items?: DictItem[]): Record<string, string> {
   return map;
 }
 
-function resolveUserTypeLabels(raw: string | undefined, labelMap: Record<string, string>): string[] {
-  return parseUserTypes(raw).map((code) => labelMap[code] || code);
+function resolveUserTypeLabel(raw: string | undefined, labelMap: Record<string, string>): string {
+  const normalized = raw?.trim();
+  if (!normalized) return "";
+  return labelMap[normalized] || normalized;
 }
 
 function toOptions(labelMap: Record<string, string>) {
   return Object.entries(labelMap).map(([value, label]) => ({ value, label }));
-}
-
-function parseUserTypes(raw?: string): string[] {
-  const normalized = raw?.trim();
-  if (!normalized) return [];
-  try {
-    const parsed = JSON.parse(normalized);
-    if (Array.isArray(parsed)) return parsed.map((item) => String(item).trim()).filter(Boolean);
-  } catch {
-    // ignore
-  }
-  return normalized
-    .replace(/^\[|\]$/g, "")
-    .split(",")
-    .map((item) => item.replace(/^["'\s]+|["'\s]+$/g, ""))
-    .filter(Boolean);
 }
 
 function buildAuditTooltip(api: ApiEntry): string {

@@ -1,10 +1,10 @@
 package com.corwin.system.userfeature.application.service;
 
+import com.corwin.framework.constant.UserType;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.system.resource.domain.model.Permission;
-import com.corwin.system.resource.domain.model.PermissionUserScope;
 import com.corwin.system.resource.domain.repo.PermissionRepository;
 import com.corwin.system.userfeature.domain.model.ApplicationFeatureAccessScope;
 import com.corwin.system.userfeature.domain.model.ProductApplication;
@@ -93,9 +93,7 @@ public class UserFeatureAccessService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         Map<Long, Permission> permissionById = permissionRepository.findAllById(permissionIds).stream()
-                .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
-                .filter(permission -> permission.getUserScope() == PermissionUserScope.EXTERNAL
-                        || permission.getUserScope() == PermissionUserScope.COMMON)
+                .filter(permission -> permission.getUserScope() == UserType.EXTERNAL)
                 .collect(Collectors.toMap(Permission::getId, permission -> permission, (left, right) -> right,
                         LinkedHashMap::new));
 

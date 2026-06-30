@@ -4,7 +4,6 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.resource.application.view.MyPermissionsDetailView;
 import com.corwin.system.resource.domain.model.Permission;
-import com.corwin.system.resource.domain.model.PermissionUserScope;
 import com.corwin.system.resource.domain.model.Resource;
 import com.corwin.system.resource.domain.model.ResourcePermission;
 import com.corwin.system.resource.domain.repo.PermissionRepository;
@@ -79,7 +78,7 @@ public class PermissionService {
         }
         if (DefaultUser.isAdmin(userId)) {
             return permissionRepository.findAll().stream()
-                    .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
+                    .filter(permission -> permission.getUserScope() == UserType.INTERNAL)
                     .map(Permission::getCode)
                     .filter(Objects::nonNull)
                     .map(String::trim)
@@ -91,9 +90,7 @@ public class PermissionService {
             return Set.of();
         }
         return permissionRepository.findAllById(permissionIds).stream()
-                .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
-                .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
-                        || permission.getUserScope() == PermissionUserScope.COMMON)
+                .filter(permission -> permission.getUserScope() == UserType.INTERNAL)
                 .map(Permission::getCode)
                 .filter(Objects::nonNull)
                 .map(String::trim)
@@ -103,8 +100,7 @@ public class PermissionService {
 
     public List<Permission> assignablePermissionsForInternal() {
         return permissionRepository.findAll().stream()
-                .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
-                        || permission.getUserScope() == PermissionUserScope.COMMON)
+                .filter(permission -> permission.getUserScope() == UserType.INTERNAL)
                 .sorted(Comparator.comparing(Permission::getCode, Comparator.nullsLast(String::compareToIgnoreCase))
                         .thenComparing(Permission::getId, Comparator.nullsLast(Long::compareTo)))
                 .toList();
@@ -113,9 +109,7 @@ public class PermissionService {
     private List<Long> internalPermissionIdsForUser(Long userId) {
         if (DefaultUser.isAdmin(userId)) {
             return permissionRepository.findAll().stream()
-                    .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
-                    .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
-                            || permission.getUserScope() == PermissionUserScope.COMMON)
+                    .filter(permission -> permission.getUserScope() == UserType.INTERNAL)
                     .map(Permission::getId)
                     .toList();
         }
@@ -124,9 +118,7 @@ public class PermissionService {
             return List.of();
         }
         Set<Long> allowedIds = permissionRepository.findAllById(merged).stream()
-                .filter(permission -> Boolean.TRUE.equals(permission.getEnabled()))
-                .filter(permission -> permission.getUserScope() == PermissionUserScope.INTERNAL
-                        || permission.getUserScope() == PermissionUserScope.COMMON)
+                .filter(permission -> permission.getUserScope() == UserType.INTERNAL)
                 .map(Permission::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return allowedIds.stream().toList();

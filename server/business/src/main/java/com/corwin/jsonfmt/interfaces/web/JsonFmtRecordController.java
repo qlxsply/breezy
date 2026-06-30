@@ -31,7 +31,7 @@ import java.util.List;
  * @author Corwin 2026/3/2
  */
 @ApiMeta(module = ApiModuleCode.JSONFMT)
-@Authorize(userTypes = UserType.EXTERNAL, permissions = {"jfm.use"})
+@Authorize(userType = UserType.EXTERNAL, permissions = {"jfm.use"})
 @RestController
 @RequestMapping("/api/jsonfmt/records")
 @RequiredArgsConstructor

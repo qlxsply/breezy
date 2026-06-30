@@ -95,24 +95,19 @@ export function ApiTable({
       ),
     },
     {
-      key: "userTypes",
+      key: "userType",
       title: "用户类型",
       width: 100,
       render: (row: ApiEntry) =>
-        row.userTypeLabels?.length ? (
-          <div className="api-table__tag-list">
-            {row.userTypeLabels.map((label) => (
-              <BzTag
-                key={label}
-                className="api-table__tag"
-                size="small"
-                type="info"
-                title={label}
-              >
-                <span className="api-table__tag-label">{label}</span>
-              </BzTag>
-            ))}
-          </div>
+        row.userTypeLabel ? (
+          <BzTag
+            className="api-table__tag"
+            size="small"
+            type="info"
+            title={row.userTypeLabel}
+          >
+            <span className="api-table__tag-label">{row.userTypeLabel}</span>
+          </BzTag>
         ) : (
           renderTextCell("-")
         ),

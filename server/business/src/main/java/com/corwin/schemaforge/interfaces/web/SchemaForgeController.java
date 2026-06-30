@@ -39,7 +39,7 @@ import java.util.List;
  * @author Corwin 2026/2/24
  */
 @ApiMeta(module = ApiModuleCode.SCHEMAFORGE)
-@Authorize(userTypes = UserType.EXTERNAL, permissions = {"sfg.use"})
+@Authorize(userType = UserType.EXTERNAL, permissions = {"sfg.use"})
 @RestController
 @RequestMapping("/api/sf")
 @RequiredArgsConstructor

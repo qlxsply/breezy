@@ -30,7 +30,7 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
 
     @PostMapping("/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"audit.log.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"audit.log.view"})
     public ApiResponse<PageResult<AuditLogRes>> page(@RequestBody AuditLogPageReq req) {
         var page = auditLogService.page(req.traceId(), req.operatorUserId(), req.operatorUsername(),
                 req.applicationCode(), req.requestUri(), req.auditResource(), req.auditAction(), req.auditLevel(),
@@ -39,7 +39,7 @@ public class AuditLogController {
     }
 
     @GetMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"audit.log.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"audit.log.view"})
     public ApiResponse<AuditLogRes> get(@PathVariable("id") Long id) {
         return ApiResponse.ok(toRes(auditLogService.get(id)));
     }

@@ -1,5 +1,6 @@
 package com.corwin.system.resource.domain.model;
 
+import com.corwin.framework.constant.UserType;
 import com.corwin.framework.util.HighDate;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -29,16 +30,7 @@ public class Permission {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_scope", nullable = false, length = 16)
-    private PermissionUserScope userScope;
-
-    @Column(name = "description", length = 512)
-    private String description;
-
-    @Column(name = "system_builtin", nullable = false)
-    private Boolean systemBuiltin;
-
-    @Column(name = "enabled", nullable = false)
-    private Boolean enabled;
+    private UserType userScope;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -49,36 +41,18 @@ public class Permission {
     protected Permission() {
     }
 
-    public Permission(String code, String name, PermissionUserScope userScope, String description,
-            Boolean systemBuiltin) {
+    public Permission(String code, String name, UserType userScope) {
         Instant now = HighDate.mockInstant();
         this.code = code;
         this.name = name;
         this.userScope = userScope;
-        this.description = description;
-        this.systemBuiltin = systemBuiltin;
-        this.enabled = true;
         this.createdAt = now;
         this.updatedAt = now;
     }
 
-    public void update(String name, PermissionUserScope userScope, String description, Boolean systemBuiltin,
-            Boolean enabled) {
+    public void update(String name, UserType userScope) {
         this.name = name;
         this.userScope = userScope;
-        this.description = description;
-        this.systemBuiltin = systemBuiltin;
-        this.enabled = enabled;
-        touch();
-    }
-
-    public void enable() {
-        this.enabled = true;
-        touch();
-    }
-
-    public void disable() {
-        this.enabled = false;
         touch();
     }
 

@@ -24,7 +24,7 @@ import java.util.List;
  * @author Corwin 2026/1/12
  */
 @ApiMeta(module = ApiModuleCode.REMINDER)
-@Authorize(userTypes = UserType.EXTERNAL, permissions = {"tdo.use"})
+@Authorize(userType = UserType.EXTERNAL, permissions = {"tdo.use"})
 @RestController
 @RequestMapping("/api/schedule")
 @RequiredArgsConstructor

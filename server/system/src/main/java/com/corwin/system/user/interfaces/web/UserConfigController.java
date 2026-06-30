@@ -28,7 +28,7 @@ public class UserConfigController {
     private final UserConfigAppService userConfigAppService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"pro.cfg.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"pro.cfg.view"})
     public ApiResponse<List<UserConfigsRes>> getMyConfigs() {
         Long userId = CtxUtil.getPrincipal().userId();
         return ApiResponse.ok(
@@ -36,7 +36,7 @@ public class UserConfigController {
     }
 
     @PutMapping("/{code}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"pro.cfg.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"pro.cfg.edit"})
     public ApiResponse<Boolean> updateMyConfig(@PathVariable String code, @RequestBody Map<String, String> body) {
         Long userId = CtxUtil.getPrincipal().userId();
         String value = body.get("value");

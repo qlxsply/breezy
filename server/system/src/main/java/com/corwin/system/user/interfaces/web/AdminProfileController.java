@@ -39,13 +39,13 @@ public class AdminProfileController {
     private final LoginLogService loginLogService;
 
     @GetMapping
-    @Authenticated(userTypes = {UserType.INTERNAL})
+    @Authenticated(userType = UserType.INTERNAL)
     public ApiResponse<AdminProfileRes> currentProfile() {
         return ApiResponse.ok(toRes(adminProfileAppService.currentProfile()));
     }
 
     @GetMapping("/login-activities")
-    @Authenticated(userTypes = {UserType.INTERNAL})
+    @Authenticated(userType = UserType.INTERNAL)
     public ApiResponse<PageResult<AdminProfileLoginActivityRes>> pageLoginActivities(
             @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
@@ -55,7 +55,7 @@ public class AdminProfileController {
     }
 
     @PutMapping
-    @Authenticated(userTypes = {UserType.INTERNAL})
+    @Authenticated(userType = UserType.INTERNAL)
     public ApiResponse<AdminProfileRes> updateMyProfile(@RequestBody UpdateAdminProfileReq req) {
         return ApiResponse.ok(toRes(adminProfileAppService.updateMyProfile(new UpdateAdminProfileCommand(req.nickname()))));
     }

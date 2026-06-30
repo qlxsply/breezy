@@ -76,7 +76,7 @@ create table sys_api
     handler_method      varchar(128),
     permission_declared bit          not null,
     access_type         varchar(32)  not null,
-    user_types          longtext,
+    user_type           varchar(16),
     audit_declared      bit          not null,
     audit_resource      varchar(128),
     audit_action        varchar(128),
@@ -357,9 +357,6 @@ create table sys_permission
     code           varchar(128) not null,
     name           varchar(128) not null,
     user_scope     varchar(16)  not null,
-    description    varchar(512),
-    system_builtin bit          not null,
-    enabled        bit          not null,
     created_at     datetime     not null,
     updated_at     datetime     not null,
     primary key (id)

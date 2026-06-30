@@ -19,7 +19,7 @@ public record ApiRes(
         String handlerMethod,
         boolean permissionDeclared,
         ApiAccessType accessType,
-        String userTypes,
+        String userType,
         boolean auditDeclared,
         String auditResource,
         String auditAction,

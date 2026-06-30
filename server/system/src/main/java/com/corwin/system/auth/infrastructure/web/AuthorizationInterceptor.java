@@ -43,14 +43,14 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         Authorize methodAuthorize = handlerMethod.getMethodAnnotation(Authorize.class);
         if (methodAuthorize != null) {
-            authorizationService.checkAuthorized(methodAuthorize.userTypes(), methodAuthorize.permissions(),
+            authorizationService.checkAuthorized(methodAuthorize.userType(), methodAuthorize.permissions(),
                     methodAuthorize.anyPermission());
             return true;
         }
 
         Authenticated methodAuthenticated = handlerMethod.getMethodAnnotation(Authenticated.class);
         if (methodAuthenticated != null) {
-            authorizationService.checkAuthenticated(methodAuthenticated.userTypes());
+            authorizationService.checkAuthenticated(methodAuthenticated.userType());
             return true;
         }
 
@@ -61,14 +61,14 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         Authorize typeAuthorize = handlerMethod.getBeanType().getAnnotation(Authorize.class);
         if (typeAuthorize != null) {
-            authorizationService.checkAuthorized(typeAuthorize.userTypes(), typeAuthorize.permissions(),
+            authorizationService.checkAuthorized(typeAuthorize.userType(), typeAuthorize.permissions(),
                     typeAuthorize.anyPermission());
             return true;
         }
 
         Authenticated typeAuthenticated = handlerMethod.getBeanType().getAnnotation(Authenticated.class);
         if (typeAuthenticated != null) {
-            authorizationService.checkAuthenticated(typeAuthenticated.userTypes());
+            authorizationService.checkAuthenticated(typeAuthenticated.userType());
             return true;
         }
 

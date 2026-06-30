@@ -55,7 +55,7 @@ public class SystemFileController {
      * 上传文件。
      */
     @PostMapping("/upload")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sys.file.upload"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sys.file.upload"})
     public ApiResponse<String> upload(@RequestParam FilePurpose purpose, @RequestParam(required = false) String ownerId,
             @RequestParam("file") MultipartFile file) throws Exception {
 
@@ -72,7 +72,7 @@ public class SystemFileController {
      * 在线预览文件内容。
      */
     @GetMapping("/view/{fileId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.preview"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.preview"})
     public void view(@PathVariable String fileId, HttpServletResponse response) throws Exception {
         LogicalPhysicalFileView fileView = fileQueryService.getLogicalPhysicalFile(fileId);
         LogicalFile logicalFile = fileView.logicalFile();
@@ -96,7 +96,7 @@ public class SystemFileController {
      * 查询文件元数据。
      */
     @GetMapping("/meta/{fileId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.preview"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.preview"})
     public ApiResponse<StorageNodeView> meta(@PathVariable String fileId) {
         return ApiResponse.ok(fileQueryService.getFileMetadata(fileId));
     }
@@ -105,7 +105,7 @@ public class SystemFileController {
      * 下载文件。
      */
     @GetMapping("/download/{fileId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.download"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.download"})
     public void download(@PathVariable String fileId, HttpServletResponse response) throws Exception {
         LogicalPhysicalFileView fileView = fileQueryService.getLogicalPhysicalFile(fileId);
         LogicalFile logicalFile = fileView.logicalFile();
@@ -130,7 +130,7 @@ public class SystemFileController {
      * 批量查询文件元数据。
      */
     @PostMapping("/metadata/batch")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sys.file.metadata.batch"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sys.file.metadata.batch"})
     public ApiResponse<List<StorageNodeView>> getMetadataBatch(@RequestBody List<String> ids) {
         return ApiResponse.ok(fileQueryService.getMetadataBatch(ids));
     }
@@ -139,7 +139,7 @@ public class SystemFileController {
      * 管理端查询全部文件元数据。
      */
     @GetMapping("/admin/list")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.view"})
     public ApiResponse<List<StorageNodeView>> adminList() {
         return ApiResponse.ok(fileQueryService.listAllFileMetadata());
     }
@@ -148,7 +148,7 @@ public class SystemFileController {
      * 管理端按节点、关键字和排序条件查询文件树内容。
      */
     @GetMapping("/admin/nodes")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.view"})
     public ApiResponse<List<StorageNodeView>> adminNodes(@RequestParam(required = false) String parentId,
             @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "false") boolean recursive,
             @RequestParam(defaultValue = "NAME") StorageSortBy sortBy,
@@ -162,7 +162,7 @@ public class SystemFileController {
      * 查询逻辑文件对应的物理文件详情。
      */
     @GetMapping("/admin/logical-files/{logicalFileId}/physical")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.phys.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.phys.view"})
     public ApiResponse<PhysicalFileDetailRes> physicalDetail(@PathVariable String logicalFileId) {
         LogicalPhysicalFileView fileView = fileQueryService.getLogicalPhysicalFile(logicalFileId);
         LogicalFile logicalFile = fileView.logicalFile();
@@ -183,7 +183,7 @@ public class SystemFileController {
      * 查询物理文件关联的逻辑文件引用列表。
      */
     @GetMapping("/admin/physical/{physicalFileId}/logical-refs")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"sfl.ref.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"sfl.ref.view"})
     public ApiResponse<List<StorageNodeView>> logicalRefs(@PathVariable String physicalFileId,
             @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "NAME") StorageSortBy sortBy,
             @RequestParam(defaultValue = "ASC") StorageSortOrder sortOrder) {

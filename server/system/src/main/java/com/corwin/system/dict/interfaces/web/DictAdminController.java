@@ -42,7 +42,7 @@ public class DictAdminController {
     private final DictAdminService dictAdminService;
 
     @PostMapping("/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<PageResult<DictTypeRes>> list(@RequestBody DictTypePageReq req) {
         return ApiResponse.ok(
                 PageResult.of(dictAdminService.pageTypes(req.code(), req.name(), PageSpecFactory.of(req.page(), req.sort())),
@@ -50,13 +50,13 @@ public class DictAdminController {
     }
 
     @GetMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<DictTypeRes> get(@PathVariable String id) {
         return ApiResponse.ok(toTypeRes(dictAdminService.getType(id)));
     }
 
     @PostMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<DictTypeRes> create(@RequestBody CreateDictTypeReq req) {
         DictTypeView view = dictAdminService.createType(
                 new CreateDictTypeCommand(req.code(), req.name(), req.description(), req.enumClass(), req.valueType(),
@@ -65,7 +65,7 @@ public class DictAdminController {
     }
 
     @PutMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<DictTypeRes> update(@PathVariable String id, @RequestBody UpdateDictTypeReq req) {
         DictTypeView view = dictAdminService.updateType(id,
                 new UpdateDictTypeCommand(req.name(), req.description(), req.enumClass(), req.valueType(),
@@ -74,25 +74,25 @@ public class DictAdminController {
     }
 
     @PutMapping("/{id}/status")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<Boolean> updateStatus(@PathVariable String id, @RequestBody UpdateDictStatusReq req) {
         return ApiResponse.ok(dictAdminService.updateTypeStatus(id, req.enabled()));
     }
 
     @DeleteMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<Boolean> delete(@PathVariable String id) {
         return ApiResponse.ok(dictAdminService.deleteType(id));
     }
 
     @GetMapping("/{id}/items")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<List<DictItemRes>> listItems(@PathVariable String id) {
         return ApiResponse.ok(dictAdminService.listItems(id).stream().map(this::toItemRes).toList());
     }
 
     @PostMapping("/{id}/items")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<DictItemRes> createItem(@PathVariable String id, @RequestBody CreateDictItemReq req) {
         DictItemView view = dictAdminService.createItem(id,
                 new CreateDictItemCommand(req.parentItemId(), req.itemCode(), req.itemLabel(), req.itemValue(),
@@ -102,7 +102,7 @@ public class DictAdminController {
     }
 
     @PutMapping("/items/{itemId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<DictItemRes> updateItem(@PathVariable String itemId, @RequestBody UpdateDictItemReq req) {
         DictItemView view = dictAdminService.updateItem(itemId,
                 new UpdateDictItemCommand(req.parentItemId(), req.itemLabel(), req.itemValue(), req.sortNo(),
@@ -112,19 +112,19 @@ public class DictAdminController {
     }
 
     @PutMapping("/items/{itemId}/status")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<Boolean> updateItemStatus(@PathVariable String itemId, @RequestBody UpdateDictStatusReq req) {
         return ApiResponse.ok(dictAdminService.updateItemStatus(itemId, req.enabled()));
     }
 
     @DeleteMapping("/items/{itemId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<Boolean> deleteItem(@PathVariable String itemId) {
         return ApiResponse.ok(dictAdminService.deleteItem(itemId));
     }
 
     @PutMapping("/{id}/items/sort")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.edit"})
     public ApiResponse<Boolean> sortItems(@PathVariable String id, @RequestBody UpdateDictItemSortReq req) {
         return ApiResponse.ok(dictAdminService.sortItems(id, req.itemIds()));
     }

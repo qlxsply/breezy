@@ -161,6 +161,7 @@
                     <include>bootstarp/dictionaries.xsd</include>
                     <include>bootstarp/sql/mysql/**</include>
                     <include>bootstarp/sql/pgsql/**</include>
+                    <include>bootstarp/*.properties</include>
                     <include>**/*.xml</include>
                     <include>**/*.xsd</include>
                     <include>**/*.sql</include>

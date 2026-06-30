@@ -8,8 +8,8 @@ import com.corwin.system.auth.published.PermitAll;
 import com.corwin.system.resource.domain.model.ApiAccessType;
 import com.corwin.system.resource.domain.model.ApiMethod;
 import com.corwin.system.resource.domain.model.ApiProtocol;
-import com.corwin.system.resource.domain.model.PermissionUserScope;
 import com.corwin.system.resource.published.ApiMeta;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -19,16 +19,25 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Corwin 2026/5/5
  */
 @Component
+@RequiredArgsConstructor
 public class BootstrapControllerApiScanner {
 
     private static final List<String> BASE_PACKAGES = new ArrayList<>();
+
+    private final BootstrapPermissionNameDefinitionLoader permissionNameDefinitionLoader;
 
     static {
         BASE_PACKAGES.add("com.corwin.system");
@@ -42,6 +51,7 @@ public class BootstrapControllerApiScanner {
     }
 
     public ScanResult scan() {
+        Map<String, String> permissionNames = permissionNameDefinitionLoader.load();
         List<Class<?>> controllers = scanControllerClasses();
         List<ApiSeed> apis = new ArrayList<>();
         for (Class<?> controllerClass : controllers) {
@@ -51,7 +61,7 @@ public class BootstrapControllerApiScanner {
                 .thenComparing(ApiSeed::pathPattern).thenComparing(ApiSeed::handlerClass)
                 .thenComparing(ApiSeed::handlerMethod));
         validateNoDuplicateApis(apis);
-        List<PermissionSeed> permissions = collectPermissions(apis);
+        List<PermissionSeed> permissions = collectPermissions(apis, permissionNames);
         return new ScanResult(List.copyOf(apis), permissions);
     }
 
@@ -112,7 +122,7 @@ public class BootstrapControllerApiScanner {
                         result.add(
                                 new ApiSeed(module, ApiProtocol.HTTP, httpMethod, fullPath, controllerClass.getName(),
                                         method.getName(), securityMeta.permissionDeclared(), securityMeta.accessType(),
-                                        securityMeta.userTypesJson(), securityMeta.permissionCodes(),
+                                        securityMeta.userType(), securityMeta.permissionCodes(),
                                         auditMeta.declared(), auditMeta.resource(), auditMeta.action(),
                                         auditMeta.description()));
                     }
@@ -249,53 +259,25 @@ public class BootstrapControllerApiScanner {
                 "Security declaration missing for handler: " + controllerClass.getName() + "#" + method.getName());
     }
 
-    private List<PermissionSeed> collectPermissions(List<ApiSeed> apis) {
+    private List<PermissionSeed> collectPermissions(List<ApiSeed> apis, Map<String, String> permissionNames) {
         LinkedHashMap<String, PermissionSeed> result = new LinkedHashMap<>();
         for (ApiSeed api : apis) {
             if (!api.permissionDeclared()) {
                 continue;
             }
-            PermissionUserScope userScope = resolveUserScope(api.userTypesJson());
+            UserType permissionUserType = UserType.valueOf(api.userType());
             for (String permissionCode : api.permissionCodes()) {
-                result.merge(permissionCode,
-                        new PermissionSeed(permissionCode, permissionCode, userScope, "Generated from @Authorize"),
-                        this::mergePermission);
+                String permissionName = permissionNames.getOrDefault(permissionCode, permissionCode);
+                PermissionSeed existing = result.putIfAbsent(permissionCode,
+                        new PermissionSeed(permissionCode, permissionName, permissionUserType));
+                if (existing != null && existing.userScope() != permissionUserType) {
+                    throw new IllegalStateException(
+                            "Permission userType conflict detected: code=" + permissionCode + ", left="
+                                    + existing.userScope().name() + ", right=" + api.userType());
+                }
             }
         }
         return result.values().stream().sorted(Comparator.comparing(PermissionSeed::code)).toList();
-    }
-
-    private PermissionSeed mergePermission(PermissionSeed left, PermissionSeed right) {
-        PermissionUserScope mergedScope = mergeScope(left.userScope(), right.userScope());
-        return new PermissionSeed(left.code(), left.name(), mergedScope, left.description());
-    }
-
-    private PermissionUserScope mergeScope(PermissionUserScope left, PermissionUserScope right) {
-        if (left == right) {
-            return left;
-        }
-        if (left == PermissionUserScope.COMMON || right == PermissionUserScope.COMMON) {
-            return PermissionUserScope.COMMON;
-        }
-        return PermissionUserScope.COMMON;
-    }
-
-    private PermissionUserScope resolveUserScope(String userTypesJson) {
-        if (userTypesJson == null || userTypesJson.isBlank() || "[]".equals(userTypesJson)) {
-            return PermissionUserScope.COMMON;
-        }
-        boolean internal = userTypesJson.contains("\"INTERNAL\"");
-        boolean external = userTypesJson.contains("\"EXTERNAL\"");
-        if (internal && external) {
-            return PermissionUserScope.COMMON;
-        }
-        if (internal) {
-            return PermissionUserScope.INTERNAL;
-        }
-        if (external) {
-            return PermissionUserScope.EXTERNAL;
-        }
-        return PermissionUserScope.COMMON;
     }
 
     private String normalizeSegment(String value) {
@@ -344,7 +326,7 @@ public class BootstrapControllerApiScanner {
             String handlerMethod,
             boolean permissionDeclared,
             ApiAccessType accessType,
-            String userTypesJson,
+            String userType,
             List<String> permissionCodes,
             boolean auditDeclared,
             String auditResource,
@@ -356,8 +338,7 @@ public class BootstrapControllerApiScanner {
     public record PermissionSeed(
             String code,
             String name,
-            PermissionUserScope userScope,
-            String description
+            UserType userScope
     ) {
     }
 
@@ -370,31 +351,24 @@ public class BootstrapControllerApiScanner {
     private record SecurityMeta(
             boolean permissionDeclared,
             ApiAccessType accessType,
-            String userTypesJson,
+            String userType,
             List<String> permissionCodes
     ) {
         static SecurityMeta permitAll() {
-            return new SecurityMeta(false, ApiAccessType.PERMIT_ALL, "[]", List.of());
+            return new SecurityMeta(false, ApiAccessType.PERMIT_ALL, null, List.of());
         }
 
         static SecurityMeta authenticated(Authenticated authenticated) {
-            return new SecurityMeta(false, ApiAccessType.AUTHENTICATED, userTypesJson(authenticated.userTypes()),
+            String userType = authenticated.userType() == UserType.GUEST ? null : authenticated.userType().name();
+            return new SecurityMeta(false, ApiAccessType.AUTHENTICATED, userType,
                     List.of());
         }
 
         static SecurityMeta authorize(Authorize authorize) {
             List<String> permissionCodes = Arrays.stream(authorize.permissions()).map(String::trim)
                     .filter(code -> !code.isBlank()).distinct().toList();
-            return new SecurityMeta(true, ApiAccessType.AUTHORIZED, userTypesJson(authorize.userTypes()),
+            return new SecurityMeta(true, ApiAccessType.AUTHORIZED, authorize.userType().name(),
                     permissionCodes);
-        }
-
-        private static String userTypesJson(UserType[] userTypes) {
-            if (userTypes == null || userTypes.length == 0) {
-                return "[]";
-            }
-            return Arrays.stream(userTypes).map(UserType::name).distinct().map(type -> "\"" + type + "\"")
-                    .collect(Collectors.joining(",", "[", "]"));
         }
     }
 

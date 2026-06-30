@@ -16,6 +16,7 @@ public class BootstrapDefinitionResources {
     private static final String USER_FEATURES_XSD = "bootstarp/user-features.xsd";
     private static final String DICTS_XML = "bootstarp/dictionaries.xml";
     private static final String DICTS_XSD = "bootstarp/dictionaries.xsd";
+    private static final String PERMISSIONS_PROPERTIES = "bootstarp/permissions.properties";
 
     public Resource resourcesXml() {
         return new ClassPathResource(RESOURCES_XML);
@@ -39,5 +40,9 @@ public class BootstrapDefinitionResources {
 
     public Resource dictionariesXsd() {
         return new ClassPathResource(DICTS_XSD);
+    }
+
+    public Resource permissionsProperties() {
+        return new ClassPathResource(PERMISSIONS_PROPERTIES);
     }
 }

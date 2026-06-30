@@ -34,20 +34,20 @@ public class WebUserAdminController {
     }
 
     @PostMapping("/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.view"})
     public ApiResponse<PageResult<WebUserRes>> page(@RequestBody WebUserPageReq req) {
         var page = webUserAdminService.page(req.keyword(), req.status(), PageSpecFactory.of(req.page(), req.sort()));
         return ApiResponse.ok(PageResult.of(page, WebUserAdminController::toRes));
     }
 
     @GetMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.view"})
     public ApiResponse<WebUserRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toRes(webUserAdminService.get(id)));
     }
 
     @PutMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"usr.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.edit"})
     @Audit(resource = AuditResource.EXTERNAL_USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<WebUserRes> update(@PathVariable Long id, @RequestBody UpdateWebUserReq req) {
         return ApiResponse.ok(toRes(webUserAdminService.update(id, new UpdateWebUserCommand(req.status()))));

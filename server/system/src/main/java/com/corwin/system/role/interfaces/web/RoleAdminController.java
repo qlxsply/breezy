@@ -48,13 +48,13 @@ public class RoleAdminController {
     private final RoleGrantService roleGrantService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.view"})
     public ApiResponse<List<RoleRes>> list() {
         return ApiResponse.ok(roleAdminService.list().stream().map(RoleAdminController::toDto).toList());
     }
 
     @PostMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.add"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.add"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.CREATE, level = AuditLevel.HIGH)
     public ApiResponse<RoleRes> create(@RequestBody CreateRoleReq req) {
         CreateRoleCommand cmd = new CreateRoleCommand(req.getCode(), req.getName(), req.getEnabled());
@@ -62,13 +62,13 @@ public class RoleAdminController {
     }
 
     @GetMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.view"})
     public ApiResponse<RoleRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDto(roleAdminService.get(id)));
     }
 
     @PutMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.edit"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<RoleRes> update(@PathVariable Long id, @RequestBody UpdateRoleReq req) {
         UpdateRoleCommand cmd = new UpdateRoleCommand(req.getCode(), req.getName(), req.getEnabled());
@@ -76,7 +76,7 @@ public class RoleAdminController {
     }
 
     @DeleteMapping("/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.del"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.del"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         roleAdminService.delete(id);
@@ -84,19 +84,19 @@ public class RoleAdminController {
     }
 
     @GetMapping("/grant-resources")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.perm.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.perm.view"})
     public ApiResponse<List<RoleGrantResourceRes>> grantResources() {
         return ApiResponse.ok(roleGrantService.grantResources().stream().map(this::toGrantRes).toList());
     }
 
     @GetMapping("/{id}/grant")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.perm.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.perm.view"})
     public ApiResponse<RoleGrantSelectionRes> roleGrantSelection(@PathVariable Long id) {
         return ApiResponse.ok(toGrantSelectionRes(roleGrantService.roleGrantSelection(id)));
     }
 
     @PutMapping("/{id}/grant")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"rol.perm.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.perm.edit"})
     @Audit(resource = AuditResource.ROLE_GRANT, action = AuditAction.GRANT, level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updateRoleGrant(@PathVariable Long id, @RequestBody UpdateRoleGrantReq req) {
         UpdateRoleGrantCommand cmd = new UpdateRoleGrantCommand(req.resourceIds());

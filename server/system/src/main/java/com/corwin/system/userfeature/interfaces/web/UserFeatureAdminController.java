@@ -43,7 +43,7 @@ public class UserFeatureAdminController {
     private final UserFeatureAdminService userFeatureAdminService;
 
     @PostMapping("/applications/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufa.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufa.view"})
     public ApiResponse<PageResult<UserFeatureApplicationRes>> pageApplications(
             @RequestBody UserFeatureApplicationPageReq req) {
         var page = userFeatureAdminService.pageApplications(req == null ? null : req.keyword(),
@@ -53,20 +53,20 @@ public class UserFeatureAdminController {
     }
 
     @GetMapping("/applications/catalog")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufa.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufa.view"})
     public ApiResponse<List<UserFeatureApplicationRes>> applicationCatalog() {
         List<UserFeatureApplicationView> applications = userFeatureAdminService.applications();
         return ApiResponse.ok(applications.stream().map(UserFeatureAdminController::toApplicationRes).toList());
     }
 
     @GetMapping("/applications/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufa.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufa.view"})
     public ApiResponse<UserFeatureApplicationRes> getApplication(@PathVariable Long id) {
         return ApiResponse.ok(toApplicationRes(userFeatureAdminService.getApplication(id)));
     }
 
     @PutMapping("/applications/{id}/status")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufa.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufa.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updateApplicationStatus(@PathVariable Long id,
             @RequestBody UpdateUserFeatureStatusReq req) {
@@ -74,7 +74,7 @@ public class UserFeatureAdminController {
     }
 
     @PostMapping("/packages/page")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.view"})
     public ApiResponse<PageResult<UserFeaturePackageRes>> pagePackages(@RequestBody UserFeaturePackagePageReq req) {
         var page = userFeatureAdminService.pagePackages(req == null ? null : req.keyword(),
                 req == null ? null : req.enabled(),
@@ -83,13 +83,13 @@ public class UserFeatureAdminController {
     }
 
     @GetMapping("/packages/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.view"})
     public ApiResponse<UserFeaturePackageRes> getPackage(@PathVariable Long id) {
         return ApiResponse.ok(toPackageRes(userFeatureAdminService.getPackage(id)));
     }
 
     @PostMapping("/packages")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.CREATE, description = "创建用户应用包",
             level = AuditLevel.HIGH)
     public ApiResponse<UserFeaturePackageRes> createPackage(@RequestBody SaveUserFeaturePackageReq req) {
@@ -97,7 +97,7 @@ public class UserFeatureAdminController {
     }
 
     @PutMapping("/packages/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, description = "更新用户应用包",
             level = AuditLevel.HIGH)
     public ApiResponse<UserFeaturePackageRes> updatePackage(@PathVariable Long id,
@@ -106,7 +106,7 @@ public class UserFeatureAdminController {
     }
 
     @PutMapping("/packages/{id}/status")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, description = "更新用户应用包状态",
             level = AuditLevel.HIGH)
     public ApiResponse<Boolean> updatePackageStatus(@PathVariable Long id, @RequestBody UpdateUserFeatureStatusReq req) {
@@ -114,7 +114,7 @@ public class UserFeatureAdminController {
     }
 
     @DeleteMapping("/packages/{id}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufp.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.DELETE, description = "删除用户应用包",
             level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> deletePackage(@PathVariable Long id) {
@@ -122,13 +122,13 @@ public class UserFeatureAdminController {
     }
 
     @GetMapping("/users/{userId}/management")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufu.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufu.view"})
     public ApiResponse<UserFeatureUserManagementRes> getUserManagement(@PathVariable Long userId) {
         return ApiResponse.ok(toUserManagementRes(userFeatureAdminService.getUserManagement(userId)));
     }
 
     @PutMapping("/users/{userId}/management")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"ufu.edit"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"ufu.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE_USER,
             description = "维护用户应用功能配置", level = AuditLevel.HIGH)
     public ApiResponse<Boolean> saveUserManagement(@PathVariable Long userId,

@@ -27,13 +27,13 @@ public class DictQueryController {
     private final DictQueryService dictQueryService;
 
     @GetMapping("/{code}/items")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<List<DictItemRes>> listItems(@PathVariable String code) {
         return ApiResponse.ok(dictQueryService.listEnabledItems(code).stream().map(this::toItemRes).toList());
     }
 
     @PostMapping("/batch-items")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<Map<String, List<DictItemRes>>> batchItems(@RequestBody DictBatchQueryReq req) {
         Map<String, List<DictItemRes>> result = dictQueryService.batchListEnabledItems(req.codes()).entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey,
@@ -43,7 +43,7 @@ public class DictQueryController {
     }
 
     @GetMapping("/{code}/label")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"dict.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"dict.view"})
     public ApiResponse<String> resolveLabel(@PathVariable String code, @RequestParam String value) {
         return ApiResponse.ok(dictQueryService.resolveLabel(code, value));
     }

@@ -6,7 +6,6 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.system.auth.application.error.AuthError;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -21,14 +20,14 @@ public class RequestAuthorizationService {
         this.securityContextService = securityContextService;
     }
 
-    public void checkAuthenticated(UserType[] userTypes) {
+    public void checkAuthenticated(UserType userType) {
         AuthPrincipal principal = securityContextService.current();
-        checkUserType(principal, userTypes);
+        checkUserType(principal, userType);
     }
 
-    public void checkAuthorized(UserType[] userTypes, String[] permissions, boolean anyPermission) {
+    public void checkAuthorized(UserType userType, String[] permissions, boolean anyPermission) {
         AuthPrincipal principal = securityContextService.current();
-        checkUserType(principal, userTypes);
+        checkUserType(principal, userType);
         if (principal.admin() && principal.userType() == UserType.INTERNAL) {
             return;
         }
@@ -36,22 +35,25 @@ public class RequestAuthorizationService {
             return;
         }
         Set<String> granted = principal.permissionCodes();
-        boolean matched = anyPermission ? Arrays.stream(permissions).filter(code -> code != null && !code.isBlank())
-                                          .map(String::trim).anyMatch(granted::contains) : Arrays.stream(permissions)
-                                                                                           .filter(code -> code != null && !code.isBlank())
-                                                                                           .map(String::trim)
-                                                                                           .allMatch(granted::contains);
+        boolean matched = anyPermission
+                ? java.util.Arrays.stream(permissions)
+                .filter(code -> code != null && !code.isBlank())
+                .map(String::trim)
+                .anyMatch(granted::contains)
+                : java.util.Arrays.stream(permissions)
+                .filter(code -> code != null && !code.isBlank())
+                .map(String::trim)
+                .allMatch(granted::contains);
         if (!matched) {
             throw new BizException(AuthError.FORBIDDEN);
         }
     }
 
-    private void checkUserType(AuthPrincipal principal, UserType[] userTypes) {
-        if (userTypes == null || userTypes.length == 0) {
+    private void checkUserType(AuthPrincipal principal, UserType userType) {
+        if (userType == null || userType == UserType.GUEST) {
             return;
         }
-        boolean matched = Arrays.stream(userTypes).anyMatch(type -> type == principal.userType());
-        if (!matched) {
+        if (userType != principal.userType()) {
             throw new BizException(AuthError.FORBIDDEN);
         }
     }

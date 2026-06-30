@@ -14,5 +14,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Authenticated {
 
-    UserType[] userTypes() default {};
+    UserType userType() default UserType.GUEST;
 }

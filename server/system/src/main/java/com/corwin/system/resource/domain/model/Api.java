@@ -64,8 +64,8 @@ public class Api {
      * JSON 字符串，例如：["INTERNAL","EXTERNAL"]
      */
     @Lob
-    @Column(name = "user_types")
-    private String userTypes;
+    @Column(name = "user_type", length = 16)
+    private String userType;
 
     @Column(name = "audit_declared", nullable = false)
     private Boolean auditDeclared;
@@ -96,7 +96,7 @@ public class Api {
 
     public Api(String module, ApiProtocol protocol, ApiMethod httpMethod, String pathPattern,
             String handlerClass, String handlerMethod, Boolean permissionDeclared, ApiAccessType accessType,
-            String userTypes, Boolean auditDeclared, String auditResource, String auditAction, String auditDescription,
+            String userType, Boolean auditDeclared, String auditResource, String auditAction, String auditDescription,
             Boolean systemBuiltin) {
         Instant now = HighDate.mockInstant();
         this.module = module;
@@ -107,7 +107,7 @@ public class Api {
         this.handlerMethod = handlerMethod;
         this.permissionDeclared = permissionDeclared;
         this.accessType = accessType;
-        this.userTypes = userTypes;
+        this.userType = userType;
         this.auditDeclared = auditDeclared;
         this.auditResource = auditResource;
         this.auditAction = auditAction;
@@ -120,7 +120,7 @@ public class Api {
 
     public void update(String module, ApiProtocol protocol, ApiMethod httpMethod, String pathPattern,
             String handlerClass, String handlerMethod, Boolean permissionDeclared, ApiAccessType accessType,
-            String userTypes, Boolean auditDeclared, String auditResource, String auditAction, String auditDescription,
+            String userType, Boolean auditDeclared, String auditResource, String auditAction, String auditDescription,
             Boolean systemBuiltin, Boolean enabled) {
         this.module = module;
         this.protocol = protocol;
@@ -130,7 +130,7 @@ public class Api {
         this.handlerMethod = handlerMethod;
         this.permissionDeclared = permissionDeclared;
         this.accessType = accessType;
-        this.userTypes = userTypes;
+        this.userType = userType;
         this.auditDeclared = auditDeclared;
         this.auditResource = auditResource;
         this.auditAction = auditAction;

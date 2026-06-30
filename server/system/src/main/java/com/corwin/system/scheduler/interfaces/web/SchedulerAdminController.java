@@ -34,19 +34,19 @@ public class SchedulerAdminController {
     private final SchedulerCommandAppService commandAppService;
 
     @GetMapping
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.view"})
     public ApiResponse<List<SchedulerJobRes>> list() {
         return ApiResponse.ok(queryAppService.listJobs().stream().map(SchedulerAdminController::toRes).toList());
     }
 
     @GetMapping("/{jobId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.view"})
     public ApiResponse<SchedulerJobDetailRes> detail(@PathVariable String jobId) {
         return ApiResponse.ok(toDetailRes(queryAppService.getJob(jobId)));
     }
 
     @GetMapping("/{jobId}/executions")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.view"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.view"})
     public ApiResponse<PageData<SchedulerJobExecutionRes>> executions(@PathVariable String jobId,
             @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "20") int pageSize) {
         PageData<SchedulerJobExecutionView> page = queryAppService.pageExecutions(jobId,
@@ -56,35 +56,35 @@ public class SchedulerAdminController {
     }
 
     @PostMapping("/{jobId}/pause")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.pause"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.pause"})
     public ApiResponse<Boolean> pause(@PathVariable String jobId) {
         commandAppService.pauseRequested(jobId);
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{jobId}/resume")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.resume"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.resume"})
     public ApiResponse<Boolean> resume(@PathVariable String jobId) {
         commandAppService.resumeRequested(jobId);
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{jobId}/cancel")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.cancel"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.cancel"})
     public ApiResponse<Boolean> cancel(@PathVariable String jobId) {
         commandAppService.cancelRequested(jobId);
         return ApiResponse.ok(true);
     }
 
     @PostMapping("/{jobId}/trigger")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.trigger"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.trigger"})
     public ApiResponse<Boolean> trigger(@PathVariable String jobId) {
         commandAppService.triggerNow(jobId);
         return ApiResponse.ok(true);
     }
 
     @DeleteMapping("/{jobId}")
-    @Authorize(userTypes = {UserType.INTERNAL}, permissions = {"scheduler.job.delete"})
+    @Authorize(userType = UserType.INTERNAL, permissions = {"scheduler.job.delete"})
     public ApiResponse<Boolean> delete(@PathVariable String jobId) {
         commandAppService.deleteRequested(jobId);
         return ApiResponse.ok(true);
