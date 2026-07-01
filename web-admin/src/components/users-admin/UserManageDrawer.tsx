@@ -1,6 +1,7 @@
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { useEffect, useMemo, useState } from "react";
 
+import { formatDateTime } from "../../core/formatter";
 import type { RoleEntry } from "../../types/role-admin";
 import type { UserEntry, UserStatus } from "../../types/user-admin";
 import { BzAlert } from "../bz/BzAlert";
@@ -16,6 +17,7 @@ import { BzSelect } from "../bz/BzSelect";
 
 interface UserManageDrawerProps {
   open: boolean;
+  mode: "detail" | "edit";
   model: UserEntry | null;
   roles: RoleEntry[];
   selectedIds: string[];
@@ -23,12 +25,14 @@ interface UserManageDrawerProps {
   canEditBasic?: boolean;
   canEditRoles?: boolean;
   canViewRoles?: boolean;
+  userTypeMetaMap?: Record<string, { label: string; tagType?: string | null }>;
   onClose: () => void;
   onSubmit: (payload: { nickname: string; status: UserStatus; roleIds: string[] }) => void;
 }
 
 export function UserManageDrawer({
   open,
+  mode,
   model,
   roles,
   selectedIds,
@@ -36,6 +40,7 @@ export function UserManageDrawer({
   canEditBasic = false,
   canEditRoles = false,
   canViewRoles = false,
+  userTypeMetaMap = {},
   onClose,
   onSubmit,
 }: UserManageDrawerProps) {
@@ -57,6 +62,8 @@ export function UserManageDrawer({
   }, [model, selectedIds, open]);
 
   const canShowRoles = canViewRoles && model?.userType !== "EXTERNAL";
+  const editable = mode === "edit" && (canEditBasic || canEditRoles);
+  const resolveUserTypeLabel = (userType: string) => userTypeMetaMap[userType]?.label || userType;
 
   const filteredRoles = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
@@ -88,12 +95,10 @@ export function UserManageDrawer({
     });
   }
 
-  const canSubmit = canEditBasic || canEditRoles;
-
   const footer = (
     <div style={{ display: "flex", gap: 8 }}>
-      <BzButton onClick={onClose}>{canSubmit ? "取消" : "关闭"}</BzButton>
-      {canSubmit ? (
+      <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
+      {editable ? (
         <BzButton buttonType="primary" onClick={handleSubmit}>
           保存
         </BzButton>
@@ -104,7 +109,7 @@ export function UserManageDrawer({
   return (
     <AdminEntityDrawer
       open={open}
-      title="用户维护"
+      title={mode === "detail" ? "用户详情" : "编辑用户"}
       width="920px"
       loading={loading}
       onClose={onClose}
@@ -119,46 +124,73 @@ export function UserManageDrawer({
                 <BzInput modelValue={model?.username || ""} disabled readOnly />
               </BzFormItem>
               <BzFormItem label="用户类型">
-                <BzInput modelValue={model?.userType || "-"} disabled readOnly />
+                <BzInput modelValue={model?.userType ? resolveUserTypeLabel(model.userType) : "-"} disabled readOnly />
+              </BzFormItem>
+              <BzFormItem
+                label={
+                  canEditBasic && mode === "edit" ? (
+                    <>
+                      昵称<span className="form-required-mark">*</span>
+                    </>
+                  ) : (
+                    "昵称"
+                  )
+                }
+              >
+                <BzInput
+                  modelValue={nickname}
+                  placeholder="请输入昵称"
+                  disabled={!canEditBasic || mode === "detail"}
+                  readOnly={!canEditBasic || mode === "detail"}
+                  onValueChange={setNickname}
+                />
+              </BzFormItem>
+              <BzFormItem
+                label={
+                  canEditBasic && mode === "edit" ? (
+                    <>
+                      状态<span className="form-required-mark">*</span>
+                    </>
+                  ) : (
+                    "状态"
+                  )
+                }
+              >
+                {mode === "edit" && canEditBasic ? (
+                  <BzSelect
+                    modelValue={status}
+                    disabled={!canEditBasic}
+                    onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}
+                  >
+                    <BzOption label="启用" value="ENABLED" />
+                    <BzOption label="停用" value="DISABLED" />
+                  </BzSelect>
+                ) : (
+                  <BzInput modelValue={status === "ENABLED" ? "启用" : "停用"} disabled readOnly />
+                )}
+              </BzFormItem>
+              <BzFormItem label="创建人">
+                <BzInput modelValue={model?.createdBy || "-"} disabled readOnly />
+              </BzFormItem>
+              <BzFormItem label="创建时间">
+                <BzInput modelValue={formatDateTime(model?.createdAt)} disabled readOnly />
+              </BzFormItem>
+              <BzFormItem label="更新人">
+                <BzInput modelValue={model?.updatedBy || "-"} disabled readOnly />
+              </BzFormItem>
+              <BzFormItem label="更新时间">
+                <BzInput modelValue={formatDateTime(model?.updatedAt)} disabled readOnly />
               </BzFormItem>
             </div>
           </BzForm>
         </section>
 
-        <section className="user-manage-panel">
-          <div className="user-manage-panel__title">维护配置</div>
-          <BzForm>
-            <div className="user-manage-grid">
-              <BzFormItem label="昵称 *">
-                <BzInput
-                  modelValue={nickname}
-                  placeholder="请输入昵称"
-                  disabled={!canEditBasic}
-                  onValueChange={setNickname}
-                />
-              </BzFormItem>
-              <BzFormItem label="状态 *">
-                <BzSelect
-                  modelValue={status}
-                  disabled={!canEditBasic}
-                  onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}
-                >
-                  <BzOption label="启用" value="ENABLED" />
-                  <BzOption label="停用" value="DISABLED" />
-                </BzSelect>
-              </BzFormItem>
-            </div>
-          </BzForm>
-          {err ? <BzAlert title={err} type="error" showIcon className="form-error" /> : null}
-        </section>
+        {err ? <BzAlert title={err} type="error" showIcon className="form-error" /> : null}
 
         {canShowRoles ? (
           <section className="user-manage-panel">
             <div className="user-manage-panel__header">
-              <div>
-                <div className="user-manage-panel__title">角色分配</div>
-                <div className="user-manage-panel__hint">按角色控制该用户可访问的后台能力。</div>
-              </div>
+              <div className="user-manage-panel__title">角色分配</div>
               <div className="user-manage-panel__meta">已选 {selectedSet.size} 项</div>
             </div>
 
@@ -180,7 +212,7 @@ export function UserManageDrawer({
                     <div key={role.id} className={`user-role-row${selectedSet.has(role.id) ? " is-selected" : ""}`}>
                       <BzCheckbox
                         modelValue={selectedSet.has(role.id)}
-                        disabled={!canEditRoles}
+                        disabled={!canEditRoles || mode === "detail"}
                         onValueChange={() => toggleRole(role.id)}
                       />
                       <div className="user-role-row__code">{role.code}</div>
@@ -223,15 +255,10 @@ export function UserManageDrawer({
           margin-bottom: 8px;
         }
 
-        .user-manage-panel__hint,
         .user-manage-panel__meta {
           color: #64748b;
           font-size: 13px;
           line-height: 1.6;
-        }
-
-        .user-manage-panel__hint {
-          margin-bottom: 16px;
         }
 
         .user-manage-grid {

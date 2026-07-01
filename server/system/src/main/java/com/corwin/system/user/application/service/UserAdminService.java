@@ -10,10 +10,12 @@ import com.corwin.framework.util.HighDate;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
+import com.corwin.system.role.domain.repo.RoleRepository;
 import com.corwin.system.user.application.command.CreateUserCommand;
 import com.corwin.system.user.application.command.UpdateUserCommand;
 import com.corwin.system.user.domain.model.DefaultUser;
 import com.corwin.system.user.domain.model.User;
+import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.model.UserStatus;
 import com.corwin.system.user.domain.repo.UserRepository;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
@@ -22,6 +24,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -36,6 +40,7 @@ public class UserAdminService {
     private final UserRepository userRepository;
     private final PasswordPolicyService passwordPolicyService;
     private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
 
     public List<User> list() {
         return userRepository.findAllByOrderByIdAsc();
@@ -70,7 +75,9 @@ public class UserAdminService {
 
         User user = new User(UserType.INTERNAL, username, nickname, hash, "bcrypt", status, false,
                 HighDate.mockInstant(), operator());
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        createUserRoles(saved.getId(), cmd.roleIds());
+        return saved;
     }
 
     @Transactional
@@ -116,10 +123,32 @@ public class UserAdminService {
         return nickname.trim();
     }
 
+    private void createUserRoles(Long userId, List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return;
+        }
+        Long operatorId = operatorId();
+        List<UserRole> next = new ArrayList<>();
+        for (Long roleId : new LinkedHashSet<>(roleIds)) {
+            if (roleId == null || !roleRepository.existsById(roleId)) {
+                continue;
+            }
+            next.add(new UserRole(userId, roleId, operatorId));
+        }
+        userRoleRepository.saveAll(next);
+    }
+
     private String operator() {
         AuthPrincipal principal = CtxUtil.getPrincipal();
         String operator = principal == null ? null : principal.username();
         BizAssert.notBlank(operator, BaseError.FORBIDDEN);
         return operator.trim();
+    }
+
+    private Long operatorId() {
+        AuthPrincipal principal = CtxUtil.getPrincipal();
+        Long operatorId = principal == null ? null : principal.userId();
+        BizAssert.notNull(operatorId, BaseError.FORBIDDEN);
+        return operatorId;
     }
 }

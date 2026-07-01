@@ -9,9 +9,8 @@ import { BzTag } from "../bz/BzTag";
 interface RoleTableActions {
   canEdit: boolean;
   canDelete: boolean;
-  canPermissions: boolean;
+  onDetail: (role: RoleEntry) => void;
   onEdit: (role: RoleEntry) => void;
-  onPermissions: (role: RoleEntry) => void;
   onRemove: (role: RoleEntry) => void;
 }
 
@@ -25,23 +24,16 @@ export function RoleTable({
   loading,
   canEdit,
   canDelete,
-  canPermissions,
+  onDetail,
   onEdit,
-  onPermissions,
   onRemove,
 }: RoleTableProps) {
   function getActions(role: RoleEntry) {
-    const actions: AdminActionItem[] = [];
+    const actions: AdminActionItem[] = [
+      { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(role) },
+    ];
     if (canEdit) {
       actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => onEdit(role) });
-    }
-    if (canPermissions) {
-      actions.push({
-        key: "permissions",
-        label: "授权",
-        tone: "detail",
-        handler: () => onPermissions(role),
-      });
     }
     if (canDelete) {
       actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(role) });
@@ -87,14 +79,10 @@ export function RoleTable({
     {
       key: "actions",
       title: "操作",
-      width: 180,
+      width: 220,
       render: (row) => {
         const actions = getActions(row);
-        return (
-          <AdminActionBar
-            actions={actions.filter((a) => a.key === "edit" || a.key === "permissions")}
-          />
-        );
+        return <AdminActionBar actions={actions} />;
       },
     },
   ];

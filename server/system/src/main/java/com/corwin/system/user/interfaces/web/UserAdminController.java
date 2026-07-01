@@ -49,7 +49,7 @@ public class UserAdminController {
     @Authorize(userType = UserType.INTERNAL, permissions = {"usr.add"})
     @Audit(resource = AuditResource.USER, action = AuditAction.CREATE, level = AuditLevel.HIGH)
     public ApiResponse<UserRes> create(@RequestBody CreateUserReq req) {
-        CreateUserCommand cmd = new CreateUserCommand(req.getUsername(), req.getNickname(), req.getPassword());
+        CreateUserCommand cmd = new CreateUserCommand(req.getUsername(), req.getNickname(), req.getPassword(), req.getRoleIds());
         return ApiResponse.ok(toDto(userAdminService.create(cmd)));
     }
 

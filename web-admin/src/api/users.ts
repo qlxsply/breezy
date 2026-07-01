@@ -27,6 +27,7 @@ interface UserCreatePayload {
   username: string;
   nickname: string;
   password: string;
+  roleIds?: number[];
 }
 
 interface UserUpdatePayload {
@@ -78,6 +79,9 @@ export async function createUser(req: UserCreateRequest): Promise<UserEntry> {
     username: req.username,
     nickname: req.nickname,
     password: req.password,
+    roleIds: req.roleIds
+      ?.map((roleId) => Number(roleId))
+      .filter((roleId) => Number.isFinite(roleId)),
   };
   const row = await post<UserPayload>(BASE, payload);
   return toUserEntry(row);

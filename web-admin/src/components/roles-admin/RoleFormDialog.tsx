@@ -47,16 +47,16 @@ export function RoleFormDialog({ mode, model, onClose, onSubmit }: RoleFormDialo
     <BzDialog
       modelValue={true}
       title={mode === "create" ? "新增角色" : "编辑角色"}
-      width="560px"
+      width="520px"
       onClose={onClose}
       footer={
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="role-form-footer">
           <BzButton onClick={onClose}>取消</BzButton>
           <BzButton
             buttonType="primary"
             onClick={handleSubmit}
           >
-            {mode === "create" ? "创建" : "保存"}
+            保存
           </BzButton>
         </div>
       }
@@ -67,7 +67,7 @@ export function RoleFormDialog({ mode, model, onClose, onSubmit }: RoleFormDialo
             <BzFormItem label="编码 *">
               <BzInput
                 modelValue={form.code}
-                placeholder="例如：admin"
+                placeholder="请输入角色编码"
                 className="mono"
                 onValueChange={(v) => setForm((prev) => ({ ...prev, code: v }))}
               />
@@ -75,12 +75,12 @@ export function RoleFormDialog({ mode, model, onClose, onSubmit }: RoleFormDialo
             <BzFormItem label="名称 *">
               <BzInput
                 modelValue={form.name}
-                placeholder="例如：管理员"
+                placeholder="请输入角色名称"
                 onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
               />
             </BzFormItem>
           </div>
-          <BzFormItem label="启用状态">
+          <BzFormItem label="状态">
             <BzSwitch
               modelValue={form.enabled}
               activeText="启用"

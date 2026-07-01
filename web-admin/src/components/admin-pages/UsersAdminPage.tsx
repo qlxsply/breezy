@@ -81,6 +81,7 @@ export function UsersAdminPage() {
   const [resetTarget, setResetTarget] = useState<UserEntry | null>(null);
 
   const [manageOpen, setManageOpen] = useState(false);
+  const [manageMode, setManageMode] = useState<"detail" | "edit">("detail");
   const [manageTarget, setManageTarget] = useState<UserEntry | null>(null);
   const [roleList, setRoleList] = useState<RoleEntry[]>([]);
   const [roleSelected, setRoleSelected] = useState<string[]>([]);
@@ -171,14 +172,33 @@ export function UsersAdminPage() {
 
   function openCreate() {
     if (!canCreate) return;
+    if (canRoleEdit && roleList.length === 0) {
+      void preloadRoleList();
+    }
     setDialogMode("create");
     setDialogModel({ id: "", username: "", nickname: "", userType: "INTERNAL", status: "ENABLED" });
     setDialogOpen(true);
   }
 
+  const preloadRoleList = useCallback(async () => {
+    if (!canRoleEdit) return;
+    setRoleLoading(true);
+    try {
+      if (roleList.length === 0) {
+        setRoleList((await listRoles()).filter((role) => role.enabled));
+      }
+    } finally {
+      setRoleLoading(false);
+    }
+  }, [canRoleEdit, roleList.length]);
+
   function openEdit(user: UserEntry) {
     if (!canEdit && !canRoles) return;
-    void openManage(user);
+    void openManage(user, "edit");
+  }
+
+  function openDetail(user: UserEntry) {
+    void openManage(user, "detail");
   }
 
   async function onSubmit(payload: {
@@ -186,6 +206,7 @@ export function UsersAdminPage() {
     nickname: string;
     password?: string;
     status: UserStatus;
+    roleIds: string[];
   }) {
     if (dialogMode === "create") {
       if (!payload.password) return;
@@ -193,17 +214,23 @@ export function UsersAdminPage() {
         username: payload.username,
         nickname: payload.nickname,
         password: payload.password,
+        roleIds: payload.roleIds,
       });
+      message.success("新增成功");
     } else if (dialogModel) {
       await updateUser(dialogModel.id, { nickname: payload.nickname, status: payload.status });
+      message.success("保存成功");
     }
     setDialogOpen(false);
+    await reload();
   }
 
   async function onToggle(user: UserEntry) {
     if (!canToggle) return;
     const nextStatus: UserStatus = user.status === "ENABLED" ? "DISABLED" : "ENABLED";
     await updateUser(user.id, { nickname: user.nickname, status: nextStatus });
+    message.success(nextStatus === "ENABLED" ? "启用成功" : "停用成功");
+    await reload();
   }
 
   function openReset(user: UserEntry) {
@@ -216,10 +243,12 @@ export function UsersAdminPage() {
     if (!resetTarget) return;
     await resetUserPassword(resetTarget.id);
     setResetOpen(false);
+    message.success("重置密码成功");
   }
 
-  async function openManage(user: UserEntry) {
+  async function openManage(user: UserEntry, mode: "detail" | "edit") {
     setManageTarget(user);
+    setManageMode(mode);
     setManageOpen(true);
     if (user.userType === "EXTERNAL" || !canRoles) {
       setRoleSelected([]);
@@ -243,6 +272,7 @@ export function UsersAdminPage() {
       await updateUserRoles(manageTarget.id, payload.roleIds);
     }
     setManageOpen(false);
+    message.success(canRoleEdit && manageTarget.userType !== "EXTERNAL" ? "保存成功" : "保存成功");
     await reload();
   }
 
@@ -250,13 +280,14 @@ export function UsersAdminPage() {
     if (!canDelete) return;
     const confirmed = await bzConfirm({
       title: "删除用户",
-      content: `确认删除：${user.username} ?`,
+      content: `确认删除该用户吗？删除后不可恢复。账号：${user.username}`,
       confirmText: "删除",
       cancelText: "取消",
     });
     if (!confirmed) return;
     await deleteUser(user.id);
     message.success("删除成功");
+    await reload();
   }
 
   return (
@@ -373,6 +404,7 @@ export function UsersAdminPage() {
                 canRoles={canRoles}
                 canDelete={canDelete}
                 userTypeMetaMap={userTypeMetaMap}
+                onDetail={openDetail}
                 onEdit={openEdit}
                 onToggle={onToggle}
                 onReset={openReset}
@@ -405,6 +437,10 @@ export function UsersAdminPage() {
             <UserFormDialog
               mode={dialogMode}
               model={dialogModel}
+              roles={roleList}
+              selectedRoleIds={[]}
+              rolesLoading={roleLoading}
+              canEditRoles={canRoleEdit}
               onClose={() => setDialogOpen(false)}
               onSubmit={onSubmit}
             />
@@ -418,6 +454,7 @@ export function UsersAdminPage() {
           {manageOpen ? (
             <UserManageDrawer
               open={manageOpen}
+              mode={manageMode}
               model={manageTarget}
               roles={roleList}
               selectedIds={roleSelected}
@@ -425,6 +462,7 @@ export function UsersAdminPage() {
               canEditBasic={canEdit}
               canEditRoles={canRoleEdit}
               canViewRoles={canRoles}
+              userTypeMetaMap={userTypeMetaMap}
               onClose={() => setManageOpen(false)}
               onSubmit={onManageSubmit}
             />

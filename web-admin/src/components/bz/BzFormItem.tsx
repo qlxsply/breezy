@@ -1,5 +1,5 @@
 interface BzFormItemProps {
-  label?: string;
+  label?: React.ReactNode;
   className?: string;
   children?: React.ReactNode;
 }

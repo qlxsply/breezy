@@ -51,12 +51,13 @@ export function RolesAdminPage() {
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [dialogModel, setDialogModel] = useState<RoleEntry | null>(null);
 
-  const [grantOpen, setGrantOpen] = useState(false);
-  const [grantTarget, setGrantTarget] = useState<RoleEntry | null>(null);
-  const [grantSelection, setGrantSelection] = useState<RoleGrantSelection>({
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageMode, setManageMode] = useState<"detail" | "edit">("detail");
+  const [manageTarget, setManageTarget] = useState<RoleEntry | null>(null);
+  const [manageSelection, setManageSelection] = useState<RoleGrantSelection>({
     resourceIds: [],
   });
-  const [grantLoading, setGrantLoading] = useState(false);
+  const [manageLoading, setManageLoading] = useState(false);
   const [grantResourcesLoading, setGrantResourcesLoading] = useState(false);
   const [grantResourceRows, setGrantResourceRows] = useState<RoleGrantResourceEntry[]>([]);
 
@@ -66,6 +67,7 @@ export function RolesAdminPage() {
   const canGrantView = hasResourceCodeAccess("role-manage-permission-view");
   const canGrantEdit = hasResourceCodeAccess("role-manage-permission-edit");
   const canGrant = canGrantView || canGrantEdit;
+  const canManage = canEdit || canGrantEdit;
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -103,6 +105,12 @@ export function RolesAdminPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
 
+  useEffect(() => {
+    if (pageNo > totalPages) {
+      setPageNo(totalPages);
+    }
+  }, [pageNo, totalPages]);
+
   const pagedRows = useMemo(() => {
     const start = (pageNo - 1) * pageSize;
     return filteredRows.slice(start, start + pageSize);
@@ -130,21 +138,25 @@ export function RolesAdminPage() {
   }
 
   function openEdit(role: RoleEntry) {
-    if (!canEdit) return;
-    setDialogMode("edit");
-    setDialogModel({ ...role });
-    setDialogOpen(true);
+    if (!canManage) return;
+    void openManage(role, "edit");
+  }
+
+  function openDetail(role: RoleEntry) {
+    void openManage(role, "detail");
   }
 
   async function onSubmit(payload: RoleEntry) {
     if (dialogMode === "create") {
       await createRole({ code: payload.code, name: payload.name, enabled: payload.enabled });
+      message.success("新增成功");
     } else if (dialogModel) {
       await updateRole(dialogModel.id, {
         code: payload.code,
         name: payload.name,
         enabled: payload.enabled,
       });
+      message.success("保存成功");
     }
     setDialogOpen(false);
     await reload();
@@ -154,7 +166,7 @@ export function RolesAdminPage() {
     if (!canDelete) return;
     const confirmed = await bzConfirm({
       title: "删除角色",
-      content: `确认删除：${role.name} (${role.code})？`,
+      content: `确认删除该角色吗？删除后不可恢复。角色：${role.name}（${role.code}）`,
       confirmText: "删除",
       cancelText: "取消",
     });
@@ -164,25 +176,69 @@ export function RolesAdminPage() {
     await reload();
   }
 
-  async function openGrants(role: RoleEntry) {
-    if (!canGrant) return;
-    setGrantTarget(role);
-    setGrantOpen(true);
-    setGrantLoading(true);
+  async function openManage(role: RoleEntry, mode: "detail" | "edit") {
+    setManageTarget(role);
+    setManageMode(mode);
+    setManageOpen(true);
+
+    if (!canGrant) {
+      setManageSelection({ resourceIds: [] });
+      setManageLoading(false);
+      return;
+    }
+
+    setManageLoading(true);
     try {
       if (grantResourceRows.length === 0) await reloadGrantResources();
-      setGrantSelection(await getRoleGrantSelection(role.id));
+      setManageSelection(await getRoleGrantSelection(role.id));
     } finally {
-      setGrantLoading(false);
+      setManageLoading(false);
     }
   }
 
-  async function onGrantSubmit(selection: RoleGrantSelection) {
-    if (!grantTarget || !canGrantEdit) return;
-    await updateRoleGrantSelection(grantTarget.id, selection);
-    setGrantSelection({ resourceIds: [...selection.resourceIds] });
-    message.success("角色授权已保存，受影响用户需要重新登录");
-    setGrantOpen(false);
+  async function onManageSubmit(payload: {
+    role: RoleEntry;
+    selection: RoleGrantSelection;
+    permissionChanged: boolean;
+  }) {
+    if (!manageTarget) return;
+
+    const nextRole = {
+      code: payload.role.code.trim(),
+      name: payload.role.name.trim(),
+      enabled: payload.role.enabled,
+    };
+    const roleChanged =
+      canEdit &&
+      (manageTarget.code !== nextRole.code ||
+        manageTarget.name !== nextRole.name ||
+        manageTarget.enabled !== nextRole.enabled);
+
+    if (!roleChanged && !payload.permissionChanged) {
+      setManageOpen(false);
+      return;
+    }
+
+    if (roleChanged) {
+      await updateRole(manageTarget.id, nextRole);
+    }
+
+    if (canGrantEdit && payload.permissionChanged) {
+      await updateRoleGrantSelection(manageTarget.id, payload.selection);
+    }
+
+    setManageSelection({ resourceIds: [...payload.selection.resourceIds] });
+    setManageOpen(false);
+
+    if (roleChanged && payload.permissionChanged) {
+      message.success("保存成功，角色权限变更将在受影响用户重新登录后完全生效");
+    } else if (payload.permissionChanged) {
+      message.success("角色权限已保存，受影响用户需要重新登录");
+    } else {
+      message.success("保存成功");
+    }
+
+    await reload();
   }
 
   return (
@@ -213,11 +269,11 @@ export function RolesAdminPage() {
                   }}
                 >
                   <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">关键字</div>
+                    <div className="admin-query-field__label">角色</div>
                     <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordDraft}
-                        placeholder="按编码、名称搜索"
+                        placeholder="搜索角色编码/名称"
                         clearable
                         onValueChange={setKeywordDraft}
                         onKeyUp={(event) => {
@@ -288,12 +344,11 @@ export function RolesAdminPage() {
               <RoleTable
                 rows={pagedRows}
                 loading={loading}
-                canEdit={canEdit}
+                canEdit={canManage}
                 canDelete={canDelete}
-                canPermissions={canGrant}
+                onDetail={openDetail}
                 onEdit={openEdit}
                 onRemove={onRemove}
-                onPermissions={openGrants}
               />
             </div>
 
@@ -327,15 +382,18 @@ export function RolesAdminPage() {
             />
           ) : null}
 
-          {grantOpen ? (
+          {manageOpen ? (
             <RolePermissionDialog
-              roleName={grantTarget?.name || ""}
+              mode={manageMode}
+              role={manageTarget}
               resources={grantResourceRows}
-              selection={grantSelection}
-              loading={grantLoading || grantResourcesLoading}
-              canSave={canGrantEdit}
-              onClose={() => setGrantOpen(false)}
-              onSubmit={onGrantSubmit}
+              selection={manageSelection}
+              loading={manageLoading || grantResourcesLoading}
+              canEditBasic={canEdit}
+              canViewPermissions={canGrant}
+              canEditPermissions={canGrantEdit}
+              onClose={() => setManageOpen(false)}
+              onSubmit={onManageSubmit}
             />
           ) : null}
         </div>

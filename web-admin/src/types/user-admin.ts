@@ -20,6 +20,7 @@ export interface UserCreateRequest {
   username: string;
   nickname: string;
   password: string;
+  roleIds?: string[];
 }
 
 export interface UserUpdateRequest {

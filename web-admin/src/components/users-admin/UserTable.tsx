@@ -20,6 +20,7 @@ interface UserTableProps {
   canRoles: boolean;
   canDelete: boolean;
   userTypeMetaMap?: Record<string, UserTypeMeta>;
+  onDetail: (user: UserEntry) => void;
   onEdit: (user: UserEntry) => void;
   onToggle: (user: UserEntry) => void;
   onReset: (user: UserEntry) => void;
@@ -35,6 +36,7 @@ export function UserTable({
   canRoles,
   canDelete,
   userTypeMetaMap = {},
+  onDetail,
   onEdit,
   onToggle,
   onReset,
@@ -49,17 +51,23 @@ export function UserTable({
     return "info";
   }
   function getActions(user: UserEntry): AdminActionItem[] {
-    const actions: AdminActionItem[] = [];
+    const maintainDisabled = user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "amdin");
+    const toggleDisabled = user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "amdin");
+    const resetDisabled = user.userType === "SYSTEM";
+    const actions: AdminActionItem[] = [
+      { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(user) },
+    ];
     if (canEdit || canRoles)
-      actions.push({ key: "edit", label: "维护", tone: "edit", handler: () => onEdit(user) });
+      actions.push({ key: "edit", label: "维护", tone: "edit", disabled: maintainDisabled, handler: () => onEdit(user) });
     if (canToggle)
       actions.push({
         key: "toggle",
         label: user.status === "ENABLED" ? "停用" : "启用",
         tone: user.status === "ENABLED" ? "disable" : "enable",
+        disabled: toggleDisabled,
         handler: () => onToggle(user),
       });
-    if (canReset) actions.push({ key: "reset", label: "重置密码", handler: () => onReset(user) });
+    if (canReset) actions.push({ key: "reset", label: "重置密码", disabled: resetDisabled, handler: () => onReset(user) });
     if (canDelete)
       actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
     return actions;
@@ -109,12 +117,10 @@ export function UserTable({
     {
       key: "actions",
       title: "操作",
-      width: 180,
+      width: 220,
       render: (row) => {
         const all = getActions(row);
-        return (
-          <AdminActionBar actions={all.filter((a) => a.key === "edit")} />
-        );
+        return <AdminActionBar actions={all} />;
       },
     },
   ];
