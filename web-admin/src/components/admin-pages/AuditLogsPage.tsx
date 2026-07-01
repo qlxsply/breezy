@@ -2,12 +2,9 @@
 
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
+import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
-import {
-  dateTimeInputToEpochMillisString,
-  dateTimeInputToNextMinuteEpochMillisString,
-  formatDateTime,
-} from "@admin/core/formatter";
+import { formatDateTime } from "@admin/core/formatter";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
@@ -20,7 +17,6 @@ import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
-import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
@@ -186,8 +182,7 @@ export function AuditLogsPage() {
       const ps = pageSizeRef.current;
       const successFilter =
         appliedSuccessRef.current === "" ? undefined : appliedSuccessRef.current === "true";
-      const startAtFilter = toInstant(appliedStartAtRef.current);
-      const endAtFilter = toEndExclusive(appliedEndAtRef.current);
+      const range = buildRequestRange(appliedStartAtRef.current, appliedEndAtRef.current);
 
       let result = await pageAuditLogs({
         traceId: appliedTraceIdRef.current || undefined,
@@ -196,8 +191,8 @@ export function AuditLogsPage() {
         auditAction: appliedAuditActionRef.current || undefined,
         auditLevel: appliedAuditLevelRef.current || undefined,
         success: successFilter,
-        startAt: startAtFilter,
-        endAt: endAtFilter,
+        startAt: range.startAt,
+        endAt: range.endAt,
         page: { pageNo: pn, pageSize: ps },
       });
 
@@ -210,8 +205,8 @@ export function AuditLogsPage() {
           auditAction: appliedAuditActionRef.current || undefined,
           auditLevel: appliedAuditLevelRef.current || undefined,
           success: successFilter,
-          startAt: startAtFilter,
-          endAt: endAtFilter,
+          startAt: range.startAt,
+          endAt: range.endAt,
           page: { pageNo: Math.max(1, result.totalPages), pageSize: ps },
         });
       }
@@ -245,12 +240,12 @@ export function AuditLogsPage() {
     reload,
   ]);
 
-  function toInstant(value: string): string | undefined {
-    return dateTimeInputToEpochMillisString(value) ?? undefined;
-  }
-
-  function toEndExclusive(value: string): string | undefined {
-    return dateTimeInputToNextMinuteEpochMillisString(value) ?? undefined;
+  function buildRequestRange(start: string, end: string): { startAt?: string; endAt?: string } {
+    const range = buildAdminDateTimeRangeSubmitParams(start, end);
+    return {
+      startAt: range.startTimestamp || undefined,
+      endAt: range.endTimestamp || undefined,
+    };
   }
 
   async function applyFilters() {
@@ -481,15 +476,16 @@ export function AuditLogsPage() {
                     </div>
                   </BzFormItem>
                   <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">开始时间</div>
+                    <div className="admin-query-field__label">时间</div>
                     <div className="admin-query-field__control">
-                      <BzDatePicker modelValue={startAtDraft} type="datetime" placeholder="开始时间" clearable onValueChange={setStartAtDraft} />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">结束时间</div>
-                    <div className="admin-query-field__control">
-                      <BzDatePicker modelValue={endAtDraft} type="datetime" placeholder="结束时间" clearable onValueChange={setEndAtDraft} />
+                      <AdminDateTimeRangeField
+                        startValue={startAtDraft}
+                        endValue={endAtDraft}
+                        onRangeChange={({ start, end }) => {
+                          setStartAtDraft(start);
+                          setEndAtDraft(end);
+                        }}
+                      />
                     </div>
                   </BzFormItem>
                   <div className="admin-query-actions">

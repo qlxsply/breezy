@@ -1,13 +1,10 @@
 "use client";
 
 import { pageLoginLogs } from "@admin/api/login-logs";
+import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
-import {
-  dateTimeInputToEpochMillisString,
-  dateTimeInputToNextMinuteEpochMillisString,
-  formatDateTime,
-} from "@admin/core/formatter";
+import { formatDateTime } from "@admin/core/formatter";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { LoginLogEntry } from "@admin/types/login-log";
 import type { PageResult } from "@admin/types/page";
@@ -15,7 +12,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
-import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
@@ -67,18 +63,19 @@ export function LoginLogsPage() {
     try {
       const pn = pageNoRef.current;
       const ps = pageSizeRef.current;
+      const range = buildRequestRange(appliedStartAtRef.current, appliedEndAtRef.current);
       let result = await pageLoginLogs({
         userAccount: appliedAccountRef.current || undefined,
-        startAt: toInstant(appliedStartAtRef.current),
-        endAt: toEndExclusive(appliedEndAtRef.current),
+        startAt: range.startAt,
+        endAt: range.endAt,
         page: { pageNo: pn, pageSize: ps },
       });
       if (result.totalElements > 0 && pn > Math.max(1, result.totalPages)) {
         setPageNo(Math.max(1, result.totalPages));
         result = await pageLoginLogs({
           userAccount: appliedAccountRef.current || undefined,
-          startAt: toInstant(appliedStartAtRef.current),
-          endAt: toEndExclusive(appliedEndAtRef.current),
+          startAt: range.startAt,
+          endAt: range.endAt,
           page: { pageNo: Math.max(1, result.totalPages), pageSize: ps },
         });
       }
@@ -221,25 +218,16 @@ export function LoginLogsPage() {
                     </div>
                   </BzFormItem>
                   <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">时间区间</div>
+                    <div className="admin-query-field__label">时间</div>
                     <div className="admin-query-field__control">
-                      <div className="admin-query-range">
-                        <BzDatePicker
-                          modelValue={startAtDraft}
-                          type="datetime"
-                          placeholder="开始时间"
-                          clearable
-                          onValueChange={setStartAtDraft}
-                        />
-                        <span className="admin-query-range__separator">至</span>
-                        <BzDatePicker
-                          modelValue={endAtDraft}
-                          type="datetime"
-                          placeholder="结束时间"
-                          clearable
-                          onValueChange={setEndAtDraft}
-                        />
-                      </div>
+                      <AdminDateTimeRangeField
+                        startValue={startAtDraft}
+                        endValue={endAtDraft}
+                        onRangeChange={({ start, end }) => {
+                          setStartAtDraft(start);
+                          setEndAtDraft(end);
+                        }}
+                      />
                     </div>
                   </BzFormItem>
                   <div className="admin-query-actions">
@@ -319,10 +307,10 @@ export function LoginLogsPage() {
   );
 }
 
-function toInstant(value: string): string | undefined {
-  return dateTimeInputToEpochMillisString(value) ?? undefined;
-}
-
-function toEndExclusive(value: string): string | undefined {
-  return dateTimeInputToNextMinuteEpochMillisString(value) ?? undefined;
+function buildRequestRange(start: string, end: string): { startAt?: string; endAt?: string } {
+  const range = buildAdminDateTimeRangeSubmitParams(start, end);
+  return {
+    startAt: range.startTimestamp || undefined,
+    endAt: range.endTimestamp || undefined,
+  };
 }

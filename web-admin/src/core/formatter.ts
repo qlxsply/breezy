@@ -17,6 +17,8 @@ export interface UserConfigOptionItem {
   value: string;
 }
 
+export type DateTimePrecision = "minute" | "second";
+
 export const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
   { code: "ASIA_SHANGHAI", value: "Asia/Shanghai" },
   { code: "UTC", value: "UTC" },
@@ -111,15 +113,37 @@ export function getUserTimeZone(): string {
   }
 }
 
+export function getUserDateTimeFormatPattern(): string {
+  return resolveUserDateTimeFormatCode(
+    getConfigValue(USER_DATE_TIME_FORMAT) || DEFAULT_DATE_TIME_CODE,
+  );
+}
+
+export function resolveDateTimePrecision(pattern: string | null | undefined): DateTimePrecision {
+  return String(pattern || "").includes("ss") ? "second" : "minute";
+}
+
+export function getUserDateTimePrecision(): DateTimePrecision {
+  return resolveDateTimePrecision(getUserDateTimeFormatPattern());
+}
+
 export function formatDateTime(value: string | number | Date | null | undefined): string {
   if (!value) return "-";
   const date = toDate(value);
   if (!date) return "-";
 
-  const pattern = resolveUserDateTimeFormatCode(
-    getConfigValue(USER_DATE_TIME_FORMAT) || DEFAULT_DATE_TIME_CODE,
-  );
+  const pattern = getUserDateTimeFormatPattern();
   return applyPattern(date, pattern, getUserTimeZone());
+}
+
+export function formatDateTimeInputValue(
+  value: string | null | undefined,
+  pattern = getUserDateTimeFormatPattern(),
+): string {
+  if (!value) return "";
+  const parts = parseDateTimeInput(String(value).trim());
+  if (!parts) return "";
+  return applyPatternToParts(parts, pattern);
 }
 
 export function formatDate(value: string | number | Date | null | undefined): string {
@@ -156,6 +180,56 @@ export function dateTimeInputToEpochMillisString(value: string): string | null {
   if (!parsed) return null;
   const epochMillis = zonedDateTimeToEpochMillis(parsed, getUserTimeZone());
   return Number.isFinite(epochMillis) ? String(epochMillis) : null;
+}
+
+export function dateTimeInputToEndExclusiveEpochMillisString(value: string): string | null {
+  if (!value) return null;
+  const parsed = parseDateTimeInput(value.trim());
+  if (!parsed) return null;
+
+  const precision = getUserDateTimePrecision();
+  const next = new Date(
+    Date.UTC(
+      parsed.year,
+      parsed.month - 1,
+      parsed.day,
+      parsed.hour,
+      parsed.minute,
+      parsed.second,
+      0,
+    ),
+  );
+  if (precision === "minute") {
+    next.setUTCMinutes(next.getUTCMinutes() + 1);
+  } else {
+    next.setUTCSeconds(next.getUTCSeconds() + 1);
+  }
+
+  const epochMillis = zonedDateTimeToEpochMillis(
+    {
+      year: next.getUTCFullYear(),
+      month: next.getUTCMonth() + 1,
+      day: next.getUTCDate(),
+      hour: next.getUTCHours(),
+      minute: next.getUTCMinutes(),
+      second: next.getUTCSeconds(),
+    },
+    getUserTimeZone(),
+  );
+  return Number.isFinite(epochMillis) ? String(epochMillis) : null;
+}
+
+export function buildDateTimeRangeSubmitValue(
+  start: string | null | undefined,
+  endInclusive: string | null | undefined,
+): {
+  startTimestamp: string | null;
+  endTimestamp: string | null;
+} {
+  return {
+    startTimestamp: start ? dateTimeInputToEpochMillisString(start) : null,
+    endTimestamp: endInclusive ? dateTimeInputToEndExclusiveEpochMillisString(endInclusive) : null,
+  };
 }
 
 export function dateTimeInputToNextMinuteEpochMillisString(value: string): string | null {
@@ -253,6 +327,23 @@ function parseDateTimeInput(value: string): DateTimeParts | null {
     minute: Number(min),
     second: Number(sec ?? "0"),
   };
+}
+
+function applyPatternToParts(parts: DateTimeParts, pattern: string): string {
+  const map: Record<string, string | number> = {
+    yyyy: parts.year,
+    MM: pad(parts.month),
+    dd: pad(parts.day),
+    HH: pad(parts.hour),
+    mm: pad(parts.minute),
+    ss: pad(parts.second),
+  };
+
+  let result = pattern;
+  for (const key of Object.keys(map)) {
+    result = result.replace(key, String(map[key]));
+  }
+  return result;
 }
 
 function getZonedParts(date: Date, timeZone: string): DateTimeParts {
