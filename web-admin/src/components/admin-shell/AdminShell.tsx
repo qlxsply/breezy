@@ -1,6 +1,7 @@
 "use client";
 
 import brandLogo from "@admin/assets/brand-logo.png";
+import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import { formatDateTime } from "@admin/core/formatter";
 import { logout, useAuthUser } from "@admin/core/registry/auth-registry";
 import {
@@ -14,7 +15,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { type AdminMenuNode, useAdminBreadcrumb, useAdminMenuTree } from "./admin-routes";
+import { getAdminRoute, type AdminMenuNode, useAdminBreadcrumb, useAdminMenuTree } from "./admin-routes";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathnameValue = usePathname();
@@ -41,8 +42,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const previewList = useMemo(() => unreadList.slice(0, 4), [unreadList]);
   const menuIndex = useMemo(() => buildMenuIndex(menuTree), [menuTree]);
   const currentMenuEntry = menuIndex.byPath.get(pathname);
+  const currentTabEntry = useMemo(() => resolveTabEntry(pathname, menuIndex.byPath), [menuIndex.byPath, pathname]);
   const activeTabs = useMemo(
-    () => openTabs.map((href) => menuIndex.byPath.get(href)).filter((item): item is MenuPathEntry => Boolean(item)),
+    () => openTabs.map((href) => resolveTabEntry(href, menuIndex.byPath)).filter((item): item is TabEntry => Boolean(item)),
     [menuIndex.byPath, openTabs],
   );
   const displayBlankWorkspace = pathname === "/admin" && blankMode;
@@ -52,15 +54,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const avatarText = userName.slice(0, 1).toUpperCase() || "A";
 
   useEffect(() => {
-    if (blankMode || !currentMenuEntry?.node.path) {
+    if (blankMode || !currentTabEntry || currentTabEntry.path === "/admin") {
       return;
     }
     setOpenTabs((current) =>
-      current.includes(currentMenuEntry.node.path as string)
+      current.includes(currentTabEntry.path)
         ? current
-        : [...current, currentMenuEntry.node.path as string],
+        : [...current, currentTabEntry.path],
     );
-  }, [currentMenuEntry, blankMode]);
+  }, [currentTabEntry, blankMode]);
 
   useEffect(() => {
     if (pathname !== "/admin" && blankMode) {
@@ -99,6 +101,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       }
       return nextTabs;
     });
+  }
+
+  function openUtilityPage(href: string) {
+    setNotificationOpen(false);
+    setUserOpen(false);
+    setBlankMode(false);
+    router.push(href);
   }
 
   return (
@@ -238,10 +247,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <kbd>Ctrl K</kbd>
               </button>
 
-              <Link
+              <button
                 className="topbar-icon round"
-                href="/admin/profile/preferences"
-                title="设置"
+                type="button"
+                title="偏好设置"
+                onClick={() => openUtilityPage("/admin/profile/preferences")}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -264,7 +274,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     strokeWidth="1.6"
                   />
                 </svg>
-              </Link>
+              </button>
 
               <div className="topbar-popover-host">
                 <button
@@ -358,10 +368,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       </div>
                     </div>
                     <div className="user-menu">
-                      <Link href="/admin/profile">个人中心</Link>
-                      <Link href="/admin/profile/password">修改密码</Link>
-                      <Link href="/admin/profile/preferences">偏好设置</Link>
-                      <Link href="/admin/help">问题与帮助</Link>
+                      <button type="button" onClick={() => openUtilityPage("/admin/profile")}>个人中心</button>
+                      <button type="button" onClick={() => openUtilityPage("/admin/profile/password")}>修改密码</button>
+                      <button type="button" onClick={() => openUtilityPage("/admin/profile/preferences")}>偏好设置</button>
+                      <button type="button" onClick={() => openUtilityPage("/admin/help")}>问题与帮助</button>
                       <button
                         type="button"
                         onClick={() => void logout()}
@@ -379,32 +389,32 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <div className="tabs-scroll">
               <div className="tabs-list">
                 {activeTabs.map((tab) => {
-                  const active = pathname === tab.node.path;
+                  const active = pathname === tab.path;
                   return (
                     <div
-                      key={tab.node.path}
+                      key={tab.path}
                       className={`tab-item${active ? " active" : ""}`}
                     >
                       <Link
-                        href={tab.node.path || "/admin"}
+                        href={tab.path}
                         className="tab-link"
                       >
                         <span className="tab-icon" aria-hidden="true">
                           <img
-                            src={tab.node.iconUrl}
+                            src={tab.iconUrl}
                             alt=""
                           />
                         </span>
-                        <span className="tab-title-text">{tab.node.title}</span>
+                        <span className="tab-title-text">{tab.title}</span>
                       </Link>
                       <button
                         className="tab-close"
                         type="button"
-                        title={`关闭 ${tab.node.title}`}
+                        title={`关闭 ${tab.title}`}
                         onClick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
-                          closeTab(tab.node.path || "/admin");
+                          closeTab(tab.path);
                         }}
                       >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -461,6 +471,12 @@ interface MenuPathEntry {
   ancestorIds: string[];
 }
 
+interface TabEntry {
+  path: string;
+  title: string;
+  iconUrl: string;
+}
+
 function buildMenuIndex(nodes: AdminMenuNode[]): { byPath: Map<string, MenuPathEntry> } {
   const byPath = new Map<string, MenuPathEntry>();
 
@@ -473,6 +489,44 @@ function buildMenuIndex(nodes: AdminMenuNode[]): { byPath: Map<string, MenuPathE
 
   nodes.forEach((node) => visit(node, []));
   return { byPath };
+}
+
+function resolveTabEntry(pathname: string, byPath: Map<string, MenuPathEntry>): TabEntry | null {
+  const menuEntry = byPath.get(pathname);
+  if (menuEntry?.node.path) {
+    return {
+      path: menuEntry.node.path,
+      title: menuEntry.node.title,
+      iconUrl: menuEntry.node.iconUrl,
+    };
+  }
+
+  const route = getAdminRoute(pathname);
+  if (!route) {
+    return null;
+  }
+
+  return {
+    path: route.path,
+    title: route.title,
+    iconUrl: resolveHiddenRouteIconUrl(route.path),
+  };
+}
+
+function resolveHiddenRouteIconUrl(path: string): string {
+  if (path === "/admin/profile/preferences") {
+    return resolveResourceIconUrl("settings", "MENU") || "/admin-icons/default-menu.svg";
+  }
+  if (path === "/admin/profile") {
+    return resolveResourceIconUrl("user", "MENU") || "/admin-icons/default-menu.svg";
+  }
+  if (path === "/admin/profile/password") {
+    return resolveResourceIconUrl("shield", "MENU") || "/admin-icons/default-menu.svg";
+  }
+  if (path === "/admin/help") {
+    return resolveResourceIconUrl("book", "MENU") || "/admin-icons/default-menu.svg";
+  }
+  return resolveResourceIconUrl("menu", "MENU") || "/admin-icons/default-menu.svg";
 }
 
 function AdminNavItem({

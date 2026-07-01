@@ -217,13 +217,7 @@ export function AdminProfilePreferencesPage() {
             header={
               <div className="admin-table-header">
                 <div className="admin-table-title">偏好设置</div>
-              </div>
-            }
-          >
-            <div className="preferences-layout">
-              <div className="preferences-head">
-                <div className="preferences-title">个性化显示设置</div>
-                <div className="preferences-actions">
+                <div className="admin-table-tools">
                   {editing ? (
                     <BzButton
                       disabled={saving}
@@ -237,96 +231,101 @@ export function AdminProfilePreferencesPage() {
                     loading={saving}
                     onClick={editing ? submit : startEdit}
                   >
-                    {editing ? "确认" : "编辑"}
+                    {editing ? "保存" : "编辑"}
                   </BzButton>
                 </div>
               </div>
-
-              <BzForm className="preferences-grid">
-                <BzFormItem label="时区">
-                  {editing ? (
-                    <BzSelect
-                      modelValue={form.USER_TIME_ZONE}
-                      onValueChange={(value) =>
-                        setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "ASIA_SHANGHAI" }))
-                      }
-                    >
-                      {timeZoneOptions.map((option) => (
-                        <BzOption
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </BzSelect>
-                  ) : (
-                    <div className="preferences-value">{currentLabels.timeZone}</div>
-                  )}
-                </BzFormItem>
-                <BzFormItem label="日期时间格式">
-                  {editing ? (
-                    <BzSelect
-                      modelValue={form.USER_DATE_TIME_FORMAT}
-                      onValueChange={(value) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          USER_DATE_TIME_FORMAT: value || "YYYY_MM_DD_HH_MM_SS",
-                        }))
-                      }
-                    >
-                      {dateTimeFormatOptions.map((option) => (
-                        <BzOption
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </BzSelect>
-                  ) : (
-                    <div className="preferences-value">{currentLabels.dateTime}</div>
-                  )}
-                </BzFormItem>
-                <BzFormItem label="日期格式">
-                  {editing ? (
-                    <BzSelect
-                      modelValue={form.USER_DATE_FORMAT}
-                      onValueChange={(value) =>
-                        setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "YYYY_MM_DD" }))
-                      }
-                    >
-                      {dateFormatOptions.map((option) => (
-                        <BzOption
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </BzSelect>
-                  ) : (
-                    <div className="preferences-value">{currentLabels.date}</div>
-                  )}
-                </BzFormItem>
-                <BzFormItem label="小数格式">
-                  {editing ? (
-                    <BzSelect
-                      modelValue={form.USER_DECIMAL_FORMAT}
-                      onValueChange={(value) =>
-                        setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_2" }))
-                      }
-                    >
-                      {decimalFormatOptions.map((option) => (
-                        <BzOption
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </BzSelect>
-                  ) : (
-                    <div className="preferences-value">{currentLabels.decimal}</div>
-                  )}
-                </BzFormItem>
-              </BzForm>
+            }
+          >
+            <div className="preferences-layout">
+              <section className="preferences-panel">
+                <div className="preferences-panel__title">显示与格式</div>
+                <BzForm className="preferences-grid">
+                  <BzFormItem label="时区">
+                    {editing ? (
+                      <BzSelect
+                        modelValue={form.USER_TIME_ZONE}
+                        onValueChange={(value) =>
+                          setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "ASIA_SHANGHAI" }))
+                        }
+                      >
+                        {timeZoneOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    ) : (
+                      <div className="preferences-value">{currentLabels.timeZone}</div>
+                    )}
+                  </BzFormItem>
+                  <BzFormItem label="日期时间格式">
+                    {editing ? (
+                      <BzSelect
+                        modelValue={form.USER_DATE_TIME_FORMAT}
+                        onValueChange={(value) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            USER_DATE_TIME_FORMAT: value || "YYYY_MM_DD_HH_MM_SS",
+                          }))
+                        }
+                      >
+                        {dateTimeFormatOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    ) : (
+                      <div className="preferences-value">{currentLabels.dateTime}</div>
+                    )}
+                  </BzFormItem>
+                  <BzFormItem label="日期格式">
+                    {editing ? (
+                      <BzSelect
+                        modelValue={form.USER_DATE_FORMAT}
+                        onValueChange={(value) =>
+                          setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "YYYY_MM_DD" }))
+                        }
+                      >
+                        {dateFormatOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    ) : (
+                      <div className="preferences-value">{currentLabels.date}</div>
+                    )}
+                  </BzFormItem>
+                  <BzFormItem label="小数格式">
+                    {editing ? (
+                      <BzSelect
+                        modelValue={form.USER_DECIMAL_FORMAT}
+                        onValueChange={(value) =>
+                          setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_2" }))
+                        }
+                      >
+                        {decimalFormatOptions.map((option) => (
+                          <BzOption
+                            key={option.value}
+                            label={option.label}
+                            value={option.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    ) : (
+                      <div className="preferences-value">{currentLabels.decimal}</div>
+                    )}
+                  </BzFormItem>
+                </BzForm>
+              </section>
             </div>
           </BzCard>
         </div>

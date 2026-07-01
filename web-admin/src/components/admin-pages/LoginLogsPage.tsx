@@ -221,15 +221,25 @@ export function LoginLogsPage() {
                     </div>
                   </BzFormItem>
                   <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">开始时间</div>
+                    <div className="admin-query-field__label">时间区间</div>
                     <div className="admin-query-field__control">
-                      <BzDatePicker modelValue={startAtDraft} type="datetime" placeholder="开始时间" clearable onValueChange={setStartAtDraft} />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">结束时间</div>
-                    <div className="admin-query-field__control">
-                      <BzDatePicker modelValue={endAtDraft} type="datetime" placeholder="结束时间" clearable onValueChange={setEndAtDraft} />
+                      <div className="admin-query-range">
+                        <BzDatePicker
+                          modelValue={startAtDraft}
+                          type="datetime"
+                          placeholder="开始时间"
+                          clearable
+                          onValueChange={setStartAtDraft}
+                        />
+                        <span className="admin-query-range__separator">至</span>
+                        <BzDatePicker
+                          modelValue={endAtDraft}
+                          type="datetime"
+                          placeholder="结束时间"
+                          clearable
+                          onValueChange={setEndAtDraft}
+                        />
+                      </div>
                     </div>
                   </BzFormItem>
                   <div className="admin-query-actions">

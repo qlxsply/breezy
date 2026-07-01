@@ -240,6 +240,21 @@
   width: 100%;
 }
 
+.admin-query-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.admin-query-range__separator {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .admin-query-actions {
   display: flex;
   align-items: flex-end;
@@ -1375,6 +1390,14 @@
     align-items: center;
   }
 
+  .admin-query-range {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-query-range__separator {
+    display: none;
+  }
+
   .admin-filter-field {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -1418,6 +1441,10 @@
 
   .detail-grid,
   .group-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preferences-grid.bz-form {
     grid-template-columns: 1fr;
   }
 
