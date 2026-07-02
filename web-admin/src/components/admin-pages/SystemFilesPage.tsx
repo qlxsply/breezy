@@ -525,7 +525,7 @@ export function SystemFilesPage() {
                   </BzFormItem>
                   <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">排序</div>
-                    <div className="admin-query-field__control" style={{ display: "flex", gap: 8 }}>
+                    <div className="admin-query-field__control system-files-sort-controls">
                       <BzSelect modelValue={sortBy} onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}>
                         <BzOption label="名称" value="NAME" />
                         <BzOption label="大小" value="SIZE" />
@@ -575,7 +575,7 @@ export function SystemFilesPage() {
             shadow="never"
             header={
               <div className="admin-table-header">
-                <div style={{ display: "grid", gap: 6, minWidth: 0 }}>
+                <div className="system-files-header-stack">
                   <div className="admin-table-title">系统文件</div>
                   <div className="system-files-breadcrumbs" title={currentPath}>
                     {pathSegments.map((segment, index) => (

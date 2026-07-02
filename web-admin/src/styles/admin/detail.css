@@ -1,0 +1,132 @@
+.detail-grid,
+.group-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.detail-field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--color-bg-surface-soft);
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.detail-field--wide,
+.group-form-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.detail-field__label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.detail-field__value {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  word-break: break-word;
+}
+
+.system-files-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.system-files-breadcrumbs__segment-wrap,
+.system-files-link,
+.system-files-name {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.system-files-breadcrumbs__separator {
+  margin-right: var(--space-1);
+  color: var(--color-text-disabled);
+}
+
+.system-files-breadcrumbs__segment,
+.system-files-link {
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: var(--color-brand-600);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.system-files-breadcrumbs__segment {
+  max-width: 240px;
+}
+
+.system-files-breadcrumbs__segment.is-current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.system-files-root-icon {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.system-files-link,
+.system-files-name {
+  gap: var(--space-1-5);
+}
+
+.system-files-name {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.system-files-link span:last-child,
+.system-files-name span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.system-files-sort-controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.system-files-header-stack {
+  display: grid;
+  gap: var(--space-1-5);
+  min-width: 0;
+}
+
+.dict-drawer-stack {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.dict-items-section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .detail-grid,
+  .group-form-grid,
+  .preferences-grid.bz-form {
+    grid-template-columns: 1fr;
+  }
+}

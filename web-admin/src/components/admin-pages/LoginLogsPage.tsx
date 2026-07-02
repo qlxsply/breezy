@@ -1,11 +1,17 @@
 "use client";
 
 import { pageLoginLogs } from "@admin/api/login-logs";
+import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
+import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminDetailTable } from "@admin/components/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { formatDateTime } from "@admin/core/formatter";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
+import type { AdminActionItem } from "@admin/types/admin-action";
+import type { DictItem } from "@admin/types/dict-admin";
 import type { LoginLogEntry } from "@admin/types/login-log";
 import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,14 +21,41 @@ import { BzCard } from "../bz/BzCard";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
+import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzPagination } from "../bz/BzPagination";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
+type DictMeta = { label: string; tagType?: string | null };
+
+function toDictMetaMap(items?: DictItem[]): Record<string, DictMeta> {
+  const map: Record<string, DictMeta> = {};
+  for (const item of items || []) {
+    if (!item.itemValue) continue;
+    map[item.itemValue] = {
+      label: item.itemLabel || item.itemValue,
+      tagType: item.tagType || undefined,
+    };
+  }
+  return map;
+}
+
+function resolveLabel(metaMap: Record<string, DictMeta>, value?: string | null): string {
+  if (!value) return "-";
+  return metaMap[value]?.label || value;
+}
+
+function resolveTagType(metaMap: Record<string, DictMeta>, value?: string | null): string {
+  if (!value) return "info";
+  return metaMap[value]?.tagType || "info";
+}
+
 export function LoginLogsPage() {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<LoginLogEntry[]>([]);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detail, setDetail] = useState<LoginLogEntry | null>(null);
   const [page, setPage] = useState<PageResult<LoginLogEntry>>({
     pageNo: 1,
     pageSize: 10,
@@ -42,6 +75,7 @@ export function LoginLogsPage() {
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 20, 30, 50, 100];
+  const [loginEventMetaMap, setLoginEventMetaMap] = useState<Record<string, DictMeta>>({});
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
 
@@ -88,6 +122,19 @@ export function LoginLogsPage() {
     }
   }, []);
 
+  const loadDictionaries = useCallback(async () => {
+    try {
+      const result = await batchListDictOptions(["LOGIN_EVENT"]);
+      setLoginEventMetaMap(toDictMetaMap(result.LOGIN_EVENT));
+    } catch {
+      setLoginEventMetaMap({});
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDictionaries();
+  }, [loadDictionaries]);
+
   useEffect(() => {
     if (!canView) {
       setRows([]);
@@ -104,6 +151,86 @@ export function LoginLogsPage() {
     reload();
   }, [pageNo, pageSize, appliedAccount, appliedStartAt, appliedEndAt, canView, reload]);
 
+  function openDetail(row: LoginLogEntry) {
+    setDetail(row);
+    setDetailOpen(true);
+  }
+
+  function closeDetail() {
+    setDetailOpen(false);
+    setDetail(null);
+  }
+
+  function getRowActions(row: LoginLogEntry): AdminActionItem[] {
+    return [{ key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row) }];
+  }
+
+  const detailSections = useMemo(
+    () =>
+      detail
+        ? [
+            {
+              title: "基础信息",
+              fields: [
+                { label: "账号", value: detail.username || "-" },
+                {
+                  label: "事件",
+                  value: (
+                    <BzTag
+                      size="small"
+                      type={
+                        resolveTagType(loginEventMetaMap, detail.eventType) as
+                          | "info"
+                          | "warning"
+                          | "danger"
+                          | "success"
+                      }
+                    >
+                      {resolveLabel(loginEventMetaMap, detail.eventType)}
+                    </BzTag>
+                  ),
+                },
+                {
+                  label: "结果",
+                  value: (
+                    <BzTag size="small" type={detail.success ? "success" : "danger"}>
+                      {detail.success ? "成功" : "失败"}
+                    </BzTag>
+                  ),
+                },
+                { label: "IP", value: <span className="admin-log-mono">{detail.loginIp || "-"}</span> },
+                { label: "用户ID", value: <span className="admin-log-mono">{detail.userId || "-"}</span> },
+                { label: "操作人ID", value: <span className="admin-log-mono">{detail.operatorId || "-"}</span> },
+                {
+                  label: "会话ID",
+                  value: <span className="admin-log-mono">{detail.sessionId || "-"}</span>,
+                  span: "full" as const,
+                },
+                { label: "记录时间", value: formatDateTime(detail.occurredAt) },
+              ],
+            },
+            {
+              title: "说明信息",
+              fields: [
+                {
+                  label: "失败原因",
+                  value: <pre className="admin-log-pre">{detail.failureReason || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+                {
+                  label: "备注",
+                  value: <pre className="admin-log-pre">{detail.remark || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+              ],
+            },
+          ]
+        : [],
+    [detail, loginEventMetaMap],
+  );
+
   const columns = useMemo<Array<BzTableColumn<LoginLogEntry>>>(
     () => [
       {
@@ -115,8 +242,17 @@ export function LoginLogsPage() {
       {
         key: "eventType",
         title: "事件",
-        width: 100,
-        render: (row) => <BzTag size="small">{row.eventType}</BzTag>,
+        width: 120,
+        render: (row) => (
+          <BzTag
+            size="small"
+            type={
+              resolveTagType(loginEventMetaMap, row.eventType) as "info" | "warning" | "danger" | "success"
+            }
+          >
+            {resolveLabel(loginEventMetaMap, row.eventType)}
+          </BzTag>
+        ),
       },
       {
         key: "success",
@@ -141,13 +277,27 @@ export function LoginLogsPage() {
         key: "failureReason",
         title: "失败原因",
         minWidth: 180,
-        render: (row) => <>{row.failureReason || "-"}</>,
+        render: (row) => {
+          const text = row.failureReason || "-";
+          return (
+            <BzOverflowTooltip text={text}>
+              <span className="cell-text">{text}</span>
+            </BzOverflowTooltip>
+          );
+        },
       },
       {
         key: "remark",
         title: "备注",
         minWidth: 220,
-        render: (row) => <>{row.remark || "-"}</>,
+        render: (row) => {
+          const text = row.remark || "-";
+          return (
+            <BzOverflowTooltip text={text}>
+              <span className="cell-text">{text}</span>
+            </BzOverflowTooltip>
+          );
+        },
       },
       {
         key: "occurredAt",
@@ -155,8 +305,15 @@ export function LoginLogsPage() {
         width: 180,
         render: (row) => <>{formatDateTime(row.occurredAt)}</>,
       },
+      {
+        key: "actions",
+        title: "操作",
+        width: 88,
+        className: "is-fixed-right",
+        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
+      },
     ],
-    [],
+    [loginEventMetaMap],
   );
 
   async function applyFilters() {
@@ -273,6 +430,7 @@ export function LoginLogsPage() {
                   <BzTable
                     data={rows}
                     columns={columns}
+                    rowKey="id"
                     loading={loading}
                     emptyText="暂无日志"
                     size="small"
@@ -301,6 +459,18 @@ export function LoginLogsPage() {
               </>
             )}
           </BzCard>
+
+          <AdminEntityDrawer
+            open={detailOpen}
+            title="登录日志详情"
+            width="960px"
+            onClose={closeDetail}
+            footer={<BzButton onClick={closeDetail}>关闭</BzButton>}
+          >
+            {detail ? (
+              <AdminDetailTable sections={detailSections} />
+            ) : null}
+          </AdminEntityDrawer>
         </div>
       </div>
     </div>

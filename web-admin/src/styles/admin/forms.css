@@ -1,0 +1,28 @@
+.role-form-grid,
+.role-manage-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.role-form-footer {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.role-manage-section {
+  margin-bottom: var(--space-4);
+}
+
+.form-required-mark {
+  margin-left: var(--space-1);
+  color: var(--color-danger-600);
+  font-weight: var(--font-weight-bold);
+}
+
+@media (max-width: 768px) {
+  .role-form-grid,
+  .role-manage-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1027,13 +1027,8 @@ export function ConfigsAdminPage() {
         title: "配置键",
         width: 280,
         render: (row) => (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                color: "var(--text-muted, #64748b)",
-              }}
-            >
+          <div className="configs-code-cell">
+            <span className="configs-code-text">
               {row.code}
             </span>
             {row.personalized ? (
@@ -1060,11 +1055,7 @@ export function ConfigsAdminPage() {
         render: (row) => (
           <div
             title={renderValue(row)}
-            style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
+            className="configs-value-text"
           >
             {renderValue(row)}
           </div>
@@ -1098,7 +1089,7 @@ export function ConfigsAdminPage() {
               title: "操作",
               width: 88,
               render: (row: ConfigItem) => (
-                <div style={{ display: "flex", gap: 8 }}>
+                <div className="configs-action-cell">
                   <BzButton
                     size="small"
                     link
@@ -1284,10 +1275,7 @@ export function ConfigsAdminPage() {
             <div className="meta-item">
               <div className="meta-label">配置键</div>
               <div
-                className="meta-value"
-                style={{
-                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                }}
+                className="meta-value configs-meta-code"
               >
                 {editorItem?.code}
               </div>

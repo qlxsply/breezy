@@ -177,10 +177,11 @@ export function ResourcesAdminPage() {
           const expanded = expandedIds.has(row.id);
           return (
             <div className="resource-name-cell">
-              <span
-                className="resource-indent"
-                style={{ width: `${level * 24}px` }}
-              />
+              <span className="resource-indent" aria-hidden="true">
+                {Array.from({ length: level }).map((_, index) => (
+                  <span key={index} className="resource-indent__unit" />
+                ))}
+              </span>
               <button
                 className={`resource-toggle${!hasChildren ? " is-placeholder" : ""}`}
                 type="button"

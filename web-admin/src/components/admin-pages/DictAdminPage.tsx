@@ -435,7 +435,7 @@ export function DictAdminPage() {
         title: "描述",
         minWidth: 220,
         render: (row) => (
-          <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span className="cell-text">
             {row.description || "-"}
           </span>
         ),
@@ -512,7 +512,7 @@ export function DictAdminPage() {
         title: "备注",
         minWidth: 180,
         render: (row) => (
-          <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span className="cell-text">
             {row.description || "-"}
           </span>
         ),
@@ -662,7 +662,7 @@ export function DictAdminPage() {
 
         <AdminEntityDrawer open={drawerOpen} title={drawerTitle} width="1120px" loading={drawerLoading} onClose={closeDrawer} footer={drawerFooter}>
           {currentType ? (
-            <div style={{ display: "grid", gap: 20 }}>
+            <div className="dict-drawer-stack">
               {drawerMode === "detail" ? (
                 <div className="detail-grid">
                   <div className="detail-field">
@@ -737,7 +737,7 @@ export function DictAdminPage() {
                 </BzForm>
               )}
 
-              <section style={{ display: "grid", gap: 12 }}>
+              <section className="dict-items-section">
                 <div className="admin-table-header">
                   <div className="admin-table-title">字典项</div>
                   <div className="admin-table-tools">

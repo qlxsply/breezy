@@ -1,0 +1,23 @@
+.configs-code-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.configs-code-text,
+.configs-meta-code {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+}
+
+.configs-value-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.configs-action-cell {
+  display: flex;
+  gap: var(--space-2);
+}

@@ -1,0 +1,259 @@
+.admin-table-card .bz-card__body {
+  padding: 18px 20px;
+}
+
+.admin-table-card .bz-card__header {
+  padding: 10px 20px 10px;
+  border-bottom: none;
+}
+
+.admin-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.admin-table-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.admin-table-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-toolbar-primary {
+  min-height: var(--size-control-sm) !important;
+  padding: 4px 15px !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-size-sm) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  box-shadow: none;
+}
+
+.admin-toolbar-primary__content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  line-height: 22px;
+}
+
+.admin-toolbar-primary__icon {
+  display: inline-block;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
+  line-height: 1;
+}
+
+.admin-toolbar-primary__icon--reload {
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747'/%3E%3Cpath d='M20 4v5h-5'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke='none' d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747'/%3E%3Cpath d='M20 4v5h-5'/%3E%3C/svg%3E");
+}
+
+.admin-vben-circle-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  padding: 0;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-surface);
+  border: none;
+  border-radius: var(--radius-round);
+  box-shadow: var(--shadow-surface);
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.admin-vben-circle-button:hover {
+  color: var(--color-brand-600);
+  background: var(--color-brand-50);
+}
+
+.admin-vben-circle-button.is-active {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  box-shadow: var(--shadow-brand-strong);
+}
+
+.admin-vben-circle-button.is-active:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+}
+
+.admin-vben-circle-button:active {
+  transform: scale(0.96);
+}
+
+.admin-vben-circle-button svg {
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
+}
+
+.admin-table-surface {
+  overflow: hidden;
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.admin-action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+.admin-action-bar .bz-dropdown,
+.admin-action-bar .bz-dropdown__trigger {
+  display: inline-flex;
+}
+
+.admin-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-action-link:hover:not(:disabled) {
+  color: var(--color-brand-600);
+  background: var(--color-brand-50);
+  border-color: var(--color-border-accent);
+}
+
+.admin-action-link:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-surface-soft);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.admin-action-link.is-detail,
+.admin-action-link.is-more,
+.admin-action-dropdown-item.is-detail,
+.admin-action-dropdown-item.is-more,
+.admin-action-dropdown-item.is-neutral {
+  color: var(--color-text-tertiary);
+}
+
+.admin-action-link.is-edit,
+.admin-action-dropdown-item.is-edit,
+.admin-action-dropdown-item.is-copy {
+  color: var(--color-brand-600);
+}
+
+.admin-action-link.is-enable,
+.admin-action-dropdown-item.is-enable {
+  color: var(--color-success-600);
+}
+
+.admin-action-dropdown-item.is-pause {
+  color: var(--color-warning-600);
+}
+
+.admin-action-link.is-disable,
+.admin-action-link.is-delete,
+.admin-action-dropdown-item.is-disable,
+.admin-action-dropdown-item.is-delete {
+  color: var(--color-danger-700);
+}
+
+.bz-dropdown-item.is-disabled .admin-action-dropdown-item {
+  color: var(--color-text-disabled);
+}
+
+.api-table-scope .bz-table__inner {
+  table-layout: fixed;
+}
+
+.api-table-scope .bz-table__inner th.api-table__header-cell,
+.api-table-scope .bz-table__inner td.api-table__cell {
+  min-width: 4em;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__text {
+  display: block;
+  min-width: 4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__tag-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.api-table-scope .api-table__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4em;
+  max-width: 100%;
+  overflow: hidden;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__tag-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-table-scope .api-table__actions-cell,
+.api-table-scope .admin-action-bar {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.api-table-scope .admin-action-link {
+  min-width: 4em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .admin-table-header {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+}

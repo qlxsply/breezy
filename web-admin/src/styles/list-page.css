@@ -1,23 +1,21 @@
-/* /src/styles/list-page.css */
-
 .list-page-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .list-page-actions {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .list-page-actions-main {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -27,12 +25,12 @@
 }
 
 .list-page-query-card {
-  border: 1px solid var(--border-color);
+  border: var(--border-width-1) solid var(--border-color);
 }
 
 .list-page-query-card .bz-card__body,
 .list-page-query-card .el-card__body {
-  padding: 14px 16px;
+  padding: var(--space-3-5) var(--space-4);
 }
 
 .list-page-filter-form {
@@ -40,10 +38,11 @@
   align-items: flex-end;
   justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-2-5);
 }
 
-.list-page-filter-item {
+.list-page-filter-item,
+.list-page-filter-actions {
   margin-bottom: 0;
 }
 
@@ -57,22 +56,18 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 
 .list-page-filter-label {
-  font-size: 12px;
-  line-height: 16px;
   color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  line-height: 16px;
   text-align: left;
 }
 
 .list-page-filter-control {
   width: 220px;
-}
-
-.list-page-filter-actions {
-  margin-bottom: 0;
 }
 
 .list-page-filter-actions .bz-form-item__content,
@@ -84,7 +79,7 @@
 .list-page-sort-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -92,20 +87,20 @@
 .list-page-result-card .el-card__body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .list-page-pagination {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-2-5);
   flex-wrap: wrap;
 }
 
 .list-page-pagination-summary {
-  font-size: 12px;
   color: var(--text-muted);
+  font-size: var(--font-size-xs);
 }
 
 @media (max-width: 768px) {

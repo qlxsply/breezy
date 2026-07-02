@@ -13,6 +13,7 @@ import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminActionBar } from "../admin/AdminActionBar";
+import { AdminDetailTable } from "../admin/AdminDetailTable";
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
@@ -21,6 +22,7 @@ import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";
+import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import type { BzTableColumn } from "../bz/BzTable";
@@ -301,8 +303,166 @@ export function AuditLogsPage() {
     return `${value} ms`;
   }
 
+  const detailSections = useMemo(
+    () =>
+      detail
+        ? [
+            {
+              title: "基础信息",
+              fields: [
+                { label: "追踪ID", value: <span className="admin-log-mono">{detail.traceId || "-"}</span> },
+                { label: "请求ID", value: <span className="admin-log-mono">{detail.requestId || "-"}</span> },
+                { label: "操作人", value: detail.operatorUsername || "-" },
+                {
+                  label: "用户类型",
+                  value: (
+                    <BzTag
+                      size="small"
+                      type={
+                        resolveTagType(userTypeMetaMap, detail.operatorUserType) as
+                          | "info"
+                          | "warning"
+                          | "danger"
+                          | "success"
+                      }
+                    >
+                      {resolveLabel(userTypeMetaMap, detail.operatorUserType)}
+                    </BzTag>
+                  ),
+                },
+                {
+                  label: "资源",
+                  value: <BzTag size="small">{resolveLabel(auditResourceMetaMap, detail.auditResource)}</BzTag>,
+                },
+                {
+                  label: "动作",
+                  value: <BzTag size="small">{resolveLabel(auditActionMetaMap, detail.auditAction)}</BzTag>,
+                },
+                {
+                  label: "等级",
+                  value: (
+                    <BzTag
+                      size="small"
+                      type={
+                        resolveTagType(auditLevelMetaMap, detail.auditLevel) as
+                          | "info"
+                          | "warning"
+                          | "danger"
+                          | "success"
+                      }
+                    >
+                      {resolveLabel(auditLevelMetaMap, detail.auditLevel)}
+                    </BzTag>
+                  ),
+                },
+                {
+                  label: "结果",
+                  value: (
+                    <BzTag size="small" type={detail.success ? "success" : "danger"}>
+                      {detail.success ? "成功" : "失败"}
+                    </BzTag>
+                  ),
+                },
+                { label: "记录时间", value: formatDateTime(detail.createdAt) },
+                { label: "耗时", value: formatDuration(detail.durationMs) },
+              ],
+            },
+            {
+              title: "请求信息",
+              fields: [
+                { label: "协议", value: resolveLabel(apiProtocolMetaMap, detail.protocol) },
+                { label: "方法", value: resolveLabel(apiMethodMetaMap, detail.httpMethod) },
+                { label: "请求IP", value: detail.requestIp || "-" },
+                {
+                  label: "请求地址",
+                  value: <span className="admin-log-mono">{detail.requestUri || "-"}</span>,
+                  span: "full" as const,
+                },
+                {
+                  label: "路径模式",
+                  value: <span className="admin-log-mono">{detail.pathPattern || "-"}</span>,
+                  span: "full" as const,
+                },
+                {
+                  label: "User-Agent",
+                  value: <pre className="admin-log-pre">{detail.userAgent || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+              ],
+            },
+            {
+              title: "审计摘要",
+              fields: [
+                {
+                  label: "审计描述",
+                  value: <pre className="admin-log-pre">{detail.auditDescription || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+                {
+                  label: "权限码",
+                  value: <span className="admin-log-mono">{detail.permissionCodes.length ? detail.permissionCodes.join(", ") : "-"}</span>,
+                  span: "full" as const,
+                },
+              ],
+            },
+            {
+              title: "请求与响应",
+              fields: [
+                {
+                  label: "请求参数",
+                  value: <pre className="admin-log-pre">{detail.requestParamSummary || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+                {
+                  label: "请求体",
+                  value: <pre className="admin-log-pre">{detail.requestBodySummary || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+                {
+                  label: "响应体",
+                  value: <pre className="admin-log-pre">{detail.responseSummary || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+                {
+                  label: "错误信息",
+                  value: <pre className="admin-log-pre">{detail.errorMessage || detail.errorCode || "-"}</pre>,
+                  span: "full" as const,
+                  multiline: true,
+                },
+              ],
+            },
+          ]
+        : [],
+    [
+      apiMethodMetaMap,
+      apiProtocolMetaMap,
+      auditActionMetaMap,
+      auditLevelMetaMap,
+      auditResourceMetaMap,
+      detail,
+      userTypeMetaMap,
+    ],
+  );
+
   const columns: Array<BzTableColumn<AuditLogEntry>> = [
-    { key: "traceId", title: "追踪ID", width: 180, render: (row) => row.traceId || "-" },
+    {
+      key: "traceId",
+      title: "追踪ID",
+      width: 180,
+      render: (row) => {
+        const text = row.traceId || "-";
+        return (
+          <BzOverflowTooltip text={text}>
+            <span className="admin-log-mono cell-text">{text}</span>
+          </BzOverflowTooltip>
+        );
+      },
+    },
     {
       key: "operatorUsername",
       title: "操作人",
@@ -380,7 +540,14 @@ export function AuditLogsPage() {
       key: "requestUri",
       title: "请求地址",
       minWidth: 240,
-      render: (row) => row.requestUri || "-",
+      render: (row) => {
+        const text = row.requestUri || "-";
+        return (
+          <BzOverflowTooltip text={text}>
+            <span className="cell-text">{text}</span>
+          </BzOverflowTooltip>
+        );
+      },
     },
     {
       key: "requestIp",
@@ -566,141 +733,7 @@ export function AuditLogsPage() {
             footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
           >
             {detail ? (
-              <div className="audit-detail-layout">
-                <section className="audit-detail-section">
-                  <div className="audit-detail-section__title">基础信息</div>
-                  <div className="audit-detail-grid">
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">追踪ID</span>
-                      <span className="audit-detail-field__value">{detail.traceId || "-"}</span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">请求ID</span>
-                      <span className="audit-detail-field__value">{detail.requestId || "-"}</span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">操作人</span>
-                      <span className="audit-detail-field__value">
-                        {detail.operatorUsername || "-"}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">用户类型</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(userTypeMetaMap, detail.operatorUserType)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">资源</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(auditResourceMetaMap, detail.auditResource)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">动作</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(auditActionMetaMap, detail.auditAction)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">等级</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(auditLevelMetaMap, detail.auditLevel)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">结果</span>
-                      <span className="audit-detail-field__value">
-                        {detail.success ? "成功" : "失败"}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">协议</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(apiProtocolMetaMap, detail.protocol)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">方法</span>
-                      <span className="audit-detail-field__value">
-                        {resolveLabel(apiMethodMetaMap, detail.httpMethod)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">请求IP</span>
-                      <span className="audit-detail-field__value">{detail.requestIp || "-"}</span>
-                    </div>
-                    <div className="audit-detail-field">
-                      <span className="audit-detail-field__label">耗时</span>
-                      <span className="audit-detail-field__value">
-                        {formatDuration(detail.durationMs)}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field audit-detail-field--wide">
-                      <span className="audit-detail-field__label">请求地址</span>
-                      <span className="audit-detail-field__value">{detail.requestUri || "-"}</span>
-                    </div>
-                    <div className="audit-detail-field audit-detail-field--wide">
-                      <span className="audit-detail-field__label">路径模式</span>
-                      <span className="audit-detail-field__value">{detail.pathPattern || "-"}</span>
-                    </div>
-                    <div className="audit-detail-field audit-detail-field--wide">
-                      <span className="audit-detail-field__label">审计描述</span>
-                      <span className="audit-detail-field__value">
-                        {detail.auditDescription || "-"}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field audit-detail-field--wide">
-                      <span className="audit-detail-field__label">权限码</span>
-                      <span className="audit-detail-field__value">
-                        {detail.permissionCodes.length ? detail.permissionCodes.join(", ") : "-"}
-                      </span>
-                    </div>
-                    <div className="audit-detail-field audit-detail-field--wide">
-                      <span className="audit-detail-field__label">记录时间</span>
-                      <span className="audit-detail-field__value">
-                        {formatDateTime(detail.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="audit-detail-section">
-                  <div className="audit-detail-section__title">请求与响应</div>
-                  <div className="audit-detail-text-grid">
-                    <div className="audit-detail-text-block">
-                      <div className="audit-detail-text-block__label">请求参数</div>
-                      <pre className="audit-detail-text-block__content">
-                        {detail.requestParamSummary || "-"}
-                      </pre>
-                    </div>
-                    <div className="audit-detail-text-block">
-                      <div className="audit-detail-text-block__label">请求体</div>
-                      <pre className="audit-detail-text-block__content">
-                        {detail.requestBodySummary || "-"}
-                      </pre>
-                    </div>
-                    <div className="audit-detail-text-block">
-                      <div className="audit-detail-text-block__label">响应体</div>
-                      <pre className="audit-detail-text-block__content">
-                        {detail.responseSummary || "-"}
-                      </pre>
-                    </div>
-                    <div className="audit-detail-text-block">
-                      <div className="audit-detail-text-block__label">错误信息</div>
-                      <pre className="audit-detail-text-block__content">
-                        {detail.errorMessage || detail.errorCode || "-"}
-                      </pre>
-                    </div>
-                    <div className="audit-detail-text-block audit-detail-text-block--wide">
-                      <div className="audit-detail-text-block__label">User-Agent</div>
-                      <pre className="audit-detail-text-block__content">
-                        {detail.userAgent || "-"}
-                      </pre>
-                    </div>
-                  </div>
-                </section>
-              </div>
+              <AdminDetailTable sections={detailSections} />
             ) : null}
           </AdminEntityDrawer>
         </div>
