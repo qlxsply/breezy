@@ -240,6 +240,42 @@
   width: 100%;
 }
 
+.admin-datetime-range,
+.admin-datetime-range-popover {
+  --admin-dt-font-size: 13px;
+  --admin-dt-control-height: 32px;
+  --admin-dt-inner-height: 30px;
+  --admin-dt-border-color: #dbe1ea;
+  --admin-dt-border-color-inner: #dcdfe6;
+  --admin-dt-radius: 8px;
+  --admin-dt-radius-inner: 4px;
+  --admin-dt-text-color: #334155;
+  --admin-dt-text-color-strong: #303133;
+  --admin-dt-label-color: #606266;
+  --admin-dt-placeholder-color: #b4b8c1;
+  --admin-dt-muted-color: #909399;
+  --admin-dt-primary-color: #1677ff;
+  --admin-dt-primary-bg: #ecf5ff;
+  --admin-dt-year-width: 4ch;
+  --admin-dt-part-width: 2ch;
+  --admin-dt-date-separator-width: 11px;
+  --admin-dt-time-separator-width: 8px;
+  --admin-dt-icon-width: 28px;
+  --admin-dt-date-field-width: 152px;
+  --admin-dt-time-field-width: 116px;
+  color: var(--admin-dt-text-color);
+  font-family: inherit;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range,
+.admin-datetime-range *,
+.admin-datetime-range-popover,
+.admin-datetime-range-popover * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
 .admin-datetime-range {
   width: 100%;
 }
@@ -249,13 +285,16 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  min-height: 32px;
+  height: var(--admin-dt-control-height);
+  min-height: var(--admin-dt-control-height);
   padding: 0 10px;
-  color: #0f172a;
+  color: var(--admin-dt-text-color);
   background: #ffffff;
-  border: 1px solid #dbe1ea;
-  border-radius: 8px;
+  border: 1px solid var(--admin-dt-border-color);
+  border-radius: var(--admin-dt-radius);
   cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-control-height);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -277,7 +316,9 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: #334155;
+  color: var(--admin-dt-text-color);
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-control-height);
   white-space: nowrap;
   text-align: left;
   text-overflow: ellipsis;
@@ -325,7 +366,7 @@
 
 .admin-datetime-range-panel__sidebar-title {
   margin-bottom: 6px;
-  color: #909399;
+  color: var(--admin-dt-muted-color);
   font-size: 12px;
 }
 
@@ -334,19 +375,19 @@
   width: 100%;
   height: 30px;
   padding: 0 5px;
-  color: #303133;
+  color: var(--admin-dt-text-color-strong);
   text-align: left;
   background: transparent;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-panel__shortcut:hover,
 .admin-datetime-range-panel__shortcut.is-active {
-  color: #1677ff;
-  background: #ecf5ff;
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
 }
 
 .admin-datetime-range-panel__main {
@@ -358,82 +399,95 @@
 
 .admin-datetime-range-panel__row {
   display: grid;
-  grid-template-columns: 68px 170px 118px;
+  grid-template-columns: 68px var(--admin-dt-date-field-width) var(--admin-dt-time-field-width);
   align-items: center;
-  gap: 6px;
+  column-gap: 8px;
+  row-gap: 8px;
   margin-bottom: 12px;
 }
 
 .admin-datetime-range-panel__row-label {
-  color: #606266;
-  font-size: 13px;
+  color: var(--admin-dt-label-color);
+  font-size: var(--admin-dt-font-size);
   font-weight: 400;
+  line-height: var(--admin-dt-control-height);
 }
 
 .admin-datetime-range-panel__seg-field {
   display: inline-flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 32px;
+  height: var(--admin-dt-control-height);
   overflow: hidden;
   background: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 1px solid var(--admin-dt-border-color-inner);
+  border-radius: var(--admin-dt-radius-inner);
 }
 
 .admin-datetime-range-panel__seg-field:hover,
 .admin-datetime-range-panel__seg-field.is-active,
 .admin-datetime-range-panel__seg-field:focus-within {
-  border-color: #1677ff;
+  border-color: var(--admin-dt-primary-color);
 }
 
 .admin-datetime-range-panel__segments {
-  display: flex;
-  flex: 1;
+  display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
-  min-width: 0;
   height: 100%;
-  padding: 0 5px;
+  min-width: 0;
+  padding: 0 6px;
 }
 
 .admin-datetime-range-panel__seg-input {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
-  height: 30px;
+  height: var(--admin-dt-inner-height);
   padding: 0;
-  color: #303133;
+  color: var(--admin-dt-text-color-strong);
   background: transparent;
   border: none;
   outline: none;
-  font-size: 13px;
-  line-height: 30px;
+  font-size: var(--admin-dt-font-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--admin-dt-inner-height);
   text-align: center;
 }
 
 .admin-datetime-range-panel__seg-input::placeholder {
-  color: #b4b8c1;
+  color: var(--admin-dt-placeholder-color);
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-inner-height);
+  opacity: 1;
 }
 
 .admin-datetime-range-panel__seg-input--year {
-  flex: 0 0 38px;
-  width: 38px;
+  flex-basis: var(--admin-dt-year-width);
+  width: var(--admin-dt-year-width);
 }
 
-.admin-datetime-range-panel__seg-input--date {
-  flex: 0 0 18px;
-  width: 18px;
-}
-
+.admin-datetime-range-panel__seg-input--date,
 .admin-datetime-range-panel__seg-input--time {
-  flex: 0 0 20px;
-  width: 20px;
+  flex-basis: var(--admin-dt-part-width);
+  width: var(--admin-dt-part-width);
 }
 
 .admin-datetime-range-panel__seg-separator {
-  width: 9px;
-  color: #909399;
+  flex: 0 0 var(--admin-dt-date-separator-width);
+  width: var(--admin-dt-date-separator-width);
+  height: var(--admin-dt-inner-height);
+  color: var(--admin-dt-muted-color);
+  font-size: var(--admin-dt-font-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--admin-dt-inner-height);
   text-align: center;
   user-select: none;
+}
+
+.admin-datetime-range-panel__seg-input--time + .admin-datetime-range-panel__seg-separator {
+  flex-basis: var(--admin-dt-time-separator-width);
+  width: var(--admin-dt-time-separator-width);
 }
 
 .admin-datetime-range-panel__seg-separator.is-hidden,
@@ -445,10 +499,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 30px;
-  color: #909399;
+  flex: 0 0 var(--admin-dt-icon-width);
+  width: var(--admin-dt-icon-width);
+  height: var(--admin-dt-inner-height);
+  color: var(--admin-dt-muted-color);
   background: #fff;
   border: none;
   border-left: 1px solid #ebeef5;
@@ -456,13 +510,13 @@
 }
 
 .admin-datetime-range-panel__icon-button:hover {
-  color: #1677ff;
+  color: var(--admin-dt-primary-color);
   background: #f5f7fa;
 }
 
 .admin-datetime-range-panel__icon-button svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .admin-datetime-range-panel__error {
@@ -472,7 +526,6 @@
 }
 
 .admin-datetime-range-panel__picker-popover {
-  position: relative;
   position: absolute;
   z-index: 5;
   background: #ffffff;
@@ -484,6 +537,7 @@
 .admin-datetime-range-calendar {
   width: 260px;
   padding: 12px;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-calendar__head {
@@ -502,18 +556,18 @@
 .admin-datetime-range-calendar__select {
   height: 26px;
   padding: 0 22px 0 8px;
-  color: #303133;
+  color: var(--admin-dt-text-color-strong);
   background: #fff;
   border: 1px solid transparent;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--admin-dt-font-size);
   outline: none;
 }
 
 .admin-datetime-range-calendar__select:hover,
 .admin-datetime-range-calendar__select:focus {
-  border-color: #1677ff;
+  border-color: var(--admin-dt-primary-color);
 }
 
 .admin-datetime-range-calendar__weekdays,
@@ -525,24 +579,24 @@
 
 .admin-datetime-range-calendar__weekdays {
   margin-bottom: 6px;
-  color: #909399;
+  color: var(--admin-dt-muted-color);
   font-size: 12px;
   text-align: center;
 }
 
 .admin-datetime-range-calendar__cell {
   height: 28px;
-  color: #303133;
+  color: var(--admin-dt-text-color-strong);
   background: transparent;
   border: none;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: var(--admin-dt-font-size);
   cursor: pointer;
 }
 
 .admin-datetime-range-calendar__cell:hover {
-  color: #1677ff;
-  background: #ecf5ff;
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
 }
 
 .admin-datetime-range-calendar__cell.is-muted {
@@ -551,11 +605,11 @@
 
 .admin-datetime-range-calendar__cell.is-active {
   color: #ffffff;
-  background: #1677ff;
+  background: var(--admin-dt-primary-color);
 }
 
 .admin-datetime-range-calendar__cell.is-today:not(.is-active) {
-  color: #1677ff;
+  color: var(--admin-dt-primary-color);
   font-weight: 500;
 }
 
@@ -569,11 +623,11 @@
 }
 
 .admin-datetime-range-calendar__footer button {
-  color: #1677ff;
+  color: var(--admin-dt-primary-color);
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-time {
@@ -581,6 +635,7 @@
   grid-template-columns: repeat(2, 56px);
   max-height: 188px;
   padding: 0;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-time.is-second {
@@ -611,22 +666,22 @@
   display: block;
   width: 100%;
   height: 28px;
-  color: #303133;
+  color: var(--admin-dt-text-color-strong);
   background: #ffffff;
   border: none;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-time__cell:hover {
-  color: #1677ff;
-  background: #ecf5ff;
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
 }
 
 .admin-datetime-range-time__cell.is-active {
-  color: #1677ff;
+  color: var(--admin-dt-primary-color);
   font-weight: 500;
-  background: #ecf5ff;
+  background: var(--admin-dt-primary-bg);
 }
 
 .admin-datetime-range-panel__footer {
@@ -646,11 +701,12 @@
 .admin-datetime-range-panel__clear {
   height: 32px;
   padding: 0 8px;
-  color: #606266;
+  color: var(--admin-dt-label-color);
   background: transparent;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: var(--admin-dt-font-size);
 }
 
 .admin-datetime-range-panel__clear:hover {

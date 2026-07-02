@@ -166,7 +166,6 @@ export function AdminDateTimeRangeField({
                 onCancel={() => setOpen(false)}
                 onClear={() => {
                   onRangeChange?.({ start: "", end: "" });
-                  setOpen(false);
                 }}
                 onConfirm={(range) => {
                   onRangeChange?.(range);
@@ -461,6 +460,14 @@ function AdminDateTimeRangePanel({
     });
   }
 
+  function clearRange() {
+    clearShortcutState();
+    setError("");
+    setActivePicker(null);
+    setRange({ start: emptyParts(), end: emptyParts() });
+    onClear();
+  }
+
   const selectedDate = activePicker ? toDateStringFromParts(range[activePicker.row]) : "";
   const selectedTime = activePicker ? toTimeStringFromParts(range[activePicker.row], precision) : "";
 
@@ -496,7 +503,7 @@ function AdminDateTimeRangePanel({
                   value={range[row].year}
                   inputMode="numeric"
                   maxLength={4}
-                  placeholder="YYYY"
+                  placeholder="年"
                   onInput={(event) => handleSegmentInput(row, "year", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "year", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "year")}
@@ -512,7 +519,7 @@ function AdminDateTimeRangePanel({
                   value={range[row].month}
                   inputMode="numeric"
                   maxLength={2}
-                  placeholder="MM"
+                  placeholder="月"
                   onInput={(event) => handleSegmentInput(row, "month", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "month", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "month")}
@@ -528,7 +535,7 @@ function AdminDateTimeRangePanel({
                   value={range[row].day}
                   inputMode="numeric"
                   maxLength={2}
-                  placeholder="DD"
+                  placeholder="日"
                   onInput={(event) => handleSegmentInput(row, "day", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "day", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "day")}
@@ -554,7 +561,7 @@ function AdminDateTimeRangePanel({
                   value={range[row].hour}
                   inputMode="numeric"
                   maxLength={2}
-                  placeholder="HH"
+                  placeholder="时"
                   onInput={(event) => handleSegmentInput(row, "hour", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "hour", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "hour")}
@@ -571,7 +578,7 @@ function AdminDateTimeRangePanel({
                   value={range[row].minute}
                   inputMode="numeric"
                   maxLength={2}
-                  placeholder="mm"
+                  placeholder="分"
                   onInput={(event) => handleSegmentInput(row, "minute", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "minute", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "minute")}
@@ -592,7 +599,7 @@ function AdminDateTimeRangePanel({
                   value={precision === "second" ? range[row].second : ""}
                   inputMode="numeric"
                   maxLength={2}
-                  placeholder="ss"
+                  placeholder="秒"
                   onInput={(event) => handleSegmentInput(row, "second", event.currentTarget.value)}
                   onBlur={(event) => handleSegmentBlur(row, "second", event.currentTarget.value)}
                   onPaste={(event) => handleSegmentPaste(event, row, "second")}
@@ -632,7 +639,7 @@ function AdminDateTimeRangePanel({
         ) : null}
 
         <div className="admin-datetime-range-panel__footer">
-          <button className="admin-datetime-range-panel__clear" type="button" onClick={onClear}>
+          <button className="admin-datetime-range-panel__clear" type="button" onClick={clearRange}>
             清空
           </button>
           <div className="admin-datetime-range-panel__footer-actions">
