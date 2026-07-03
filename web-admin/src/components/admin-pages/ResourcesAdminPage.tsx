@@ -21,6 +21,7 @@ import {
   BzFormItem,
   BzInput,
   BzOption,
+  BzOverflowTooltip,
   BzSelect,
   BzSwitch,
   BzTable,
@@ -106,9 +107,11 @@ export function ResourcesAdminPage() {
   const [keywordDraft, setKeywordDraft] = useState("");
   const [typeFilterDraft, setTypeFilterDraft] = useState("");
   const [enabledFilterDraft, setEnabledFilterDraft] = useState("");
+  const [builtinFilterDraft, setBuiltinFilterDraft] = useState("");
   const [keyword, setKeyword] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [enabledFilter, setEnabledFilter] = useState("");
+  const [builtinFilter, setBuiltinFilter] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -138,11 +141,11 @@ export function ResourcesAdminPage() {
     return map;
   }, [flatRows]);
 
-  const hasActiveFilter = Boolean(keyword.trim() || typeFilter || enabledFilter);
+  const hasActiveFilter = Boolean(keyword.trim() || typeFilter || enabledFilter || builtinFilter);
 
   const filteredRoots = useMemo(
-    () => filterTree(rows, keyword.trim().toLowerCase(), typeFilter, enabledFilter),
-    [rows, keyword, typeFilter, enabledFilter],
+    () => filterTree(rows, keyword.trim().toLowerCase(), typeFilter, enabledFilter, builtinFilter),
+    [rows, keyword, typeFilter, enabledFilter, builtinFilter],
   );
 
   const tableRows = useMemo(
@@ -171,7 +174,9 @@ export function ResourcesAdminPage() {
       {
         key: "name",
         title: "资源名称",
-        width: 400,
+        width: 320,
+        className: "resource-manage-col-name is-sticky-left",
+        headerClassName: "resource-manage-col-name is-sticky-left",
         render: ({ row, level }) => {
           const hasChildren = row.children.length > 0;
           const expanded = expandedIds.has(row.id);
@@ -189,7 +194,7 @@ export function ResourcesAdminPage() {
               >
                 <BzChevronIcon direction={expanded || hasActiveFilter ? "down" : "right"} />
               </button>
-              <span className="resource-name-main">{row.name}</span>
+              <span className="resource-name-main cell-ellipsis">{row.name}</span>
             </div>
           );
         },
@@ -204,19 +209,33 @@ export function ResourcesAdminPage() {
         key: "code",
         title: "编码",
         width: 180,
-        render: ({ row }) => <span className="resource-mono">{row.code}</span>,
+        render: ({ row }) => <span className="resource-mono cell-ellipsis">{row.code}</span>,
       },
       {
         key: "path",
         title: "路由路径",
-        minWidth: 160,
-        render: ({ row }) => <span className="resource-muted">{row.path || "-"}</span>,
+        width: 180,
+        render: ({ row }) => {
+          const text = row.path || "-";
+          return (
+            <BzOverflowTooltip text={text}>
+              <span className="resource-mono cell-ellipsis">{text}</span>
+            </BzOverflowTooltip>
+          );
+        },
       },
       {
         key: "component",
         title: "组件路径",
-        minWidth: 200,
-        render: ({ row }) => <span className="resource-muted">{row.component || "-"}</span>,
+        width: 260,
+        render: ({ row }) => {
+          const text = row.component || "-";
+          return (
+            <BzOverflowTooltip text={text}>
+              <span className="resource-mono cell-ellipsis">{text}</span>
+            </BzOverflowTooltip>
+          );
+        },
       },
       {
         key: "sortNo",
@@ -253,9 +272,24 @@ export function ResourcesAdminPage() {
         render: ({ row }) => (row.systemBuiltin ? "是" : "否"),
       },
       {
+        key: "remark",
+        title: "备注",
+        width: 180,
+        render: ({ row }) => {
+          const text = row.remark || "-";
+          return (
+            <BzOverflowTooltip text={text}>
+              <span className="cell-ellipsis">{text}</span>
+            </BzOverflowTooltip>
+          );
+        },
+      },
+      {
         key: "actions",
         title: "操作",
         width: 220,
+        className: "resource-manage-col-actions is-sticky-right",
+        headerClassName: "resource-manage-col-actions is-sticky-right",
         render: ({ row }) => {
           const childrenAllowed = canHaveChildren(row.resourceType);
           const actions: AdminActionItem[] = [];
@@ -322,6 +356,7 @@ export function ResourcesAdminPage() {
     setKeyword(keywordDraft.trim());
     setTypeFilter(typeFilterDraft);
     setEnabledFilter(enabledFilterDraft);
+    setBuiltinFilter(builtinFilterDraft);
     setExpandedIds(new Set(flattenRows(rows).map((item) => item.id)));
   }
 
@@ -416,9 +451,11 @@ export function ResourcesAdminPage() {
     setKeywordDraft("");
     setTypeFilterDraft("");
     setEnabledFilterDraft("");
+    setBuiltinFilterDraft("");
     setKeyword("");
     setTypeFilter("");
     setEnabledFilter("");
+    setBuiltinFilter("");
     setExpandedIds(new Set(flattenRows(rows).map((item) => item.id)));
   }
 
@@ -516,8 +553,13 @@ export function ResourcesAdminPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
+          <BzCard
+            className="admin-panel admin-table-card resource-manage-card"
+            shadow="never"
+          >
+            <div className="resource-manage-region">
+              {queryPanelVisible ? (
+                <div className="resource-manage-query-panel">
               <div
                 ref={queryCardRef}
                 className={[
@@ -525,9 +567,6 @@ export function ResourcesAdminPage() {
                   querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
                 ].join(" ")}
               >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
                 <form
                   ref={queryGridRef}
                   className="bz-form admin-query-grid"
@@ -541,7 +580,7 @@ export function ResourcesAdminPage() {
                     <div className="admin-query-field__control">
                       <BzInput
                         modelValue={keywordDraft}
-                        placeholder="搜索资源名称、编码、路径、组件"
+                        placeholder="搜索资源名称 / 编码 / 路径 / 组件"
                         clearable
                         onValueChange={setKeywordDraft}
                         onKeyUp={(event) => {
@@ -580,6 +619,20 @@ export function ResourcesAdminPage() {
                       </BzSelect>
                     </div>
                   </BzFormItem>
+                  <BzFormItem className="admin-query-field">
+                    <div className="admin-query-field__label">内置状态</div>
+                    <div className="admin-query-field__control">
+                      <BzSelect
+                        modelValue={builtinFilterDraft}
+                        placeholder="全部"
+                        clearable
+                        onValueChange={(value) => setBuiltinFilterDraft(value ?? "")}
+                      >
+                        <BzOption value="true" label="系统内置" />
+                        <BzOption value="false" label="非内置" />
+                      </BzSelect>
+                    </div>
+                  </BzFormItem>
                   <div className="admin-query-actions">
                     <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
                       重置
@@ -601,25 +654,31 @@ export function ResourcesAdminPage() {
                   </div>
                 </form>
               </div>
-            </BzCard>
-          ) : null}
-
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div>
-                  <div className="admin-table-title">资源管理</div>
                 </div>
-                <div className="admin-table-tools">
-                  <BzButton onClick={expandAll}>全部展开</BzButton>
-                  <BzButton onClick={collapseAll}>全部收起</BzButton>
+              ) : null}
+
+              <div className="resource-manage-toolbar-row">
+                <div className="resource-manage-business-actions">
                   {canCreate ? (
                     <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateRoot}>
                       新增
                     </BzButton>
                   ) : null}
+                </div>
+                <div className="resource-manage-query-tools">
+                  <button className="admin-vben-circle-button" type="button" title="全部展开" onClick={expandAll}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 6h16" />
+                      <path d="M7 12h10" />
+                      <path d="M10 18h4" />
+                    </svg>
+                  </button>
+                  <button className="admin-vben-circle-button" type="button" title="全部收起" onClick={collapseAll}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 6h16" />
+                      <path d="M7 12h10" />
+                    </svg>
+                  </button>
                   <AdminTableTools
                     queryPanelVisible={queryPanelVisible}
                     onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
@@ -627,17 +686,21 @@ export function ResourcesAdminPage() {
                   />
                 </div>
               </div>
-            }
-          >
-            <div className="admin-table-surface">
-              <BzTable
-                data={tableRows}
-                columns={columns}
-                rowKey={(item) => item.row.id}
-                loading={loading}
-                emptyText="暂无资源数据"
-                size="small"
-              />
+
+              <div className="admin-table-surface resource-manage-table-area resource-manage-table-scope">
+                <BzTable
+                  data={tableRows}
+                  columns={columns}
+                  rowKey={(item) => item.row.id}
+                  loading={loading}
+                  emptyText="暂无数据"
+                  size="small"
+                />
+              </div>
+
+              <div className="resource-manage-table-footer">
+                <div>共 {flatRows.length} 条记录</div>
+              </div>
             </div>
           </BzCard>
         </div>
@@ -841,12 +904,13 @@ function filterTree(
   keyword: string,
   typeFilter: string,
   enabledFilter: string,
+  builtinFilter: string,
 ): ResourceManageEntry[] {
   return rows
     .map((row) => {
-      const children = filterTree(row.children, keyword, typeFilter, enabledFilter);
-      const selfMatched = matchRow(row, keyword, typeFilter, enabledFilter);
-      if (!keyword && !typeFilter && !enabledFilter) {
+      const children = filterTree(row.children, keyword, typeFilter, enabledFilter, builtinFilter);
+      const selfMatched = matchRow(row, keyword, typeFilter, enabledFilter, builtinFilter);
+      if (!keyword && !typeFilter && !enabledFilter && !builtinFilter) {
         return { ...row, children };
       }
       if (selfMatched || children.length > 0) {
@@ -857,9 +921,16 @@ function filterTree(
     .filter((row): row is ResourceManageEntry => Boolean(row));
 }
 
-function matchRow(row: ResourceManageEntry, keyword: string, typeFilter: string, enabledFilter: string): boolean {
+function matchRow(
+  row: ResourceManageEntry,
+  keyword: string,
+  typeFilter: string,
+  enabledFilter: string,
+  builtinFilter: string,
+): boolean {
   if (typeFilter && row.resourceType !== typeFilter) return false;
   if (enabledFilter && String(row.enabled) !== enabledFilter) return false;
+  if (builtinFilter && String(row.systemBuiltin) !== builtinFilter) return false;
   if (!keyword) return true;
   return [row.name, row.code, row.path, row.component]
     .filter(Boolean)
