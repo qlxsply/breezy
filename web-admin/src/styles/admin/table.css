@@ -31,7 +31,7 @@
 .admin-toolbar-primary {
   min-height: var(--size-control-sm) !important;
   padding: 4px 15px !important;
-  border-radius: var(--radius-md) !important;
+  border-radius: 0 !important;
   font-size: var(--font-size-sm) !important;
   font-weight: var(--font-weight-semibold) !important;
   box-shadow: none;
@@ -73,7 +73,7 @@
   color: var(--color-text-tertiary);
   background: var(--color-bg-surface);
   border: none;
-  border-radius: var(--radius-round);
+  border-radius: 0;
   box-shadow: var(--shadow-surface);
   cursor: pointer;
   transition:
@@ -112,7 +112,7 @@
 .admin-table-surface {
   overflow: hidden;
   border: var(--border-width-1) solid var(--color-border);
-  border-radius: var(--radius-xl);
+  border-radius: 0;
 }
 
 .admin-action-bar {
@@ -137,7 +137,7 @@
   color: var(--color-text-secondary);
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   cursor: pointer;
   white-space: nowrap;
 }

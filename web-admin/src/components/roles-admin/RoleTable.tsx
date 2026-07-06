@@ -3,6 +3,7 @@ import type { AdminActionItem } from "../../types/admin-action";
 import type { RoleEntry } from "../../types/role-admin";
 import { AdminActionBar } from "../admin/AdminActionBar";
 import type { BzTableColumn } from "../bz/BzTable";
+import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
@@ -46,13 +47,17 @@ export function RoleTable({
       key: "code",
       title: "编码",
       width: 160,
-      render: (row) => <span className="mono">{row.code}</span>,
+      render: (row) => <span className="role-table-mono role-table-text">{row.code}</span>,
     },
     {
       key: "name",
       title: "名称",
       minWidth: 180,
-      render: (row) => <div className="name">{row.name}</div>,
+      render: (row) => (
+        <BzOverflowTooltip text={row.name}>
+          <span className="role-table-text role-table-name">{row.name}</span>
+        </BzOverflowTooltip>
+      ),
     },
     {
       key: "enabled",
@@ -62,19 +67,29 @@ export function RoleTable({
         <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
       ),
     },
-    { key: "createdBy", title: "创建人", width: 140, render: (row) => row.createdBy || "-" },
+    {
+      key: "createdBy",
+      title: "创建人",
+      width: 140,
+      render: (row) => <span className="role-table-text">{row.createdBy || "-"}</span>,
+    },
     {
       key: "createdAt",
       title: "创建时间",
       width: 170,
-      render: (row) => formatDateTime(row.createdAt),
+      render: (row) => <span className="role-table-text">{formatDateTime(row.createdAt)}</span>,
     },
-    { key: "updatedBy", title: "更新人", width: 140, render: (row) => row.updatedBy || "-" },
+    {
+      key: "updatedBy",
+      title: "更新人",
+      width: 140,
+      render: (row) => <span className="role-table-text">{row.updatedBy || "-"}</span>,
+    },
     {
       key: "updatedAt",
       title: "更新时间",
       width: 170,
-      render: (row) => formatDateTime(row.updatedAt),
+      render: (row) => <span className="role-table-text">{formatDateTime(row.updatedAt)}</span>,
     },
     {
       key: "actions",
@@ -88,13 +103,15 @@ export function RoleTable({
   ];
 
   return (
-    <BzTable
-      data={rows}
-      columns={columns}
-      rowKey="id"
-      loading={loading}
-      emptyText="暂无数据"
-      size="small"
-    />
+    <div className="role-manage-table-scope">
+      <BzTable
+        data={rows}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        emptyText="暂无数据"
+        size="small"
+      />
+    </div>
   );
 }

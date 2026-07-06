@@ -58,6 +58,15 @@
   padding: 0;
 }
 
+.resource-manage-card {
+  box-shadow: none;
+}
+
+.resource-manage-card .admin-vben-circle-button {
+  border: var(--border-width-1) solid var(--color-border-strong);
+  box-shadow: none;
+}
+
 .resource-manage-region {
   overflow: hidden;
 }

@@ -13,7 +13,7 @@
 .admin-panel {
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  border-radius: 0;
   box-shadow: var(--shadow-card);
 }
 
@@ -72,7 +72,7 @@
 .admin-filter-control .bz-select {
   min-height: var(--size-control-sm);
   border-color: var(--color-border-strong);
-  border-radius: var(--radius-lg);
+  border-radius: 0;
 }
 
 .admin-filter-control .bz-input__inner,
@@ -99,7 +99,7 @@
 .admin-filter-primary {
   min-height: var(--size-control-sm) !important;
   padding: 0 15px !important;
-  border-radius: var(--radius-md) !important;
+  border-radius: 0 !important;
   font-size: var(--font-size-sm) !important;
   font-weight: var(--font-weight-semibold) !important;
 }
@@ -147,7 +147,7 @@
 
 .admin-filter-toggle:focus-visible {
   outline: none;
-  border-radius: var(--radius-round);
+  border-radius: 0;
   box-shadow: var(--shadow-focus-brand);
 }
 

@@ -8,6 +8,7 @@ interface AdminEntityDrawerProps {
   title: string;
   width?: string;
   loading?: boolean;
+  className?: string;
   children?: ReactNode;
   footer?: ReactNode;
   onClose: () => void;
@@ -18,6 +19,7 @@ export function AdminEntityDrawer({
   title,
   width = "960px",
   loading = false,
+  className,
   children,
   footer,
   onClose,
@@ -33,9 +35,9 @@ export function AdminEntityDrawer({
         onClick={onClose}
       />
       <section
-        className="admin-entity-drawer__panel"
+        className={["admin-entity-drawer__panel", className].filter(Boolean).join(" ")}
         style={{ width }}
-        >
+      >
         <header className="admin-entity-drawer__header">
           <div className="admin-entity-drawer__title-wrap">
             <div className="admin-entity-drawer__title">{title}</div>

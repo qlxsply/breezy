@@ -342,7 +342,7 @@ export function ResourcesAdminPage() {
       ]);
       setRows(resourceTree);
       setPermissions(permissionRows);
-      setExpandedIds(new Set(flattenRows(resourceTree).map((item) => item.id)));
+      setExpandedIds(new Set());
     } finally {
       setLoading(false);
     }
@@ -456,7 +456,7 @@ export function ResourcesAdminPage() {
     setTypeFilter("");
     setEnabledFilter("");
     setBuiltinFilter("");
-    setExpandedIds(new Set(flattenRows(rows).map((item) => item.id)));
+    setExpandedIds(new Set());
   }
 
   function handleParentChange(parentId: string) {

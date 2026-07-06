@@ -8,6 +8,7 @@ export interface RolePermissionTreeNodeView {
 }
 
 interface RolePermissionTreeNodeProps {
+  depth: number;
   node: RolePermissionTreeNodeView;
   expandedIds: Set<string>;
   selectedIds: Set<string>;
@@ -42,7 +43,17 @@ function resolveNodeKind(row: RoleGrantResourceEntry): "DIRECTORY" | "MENU" | "F
   return "FUNCTION";
 }
 
+function resolveDepthClass(depth: number): string {
+  if (depth <= 0) return "role-permission-resource--depth-0";
+  if (depth === 1) return "role-permission-resource--depth-1";
+  if (depth === 2) return "role-permission-resource--depth-2";
+  if (depth === 3) return "role-permission-resource--depth-3";
+  if (depth === 4) return "role-permission-resource--depth-4";
+  return "role-permission-resource--depth-5";
+}
+
 export function RolePermissionTreeNode({
+  depth,
   node,
   expandedIds,
   selectedIds,
@@ -56,7 +67,7 @@ export function RolePermissionTreeNode({
   const kind = resolveNodeKind(node.row);
   const buttonChildren = node.children.filter((child) => child.row.type === "BUTTON");
   const nestedChildren = node.children.filter((child) => child.row.type !== "BUTTON");
-  const hasNested = node.children.length > 0;
+  const hasNestedChildren = nestedChildren.length > 0;
   const expanded = expandedIds.has(node.row.id);
   const checked = selectedIds.has(node.row.id);
   const indeterminate = !checked && hasSelectedDescendant(node, selectedIds);
@@ -77,42 +88,62 @@ export function RolePermissionTreeNode({
   }
 
   return (
-    <div className="permission-tree-node">
-      <div className={`permission-node-row permission-node-row--${kind.toLowerCase()} ${diffClass}`}>
-        <button
-          className={`permission-node-toggle${!hasNested ? " is-placeholder" : ""}`}
-          type="button"
-          onClick={() => hasNested && onToggleExpand(node.row.id)}
-        >
-          {hasNested ? (expanded ? "▾" : "▸") : "▸"}
-        </button>
+    <>
+      <div className={`role-permission-row role-permission-row--${kind.toLowerCase()} ${diffClass}`}>
+        <div className="role-permission-cell role-permission-cell--check">
+          <input
+            className="permission-node-checkbox"
+            type="checkbox"
+            checked={checked}
+            disabled={readonly || !canEdit || !node.row.enabled}
+            ref={(el) => {
+              if (el) el.indeterminate = indeterminate;
+            }}
+            onChange={(event) => onToggleSelect({ id: node.row.id, checked: event.target.checked })}
+          />
+        </div>
 
-        <input
-          className="permission-node-checkbox"
-          type="checkbox"
-          checked={checked}
-          disabled={readonly || !canEdit || !node.row.enabled}
-          ref={(el) => {
-            if (el) el.indeterminate = indeterminate;
-          }}
-          onChange={(event) => onToggleSelect({ id: node.row.id, checked: event.target.checked })}
-        />
+        <div className="role-permission-cell role-permission-cell--resource">
+          <div className={`role-permission-resource ${resolveDepthClass(depth)}`}>
+            <button
+              className={`permission-node-toggle${!hasNestedChildren ? " is-placeholder" : ""}`}
+              type="button"
+              onClick={() => hasNestedChildren && onToggleExpand(node.row.id)}
+            >
+              {hasNestedChildren ? (expanded ? "▾" : "▸") : "•"}
+            </button>
+            <span className="role-permission-resource__name">{node.row.name}</span>
+          </div>
+        </div>
 
-        <span className="permission-node-name">{node.row.name}</span>
-        <span className={`permission-tag ${typeClass()}`}>{typeLabel()}</span>
-        {!node.row.enabled ? <span className="permission-tag permission-tag-disabled">停用</span> : null}
-      </div>
+        <div className="role-permission-cell role-permission-cell--type">
+          <span className={`permission-tag ${typeClass()}`}>{typeLabel()}</span>
+        </div>
 
-      {expanded && hasNested ? (
-        <div className="permission-tree-children">
+        <div className="role-permission-cell role-permission-cell--code mono">{node.row.code || "-"}</div>
+
+        <div className="role-permission-cell role-permission-cell--status">
+          <span className={`role-permission-status${node.row.enabled ? " is-enabled" : " is-disabled"}`}>
+            {node.row.enabled ? "启用" : "停用"}
+          </span>
+        </div>
+
+        <div className="role-permission-cell role-permission-cell--actions">
           {buttonChildren.length > 0 ? (
-            <div className="permission-button-group" role="group" aria-label={`${node.row.name}按钮权限`}>
+            <div className="role-permission-button-list" role="group" aria-label={`${node.row.name}按钮权限`}>
               {buttonChildren.map((child) => {
                 const buttonChecked = selectedIds.has(child.row.id);
                 return (
                   <label
                     key={child.row.id}
-                    className={`permission-button-chip${buttonChecked ? " is-checked" : ""}${readonly || !canEdit || !child.row.enabled ? " is-disabled" : ""} ${resolveDiffClass(child.row.id, diffStatusById)}`}
+                    className={[
+                      "permission-button-chip",
+                      buttonChecked ? "is-checked" : "",
+                      readonly || !canEdit || !child.row.enabled ? "is-disabled" : "",
+                      resolveDiffClass(child.row.id, diffStatusById),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                   >
                     <input
                       className="permission-button-chip__checkbox"
@@ -131,10 +162,17 @@ export function RolePermissionTreeNode({
                 );
               })}
             </div>
-          ) : null}
-          {nestedChildren.map((child) => (
+          ) : (
+            <span className="role-permission-empty">-</span>
+          )}
+        </div>
+      </div>
+
+      {expanded && hasNestedChildren
+        ? nestedChildren.map((child) => (
             <RolePermissionTreeNode
               key={child.row.id}
+              depth={depth + 1}
               node={child}
               expandedIds={expandedIds}
               selectedIds={selectedIds}
@@ -145,9 +183,8 @@ export function RolePermissionTreeNode({
               onToggleSelect={onToggleSelect}
               onToggleButton={onToggleButton}
             />
-          ))}
-        </div>
-      ) : null}
-    </div>
+          ))
+        : null}
+    </>
   );
 }

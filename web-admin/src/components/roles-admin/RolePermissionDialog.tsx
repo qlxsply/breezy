@@ -5,16 +5,16 @@ import type { RoleEntry, RoleGrantResourceEntry, RoleGrantSelection } from "../.
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
-import { BzForm } from "../bz/BzForm";
-import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
-import { BzSwitch } from "../bz/BzSwitch";
+import { BzOption } from "../bz/BzOption";
+import { BzSelect } from "../bz/BzSelect";
+import { BzTag } from "../bz/BzTag";
 import { RolePermissionTreeNode, type RolePermissionTreeNodeView } from "./RolePermissionTreeNode";
 
 type DiffStatus = "added" | "removed";
 
 interface RolePermissionDialogProps {
-  mode: "detail" | "edit";
+  mode: "create" | "detail" | "edit";
   role: RoleEntry | null;
   resources: RoleGrantResourceEntry[];
   selection: RoleGrantSelection;
@@ -30,6 +30,8 @@ interface RolePermissionDialogProps {
   }) => void;
 }
 
+const emptyRole: RoleEntry = { id: "", code: "", name: "", enabled: true };
+
 export function RolePermissionDialog({
   mode,
   role,
@@ -42,7 +44,7 @@ export function RolePermissionDialog({
   onClose,
   onSubmit,
 }: RolePermissionDialogProps) {
-  const [form, setForm] = useState<RoleEntry>({ id: "", code: "", name: "", enabled: true });
+  const [form, setForm] = useState<RoleEntry>(emptyRole);
   const [keyword, setKeyword] = useState("");
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
@@ -50,8 +52,10 @@ export function RolePermissionDialog({
   const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const treeWrapRef = useRef<HTMLDivElement | null>(null);
-  const editable = mode === "edit" && (canEditBasic || canEditPermissions);
-  const permissionEditable = mode === "edit" && canEditPermissions;
+
+  const basicEditable = mode !== "detail" && canEditBasic;
+  const editable = mode !== "detail" && (canEditBasic || canEditPermissions);
+  const permissionEditable = mode !== "detail" && canEditPermissions;
   const showPermissionSection = canViewPermissions || canEditPermissions;
 
   const resourceMap = useMemo(() => {
@@ -80,9 +84,7 @@ export function RolePermissionDialog({
   }, [childrenMap, resources]);
 
   useEffect(() => {
-    if (role) {
-      setForm({ ...role });
-    }
+    setForm(role ? { ...role } : { ...emptyRole });
     setSelectedResourceIds(buildSelectedResourceIds(selection));
     setExpandedIds(new Set(defaultExpandedIds));
     setConfirming(false);
@@ -119,16 +121,37 @@ export function RolePermissionDialog({
     return count;
   }, [filteredRoots]);
 
+  const selectableResourceCount = useMemo(
+    () => resources.filter((row) => row.selectable).length,
+    [resources],
+  );
+
+  const headerSelectableRowIds = useMemo(
+    () => resources.filter((row) => row.enabled && row.type !== "BUTTON").map((row) => row.id),
+    [resources],
+  );
+
+  const allRowsSelected = useMemo(
+    () =>
+      headerSelectableRowIds.length > 0 &&
+      headerSelectableRowIds.every((id) => selectedResourceIds.has(id)),
+    [headerSelectableRowIds, selectedResourceIds],
+  );
+
+  const someRowsSelected = useMemo(
+    () => headerSelectableRowIds.some((id) => selectedResourceIds.has(id)),
+    [headerSelectableRowIds, selectedResourceIds],
+  );
+
   const summarySelection = useMemo(
     () => buildSubmitSelection(selectedResourceIds),
     [selectedResourceIds, resources],
   );
 
-  const summaryText = useMemo(() => {
-    const resourceCount = summarySelection.resourceIds.length;
-    if (resourceCount === 0) return "未选择权限";
-    return `已选择资源 ${resourceCount} 项`;
-  }, [summarySelection]);
+  const summaryText = useMemo(
+    () => `已选 ${summarySelection.resourceIds.length} / ${selectableResourceCount} 项`,
+    [selectableResourceCount, summarySelection],
+  );
 
   const diff = useMemo(
     () => buildSelectionDiff(selection, pendingSelection ?? summarySelection),
@@ -290,6 +313,20 @@ export function RolePermissionDialog({
     setSelectedResourceIds(new Set());
   }
 
+  function toggleSelectAll(checked: boolean) {
+    if (!permissionEditable) return;
+    if (!checked) {
+      setSelectedResourceIds(new Set());
+      return;
+    }
+
+    const next = new Set<string>();
+    resources.forEach((row) => {
+      if (row.enabled) next.add(row.id);
+    });
+    setSelectedResourceIds(next);
+  }
+
   function toggleSelect(nodeId: string, checked: boolean) {
     if (!permissionEditable) return;
     const row = resourceMap.get(nodeId);
@@ -341,10 +378,10 @@ export function RolePermissionDialog({
   }
 
   function handleSubmit() {
-    if (!role || !editable) return;
+    if (!editable) return;
 
     setError("");
-    if (canEditBasic) {
+    if (basicEditable) {
       if (!form.code.trim()) {
         setError("编码不能为空");
         return;
@@ -360,21 +397,34 @@ export function RolePermissionDialog({
     }
 
     const nextSelection = buildSubmitSelection(selectedResourceIds);
+    const nextRole = { ...form, code: form.code.trim(), name: form.name.trim() };
+
+    if (mode === "create") {
+      onSubmit({
+        role: nextRole,
+        selection: nextSelection,
+        permissionChanged: nextSelection.resourceIds.length > 0,
+      });
+      return;
+    }
+
     const nextDiff = buildSelectionDiff(selection, nextSelection);
     if (!nextDiff.changed) {
       onSubmit({
-        role: { ...form, code: form.code.trim(), name: form.name.trim() },
+        role: nextRole,
         selection: nextSelection,
         permissionChanged: false,
       });
       return;
     }
+
     setPendingSelection(nextSelection);
     setConfirming(true);
   }
 
   function backToEdit() {
     setConfirming(false);
+    setPendingSelection(null);
   }
 
   function confirmSubmit() {
@@ -390,7 +440,7 @@ export function RolePermissionDialog({
     <div className="permission-dialog-footer">
       <div className="permission-dialog-footer__summary">
         {confirming
-          ? "确认保存后，受影响用户需要重新登录后权限才会完全生效。"
+          ? "确认保存后，受影响用户重新登录后权限才会完全生效。"
           : showPermissionSection
             ? summaryText
             : ""}
@@ -417,174 +467,258 @@ export function RolePermissionDialog({
     </div>
   );
 
+  function renderStatusValue() {
+    if (basicEditable) {
+      return (
+        <td className="role-info-cell role-info-cell--edit">
+          <BzSelect
+            className="role-info-select"
+            modelValue={form.enabled ? "true" : "false"}
+            onValueChange={(value) =>
+              setForm((current) => ({
+                ...current,
+                enabled: value === undefined ? current.enabled : value === "true",
+              }))
+            }
+          >
+            <BzOption label="启用" value="true" />
+            <BzOption label="停用" value="false" />
+          </BzSelect>
+        </td>
+      );
+    }
+    return (
+      <td className="role-info-cell">
+        <BzTag
+          className={`role-info-status-tag${form.enabled ? " is-enabled" : " is-disabled"}`}
+          type={form.enabled ? "success" : "danger"}
+        >
+          {form.enabled ? "启用" : "停用"}
+        </BzTag>
+      </td>
+    );
+  }
+
+  function renderValueCell(value: string, options?: { mono?: boolean }) {
+    return <td className={`role-info-cell${options?.mono ? " mono" : ""}`}>{value || "-"}</td>;
+  }
+
+  function renderEditableTextCell(value: string, placeholder: string, onChange: (value: string) => void, options?: { mono?: boolean }) {
+    return (
+      <td className={`role-info-cell role-info-cell--edit${options?.mono ? " mono" : ""}`}>
+        <BzInput
+          modelValue={value}
+          placeholder={placeholder}
+          className={`role-info-input${options?.mono ? " mono" : ""}`}
+          onValueChange={onChange}
+        />
+      </td>
+    );
+  }
+
+  const drawerTitle = confirming
+    ? "确认权限变更"
+    : mode === "create"
+      ? "新增角色"
+      : mode === "detail"
+        ? "角色详情"
+        : "编辑角色";
+
   return (
     <AdminEntityDrawer
       open
-      title={confirming ? "确认权限变更" : mode === "detail" ? "角色详情" : "编辑角色"}
-      width="1120px"
+      className="role-manage-drawer"
+      title={drawerTitle}
+      width="1180px"
       loading={loading}
       onClose={onClose}
       footer={footer}
     >
-      <section className="permission-panel role-manage-section">
-        <div className="permission-panel__head">
-          <div>
-            <div className="permission-panel__title">基础信息</div>
+      <div className="role-manage-shell">
+        <section className="role-manage-section">
+          <div className="role-manage-section__head">
+            <div className="role-manage-section__title">角色信息</div>
           </div>
-        </div>
 
-        <BzForm>
-          <div className="role-manage-form-grid">
-            <BzFormItem
-              label={
-                canEditBasic && mode === "edit" ? (
+          <div className="role-info-table-wrap">
+            <table className="role-info-table" aria-label="角色信息">
+              <tbody>
+                <tr>
+                  <th>
+                    <span className={basicEditable ? "is-required" : undefined}>角色编码</span>
+                  </th>
+                  {basicEditable
+                    ? renderEditableTextCell(form.code, "请输入角色编码", (value) => setForm((current) => ({ ...current, code: value })), { mono: true })
+                    : renderValueCell(form.code || "-", { mono: true })}
+                  <th>
+                    <span className={basicEditable ? "is-required" : undefined}>角色名称</span>
+                  </th>
+                  {basicEditable
+                    ? renderEditableTextCell(form.name, "请输入角色名称", (value) => setForm((current) => ({ ...current, name: value })))
+                    : renderValueCell(form.name || "-")}
+                  <th>
+                    <span className={basicEditable ? "is-required" : undefined}>状态</span>
+                  </th>
+                  {renderStatusValue()}
+                </tr>
+
+                {mode !== "create" ? (
                   <>
-                    编码<span className="form-required-mark">*</span>
+                    <tr>
+                      <th>创建人</th>
+                      {renderValueCell(role?.createdBy || "-", { mono: true })}
+                      <th>创建时间</th>
+                      {renderValueCell(formatDateTime(role?.createdAt) || "-", { mono: true })}
+                      <th>更新人</th>
+                      {renderValueCell(role?.updatedBy || "-", { mono: true })}
+                    </tr>
+                    <tr>
+                      <th>更新时间</th>
+                      {renderValueCell(formatDateTime(role?.updatedAt) || "-", { mono: true })}
+                      <th>权限概览</th>
+                      {renderValueCell(showPermissionSection ? summaryText : "未开放权限查看")}
+                      <th>资源总数</th>
+                      {renderValueCell(`${resources.length} 项`, { mono: true })}
+                    </tr>
                   </>
-                ) : (
-                  "编码"
-                )
-              }
-            >
-              <BzInput
-                modelValue={form.code}
-                className="mono"
-                placeholder="请输入角色编码"
-                disabled={!canEditBasic || mode === "detail"}
-                readOnly={!canEditBasic || mode === "detail"}
-                onValueChange={(value) => setForm((current) => ({ ...current, code: value }))}
-              />
-            </BzFormItem>
-            <BzFormItem
-              label={
-                canEditBasic && mode === "edit" ? (
-                  <>
-                    名称<span className="form-required-mark">*</span>
-                  </>
-                ) : (
-                  "名称"
-                )
-              }
-            >
-              <BzInput
-                modelValue={form.name}
-                placeholder="请输入角色名称"
-                disabled={!canEditBasic || mode === "detail"}
-                readOnly={!canEditBasic || mode === "detail"}
-                onValueChange={(value) => setForm((current) => ({ ...current, name: value }))}
-              />
-            </BzFormItem>
-            <BzFormItem label="状态">
-              <BzSwitch
-                modelValue={form.enabled}
-                activeText="启用"
-                inactiveText="停用"
-                disabled={!canEditBasic || mode === "detail"}
-                onValueChange={(value) => setForm((current) => ({ ...current, enabled: value }))}
-              />
-            </BzFormItem>
-            <BzFormItem label="创建人">
-              <BzInput modelValue={role?.createdBy || "-"} disabled readOnly />
-            </BzFormItem>
-            <BzFormItem label="创建时间">
-              <BzInput modelValue={formatDateTime(role?.createdAt)} disabled readOnly />
-            </BzFormItem>
-            <BzFormItem label="更新时间">
-              <BzInput modelValue={formatDateTime(role?.updatedAt)} disabled readOnly />
-            </BzFormItem>
-          </div>
-        </BzForm>
-
-        {error ? <BzAlert title={error} type="error" showIcon className="form-error" /> : null}
-      </section>
-
-      {showPermissionSection ? !confirming ? (
-        <div className="permission-dialog-shell">
-          <div className="permission-dialog-toolbar">
-            <BzInput
-              modelValue={keyword}
-              placeholder="搜索资源名称/编码/类型"
-              clearable
-              onValueChange={setKeyword}
-            />
-            <BzButton className="permission-toolbar-button" onClick={expandAll}>
-              全部展开
-            </BzButton>
-            <BzButton className="permission-toolbar-button" onClick={collapseAll}>
-              全部收起
-            </BzButton>
-            {permissionEditable ? (
-              <BzButton className="permission-toolbar-button" onClick={clearAll}>
-                清空选择
-              </BzButton>
-            ) : null}
+                ) : null}
+              </tbody>
+            </table>
           </div>
 
-          <section className="permission-panel permission-panel--drawer">
-            <div className="permission-panel__head">
-              <div>
-                <div className="permission-panel__title">权限内容</div>
-              </div>
-              <div className="permission-panel__meta">
-                {filteredResourceCount} / {resources.length} 项
-              </div>
-            </div>
+          {error ? <BzAlert title={error} type="error" showIcon className="form-error role-manage-error" /> : null}
+        </section>
 
-            <div className="permission-tree-wrap" ref={treeWrapRef}>
-              {filteredRoots.length === 0 ? (
-                <div className="permission-empty">暂无可授权资源</div>
-              ) : null}
-              {filteredRoots.map((node) => (
-                <RolePermissionTreeNode
-                  key={node.row.id}
-                  node={node}
-                  expandedIds={displayExpandedIds}
-                  selectedIds={selectedResourceIds}
-                  canEdit={permissionEditable}
-                  onToggleExpand={toggleExpand}
-                  onToggleSelect={(payload) => toggleSelect(payload.id, payload.checked)}
-                  onToggleButton={(payload) => toggleSelect(payload.id, payload.checked)}
+        {showPermissionSection ? (
+          !confirming ? (
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">权限内容</div>
+                <div className="role-manage-section__stat">{summaryText}</div>
+              </div>
+
+              <div className="role-permission-toolbar">
+                <BzInput
+                  modelValue={keyword}
+                  placeholder="搜索资源名称/编码/类型"
+                  clearable
+                  className="role-permission-toolbar__search"
+                  onValueChange={setKeyword}
                 />
-              ))}
-            </div>
-          </section>
-        </div>
-      ) : (
-        <div className="permission-dialog-shell">
-          <section className="permission-panel permission-panel--drawer">
-            <div className="permission-panel__head">
-              <div>
-                <div className="permission-panel__title">确认权限变更</div>
-                <div className="permission-panel__hint">
-                  绿色边框表示新增权限；红色删除线表示移除权限；未变化节点仅用于展示层级路径。
+                <div className="role-permission-toolbar__actions">
+                  <BzButton className="permission-toolbar-button" onClick={expandAll}>
+                    全部展开
+                  </BzButton>
+                  <BzButton className="permission-toolbar-button" onClick={collapseAll}>
+                    全部收起
+                  </BzButton>
+                  {permissionEditable ? (
+                    <BzButton className="permission-toolbar-button" onClick={clearAll}>
+                      清空选择
+                    </BzButton>
+                  ) : null}
                 </div>
               </div>
-              <div className="permission-panel__meta">{diffSummaryText}</div>
-            </div>
 
-            <div className="permission-tree-wrap">
-              {diffRoots.length === 0 ? (
-                <div className="permission-empty">权限未发生变更</div>
-              ) : (
-                diffRoots.map((node) => (
-                  <RolePermissionTreeNode
-                    key={node.row.id}
-                    node={node}
-                    expandedIds={diffExpandedIds}
-                    selectedIds={diffSelectedNodeIds}
-                    canEdit={false}
-                    readonly
-                    diffStatusById={diffStatusById}
-                    onToggleExpand={toggleExpand}
-                    onToggleSelect={() => {}}
-                    onToggleButton={() => {}}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-        </div>
-      ) : null}
+              <div className="role-permission-table">
+                <div className="role-permission-table__viewport" ref={treeWrapRef}>
+                  <div className="role-permission-row role-permission-row--head role-permission-table__head">
+                    <div className="role-permission-cell role-permission-cell--check">
+                      {permissionEditable ? (
+                        <input
+                          className="permission-node-checkbox"
+                          type="checkbox"
+                          checked={allRowsSelected}
+                          ref={(el) => {
+                            if (el) el.indeterminate = !allRowsSelected && someRowsSelected;
+                          }}
+                          onChange={(event) => toggleSelectAll(event.target.checked)}
+                        />
+                      ) : null}
+                    </div>
+                    <div className="role-permission-cell role-permission-cell--resource">资源名称</div>
+                    <div className="role-permission-cell role-permission-cell--type">类型</div>
+                    <div className="role-permission-cell role-permission-cell--code">资源编码</div>
+                    <div className="role-permission-cell role-permission-cell--status">状态</div>
+                    <div className="role-permission-cell role-permission-cell--actions">按钮权限</div>
+                  </div>
+
+                  <div className="role-permission-table__body">
+                    {filteredRoots.length === 0 ? (
+                      <div className="permission-empty">暂无可授权资源</div>
+                    ) : (
+                      filteredRoots.map((node) => (
+                        <RolePermissionTreeNode
+                          key={node.row.id}
+                          depth={0}
+                          node={node}
+                          expandedIds={displayExpandedIds}
+                          selectedIds={selectedResourceIds}
+                          canEdit={permissionEditable}
+                          onToggleExpand={toggleExpand}
+                          onToggleSelect={(payload) => toggleSelect(payload.id, payload.checked)}
+                          onToggleButton={(payload) => toggleSelect(payload.id, payload.checked)}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="role-permission-table__meta">
+                  当前筛选结果 {filteredResourceCount} 项，共 {resources.length} 项资源
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title-wrap">
+                  <div className="role-manage-section__title">确认权限变更</div>
+                  <div className="role-manage-section__hint">
+                    绿色描边表示新增权限，红色删除线表示移除权限，未变化节点仅用于展示层级路径。
+                  </div>
+                </div>
+                <div className="role-manage-section__stat">{diffSummaryText}</div>
+              </div>
+
+              <div className="role-permission-table">
+                <div className="role-permission-table__viewport">
+                  <div className="role-permission-row role-permission-row--head role-permission-table__head">
+                    <div className="role-permission-cell role-permission-cell--check" />
+                    <div className="role-permission-cell role-permission-cell--resource">资源名称</div>
+                    <div className="role-permission-cell role-permission-cell--type">类型</div>
+                    <div className="role-permission-cell role-permission-cell--code">资源编码</div>
+                    <div className="role-permission-cell role-permission-cell--status">状态</div>
+                    <div className="role-permission-cell role-permission-cell--actions">按钮权限</div>
+                  </div>
+
+                  <div className="role-permission-table__body">
+                    {diffRoots.length === 0 ? (
+                      <div className="permission-empty">权限未发生变更</div>
+                    ) : (
+                      diffRoots.map((node) => (
+                        <RolePermissionTreeNode
+                          key={node.row.id}
+                          depth={0}
+                          node={node}
+                          expandedIds={diffExpandedIds}
+                          selectedIds={diffSelectedNodeIds}
+                          canEdit={false}
+                          readonly
+                          diffStatusById={diffStatusById}
+                          onToggleExpand={toggleExpand}
+                          onToggleSelect={() => {}}
+                          onToggleButton={() => {}}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )
+        ) : null}
+      </div>
     </AdminEntityDrawer>
   );
 }

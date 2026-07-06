@@ -39,7 +39,7 @@
   color: var(--color-text-primary);
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   font-size: var(--font-size-sm);
 }
 
@@ -60,7 +60,7 @@
   color: var(--color-text-secondary);
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border-strong);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   cursor: pointer;
   font-size: var(--font-size-sm);
 }
