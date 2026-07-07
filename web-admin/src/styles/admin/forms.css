@@ -64,7 +64,6 @@
 }
 
 .admin-selection-table-wrap .bz-table__scroll {
-  scrollbar-gutter: stable both-edges;
 }
 
 .admin-selection-table-wrap .bz-table__inner th,

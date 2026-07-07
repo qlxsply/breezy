@@ -118,8 +118,8 @@
 }
 
 .resource-manage-table-scope .bz-table__scroll {
-  overflow: auto;
-  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .resource-manage-table-scope .bz-overflow-tooltip__trigger {

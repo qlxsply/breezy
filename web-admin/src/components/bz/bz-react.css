@@ -506,7 +506,6 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-gutter: stable both-edges;
 }
 
 .bz-table__inner {

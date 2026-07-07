@@ -69,8 +69,8 @@
 }
 
 .role-manage-table-scope .bz-table__scroll {
-  overflow: auto;
-  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .role-manage-table-scope .bz-table__inner {
