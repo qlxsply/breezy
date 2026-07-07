@@ -52,6 +52,40 @@ function resolveDepthClass(depth: number): string {
   return "role-permission-resource--depth-5";
 }
 
+function renderNodeIcon(expanded: boolean, hasNestedChildren: boolean) {
+  if (!hasNestedChildren) {
+    return (
+      <svg className="permission-node-toggle__icon" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="1.75" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  return expanded ? (
+    <svg className="permission-node-toggle__icon" viewBox="0 0 14 14" aria-hidden="true">
+      <path
+        d="M3.5 5.25L7 8.75l3.5-3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ) : (
+    <svg className="permission-node-toggle__icon" viewBox="0 0 14 14" aria-hidden="true">
+      <path
+        d="M5.25 3.5L8.75 7l-3.5 3.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function RolePermissionTreeNode({
   depth,
   node,
@@ -110,7 +144,7 @@ export function RolePermissionTreeNode({
               type="button"
               onClick={() => hasNestedChildren && onToggleExpand(node.row.id)}
             >
-              {hasNestedChildren ? (expanded ? "▾" : "▸") : "•"}
+              {renderNodeIcon(expanded, hasNestedChildren)}
             </button>
             <span className="role-permission-resource__name">{node.row.name}</span>
           </div>

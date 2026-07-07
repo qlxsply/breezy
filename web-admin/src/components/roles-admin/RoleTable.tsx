@@ -47,6 +47,8 @@ export function RoleTable({
       key: "code",
       title: "编码",
       width: 160,
+      className: "role-manage-col-code is-sticky-left",
+      headerClassName: "role-manage-col-code is-sticky-left",
       render: (row) => <span className="role-table-mono role-table-text">{row.code}</span>,
     },
     {
@@ -95,6 +97,8 @@ export function RoleTable({
       key: "actions",
       title: "操作",
       width: 220,
+      className: "role-manage-col-actions is-sticky-right",
+      headerClassName: "role-manage-col-actions is-sticky-right",
       render: (row) => {
         const actions = getActions(row);
         return <AdminActionBar actions={actions} />;

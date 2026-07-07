@@ -108,6 +108,42 @@
   border-right: none;
 }
 
+.role-manage-col-actions {
+  position: sticky;
+  z-index: 5;
+}
+
+.role-manage-col-code {
+  position: sticky;
+  z-index: 5;
+}
+
+.role-manage-col-code.is-sticky-left {
+  left: 0;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.role-manage-col-actions.is-sticky-right {
+  right: 0;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.role-manage-table-scope .bz-table__inner th.role-manage-col-code,
+.role-manage-table-scope .bz-table__inner th.role-manage-col-actions {
+  z-index: 8;
+  background: var(--color-bg-surface-soft);
+}
+
+.role-manage-table-scope .bz-table__inner td.role-manage-col-code,
+.role-manage-table-scope .bz-table__inner td.role-manage-col-actions {
+  background: var(--color-bg-surface);
+}
+
+.role-manage-table-scope .bz-table__inner tbody tr:hover td.role-manage-col-code,
+.role-manage-table-scope .bz-table__inner tbody tr:hover td.role-manage-col-actions {
+  background: var(--color-bg-surface-selected);
+}
+
 .role-table-text {
   display: block;
   min-width: 0;
@@ -456,6 +492,12 @@
   background: transparent;
   border: none;
   cursor: pointer;
+}
+
+.permission-node-toggle__icon {
+  display: block;
+  width: 14px;
+  height: 14px;
 }
 
 .permission-node-toggle.is-placeholder {
