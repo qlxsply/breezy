@@ -1,5 +1,8 @@
 package com.corwin.system.role.infrastructure.persistence;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.persistence.jpa.JpaPageMapper;
 import com.corwin.system.role.domain.model.Role;
 import com.corwin.system.role.domain.repo.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -68,5 +71,23 @@ public class RoleRepositoryJpaAdapter implements RoleRepository {
     @Override
     public List<Role> findByIdIn(List<Long> ids) {
         return repo.findByIdIn(ids);
+    }
+
+    @Override
+    public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
+        String trimmedKeyword = keyword == null ? null : keyword.trim();
+        boolean hasKeyword = trimmedKeyword != null && !trimmedKeyword.isEmpty();
+        if (!hasKeyword && enabled == null) {
+            return JpaPageMapper.toPageData(repo.findAll(JpaPageMapper.toPageable(spec)));
+        }
+        if (!hasKeyword) {
+            return JpaPageMapper.toPageData(repo.findByEnabled(enabled, JpaPageMapper.toPageable(spec)));
+        }
+        if (enabled == null) {
+            return JpaPageMapper.toPageData(repo.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(trimmedKeyword,
+                    trimmedKeyword, JpaPageMapper.toPageable(spec)));
+        }
+        return JpaPageMapper.toPageData(repo.findByEnabledAndCodeContainingIgnoreCaseOrEnabledAndNameContainingIgnoreCase(
+                enabled, trimmedKeyword, enabled, trimmedKeyword, JpaPageMapper.toPageable(spec)));
     }
 }

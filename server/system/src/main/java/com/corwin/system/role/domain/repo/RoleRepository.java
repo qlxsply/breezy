@@ -1,5 +1,7 @@
 package com.corwin.system.role.domain.repo;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.role.domain.model.Role;
 
@@ -18,4 +20,6 @@ public interface RoleRepository extends DomainRepository<Role, Long> {
     List<Role> findAllByOrderByIdAsc();
 
     List<Role> findByIdIn(List<Long> ids);
+
+    PageData<Role> page(String keyword, Boolean enabled, PageSpec spec);
 }

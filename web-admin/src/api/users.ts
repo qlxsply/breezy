@@ -100,8 +100,27 @@ export function resetUserPassword(id: string): Promise<boolean> {
   return post<boolean>(`${BASE}/${encodeURIComponent(id)}/reset-password`, {});
 }
 
+export function batchUpdateUserStatus(userIds: string[], status: UserStatus): Promise<boolean> {
+  return put<boolean>(`${BASE}/batch/status`, {
+    userIds: userIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)),
+    status,
+  });
+}
+
+export function batchResetUserPassword(userIds: string[]): Promise<boolean> {
+  return post<boolean>(`${BASE}/batch/reset-password`, {
+    userIds: userIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)),
+  });
+}
+
 export function deleteUser(id: string): Promise<boolean> {
   return del<boolean>(`${BASE}/${encodeURIComponent(id)}`);
+}
+
+export function batchDeleteUsers(userIds: string[]): Promise<boolean> {
+  return post<boolean>(`${BASE}/batch/delete`, {
+    userIds: userIds.map((id) => Number(id)).filter((id) => Number.isFinite(id)),
+  });
 }
 
 export async function getUserRoles(id: string): Promise<string[]> {

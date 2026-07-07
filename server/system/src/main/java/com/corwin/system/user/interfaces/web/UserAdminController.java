@@ -11,12 +11,16 @@ import com.corwin.system.audit.published.Audit;
 import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
+import com.corwin.system.user.application.command.BatchUpdateUserStatusCommand;
+import com.corwin.system.user.application.command.BatchUserIdsCommand;
 import com.corwin.system.user.application.command.CreateUserCommand;
 import com.corwin.system.user.application.command.UpdateUserCommand;
 import com.corwin.system.user.application.command.UpdateUserRolesCommand;
 import com.corwin.system.user.application.service.UserAdminService;
 import com.corwin.system.user.application.service.UserRoleService;
 import com.corwin.system.user.domain.model.User;
+import com.corwin.system.user.interfaces.web.req.BatchUpdateUserStatusReq;
+import com.corwin.system.user.interfaces.web.req.BatchUserIdsReq;
 import com.corwin.system.user.interfaces.web.req.CreateUserReq;
 import com.corwin.system.user.interfaces.web.req.UpdateUserReq;
 import com.corwin.system.user.interfaces.web.req.UpdateUserRolesReq;
@@ -74,11 +78,28 @@ public class UserAdminController {
         return ApiResponse.ok(toDto(userAdminService.update(id, cmd)));
     }
 
+    @PutMapping("/batch/status")
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.edit"})
+    @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
+    public ApiResponse<Boolean> batchUpdateStatus(@RequestBody BatchUpdateUserStatusReq req) {
+        BatchUpdateUserStatusCommand cmd = new BatchUpdateUserStatusCommand(req.userIds(), req.status());
+        userAdminService.batchUpdateStatus(cmd);
+        return ApiResponse.ok(true);
+    }
+
     @PostMapping("/{id}/reset-password")
     @Authorize(userType = UserType.INTERNAL, permissions = {"usr.pwd.reset"})
     @Audit(resource = AuditResource.USER, action = AuditAction.RESET_PASSWORD, level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> resetPassword(@PathVariable Long id) {
         userAdminService.resetPassword(id);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/batch/reset-password")
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.pwd.reset"})
+    @Audit(resource = AuditResource.USER, action = AuditAction.RESET_PASSWORD, level = AuditLevel.CRITICAL)
+    public ApiResponse<Boolean> batchResetPassword(@RequestBody BatchUserIdsReq req) {
+        userAdminService.batchResetPassword(new BatchUserIdsCommand(req.userIds()));
         return ApiResponse.ok(true);
     }
 
@@ -101,6 +122,14 @@ public class UserAdminController {
     @Audit(resource = AuditResource.USER, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         userAdminService.delete(id);
+        return ApiResponse.ok(true);
+    }
+
+    @PostMapping("/batch/delete")
+    @Authorize(userType = UserType.INTERNAL, permissions = {"usr.del"})
+    @Audit(resource = AuditResource.USER, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
+    public ApiResponse<Boolean> batchDelete(@RequestBody BatchUserIdsReq req) {
+        userAdminService.batchDelete(new BatchUserIdsCommand(req.userIds()));
         return ApiResponse.ok(true);
     }
 

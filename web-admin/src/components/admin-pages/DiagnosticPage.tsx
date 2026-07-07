@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import {
   getDiagnosticCapabilities,
   getDiagnosticEvents,
@@ -360,50 +361,65 @@ export function DiagnosticPage() {
     },
   ];
 
-  const summaryCards = [
+  const itemConfigColumns: Array<BzTableColumn<(typeof itemOptions)[number]>> = [
     {
-      key: "heap",
-      title: "JVM 堆使用",
-      value: formatBytes(latestSnapshot?.jvm?.heapUsedBytes),
-      accent: formatPercent(latestSnapshot?.jvm?.processCpuLoad),
-      note: `GC ${latestSnapshot?.jvm?.gcCollectionCount ?? 0} 次`,
+      key: "enabled",
+      title: "启用",
+      width: 68,
+      render: (row) => {
+        const checked = activeItems.has(row.value);
+        return <BzCheckbox modelValue={checked} onValueChange={(value) => toggleDrawerItem(row.value, value)} />;
+      },
     },
     {
-      key: "threads",
-      title: "线程健康度",
-      value: `${latestSnapshot?.thread?.threadCount ?? 0}`,
-      accent: `${latestSnapshot?.thread?.blockedCount ?? 0} 阻塞`,
-      note: `死锁 ${latestSnapshot?.thread?.deadlockedThreadIds.length ?? 0} 个`,
+      key: "label",
+      title: "采集项",
+      width: 120,
+      render: (row) => row.label,
     },
     {
-      key: "http",
-      title: "HTTP 延迟",
-      value: `${latestSnapshot?.http?.p95DurationMs ?? 0} ms`,
-      accent: `P99 ${latestSnapshot?.http?.p99DurationMs ?? 0} ms`,
-      note: `${latestSnapshot?.http?.totalRequests ?? 0} 总请求`,
+      key: "description",
+      title: "说明",
+      minWidth: 260,
+      render: (row) => row.description,
     },
     {
-      key: "sql",
-      title: "数据库负载",
-      value: `${latestSnapshot?.sql?.totalExecutions ?? 0}`,
-      accent: `${latestSnapshot?.dbPool?.activeConnections ?? 0} 活跃连接`,
-      note: `${latestSnapshot?.sql?.slowSqlCount ?? 0} 条慢 SQL`,
+      key: "threshold",
+      title: "专属配置",
+      width: 260,
+      render: (row) => {
+        const checked = activeItems.has(row.value);
+        if (row.value === "HTTP") {
+          return (
+            <div className="admin-detail-form-control">
+              <BzInput
+                disabled={!checked}
+                modelValue={drawerForm.slowRequestThresholdMs}
+                type="number"
+                onValueChange={(value) =>
+                  setDrawerForm((prev) => ({ ...prev, slowRequestThresholdMs: Number(value) }))
+                }
+              />
+            </div>
+          );
+        }
+        if (row.value === "SQL") {
+          return (
+            <div className="admin-detail-form-control">
+              <BzInput
+                disabled={!checked}
+                modelValue={drawerForm.slowSqlThresholdMs}
+                type="number"
+                onValueChange={(value) =>
+                  setDrawerForm((prev) => ({ ...prev, slowSqlThresholdMs: Number(value) }))
+                }
+              />
+            </div>
+          );
+        }
+        return <span className="text-muted">无专属阈值配置</span>;
+      },
     },
-  ];
-
-  const spotlightMetrics = [
-    { label: "运行状态", value: isActive ? "采集中" : "未开启", emphasize: true },
-    { label: "剩余 TTL", value: `${status?.remainingTtlSeconds ?? 0} 秒` },
-    {
-      label: "最近采样",
-      value: latestSnapshot?.capturedAt ? formatDateTime(latestSnapshot.capturedAt) : "-",
-    },
-    { label: "JFR", value: capability?.jfrAvailable ? "可用" : "不可用" },
-    {
-      label: "数据源",
-      value: capability?.dataSourceNames?.length ? capability.dataSourceNames.join(" / ") : "-",
-    },
-    { label: "采集项", value: status?.config.items.length ? status.config.items.join(" / ") : "-" },
   ];
 
   const runtimeDetails = [
@@ -445,6 +461,35 @@ export function DiagnosticPage() {
     },
   ];
 
+  const overviewSections = useMemo<AdminDetailSection[]>(() => [
+    {
+      title: "运行概览",
+      fields: [
+        { label: "运行状态", value: isActive ? "采集中" : "未开启" },
+        { label: "剩余 TTL", value: `${status?.remainingTtlSeconds ?? 0} 秒` },
+        { label: "最近采样", value: latestSnapshot?.capturedAt ? formatDateTime(latestSnapshot.capturedAt) : "-" },
+        { label: "JFR", value: capability?.jfrAvailable ? "可用" : "不可用" },
+        { label: "数据源", value: capability?.dataSourceNames?.length ? capability.dataSourceNames.join(" / ") : "-", span: "full" },
+        { label: "采集项", value: status?.config.items.length ? status.config.items.join(" / ") : "-", span: "full", multiline: true },
+      ],
+    },
+    {
+      title: "核心指标",
+      fields: [
+        { label: "JVM 堆使用", value: formatBytes(latestSnapshot?.jvm?.heapUsedBytes) },
+        { label: "进程 CPU", value: formatPercent(latestSnapshot?.jvm?.processCpuLoad) },
+        { label: "线程数", value: formatInteger(latestSnapshot?.thread?.threadCount) },
+        { label: "阻塞线程", value: formatInteger(latestSnapshot?.thread?.blockedCount) },
+        { label: "P95 延迟", value: `${latestSnapshot?.http?.p95DurationMs ?? 0} ms` },
+        { label: "慢 SQL", value: formatInteger(latestSnapshot?.sql?.slowSqlCount) },
+      ],
+    },
+    ...runtimeDetails.map((section) => ({
+      title: section.title,
+      fields: section.rows.map(([label, value]) => ({ label, value })),
+    })),
+  ], [capability?.dataSourceNames, capability?.jfrAvailable, isActive, latestSnapshot, runtimeDetails, status?.config.items, status?.remainingTtlSeconds]);
+
   const drawerFooter = (
     <>
       <BzButton onClick={() => setDrawerOpen(false)}>取消</BzButton>
@@ -454,96 +499,103 @@ export function DiagnosticPage() {
     </>
   );
 
+  const configSections = useMemo<AdminDetailSection[]>(() => [
+    {
+      title: "通用配置",
+      fields: [
+        {
+          label: "采样间隔(ms)",
+          value: (
+            <div className="admin-detail-form-control">
+              <BzInput modelValue={drawerForm.intervalMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, intervalMs: Number(value) }))} />
+            </div>
+          ),
+        },
+        {
+          label: "历史容量",
+          value: (
+            <div className="admin-detail-form-control">
+              <BzInput modelValue={drawerForm.historyCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, historyCapacity: Number(value) }))} />
+            </div>
+          ),
+        },
+        {
+          label: "事件容量",
+          value: (
+            <div className="admin-detail-form-control">
+              <BzInput modelValue={drawerForm.eventCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, eventCapacity: Number(value) }))} />
+            </div>
+          ),
+        },
+        {
+          label: "最长持续时间(秒)",
+          value: (
+            <div className="admin-detail-form-control">
+              <BzInput modelValue={drawerForm.ttlSeconds} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, ttlSeconds: Number(value) }))} />
+            </div>
+          ),
+        },
+        {
+          label: "深度模式",
+          value: <BzSwitch modelValue={drawerForm.deepMode} onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, deepMode: value }))} />,
+        },
+        {
+          label: "模式说明",
+          value: "适合短时间排障，会带来更高采样成本。",
+          span: "full",
+          multiline: true,
+        },
+      ],
+    },
+  ], [drawerForm.deepMode, drawerForm.eventCapacity, drawerForm.historyCapacity, drawerForm.intervalMs, drawerForm.ttlSeconds]);
+
   return (
-    <div className="app-shell">
+    <div className="admin-page">
       <div className="content">
-        <div className="list-page-stack">
+        <div className="admin-page-stack">
           <BzCard
-            className="admin-table-card"
+            className="admin-panel admin-table-card admin-list-card"
             shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">诊断工具</div>
-                <div className="admin-table-tools">
+          >
+            <div className="admin-list-region">
+              <div className="admin-list-toolbar-row">
+                <div className="admin-list-business-actions">
+                  <span className="admin-batch-toolbar__summary">{isActive ? "运行时诊断采集中" : "运行时诊断未开启"}</span>
+                </div>
+                <div className="admin-list-query-tools">
                   {canEdit && isActive ? <ToolButton title="诊断设置" kind="settings" disabled={actionLoading} onClick={openDrawer} /> : null}
                   {canStart && !isActive ? <ToolButton title="开启诊断" kind="start" disabled={actionLoading} onClick={() => void handleStart()} /> : null}
                   {canStop && isActive ? <ToolButton title="停止诊断" kind="stop" active disabled={actionLoading} onClick={() => void handleStop()} /> : null}
                   {canView ? <ToolButton title="刷新数据" kind="refresh" disabled={loading || actionLoading} onClick={() => void reloadAll(true)} /> : null}
                 </div>
               </div>
-            }
-          >
             {!canView ? (
               <BzEmpty description="无权限查看运行时诊断" />
             ) : (
-              <div className="diagnostic-hero">
-                <div className="diagnostic-spotlight-grid">
-                  {spotlightMetrics.map((metric) => (
-                    <div key={metric.label} className={`diagnostic-spotlight-item${metric.emphasize ? " is-emphasize" : ""}`}>
-                      <div className="diagnostic-spotlight-label">{metric.label}</div>
-                      <div className="diagnostic-spotlight-value">{metric.value}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="diagnostic-summary-grid">
-                  {summaryCards.map((card) => (
-                    <div key={card.key} className="diagnostic-summary-card">
-                      <div className="diagnostic-summary-title">{card.title}</div>
-                      <div className="diagnostic-summary-value">{card.value}</div>
-                      <div className="diagnostic-summary-accent">{card.accent}</div>
-                      <div className="diagnostic-summary-note">{card.note}</div>
-                    </div>
-                  ))}
-                </div>
+              <div className="admin-page-stack diagnostic-page-body">
+                <AdminDetailTable sections={overviewSections} />
+                <section className="admin-selection-section diagnostic-section-card">
+                  <div className="admin-selection-section__header">
+                    <div className="admin-selection-section__title">最近事件</div>
+                    <div className="admin-selection-section__meta">最新 {events.length} 条</div>
+                  </div>
+                  <div className="admin-selection-table-wrap">
+                    <BzTable loading={loading} data={events} columns={eventColumns} emptyText="暂无事件" size="small" />
+                  </div>
+                </section>
+                <section className="admin-selection-section diagnostic-section-card">
+                  <div className="admin-selection-section__header">
+                    <div className="admin-selection-section__title">快照历史</div>
+                    <div className="admin-selection-section__meta">最新 {history.length} 条</div>
+                  </div>
+                  <div className="admin-selection-table-wrap">
+                    <BzTable loading={loading} data={history} columns={historyColumns} emptyText="暂无快照" size="small" />
+                  </div>
+                </section>
               </div>
             )}
-          </BzCard>
-
-          {canView ? (
-            <div className="diagnostic-board-main">
-              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
-                <div className="section-header">
-                  <span>核心运行视图</span>
-                  <span className="section-subtitle">高价值指标优先展示</span>
-                </div>
-
-                <div className="diagnostic-runtime-grid">
-                  {runtimeDetails.map((section) => (
-                    <section key={section.title} className="diagnostic-runtime-panel">
-                      <div className="diagnostic-runtime-title">{section.title}</div>
-                      <div className="diagnostic-runtime-rows">
-                        {section.rows.map(([label, value]) => (
-                          <div key={label} className="diagnostic-runtime-row">
-                            <span>{label}</span>
-                            <strong>{value}</strong>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              </BzCard>
-
-              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
-                <div className="section-header">
-                  <span>最近事件</span>
-                  <span className="section-subtitle">最新 {events.length} 条</span>
-                </div>
-
-                <BzTable loading={loading} data={events} columns={eventColumns} emptyText="暂无事件" size="small" />
-              </BzCard>
-
-              <BzCard className="list-page-result-card diagnostic-section-card" shadow="never">
-                <div className="section-header">
-                  <span>快照历史</span>
-                  <span className="section-subtitle">最新 {history.length} 条</span>
-                </div>
-
-                <BzTable loading={loading} data={history} columns={historyColumns} emptyText="暂无快照" size="small" />
-              </BzCard>
             </div>
-          ) : null}
+          </BzCard>
         </div>
       </div>
 
@@ -556,71 +608,14 @@ export function DiagnosticPage() {
         footer={drawerFooter}
       >
         <div className="diagnostic-drawer-shell">
-          <section className="diagnostic-config-block">
-            <div className="diagnostic-config-block__title">通用配置</div>
-            <BzForm onSubmit={(event) => event.preventDefault()}>
-              <div className="diagnostic-config-grid">
-                <BzFormItem label="采样间隔(ms)">
-                  <BzInput modelValue={drawerForm.intervalMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, intervalMs: Number(value) }))} />
-                </BzFormItem>
-                <BzFormItem label="历史容量">
-                  <BzInput modelValue={drawerForm.historyCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, historyCapacity: Number(value) }))} />
-                </BzFormItem>
-                <BzFormItem label="事件容量">
-                  <BzInput modelValue={drawerForm.eventCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, eventCapacity: Number(value) }))} />
-                </BzFormItem>
-                <BzFormItem label="最长持续时间(秒)">
-                  <BzInput modelValue={drawerForm.ttlSeconds} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, ttlSeconds: Number(value) }))} />
-                </BzFormItem>
-              </div>
-
-              <div className="diagnostic-config-switch-row">
-                <div>
-                  <div className="diagnostic-config-switch-row__title">深度模式</div>
-                  <div className="diagnostic-config-switch-row__desc">适合短时间排障，会带来更高采样成本。</div>
-                </div>
-                <BzSwitch modelValue={drawerForm.deepMode} onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, deepMode: value }))} />
-              </div>
-            </BzForm>
-          </section>
-
-          <section className="diagnostic-config-block">
-            <div className="diagnostic-config-block__title">采集项配置</div>
-            <div className="diagnostic-config-tree">
-              {itemOptions.map((item) => {
-                const checked = activeItems.has(item.value);
-                const isHttp = item.value === "HTTP";
-                const isSql = item.value === "SQL";
-                return (
-                  <section key={item.value} className={`diagnostic-item-panel${checked ? " is-active" : ""}`}>
-                    <div className="diagnostic-item-panel__header">
-                      <div className="diagnostic-item-panel__main">
-                        <BzCheckbox modelValue={checked} onValueChange={(value) => toggleDrawerItem(item.value, value)}>
-                          {item.label}
-                        </BzCheckbox>
-                        <div className="diagnostic-item-panel__desc">{item.description}</div>
-                      </div>
-                      <BzTag type={checked ? "success" : "info"}>{checked ? "已开启" : "未开启"}</BzTag>
-                    </div>
-
-                    <div className="diagnostic-item-panel__body">
-                      {isHttp ? (
-                        <BzFormItem label="慢请求阈值(ms)">
-                          <BzInput disabled={!checked} modelValue={drawerForm.slowRequestThresholdMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, slowRequestThresholdMs: Number(value) }))} />
-                        </BzFormItem>
-                      ) : null}
-
-                      {isSql ? (
-                        <BzFormItem label="慢 SQL 阈值(ms)">
-                          <BzInput disabled={!checked} modelValue={drawerForm.slowSqlThresholdMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, slowSqlThresholdMs: Number(value) }))} />
-                        </BzFormItem>
-                      ) : null}
-
-                      {!isHttp && !isSql ? <div className="diagnostic-item-panel__placeholder">当前采集项暂无专属阈值配置，仅控制采集启用状态。</div> : null}
-                    </div>
-                  </section>
-                );
-              })}
+          <AdminDetailTable sections={configSections} />
+          <section className="admin-selection-section diagnostic-config-block">
+            <div className="admin-selection-section__header">
+              <div className="admin-selection-section__title">采集项配置</div>
+              <div className="admin-selection-section__meta">共 {itemOptions.length} 项</div>
+            </div>
+            <div className="admin-selection-table-wrap">
+              <BzTable data={itemOptions} columns={itemConfigColumns} rowKey="value" emptyText="暂无采集项" size="small" />
             </div>
           </section>
         </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { batchListDictOptions } from "@admin/api/dicts";
-import { listRoles } from "@admin/api/roles";
 import {
+  batchDeleteUsers,
+  batchResetUserPassword,
+  batchUpdateUserStatus,
   createUser,
   deleteUser,
   getUserRoles,
@@ -18,7 +20,6 @@ import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
-import type { RoleEntry } from "@admin/types/role-admin";
 import type { UserEntry, UserStatus } from "@admin/types/user-admin";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -30,7 +31,6 @@ import { BzOption } from "../bz/BzOption";
 import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
 import { PasswordResetDialog } from "../users-admin/PasswordResetDialog";
-import { UserFormDialog } from "../users-admin/UserFormDialog";
 import { UserManageDrawer } from "../users-admin/UserManageDrawer";
 import { UserTable } from "../users-admin/UserTable";
 
@@ -49,6 +49,7 @@ function toDictMetaMap(
 }
 
 export function UsersAdminPage() {
+  type BatchAction = "disable" | "reset-password" | "delete";
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<UserEntry[]>([]);
   const [page, setPage] = useState<PageResult<UserEntry>>({
@@ -68,22 +69,19 @@ export function UsersAdminPage() {
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const pageSizeOptions = [10, 20, 30, 50, 100];
+  const [batchAction, setBatchAction] = useState<BatchAction | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const [userTypeMetaMap, setUserTypeMetaMap] = useState<
     Record<string, { label: string; tagType?: string | null }>
   >({});
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [dialogModel, setDialogModel] = useState<UserEntry | null>(null);
-
   const [resetOpen, setResetOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<UserEntry | null>(null);
 
   const [manageOpen, setManageOpen] = useState(false);
-  const [manageMode, setManageMode] = useState<"detail" | "edit">("detail");
+  const [manageMode, setManageMode] = useState<"create" | "detail" | "edit">("detail");
   const [manageTarget, setManageTarget] = useState<UserEntry | null>(null);
-  const [roleList, setRoleList] = useState<RoleEntry[]>([]);
   const [roleSelected, setRoleSelected] = useState<string[]>([]);
   const [roleLoading, setRoleLoading] = useState(false);
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
@@ -93,6 +91,9 @@ export function UsersAdminPage() {
   const canEdit = hasResourceCodeAccess("user-manage-edit");
   const canToggle = hasResourceCodeAccess("user-manage-edit");
   const canReset = hasResourceCodeAccess("user-manage-reset-password");
+  const canBatchDisable = hasResourceCodeAccess("user-manage-batch-disable");
+  const canBatchReset = hasResourceCodeAccess("user-manage-batch-reset-password");
+  const canBatchDelete = hasResourceCodeAccess("user-manage-batch-delete");
   const canRoleEdit = hasResourceCodeAccess("user-manage-role-edit");
   const canRoles = canRoleEdit || hasResourceCodeAccess("user-manage-role-view");
   const canDelete = hasResourceCodeAccess("user-manage-delete");
@@ -172,25 +173,11 @@ export function UsersAdminPage() {
 
   function openCreate() {
     if (!canCreate) return;
-    if (canRoleEdit && roleList.length === 0) {
-      void preloadRoleList();
-    }
-    setDialogMode("create");
-    setDialogModel({ id: "", username: "", nickname: "", userType: "INTERNAL", status: "ENABLED" });
-    setDialogOpen(true);
+    setManageMode("create");
+    setManageTarget({ id: "", username: "", nickname: "", userType: "INTERNAL", status: "ENABLED" });
+    setRoleSelected([]);
+    setManageOpen(true);
   }
-
-  const preloadRoleList = useCallback(async () => {
-    if (!canRoleEdit) return;
-    setRoleLoading(true);
-    try {
-      if (roleList.length === 0) {
-        setRoleList((await listRoles()).filter((role) => role.enabled));
-      }
-    } finally {
-      setRoleLoading(false);
-    }
-  }, [canRoleEdit, roleList.length]);
 
   function openEdit(user: UserEntry) {
     if (!canEdit && !canRoles) return;
@@ -201,14 +188,14 @@ export function UsersAdminPage() {
     void openManage(user, "detail");
   }
 
-  async function onSubmit(payload: {
+  async function onManageSubmit(payload: {
     username: string;
     nickname: string;
     password?: string;
     status: UserStatus;
     roleIds: string[];
   }) {
-    if (dialogMode === "create") {
+    if (manageMode === "create") {
       if (!payload.password) return;
       await createUser({
         username: payload.username,
@@ -217,11 +204,14 @@ export function UsersAdminPage() {
         roleIds: payload.roleIds,
       });
       message.success("新增成功");
-    } else if (dialogModel) {
-      await updateUser(dialogModel.id, { nickname: payload.nickname, status: payload.status });
+    } else if (manageTarget) {
+      await updateUser(manageTarget.id, { nickname: payload.nickname, status: payload.status });
+      if (canRoleEdit && manageTarget.userType !== "EXTERNAL") {
+        await updateUserRoles(manageTarget.id, payload.roleIds);
+      }
       message.success("保存成功");
     }
-    setDialogOpen(false);
+    setManageOpen(false);
     await reload();
   }
 
@@ -256,24 +246,10 @@ export function UsersAdminPage() {
     }
     setRoleLoading(true);
     try {
-      if (roleList.length === 0) setRoleList((await listRoles()).filter((role) => role.enabled));
       setRoleSelected(await getUserRoles(user.id));
     } finally {
       setRoleLoading(false);
     }
-  }
-
-  async function onManageSubmit(payload: { nickname: string; status: UserStatus; roleIds: string[] }) {
-    if (!manageTarget) return;
-    if (canEdit) {
-      await updateUser(manageTarget.id, { nickname: payload.nickname, status: payload.status });
-    }
-    if (canRoleEdit && manageTarget.userType !== "EXTERNAL") {
-      await updateUserRoles(manageTarget.id, payload.roleIds);
-    }
-    setManageOpen(false);
-    message.success(canRoleEdit && manageTarget.userType !== "EXTERNAL" ? "保存成功" : "保存成功");
-    await reload();
   }
 
   async function onRemove(user: UserEntry) {
@@ -290,114 +266,182 @@ export function UsersAdminPage() {
     await reload();
   }
 
+  function isProtectedUser(user: UserEntry): boolean {
+    return user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin");
+  }
+
+  function beginBatch(nextAction: BatchAction) {
+    setBatchAction(nextAction);
+    setSelectedIds([]);
+  }
+
+  function cancelBatch() {
+    setBatchAction(null);
+    setSelectedIds([]);
+  }
+
+  function toggleSelect(user: UserEntry, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(user.id);
+      else next.delete(user.id);
+      return Array.from(next);
+    });
+  }
+
+  function selectAllCurrentPage() {
+    setSelectedIds(rows.filter((row) => !isProtectedUser(row)).map((row) => row.id));
+  }
+
+  async function confirmBatchAction() {
+    if (!batchAction || selectedIds.length === 0) return;
+    if (batchAction === "disable") {
+      await batchUpdateUserStatus(selectedIds, "DISABLED");
+      message.success("批量停用成功");
+    }
+    if (batchAction === "reset-password") {
+      const confirmed = await bzConfirm({
+        title: "批量重置密码",
+        content: `确认将已选 ${selectedIds.length} 个账号的密码重置为 123456？`,
+        confirmText: "重置",
+        cancelText: "取消",
+      });
+      if (!confirmed) return;
+      await batchResetUserPassword(selectedIds);
+      message.success("批量重置密码成功");
+    }
+    if (batchAction === "delete") {
+      const confirmed = await bzConfirm({
+        title: "批量删除用户",
+        content: `确认删除已选 ${selectedIds.length} 个账号？删除后不可恢复。`,
+        confirmText: "删除",
+        cancelText: "取消",
+      });
+      if (!confirmed) return;
+      await batchDeleteUsers(selectedIds);
+      message.success("批量删除成功");
+    }
+    cancelBatch();
+    await reload();
+  }
+
+  const batchLabel =
+    batchAction === "disable" ? "批量停用中" : batchAction === "reset-password" ? "批量重置密码中" : batchAction === "delete" ? "批量删除中" : "";
+
   return (
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
-            >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applyFilters();
-                  }}
-                >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">账号</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="按账号或昵称搜索"
-                        clearable
-                        onValueChange={setKeywordDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={statusDraft}
-                        placeholder="全部状态"
-                        clearable
-                        onValueChange={(v) => setStatusDraft((v ?? "") as "" | UserStatus)}
-                      >
-                        <BzOption label="启用" value="ENABLED" />
-                        <BzOption label="停用" value="DISABLED" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
-                      重置
-                    </BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((v) => !v)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                      </button>
-                    ) : null}
-                  </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
-
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">账号</div>
-                <div className="admin-table-tools">
-                  {canCreate ? (
-                    <BzButton
-                      className="admin-toolbar-primary"
-                      buttonType="primary"
-                      onClick={openCreate}
+          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
+            <div className="admin-list-region">
+              {queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        applyFilters();
+                      }}
                     >
-                      新增
-                    </BzButton>
-                  ) : null}
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={() => reload()}
-                  />
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">账号</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={keywordDraft}
+                            placeholder="按账号或昵称搜索"
+                            clearable
+                            onValueChange={setKeywordDraft}
+                            onKeyUp={(e) => {
+                              if (e.key === "Enter") applyFilters();
+                            }}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">状态</div>
+                        <div className="admin-query-field__control">
+                          <BzSelect
+                            modelValue={statusDraft}
+                            placeholder="全部状态"
+                            clearable
+                            onValueChange={(v) => setStatusDraft((v ?? "") as "" | UserStatus)}
+                          >
+                            <BzOption label="启用" value="ENABLED" />
+                            <BzOption label="停用" value="DISABLED" />
+                          </BzSelect>
+                        </div>
+                      </BzFormItem>
+                      <div className="admin-query-actions">
+                        <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
+                          重置
+                        </BzButton>
+                        <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
+                          搜索
+                        </BzButton>
+                        {!querySingleRow ? (
+                          <button
+                            className="admin-filter-toggle"
+                            type="button"
+                            aria-expanded={queryExpanded}
+                            onClick={() => setQueryExpanded((v) => !v)}
+                          >
+                            <span>{queryExpanded ? "收起" : "展开"}</span>
+                            <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                          </button>
+                        ) : null}
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <div className="admin-table-surface">
+              ) : null}
+
+              {batchAction ? (
+                <div className="admin-batch-toolbar">
+                  <div className="admin-batch-toolbar__summary">{batchLabel}，已选 {selectedIds.length} 项</div>
+                  <div className="admin-batch-toolbar__actions">
+                    <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
+                    <BzButton buttonType="primary" disabled={selectedIds.length === 0} onClick={() => void confirmBatchAction()}>
+                      确认
+                    </BzButton>
+                    <BzButton onClick={cancelBatch}>取消</BzButton>
+                  </div>
+                </div>
+              ) : (
+                <div className="admin-list-toolbar-row">
+                  <div className="admin-list-business-actions">
+                    {canCreate ? (
+                      <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>
+                        新增
+                      </BzButton>
+                    ) : null}
+                    {canBatchDisable ? <BzButton onClick={() => beginBatch("disable")}>批量停用</BzButton> : null}
+                    {canBatchReset ? <BzButton onClick={() => beginBatch("reset-password")}>批量重置密码</BzButton> : null}
+                    {canBatchDelete ? <BzButton onClick={() => beginBatch("delete")}>批量删除</BzButton> : null}
+                  </div>
+                  <div className="admin-list-query-tools">
+                    <AdminTableTools
+                      queryPanelVisible={queryPanelVisible}
+                      onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+                      onRefresh={() => reload()}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="admin-table-surface admin-list-table-area">
               <UserTable
                 rows={rows}
                 loading={loading}
+                batchMode={Boolean(batchAction)}
+                selectedIds={selectedIds}
                 canEdit={canEdit}
                 canToggle={canToggle}
                 canReset={canReset}
@@ -409,11 +453,12 @@ export function UsersAdminPage() {
                 onToggle={onToggle}
                 onReset={openReset}
                 onRemove={onRemove}
+                onToggleSelect={toggleSelect}
               />
-            </div>
+              </div>
 
-            {page.totalElements > 0 ? (
-              <div className="dict-pagination-bar">
+              {page.totalElements > 0 ? (
+                <div className="dict-pagination-bar admin-list-table-footer">
                 <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <BzPagination
@@ -429,22 +474,11 @@ export function UsersAdminPage() {
                     }}
                   />
                 </div>
-              </div>
-            ) : null}
+                </div>
+              ) : null}
+            </div>
           </BzCard>
 
-          {dialogOpen ? (
-            <UserFormDialog
-              mode={dialogMode}
-              model={dialogModel}
-              roles={roleList}
-              selectedRoleIds={[]}
-              rolesLoading={roleLoading}
-              canEditRoles={canRoleEdit}
-              onClose={() => setDialogOpen(false)}
-              onSubmit={onSubmit}
-            />
-          ) : null}
           {resetOpen ? (
             <PasswordResetDialog
               onClose={() => setResetOpen(false)}
@@ -456,10 +490,9 @@ export function UsersAdminPage() {
               open={manageOpen}
               mode={manageMode}
               model={manageTarget}
-              roles={roleList}
               selectedIds={roleSelected}
               loading={roleLoading}
-              canEditBasic={canEdit}
+              canEditBasic={manageMode === "create" ? canCreate : canEdit}
               canEditRoles={canRoleEdit}
               canViewRoles={canRoles}
               userTypeMetaMap={userTypeMetaMap}

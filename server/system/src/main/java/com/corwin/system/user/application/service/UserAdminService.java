@@ -11,6 +11,8 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
 import com.corwin.system.role.domain.repo.RoleRepository;
+import com.corwin.system.user.application.command.BatchUpdateUserStatusCommand;
+import com.corwin.system.user.application.command.BatchUserIdsCommand;
 import com.corwin.system.user.application.command.CreateUserCommand;
 import com.corwin.system.user.application.command.UpdateUserCommand;
 import com.corwin.system.user.domain.model.DefaultUser;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Corwin 2026/1/22
@@ -100,6 +103,26 @@ public class UserAdminService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void batchUpdateStatus(BatchUpdateUserStatusCommand cmd) {
+        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+        BizAssert.notNull(cmd.status(), BaseError.MISSING_PARAMETER);
+        for (Long userId : normalizeUserIds(cmd.userIds())) {
+            BizAssert.state(!DefaultUser.isReserved(userId), BaseError.FORBIDDEN);
+            User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+            user.updateStatus(cmd.status(), operator());
+            userRepository.save(user);
+        }
+    }
+
+    @Transactional
+    public void batchResetPassword(BatchUserIdsCommand cmd) {
+        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+        for (Long userId : normalizeUserIds(cmd.userIds())) {
+            resetPassword(userId);
+        }
+    }
+
     public User get(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
@@ -110,6 +133,14 @@ public class UserAdminService {
         User user = get(id);
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public void batchDelete(BatchUserIdsCommand cmd) {
+        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+        for (Long userId : normalizeUserIds(cmd.userIds())) {
+            delete(userId);
+        }
     }
 
 
@@ -136,6 +167,18 @@ public class UserAdminService {
             next.add(new UserRole(userId, roleId, operatorId));
         }
         userRoleRepository.saveAll(next);
+    }
+
+    private List<Long> normalizeUserIds(List<Long> userIds) {
+        BizAssert.notEmpty(userIds, BaseError.MISSING_PARAMETER);
+        Set<Long> normalized = new LinkedHashSet<>();
+        for (Long userId : userIds) {
+            if (userId != null) {
+                normalized.add(userId);
+            }
+        }
+        BizAssert.notEmpty(normalized, BaseError.MISSING_PARAMETER);
+        return List.copyOf(normalized);
     }
 
     private String operator() {

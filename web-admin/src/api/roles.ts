@@ -5,6 +5,7 @@ import type {
   RoleGrantSelection,
   RoleUpdateRequest,
 } from "../types/role-admin";
+import type { PageResult, PageRule, SortRule } from "../types/page";
 import { del, get, post, put } from "./http";
 
 const BASE = "/roles";
@@ -68,6 +69,24 @@ function toGrantResourceEntry(payload: RoleGrantResourcePayload): RoleGrantResou
 export async function listRoles(): Promise<RoleEntry[]> {
   const rows = await get<RolePayload[]>(BASE);
   return rows.map(toRoleEntry);
+}
+
+export async function pageRoles(params: {
+  keyword?: string;
+  enabled?: boolean;
+  page?: PageRule;
+  sort?: SortRule;
+}): Promise<PageResult<RoleEntry>> {
+  const page = await post<PageResult<RolePayload>>(`${BASE}/page`, {
+    keyword: params.keyword || undefined,
+    enabled: params.enabled,
+    page: params.page,
+    sort: params.sort,
+  });
+  return {
+    ...page,
+    elements: page.elements.map(toRoleEntry),
+  };
 }
 
 export async function createRole(req: RoleCreateRequest): Promise<RoleEntry> {

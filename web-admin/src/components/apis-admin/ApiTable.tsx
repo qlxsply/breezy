@@ -6,15 +6,19 @@ import type { ApiEntry } from "@admin/types/api-admin";
 export function ApiTable({
   rows,
   loading,
+  canDetail,
   canPublish,
   canDisable,
+  onDetail,
   onPublish,
   onDisable,
 }: {
   rows: ApiEntry[];
   loading: boolean;
+  canDetail?: boolean;
   canPublish?: boolean;
   canDisable?: boolean;
+  onDetail: (api: ApiEntry) => void;
   onPublish: (api: ApiEntry) => void;
   onDisable: (api: ApiEntry) => void;
 }) {
@@ -150,10 +154,11 @@ export function ApiTable({
       key: "actions",
       title: "操作",
       width: 90,
-      className: "api-table__actions-cell",
+      className: "api-table__actions-cell is-fixed-right",
+      headerClassName: "is-fixed-right",
       render: (row: ApiEntry) => (
         <AdminActionBar
-          actions={getRowActions(row, canPublish, canDisable, onPublish, onDisable)}
+          actions={getRowActions(row, canDetail, canPublish, canDisable, onDetail, onPublish, onDisable)}
         />
       ),
     },
@@ -227,12 +232,15 @@ function accessTagType(accessType?: string): "info" | "success" | "warning" | "d
 
 function getRowActions(
   row: ApiEntry,
+  canDetail: boolean | undefined,
   canPublish: boolean | undefined,
   canDisable: boolean | undefined,
+  onDetail: (api: ApiEntry) => void,
   onPublish: (api: ApiEntry) => void,
   onDisable: (api: ApiEntry) => void,
 ): AdminActionItem[] {
   const actions: AdminActionItem[] = [];
+  if (canDetail) actions.push({ key: "detail", label: "详情", tone: "detail", handler: () => onDetail(row) });
   if (canPublish && !row.enabled)
     actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
   if (canDisable && row.enabled)

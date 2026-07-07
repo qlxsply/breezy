@@ -1,4 +1,5 @@
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { pageRoles } from "@admin/api/roles";
 import { useEffect, useMemo, useState } from "react";
 
 import { formatDateTime } from "../../core/formatter";
@@ -7,19 +8,16 @@ import type { UserEntry, UserStatus } from "../../types/user-admin";
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
 import { BzCheckbox } from "../bz/BzCheckbox";
-import { BzEmpty } from "../bz/BzEmpty";
-import { BzForm } from "../bz/BzForm";
-import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
-import { BzLoading } from "../bz/BzLoading";
 import { BzOption } from "../bz/BzOption";
+import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
+import { BzTag } from "../bz/BzTag";
 
 interface UserManageDrawerProps {
   open: boolean;
-  mode: "detail" | "edit";
+  mode: "create" | "detail" | "edit";
   model: UserEntry | null;
-  roles: RoleEntry[];
   selectedIds: string[];
   loading?: boolean;
   canEditBasic?: boolean;
@@ -27,14 +25,19 @@ interface UserManageDrawerProps {
   canViewRoles?: boolean;
   userTypeMetaMap?: Record<string, { label: string; tagType?: string | null }>;
   onClose: () => void;
-  onSubmit: (payload: { nickname: string; status: UserStatus; roleIds: string[] }) => void;
+  onSubmit: (payload: {
+    username: string;
+    nickname: string;
+    password?: string;
+    status: UserStatus;
+    roleIds: string[];
+  }) => void;
 }
 
 export function UserManageDrawer({
   open,
   mode,
   model,
-  roles,
   selectedIds,
   loading = false,
   canEditBasic = false,
@@ -44,32 +47,75 @@ export function UserManageDrawer({
   onClose,
   onSubmit,
 }: UserManageDrawerProps) {
+  const [username, setUsername] = useState("");
   const [nickname, setNickname] = useState("");
+  const [password, setPassword] = useState("");
   const [status, setStatus] = useState<UserStatus>("ENABLED");
   const [keyword, setKeyword] = useState("");
+  const [appliedKeyword, setAppliedKeyword] = useState("");
+  const [roleRows, setRoleRows] = useState<RoleEntry[]>([]);
+  const [rolePageNo, setRolePageNo] = useState(1);
+  const [rolePageSize, setRolePageSize] = useState(10);
+  const [roleTotal, setRoleTotal] = useState(0);
+  const [rolePageSizeOptions] = useState([10, 20, 30, 50]);
+  const [rolePageLoading, setRolePageLoading] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
   const [err, setErr] = useState("");
 
+  const currentUserType = model?.userType || "INTERNAL";
+  const canShowRoles = canViewRoles && currentUserType !== "EXTERNAL";
+  const editable = mode !== "detail" && (canEditBasic || canEditRoles);
+  const resolveUserTypeLabel = (userType: string) => userTypeMetaMap[userType]?.label || userType;
+
   useEffect(() => {
-    if (!model) {
+    if (!model && mode !== "create") {
       return;
     }
-    setNickname(model.nickname || "");
-    setStatus(model.status);
+    setUsername(model?.username || "");
+    setNickname(model?.nickname || "");
+    setPassword("");
+    setStatus(model?.status || "ENABLED");
     setKeyword("");
     setSelectedSet(new Set(selectedIds || []));
     setErr("");
-  }, [model, selectedIds, open]);
+  }, [mode, model, selectedIds, open]);
 
-  const canShowRoles = canViewRoles && model?.userType !== "EXTERNAL";
-  const editable = mode === "edit" && (canEditBasic || canEditRoles);
-  const resolveUserTypeLabel = (userType: string) => userTypeMetaMap[userType]?.label || userType;
+  useEffect(() => {
+    if (!open || !canShowRoles) return;
+    let cancelled = false;
+    setRolePageLoading(true);
+    void pageRoles({
+      keyword: appliedKeyword || undefined,
+      enabled: true,
+      page: { pageNo: rolePageNo, pageSize: rolePageSize },
+    }).then((page) => {
+      if (cancelled) return;
+      setRoleRows(page.elements);
+      setRoleTotal(page.totalElements);
+      setRolePageNo(page.pageNo || rolePageNo);
+      setRolePageSize(page.pageSize || rolePageSize);
+    }).finally(() => {
+      if (!cancelled) setRolePageLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [appliedKeyword, canShowRoles, open, rolePageNo, rolePageSize]);
 
-  const filteredRoles = useMemo(() => {
-    const kw = keyword.trim().toLowerCase();
-    if (!kw) return roles;
-    return roles.filter((role) => `${role.code} ${role.name}`.toLowerCase().includes(kw));
-  }, [roles, keyword]);
+  const currentPageSelectableIds = useMemo(
+    () => roleRows.map((role) => role.id),
+    [roleRows],
+  );
+
+  const currentPageAllSelected = useMemo(
+    () => currentPageSelectableIds.length > 0 && currentPageSelectableIds.every((id) => selectedSet.has(id)),
+    [currentPageSelectableIds, selectedSet],
+  );
+
+  const currentPageSomeSelected = useMemo(
+    () => currentPageSelectableIds.some((id) => selectedSet.has(id)),
+    [currentPageSelectableIds, selectedSet],
+  );
 
   function toggleRole(id: string) {
     if (!canEditRoles) return;
@@ -83,20 +129,47 @@ export function UserManageDrawer({
 
   function handleSubmit() {
     setErr("");
-    if (!model) return;
+    if (mode === "create" && !username.trim()) {
+      setErr("用户名不能为空");
+      return;
+    }
     if (canEditBasic && !nickname.trim()) {
       setErr("昵称不能为空");
       return;
     }
+    if (mode === "create" && !password.trim()) {
+      setErr("初始密码不能为空");
+      return;
+    }
     onSubmit({
+      username: username.trim(),
       nickname: nickname.trim(),
+      password: mode === "create" ? password.trim() : undefined,
       status,
       roleIds: Array.from(selectedSet),
     });
   }
 
+  function toggleCurrentPageAll(checked: boolean) {
+    if (!canEditRoles) return;
+    setSelectedSet((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        currentPageSelectableIds.forEach((id) => next.add(id));
+      } else {
+        currentPageSelectableIds.forEach((id) => next.delete(id));
+      }
+      return next;
+    });
+  }
+
+  function applyRoleSearch() {
+    setAppliedKeyword(keyword.trim());
+    setRolePageNo(1);
+  }
+
   const footer = (
-    <div style={{ display: "flex", gap: 8 }}>
+    <div className="admin-drawer-footer">
       <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
       {editable ? (
         <BzButton buttonType="primary" onClick={handleSubmit}>
@@ -106,225 +179,226 @@ export function UserManageDrawer({
     </div>
   );
 
+  function renderValueCell(value: React.ReactNode, options?: { mono?: boolean }) {
+    return <td className={`role-info-cell${options?.mono ? " mono" : ""}`}>{value}</td>;
+  }
+
+  function renderEditableTextCell(
+    value: string,
+    placeholder: string,
+    onChange: (value: string) => void,
+    options?: { mono?: boolean; password?: boolean },
+  ) {
+    return (
+      <td className={`role-info-cell role-info-cell--edit${options?.mono ? " mono" : ""}`}>
+        <BzInput
+          modelValue={value}
+          type={options?.password ? "password" : "text"}
+          placeholder={placeholder}
+          className={options?.mono ? "mono" : undefined}
+          onValueChange={onChange}
+        />
+      </td>
+    );
+  }
+
+  function renderStatusValue() {
+    if (mode === "edit" && canEditBasic) {
+      return (
+        <td className="role-info-cell role-info-cell--edit">
+          <BzSelect modelValue={status} onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}>
+            <BzOption label="启用" value="ENABLED" />
+            <BzOption label="停用" value="DISABLED" />
+          </BzSelect>
+        </td>
+      );
+    }
+    return (
+      <td className="role-info-cell">
+        <BzTag className={`role-info-status-tag${status === "ENABLED" ? " is-enabled" : " is-disabled"}`} type={status === "ENABLED" ? "success" : "danger"}>
+          {status === "ENABLED" ? "启用" : "停用"}
+        </BzTag>
+      </td>
+    );
+  }
+
   return (
     <AdminEntityDrawer
       open={open}
-      title={mode === "detail" ? "用户详情" : "编辑用户"}
-      width="920px"
+      className="role-manage-drawer"
+      title={mode === "create" ? "新增用户" : mode === "detail" ? "用户详情" : "编辑用户"}
+      width="1180px"
       loading={loading}
       onClose={onClose}
       footer={footer}
     >
-      <div className="user-manage-drawer">
-        <section className="user-manage-panel">
-          <div className="user-manage-panel__title">基础信息</div>
-          <BzForm>
-            <div className="user-manage-grid">
-              <BzFormItem label="用户名">
-                <BzInput modelValue={model?.username || ""} disabled readOnly />
-              </BzFormItem>
-              <BzFormItem label="用户类型">
-                <BzInput modelValue={model?.userType ? resolveUserTypeLabel(model.userType) : "-"} disabled readOnly />
-              </BzFormItem>
-              <BzFormItem
-                label={
-                  canEditBasic && mode === "edit" ? (
-                    <>
-                      昵称<span className="form-required-mark">*</span>
-                    </>
-                  ) : (
-                    "昵称"
-                  )
-                }
-              >
-                <BzInput
-                  modelValue={nickname}
-                  placeholder="请输入昵称"
-                  disabled={!canEditBasic || mode === "detail"}
-                  readOnly={!canEditBasic || mode === "detail"}
-                  onValueChange={setNickname}
-                />
-              </BzFormItem>
-              <BzFormItem
-                label={
-                  canEditBasic && mode === "edit" ? (
-                    <>
-                      状态<span className="form-required-mark">*</span>
-                    </>
-                  ) : (
-                    "状态"
-                  )
-                }
-              >
-                {mode === "edit" && canEditBasic ? (
-                  <BzSelect
-                    modelValue={status}
-                    disabled={!canEditBasic}
-                    onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}
-                  >
-                    <BzOption label="启用" value="ENABLED" />
-                    <BzOption label="停用" value="DISABLED" />
-                  </BzSelect>
+      <div className="role-manage-shell">
+        <section className="role-manage-section">
+          <div className="role-manage-section__head">
+            <div className="role-manage-section__title">基础信息</div>
+          </div>
+
+          <div className="role-info-table-wrap">
+            <table className="role-info-table" aria-label="用户信息">
+              <tbody>
+                <tr>
+                  <th>
+                    <span className={mode === "create" ? "is-required" : undefined}>用户名</span>
+                  </th>
+                  {mode === "create"
+                    ? renderEditableTextCell(username, "请输入用户名", setUsername, { mono: true })
+                    : renderValueCell(username || "-", { mono: true })}
+                  <th>用户类型</th>
+                  {renderValueCell(
+                    <BzTag size="small">{resolveUserTypeLabel(currentUserType)}</BzTag>,
+                  )}
+                  <th>
+                    <span className={editable ? "is-required" : undefined}>昵称</span>
+                  </th>
+                  {editable
+                    ? renderEditableTextCell(nickname, "请输入昵称", setNickname)
+                    : renderValueCell(nickname || "-")}
+                </tr>
+
+                {mode === "create" ? (
+                  <tr>
+                    <th>
+                      <span className="is-required">初始密码</span>
+                    </th>
+                    {renderEditableTextCell(password, "请输入初始密码", setPassword, { password: true })}
+                    <th>状态</th>
+                    {renderValueCell(
+                      <BzTag className="role-info-status-tag is-enabled" type="success">
+                        启用
+                      </BzTag>,
+                    )}
+                    <th>角色概览</th>
+                    {renderValueCell(`已选 ${selectedSet.size} 项`, { mono: true })}
+                  </tr>
                 ) : (
-                  <BzInput modelValue={status === "ENABLED" ? "启用" : "停用"} disabled readOnly />
+                  <>
+                    <tr>
+                      <th>
+                        <span className={mode === "edit" && canEditBasic ? "is-required" : undefined}>状态</span>
+                      </th>
+                      {renderStatusValue()}
+                      <th>创建人</th>
+                      {renderValueCell(model?.createdBy || "-", { mono: true })}
+                      <th>创建时间</th>
+                      {renderValueCell(formatDateTime(model?.createdAt) || "-", { mono: true })}
+                    </tr>
+                    <tr>
+                      <th>更新人</th>
+                      {renderValueCell(model?.updatedBy || "-", { mono: true })}
+                      <th>更新时间</th>
+                      {renderValueCell(formatDateTime(model?.updatedAt) || "-", { mono: true })}
+                      <th>角色概览</th>
+                      {renderValueCell(`已选 ${selectedSet.size} 项`, { mono: true })}
+                    </tr>
+                  </>
                 )}
-              </BzFormItem>
-              <BzFormItem label="创建人">
-                <BzInput modelValue={model?.createdBy || "-"} disabled readOnly />
-              </BzFormItem>
-              <BzFormItem label="创建时间">
-                <BzInput modelValue={formatDateTime(model?.createdAt)} disabled readOnly />
-              </BzFormItem>
-              <BzFormItem label="更新人">
-                <BzInput modelValue={model?.updatedBy || "-"} disabled readOnly />
-              </BzFormItem>
-              <BzFormItem label="更新时间">
-                <BzInput modelValue={formatDateTime(model?.updatedAt)} disabled readOnly />
-              </BzFormItem>
-            </div>
-          </BzForm>
+              </tbody>
+            </table>
+          </div>
+
+          {err ? <BzAlert title={err} type="error" showIcon className="form-error role-manage-error" /> : null}
         </section>
 
-        {err ? <BzAlert title={err} type="error" showIcon className="form-error" /> : null}
-
         {canShowRoles ? (
-          <section className="user-manage-panel">
-            <div className="user-manage-panel__header">
-              <div className="user-manage-panel__title">角色分配</div>
-              <div className="user-manage-panel__meta">已选 {selectedSet.size} 项</div>
+          <section className="role-manage-section">
+            <div className="role-manage-section__head">
+              <div className="role-manage-section__title">角色分配</div>
+              <div className="role-manage-section__stat">已选 {selectedSet.size} / {roleTotal} 项</div>
             </div>
 
-            <div className="user-role-toolbar">
+            <div className="role-permission-toolbar">
               <BzInput
                 modelValue={keyword}
                 placeholder="搜索角色编码/名称"
                 clearable
+                className="role-permission-toolbar__search"
                 onValueChange={setKeyword}
+                onKeyUp={(event) => {
+                  if (event.key === "Enter") applyRoleSearch();
+                }}
               />
+              <div className="role-permission-toolbar__actions">
+                <BzButton className="permission-toolbar-button" onClick={applyRoleSearch}>
+                  查询
+                </BzButton>
+              </div>
             </div>
 
-            <BzLoading loading={loading} className="user-role-list-wrap">
-              {!loading && filteredRoles.length === 0 ? (
-                <BzEmpty description="暂无角色" />
-              ) : (
-                <div className="user-role-list">
-                  {filteredRoles.map((role) => (
-                    <div key={role.id} className={`user-role-row${selectedSet.has(role.id) ? " is-selected" : ""}`}>
-                      <BzCheckbox
-                        modelValue={selectedSet.has(role.id)}
-                        disabled={!canEditRoles || mode === "detail"}
-                        onValueChange={() => toggleRole(role.id)}
-                      />
-                      <div className="user-role-row__code">{role.code}</div>
-                      <div className="user-role-row__name">{role.name}</div>
-                    </div>
-                  ))}
+            <div className="role-permission-table">
+              <div className="role-permission-table__viewport">
+                <div className="role-permission-row role-permission-row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                  <div className="role-permission-cell role-permission-cell--check">
+                    <input
+                      className="permission-node-checkbox"
+                      type="checkbox"
+                      checked={currentPageAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = !currentPageAllSelected && currentPageSomeSelected;
+                      }}
+                      disabled={!canEditRoles || roleRows.length === 0 || mode === "detail"}
+                      onChange={(event) => toggleCurrentPageAll(event.target.checked)}
+                    />
+                  </div>
+                  <div className="role-permission-cell role-permission-cell--resource">角色编码</div>
+                  <div className="role-permission-cell role-permission-cell--code">角色名称</div>
                 </div>
-              )}
-            </BzLoading>
+
+                <div className="role-permission-table__body">
+                  {rolePageLoading ? (
+                    <div className="permission-empty">加载中...</div>
+                  ) : roleRows.length === 0 ? (
+                    <div className="permission-empty">暂无角色</div>
+                  ) : (
+                    roleRows.map((role) => (
+                      <div key={role.id} className="role-permission-row" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                        <div className="role-permission-cell role-permission-cell--check">
+                          <BzCheckbox
+                            modelValue={selectedSet.has(role.id)}
+                            disabled={!canEditRoles || mode === "detail"}
+                            onValueChange={() => toggleRole(role.id)}
+                          />
+                        </div>
+                        <div className="role-permission-cell role-permission-cell--resource">
+                          <span className="role-table-mono">{role.code}</span>
+                        </div>
+                        <div className="role-permission-cell role-permission-cell--code">
+                          <span className="role-table-text">{role.name}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="role-permission-table__meta">当前页 {roleRows.length} 项，共 {roleTotal} 项角色</div>
+              {roleTotal > 0 ? (
+                <div className="dict-pagination-bar">
+                  <div className="dict-pagination-summary">共 {roleTotal} 条记录</div>
+                  <div className="dict-pagination-right">
+                    <BzPagination
+                      total={roleTotal}
+                      pageSize={rolePageSize}
+                      currentPage={rolePageNo}
+                      pageSizes={rolePageSizeOptions}
+                      onCurrentChange={setRolePageNo}
+                      onSizeChange={(size) => {
+                        if (!Number.isFinite(size) || size <= 0 || size === rolePageSize) return;
+                        setRolePageSize(size);
+                        setRolePageNo(1);
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+            </div>
           </section>
         ) : null}
       </div>
-
-      <style jsx>{`
-        .user-manage-drawer {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .user-manage-panel {
-          border: 1px solid #e2e8f0;
-          border-radius: 16px;
-          background: #fff;
-          padding: 18px;
-        }
-
-        .user-manage-panel__header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 12px;
-        }
-
-        .user-manage-panel__title {
-          color: #0f172a;
-          font-size: 16px;
-          font-weight: 700;
-          margin-bottom: 8px;
-        }
-
-        .user-manage-panel__meta {
-          color: #64748b;
-          font-size: 13px;
-          line-height: 1.6;
-        }
-
-        .user-manage-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px 16px;
-        }
-
-        .user-role-toolbar {
-          margin-bottom: 12px;
-        }
-
-        .user-role-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .user-role-row {
-          display: grid;
-          grid-template-columns: 28px 180px minmax(0, 1fr);
-          align-items: center;
-          gap: 12px;
-          padding: 10px 4px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .user-role-row.is-selected {
-          background: #eff6ff;
-          border-radius: 8px;
-        }
-
-        .user-role-row__name {
-          color: #0f172a;
-          font-weight: 600;
-          min-width: 0;
-        }
-
-        .user-role-row__code {
-          color: #64748b;
-          font-size: 12px;
-          font-family: Consolas, "Courier New", monospace;
-        }
-
-        @media (max-width: 900px) {
-          .user-manage-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .user-manage-panel__header {
-            flex-direction: column;
-          }
-
-          .user-role-row {
-            grid-template-columns: 28px minmax(0, 1fr);
-          }
-
-          .user-role-row__name {
-            grid-column: 2;
-          }
-
-          .user-role-row__code {
-            grid-column: 2;
-          }
-        }
-      `}</style>
     </AdminEntityDrawer>
   );
 }

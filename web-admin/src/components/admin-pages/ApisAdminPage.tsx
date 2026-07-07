@@ -2,6 +2,8 @@
 
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
+import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
@@ -60,6 +62,8 @@ export function ApisAdminPage() {
   const [statusLabelMap, setStatusLabelMap] = useState<Record<string, string>>({});
   const [permissionDeclaredLabelMap, setPermissionDeclaredLabelMap] = useState<Record<string, string>>({});
   const [auditDeclaredLabelMap, setAuditDeclaredLabelMap] = useState<Record<string, string>>({});
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<ApiEntry | null>(null);
 
   const canPublish = hasResourceCodeAccess("api-manage-publish");
   const canDisable = hasResourceCodeAccess("api-manage-disable");
@@ -108,6 +112,36 @@ export function ApisAdminPage() {
     () => toOptions(statusLabelMap).filter((item) => item.value === "ACTIVE" || item.value === "DISABLED"),
     [statusLabelMap],
   );
+
+  const detailSections = useMemo<AdminDetailSection[]>(() => {
+    if (!detailItem) return [];
+    return [
+      {
+        title: "基础信息",
+        fields: [
+          { label: "模块", value: detailItem.module || "-" },
+          { label: "协议", value: detailItem.protocolLabel || detailItem.protocol || "-" },
+          { label: "方法", value: detailItem.httpMethodLabel || detailItem.httpMethod || "-" },
+          { label: "访问类型", value: detailItem.accessTypeLabel || detailItem.accessType || "-" },
+          { label: "用户类型", value: detailItem.userTypeLabel || detailItem.userType || "-" },
+          { label: "接口状态", value: detailItem.enabled ? "启用" : "停用" },
+          { label: "路径", value: detailItem.pathPattern || "-", span: "full" },
+          { label: "处理类", value: detailItem.handlerClass || "-", span: "full" },
+          { label: "处理方法", value: detailItem.handlerMethod || "-", span: "full" },
+        ],
+      },
+      {
+        title: "权限与审计",
+        fields: [
+          { label: "权限声明", value: detailItem.permissionDeclared ? "已声明" : "未声明" },
+          { label: "审计状态", value: detailItem.auditDeclared ? "已开启" : "未开启" },
+          { label: "审计资源", value: detailItem.auditResource || "-" },
+          { label: "审计动作", value: detailItem.auditAction || "-" },
+          { label: "审计说明", value: detailItem.auditDescription || "-", span: "full", multiline: true },
+        ],
+      },
+    ];
+  }, [detailItem]);
 
   async function loadDictionaries() {
     try {
@@ -196,29 +230,25 @@ export function ApisAdminPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
-            >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    applyFilters();
-                  }}
-                >
+          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
+            <div className="admin-list-region">
+              {queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        applyFilters();
+                      }}
+                    >
                   <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">模块</div>
                     <div className="admin-query-field__control">
@@ -393,18 +423,14 @@ export function ApisAdminPage() {
                       </button>
                     ) : null}
                   </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
+                    </form>
+                  </div>
+                </div>
+              ) : null}
 
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">接口列表</div>
-                <div className="admin-table-tools">
+              <div className="admin-list-toolbar-row">
+                <div className="admin-list-business-actions" />
+                <div className="admin-list-query-tools">
                   <AdminTableTools
                     queryPanelVisible={queryPanelVisible}
                     onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
@@ -412,20 +438,24 @@ export function ApisAdminPage() {
                   />
                 </div>
               </div>
-            }
-          >
-            <div className="admin-table-surface">
+
+              <div className="admin-table-surface admin-list-table-area">
               <ApiTable
                 rows={enrichedRows}
                 loading={loading}
+                canDetail
                 canPublish={canPublish}
                 canDisable={canDisable}
+                onDetail={(api) => {
+                  setDetailItem(api);
+                  setDetailOpen(true);
+                }}
                 onPublish={(api) => void onPublish(api)}
                 onDisable={(api) => void onDisable(api)}
               />
-            </div>
-            {page.totalElements > 0 ? (
-              <div className="dict-pagination-bar">
+              </div>
+              {page.totalElements > 0 ? (
+                <div className="dict-pagination-bar admin-list-table-footer">
                 <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <BzPagination
@@ -441,11 +471,28 @@ export function ApisAdminPage() {
                     }}
                   />
                 </div>
-              </div>
-            ) : null}
+                </div>
+              ) : null}
+            </div>
           </BzCard>
         </div>
       </div>
+
+      <AdminEntityDrawer
+        open={detailOpen}
+        title="接口详情"
+        width="960px"
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailItem(null);
+        }}
+        footer={<BzButton onClick={() => {
+          setDetailOpen(false);
+          setDetailItem(null);
+        }}>关闭</BzButton>}
+      >
+        {detailItem ? <AdminDetailTable sections={detailSections} /> : null}
+      </AdminEntityDrawer>
     </div>
   );
 

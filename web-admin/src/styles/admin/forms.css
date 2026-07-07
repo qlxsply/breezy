@@ -3,3 +3,98 @@
   color: var(--color-danger-600);
   font-weight: var(--font-weight-bold);
 }
+
+.admin-drawer-footer {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.admin-detail-form-control {
+  width: 100%;
+}
+
+.admin-detail-form-control .bz-input,
+.admin-detail-form-control .bz-select {
+  width: 100%;
+}
+
+.admin-selection-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: 14px;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: 0;
+}
+
+.admin-selection-section__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.admin-selection-section__title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.admin-selection-section__meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  white-space: nowrap;
+}
+
+.admin-selection-toolbar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.admin-selection-toolbar .bz-input {
+  width: min(420px, 100%);
+}
+
+.admin-selection-table-wrap {
+  overflow: auto;
+  border: var(--border-width-1) solid var(--color-border-table);
+  border-radius: 0;
+}
+
+.admin-selection-table-wrap .bz-table__scroll {
+  scrollbar-gutter: stable both-edges;
+}
+
+.admin-selection-table-wrap .bz-table__inner th,
+.admin-selection-table-wrap .bz-table__inner td {
+  vertical-align: middle;
+}
+
+.admin-selection-code {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.admin-selection-name {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 768px) {
+  .admin-selection-section__header {
+    flex-direction: column;
+  }
+
+  .admin-selection-toolbar,
+  .admin-drawer-footer {
+    flex-wrap: wrap;
+  }
+
+  .admin-selection-toolbar .bz-input,
+  .admin-drawer-footer .bz-button {
+    width: 100%;
+  }
+}

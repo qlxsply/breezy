@@ -6,6 +6,9 @@ import {
   previewTimeOffset,
   updateConfigValue,
 } from "@admin/api/configs";
+import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { batchListDictOptions, listDictOptions } from "@admin/api/dicts";
 import { previewMsgPush } from "@admin/api/sse";
 import {
@@ -21,6 +24,7 @@ import {
 } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
+import type { AdminActionItem } from "@admin/types/admin-action";
 import type {
   ClientIpMode,
   ConfigClientIpPreviewRes,
@@ -36,7 +40,6 @@ import { useAdminQueryPanelLayout } from "../admin/useAdminQueryPanelLayout";
 import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
-import { BzDialog } from "../bz/BzDialog";
 import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzIconActionButton } from "../bz/BzIconActionButton";
@@ -186,6 +189,8 @@ export function ConfigsAdminPage() {
   const [userDecimalFormatOptions, setUserDecimalFormatOptions] = useState<DictOption[]>([]);
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailItem, setDetailItem] = useState<ConfigItem | null>(null);
   const [editorItem, setEditorItem] = useState<ConfigItem | null>(null);
   const [editorRawValue, setEditorRawValue] = useState("");
   const [editorBoolValue, setEditorBoolValue] = useState<"true" | "false">("true");
@@ -1046,7 +1051,7 @@ export function ConfigsAdminPage() {
         key: "description",
         title: "说明",
         width: 240,
-        render: (row) => row.description,
+        render: (row) => row.description || "-",
       },
       {
         key: "value",
@@ -1082,57 +1087,85 @@ export function ConfigsAdminPage() {
           </BzTag>
         ),
       },
-      ...(canUpdate
-        ? [
-            {
-              key: "actions" as const,
-              title: "操作",
-              width: 88,
-              render: (row: ConfigItem) => (
-                <div className="configs-action-cell">
-                  <BzButton
-                    size="small"
-                    link
-                    onClick={() => openEditor(row)}
-                  >
-                    编辑
-                  </BzButton>
-                </div>
-              ),
-            },
-          ]
-        : []),
+      {
+        key: "actions",
+        title: "操作",
+        width: 120,
+        className: "is-fixed-right",
+        headerClassName: "is-fixed-right",
+        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
+      },
     ],
     [canUpdate, configValueTypeLabelMap, configLevelLabelMap],
   );
+
+  const detailSections = useMemo<AdminDetailSection[]>(() => {
+    if (!detailItem) return [];
+    return [
+      {
+        title: "配置详情",
+        fields: [
+          { label: "配置键", value: detailItem.code },
+          { label: "作用域", value: detailItem.scope || "-" },
+          {
+            label: "值类型",
+            value: configValueTypeLabelMap[detailItem.valueType] || detailItem.valueType,
+          },
+          {
+            label: "级别",
+            value: configLevelLabelMap[detailItem.level] || detailItem.level,
+          },
+          {
+            label: "个性化",
+            value: detailItem.personalized ? "是" : "否",
+          },
+          { label: "说明", value: detailItem.description || "-", span: "full", multiline: true },
+          { label: "当前值", value: renderValue(detailItem), span: "full", multiline: true },
+          { label: "原始值", value: detailItem.value || "-", span: "full", multiline: true },
+        ],
+      },
+    ];
+  }, [configLevelLabelMap, configValueTypeLabelMap, detailItem]);
+
+  const editorMetaSections = useMemo<AdminDetailSection[]>(() => {
+    if (!editorItem) return [];
+    return [
+      {
+        title: "基础信息",
+        fields: [
+          { label: "配置键", value: <span className="configs-meta-code">{editorItem.code}</span> },
+          { label: "值类型", value: configValueTypeLabelMap[editorItem.valueType] || editorItem.valueType },
+          { label: "级别", value: configLevelLabelMap[editorItem.level] || editorItem.level },
+          { label: "个性化", value: editorItem.personalized ? "是" : "否" },
+          { label: "说明", value: editorItem.description || "-", span: "full", multiline: true },
+        ],
+      },
+    ];
+  }, [configLevelLabelMap, configValueTypeLabelMap, editorItem]);
 
   return (
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
-            >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applyFilters();
-                  }}
-                >
+          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
+            <div className="admin-list-region">
+              {queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        applyFilters();
+                      }}
+                    >
                   <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">配置键</div>
                     <div className="admin-query-field__control">
@@ -1192,18 +1225,14 @@ export function ConfigsAdminPage() {
                       </button>
                     ) : null}
                   </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
+                    </form>
+                  </div>
+                </div>
+              ) : null}
 
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">系统配置</div>
-                <div className="admin-table-tools">
+              <div className="admin-list-toolbar-row">
+                <div className="admin-list-business-actions" />
+                <div className="admin-list-query-tools">
                   <AdminTableTools
                     queryPanelVisible={queryPanelVisible}
                     onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
@@ -1211,9 +1240,8 @@ export function ConfigsAdminPage() {
                   />
                 </div>
               </div>
-            }
-          >
-            <div className="admin-table-surface">
+
+              <div className="admin-table-surface admin-list-table-area">
               <BzTable
                 data={rows}
                 columns={columns}
@@ -1222,10 +1250,10 @@ export function ConfigsAdminPage() {
                 emptyText="暂无配置"
                 size="small"
               />
-            </div>
+              </div>
 
-            {page.totalElements > 0 ? (
-              <div className="dict-pagination-bar">
+              {page.totalElements > 0 ? (
+                <div className="dict-pagination-bar admin-list-table-footer">
                 <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <BzPagination
@@ -1241,52 +1269,54 @@ export function ConfigsAdminPage() {
                     }}
                   />
                 </div>
-              </div>
-            ) : null}
+                </div>
+              ) : null}
+            </div>
           </BzCard>
         </div>
       </div>
 
+      <AdminEntityDrawer
+        open={detailOpen}
+        title="配置详情"
+        width="960px"
+        onClose={() => {
+          setDetailOpen(false);
+          setDetailItem(null);
+        }}
+        footer={<BzButton onClick={() => {
+          setDetailOpen(false);
+          setDetailItem(null);
+        }}>关闭</BzButton>}
+      >
+        {detailItem ? <AdminDetailTable sections={detailSections} /> : null}
+      </AdminEntityDrawer>
+
       {editorOpen ? (
-        <BzDialog
-          modelValue={editorOpen}
+        <AdminEntityDrawer
+          open={editorOpen}
           title={editorTitle}
           width={editorDialogWidth}
-          maxWidth={editorDialogMaxWidth}
-          closeOnOverlay={false}
-          showClose={true}
+          loading={saving}
           onClose={closeEditor}
           footer={
             <>
               <BzButton onClick={closeEditor}>取消</BzButton>
               {canSaveEditor ? (
-                <BzButton
-                  buttonType="primary"
-                  loading={saving}
-                  onClick={saveCurrentConfig}
-                >
+                <BzButton buttonType="primary" loading={saving} onClick={saveCurrentConfig}>
                   保存
                 </BzButton>
               ) : null}
             </>
           }
         >
-          <div className="editor-meta">
-            <div className="meta-item">
-              <div className="meta-label">配置键</div>
-              <div
-                className="meta-value configs-meta-code"
-              >
-                {editorItem?.code}
+          <div className="admin-page-stack">
+            <AdminDetailTable sections={editorMetaSections} />
+            <section className="admin-selection-section configs-editor-section">
+              <div className="admin-selection-section__header">
+                <div className="admin-selection-section__title">编辑内容</div>
               </div>
-            </div>
-            <div className="meta-item">
-              <div className="meta-label">说明</div>
-              <div className="meta-value">{editorItem?.description}</div>
-            </div>
-          </div>
-
-          <BzForm>
+              <BzForm>
             {isClientIpEditor ? (
               <>
                 <BzFormItem label="IP 获取方式">
@@ -1846,13 +1876,36 @@ export function ConfigsAdminPage() {
                 />
               </BzFormItem>
             )}
-          </BzForm>
+              </BzForm>
 
-          {editorValidationErrorComputed ? (
-            <div className="form-error">{editorValidationErrorComputed}</div>
-          ) : null}
-        </BzDialog>
+              {editorValidationErrorComputed ? <div className="form-error">{editorValidationErrorComputed}</div> : null}
+            </section>
+          </div>
+        </AdminEntityDrawer>
       ) : null}
     </div>
   );
+
+  function getRowActions(row: ConfigItem): AdminActionItem[] {
+    const actions: AdminActionItem[] = [
+      {
+        key: `detail-${row.code}`,
+        label: "详情",
+        tone: "detail",
+        handler: () => {
+          setDetailItem(row);
+          setDetailOpen(true);
+        },
+      },
+    ];
+    if (canUpdate) {
+      actions.push({
+        key: `edit-${row.code}`,
+        label: "编辑",
+        tone: "edit",
+        handler: () => openEditor(row),
+      });
+    }
+    return actions;
+  }
 }

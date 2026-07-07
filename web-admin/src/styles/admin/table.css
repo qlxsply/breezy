@@ -2,6 +2,19 @@
   padding: 18px 20px;
 }
 
+.admin-list-card {
+  box-shadow: none;
+}
+
+.admin-list-card .bz-card__body {
+  padding: 0;
+}
+
+.admin-list-card .admin-vben-circle-button {
+  border: var(--border-width-1) solid var(--color-border-strong);
+  box-shadow: none;
+}
+
 .admin-table-card .bz-card__header {
   padding: 10px 20px 10px;
   border-bottom: none;
@@ -26,6 +39,84 @@
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.admin-list-region {
+  overflow: hidden;
+}
+
+.admin-list-query-panel {
+  padding: 12px 14px;
+  background: var(--color-bg-surface);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.admin-list-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 50px;
+  padding: 8px 14px;
+  background: var(--color-bg-surface-soft);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.admin-list-business-actions,
+.admin-list-query-tools,
+.admin-list-table-footer,
+.admin-batch-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.admin-list-business-actions {
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.admin-list-query-tools {
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+.admin-list-table-area,
+.admin-list-card .admin-table-surface {
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+}
+
+.admin-list-table-footer {
+  margin-top: 0;
+  padding: 5px 20px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-surface);
+  border-top: var(--border-width-1) solid var(--color-border);
+}
+
+.admin-batch-toolbar {
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 50px;
+  padding: 8px 14px;
+  background: var(--color-bg-surface-soft);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.admin-batch-toolbar__summary {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.admin-batch-toolbar__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
 .admin-toolbar-primary {
@@ -255,5 +346,17 @@
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
+  }
+
+  .admin-list-toolbar-row,
+  .admin-batch-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-list-query-tools,
+  .admin-batch-toolbar__actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }

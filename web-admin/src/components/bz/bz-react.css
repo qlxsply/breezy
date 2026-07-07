@@ -505,6 +505,8 @@
 .bz-table__scroll {
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
 }
 
 .bz-table__inner {
@@ -536,6 +538,33 @@
 }
 
 .bz-table__inner tbody tr:hover td {
+  background: #fafcff;
+}
+
+.bz-table__inner th.is-fixed-right,
+.bz-table__inner td.is-fixed-right,
+.bz-table__inner th.is-sticky-right,
+.bz-table__inner td.is-sticky-right {
+  position: sticky;
+  right: 0;
+}
+
+.bz-table__inner th.is-fixed-right,
+.bz-table__inner th.is-sticky-right {
+  z-index: 12;
+  background: #fff;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.bz-table__inner td.is-fixed-right,
+.bz-table__inner td.is-sticky-right {
+  z-index: 8;
+  background: #fff;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.bz-table__inner tbody tr:hover td.is-fixed-right,
+.bz-table__inner tbody tr:hover td.is-sticky-right {
   background: #fafcff;
 }
 

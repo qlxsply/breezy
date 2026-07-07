@@ -1,5 +1,7 @@
 package com.corwin.system.role.application.service;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
@@ -36,6 +38,10 @@ public class RoleAdminService {
 
     public List<Role> list() {
         return roleRepository.findAllByOrderByIdAsc();
+    }
+
+    public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
+        return roleRepository.page(keyword, enabled, spec);
     }
 
     public Role get(Long id) {

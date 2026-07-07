@@ -14,6 +14,8 @@ interface UserTypeMeta {
 interface UserTableProps {
   rows: UserEntry[];
   loading: boolean;
+  batchMode?: boolean;
+  selectedIds?: string[];
   canEdit: boolean;
   canToggle: boolean;
   canReset: boolean;
@@ -25,11 +27,14 @@ interface UserTableProps {
   onToggle: (user: UserEntry) => void;
   onReset: (user: UserEntry) => void;
   onRemove: (user: UserEntry) => void;
+  onToggleSelect?: (user: UserEntry, checked: boolean) => void;
 }
 
 export function UserTable({
   rows,
   loading,
+  batchMode = false,
+  selectedIds = [],
   canEdit,
   canToggle,
   canReset,
@@ -41,7 +46,12 @@ export function UserTable({
   onToggle,
   onReset,
   onRemove,
+  onToggleSelect,
 }: UserTableProps) {
+  function isProtectedUser(user: UserEntry): boolean {
+    return user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin");
+  }
+
   function resolveUserTypeLabel(userType: string): string {
     return userTypeMetaMap[userType]?.label || userType;
   }
@@ -51,9 +61,9 @@ export function UserTable({
     return "info";
   }
   function getActions(user: UserEntry): AdminActionItem[] {
-    const maintainDisabled = user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "amdin");
-    const toggleDisabled = user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "amdin");
-    const resetDisabled = user.userType === "SYSTEM";
+    const maintainDisabled = isProtectedUser(user);
+    const toggleDisabled = isProtectedUser(user);
+    const resetDisabled = user.userType === "SYSTEM" || user.username === "admin";
     const actions: AdminActionItem[] = [
       { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(user) },
     ];
@@ -74,6 +84,20 @@ export function UserTable({
   }
 
   const columns: Array<BzTableColumn<UserEntry>> = [
+    {
+      key: "select",
+      title: "选择",
+      width: 48,
+      render: (row) =>
+        batchMode ? (
+          <input
+            type="checkbox"
+            checked={selectedIds.includes(row.id)}
+            disabled={isProtectedUser(row)}
+            onChange={(event) => onToggleSelect?.(row, event.target.checked)}
+          />
+        ) : null,
+    },
     {
       key: "username",
       title: "账号",
@@ -118,6 +142,8 @@ export function UserTable({
       key: "actions",
       title: "操作",
       width: 220,
+      className: "is-fixed-right",
+      headerClassName: "is-fixed-right",
       render: (row) => {
         const all = getActions(row);
         return <AdminActionBar actions={all} />;

@@ -8,6 +8,7 @@ import {
   listSystemNodes,
 } from "@admin/api/system-files";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { message } from "@admin/core/message";
@@ -435,6 +436,8 @@ export function SystemFilesPage() {
       key: "actions",
       title: "操作",
       minWidth: 220,
+      className: "is-fixed-right",
+      headerClassName: "is-fixed-right",
       render: (row) => <AdminActionBar actions={getItemActions(row)} />,
     },
   ];
@@ -477,6 +480,8 @@ export function SystemFilesPage() {
       key: "actions",
       title: "操作",
       minWidth: 180,
+      className: "is-fixed-right",
+      headerClassName: "is-fixed-right",
       render: (row) => (
         <AdminActionBar actions={getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter")} />
       ),
@@ -485,30 +490,57 @@ export function SystemFilesPage() {
 
   const showSearchTip = !!activeKeyword;
 
+  const physicalDetailSections = useMemo<AdminDetailSection[]>(() => {
+    if (!physicalDetail) return [];
+    return [
+      {
+        title: "基础信息",
+        fields: [
+          { label: "逻辑文件ID", value: physicalDetail.logicalFileId },
+          { label: "物理文件ID", value: physicalDetail.physicalFileId },
+          { label: "Owner", value: `${physicalDetail.logicalOwnerType}/${physicalDetail.logicalOwnerId}` },
+          { label: "大小", value: formatSize(physicalDetail.fileSize) },
+          { label: "内容类型", value: physicalDetail.contentType || "-" },
+          { label: "引用数", value: String(physicalDetail.refCount) },
+        ],
+      },
+      {
+        title: "存储信息",
+        fields: [
+          { label: "Hash", value: physicalDetail.hash || "-", span: "full" },
+          { label: "相对路径", value: physicalDetail.relativePath || "-", span: "full" },
+          { label: "绝对路径", value: physicalDetail.absolutePath || "-", span: "full", multiline: true },
+        ],
+      },
+    ];
+  }, [physicalDetail]);
+
   return (
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {canAdmin && queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applySearch();
-                  }}
-                >
+          <BzCard
+            className="admin-panel admin-table-card admin-list-card"
+            shadow="never"
+          >
+            <div className="admin-list-region">
+              {canAdmin && queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        applySearch();
+                      }}
+                    >
                   <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">搜索</div>
                     <div className="admin-query-field__control">
@@ -565,18 +597,13 @@ export function SystemFilesPage() {
                       </button>
                     ) : null}
                   </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
+                    </form>
+                  </div>
+                </div>
+              ) : null}
 
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="system-files-header-stack">
-                  <div className="admin-table-title">系统文件</div>
+              <div className="admin-list-toolbar-row">
+                <div className="admin-list-business-actions system-files-header-stack">
                   <div className="system-files-breadcrumbs" title={currentPath}>
                     {pathSegments.map((segment, index) => (
                       <span key={`${segment.id || "root"}-${index}`} className="system-files-breadcrumbs__segment-wrap">
@@ -590,9 +617,9 @@ export function SystemFilesPage() {
                         </button>
                       </span>
                     ))}
-                  </div>
                 </div>
-                <div className="admin-table-tools">
+                </div>
+                <div className="admin-list-query-tools">
                   <AdminTableTools
                     queryPanelVisible={queryPanelVisible}
                     onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
@@ -606,9 +633,8 @@ export function SystemFilesPage() {
                   </button>
                 </div>
               </div>
-            }
-          >
-            <BzLoading loading={loading} text="加载中...">
+
+              <BzLoading loading={loading} text="加载中...">
               {!canAdmin ? (
                 <BzEmpty description="无权限查看文件管理页面" />
               ) : errorMessage ? (
@@ -625,12 +651,13 @@ export function SystemFilesPage() {
                   {showSearchTip ? (
                     <BzAlert className="search-tip" type="info" closable={false} showIcon title="搜索中：仅显示当前目录及子目录名称匹配结果" />
                   ) : null}
-                  <div className="admin-table-surface">
-                    <BzTable data={items} columns={listColumns} rowKey="id" size="small" />
-                  </div>
-                </div>
-              )}
-            </BzLoading>
+                  <div className="admin-table-surface admin-list-table-area">
+                     <BzTable data={items} columns={listColumns} rowKey="id" size="small" />
+                   </div>
+                 </div>
+               )}
+              </BzLoading>
+            </div>
           </BzCard>
 
           {previewName ? (
@@ -675,46 +702,7 @@ export function SystemFilesPage() {
                 </BzButton>
               </div>
 
-              <div className="physical-grid">
-                <div className="pair">
-                  <span className="label">逻辑文件ID</span>
-                  <span className="value mono">{physicalDetail.logicalFileId}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">物理文件ID</span>
-                  <span className="value mono">{physicalDetail.physicalFileId}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">Owner</span>
-                  <span className="value">
-                    {physicalDetail.logicalOwnerType}/{physicalDetail.logicalOwnerId}
-                  </span>
-                </div>
-                <div className="pair">
-                  <span className="label">Hash</span>
-                  <span className="value mono">{physicalDetail.hash}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">相对路径</span>
-                  <span className="value mono">{physicalDetail.relativePath}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">绝对路径</span>
-                  <span className="value mono">{physicalDetail.absolutePath}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">大小</span>
-                  <span className="value">{formatSize(physicalDetail.fileSize)}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">内容类型</span>
-                  <span className="value">{physicalDetail.contentType || "-"}</span>
-                </div>
-                <div className="pair">
-                  <span className="label">引用数</span>
-                  <span className="value">{physicalDetail.refCount}</span>
-                </div>
-              </div>
+              <AdminDetailTable sections={physicalDetailSections} />
 
               {detailErrorMessage ? <BzAlert title={detailErrorMessage} type="error" showIcon className="detail-error" /> : null}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  createDictType,
   createDictItem,
   deleteDictItem,
   deleteDictType,
@@ -15,6 +16,7 @@ import {
   validateDisableDictItem,
 } from "@admin/api/dicts";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -44,7 +46,7 @@ import type { DictItem, DictStructureType, DictTypeItem, DictValueType } from "@
 import type { PageResult } from "@admin/types/page";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type DrawerMode = "detail" | "edit";
+type DrawerMode = "create" | "detail" | "edit";
 type ItemEditorMode = "create" | "edit";
 
 const pageSizeOptions = [10, 20, 30, 50, 100];
@@ -86,6 +88,7 @@ function nextSortNo(items: DictItem[]) {
 export function DictAdminPage() {
   const canView = hasResourceCodeAccess("dict-manage-view");
   const canEdit = hasResourceCodeAccess("dict-manage-edit");
+  const canCreate = canEdit;
 
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState<PageResult<DictTypeItem>>({
@@ -103,6 +106,8 @@ export function DictAdminPage() {
   const [appliedName, setAppliedName] = useState("");
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [batchMode, setBatchMode] = useState(false);
+  const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
 
@@ -112,6 +117,7 @@ export function DictAdminPage() {
   const [currentType, setCurrentType] = useState<DictTypeItem | null>(null);
   const [currentItems, setCurrentItems] = useState<DictItem[]>([]);
   const [typeForm, setTypeForm] = useState({
+    code: "",
     name: "",
     description: "",
     enumClass: "",
@@ -181,6 +187,7 @@ export function DictAdminPage() {
       setCurrentType(type);
       setCurrentItems(items);
       setTypeForm({
+        code: type.code,
         name: type.name,
         description: type.description || "",
         enumClass: type.enumClass || "",
@@ -198,6 +205,33 @@ export function DictAdminPage() {
     setCurrentType(null);
     setCurrentItems([]);
     setItemEditorOpen(false);
+    setTypeForm({
+      code: "",
+      name: "",
+      description: "",
+      enumClass: "",
+      valueType: "STRING",
+      structureType: "FLAT",
+      enabled: true,
+    });
+  }
+
+  function openCreateType() {
+    if (!canCreate) return;
+    setDrawerMode("create");
+    setCurrentType(null);
+    setCurrentItems([]);
+    setTypeForm({
+      code: "",
+      name: "",
+      description: "",
+      enumClass: "",
+      valueType: "STRING",
+      structureType: "FLAT",
+      enabled: true,
+    });
+    setDrawerOpen(true);
+    setDrawerLoading(false);
   }
 
   async function refreshDrawerItems() {
@@ -248,43 +282,97 @@ export function DictAdminPage() {
 
   async function submitType() {
     const type = currentTypeRef.current;
-    if (!type) return;
+    const code = safeTrim(typeForm.code);
     const name = safeTrim(typeForm.name);
+    if (drawerMode === "create" && !code) {
+      message.warning("字典编码不能为空");
+      return;
+    }
     if (!name) {
       message.warning("字典名称不能为空");
       return;
     }
     setSavingType(true);
     try {
-      await updateDictType(type.id, {
-        name,
-        description: safeTrim(typeForm.description) || null,
-        enumClass: safeTrim(typeForm.enumClass) || null,
-        valueType: typeForm.valueType,
-        structureType: typeForm.structureType,
-        enabled: typeForm.enabled,
-        items: currentItems.map((item) => ({
-          id: item.id,
-          clientKey: item.id,
-          parentClientKey: item.parentItemId || null,
-          itemCode: item.itemCode,
-          itemLabel: item.itemLabel,
-          itemValue: item.itemValue,
-          sortNo: item.sortNo,
-          enabled: item.enabled,
-          defaultItem: item.defaultItem,
-          tagColor: item.tagColor,
-          tagType: item.tagType,
-          extraJson: item.extraJson,
-          description: item.description,
-        })),
-      });
-      message.success("保存成功");
+      if (drawerMode === "create") {
+        await createDictType({
+          code,
+          name,
+          description: safeTrim(typeForm.description) || null,
+          enumClass: safeTrim(typeForm.enumClass) || null,
+          valueType: typeForm.valueType,
+          structureType: typeForm.structureType,
+          enabled: typeForm.enabled,
+          items: [],
+        });
+        message.success("新增成功");
+      } else {
+        if (!type) return;
+        await updateDictType(type.id, {
+          name,
+          description: safeTrim(typeForm.description) || null,
+          enumClass: safeTrim(typeForm.enumClass) || null,
+          valueType: typeForm.valueType,
+          structureType: typeForm.structureType,
+          enabled: typeForm.enabled,
+          items: currentItems.map((item) => ({
+            id: item.id,
+            clientKey: item.id,
+            parentClientKey: item.parentItemId || null,
+            itemCode: item.itemCode,
+            itemLabel: item.itemLabel,
+            itemValue: item.itemValue,
+            sortNo: item.sortNo,
+            enabled: item.enabled,
+            defaultItem: item.defaultItem,
+            tagColor: item.tagColor,
+            tagType: item.tagType,
+            extraJson: item.extraJson,
+            description: item.description,
+          })),
+        });
+        message.success("保存成功");
+      }
       closeDrawer();
       await reload();
     } finally {
       setSavingType(false);
     }
+  }
+
+  async function handleBatchDelete() {
+    if (!canEdit || selectedTypeIds.length === 0) return;
+    const selectedRows = rows.filter((row) => selectedTypeIds.includes(row.id));
+    const protectedRows = selectedRows.filter((row) => row.sourceType === "BUILTIN");
+    if (protectedRows.length > 0) {
+      message.warning("系统内建字典不允许批量删除");
+      return;
+    }
+    const confirmed = await bzConfirm({
+      title: "批量删除字典",
+      content: `确认删除已选 ${selectedTypeIds.length} 个字典？`,
+      confirmText: "删除",
+      cancelText: "取消",
+    });
+    if (!confirmed) return;
+    await Promise.all(selectedTypeIds.map((id) => deleteDictType(id)));
+    message.success("批量删除成功");
+    setSelectedTypeIds([]);
+    setBatchMode(false);
+    await reload();
+  }
+
+  function toggleTypeSelection(typeId: string, checked: boolean) {
+    setSelectedTypeIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(typeId);
+      else next.delete(typeId);
+      return Array.from(next);
+    });
+  }
+
+  function selectAllCurrentPage() {
+    setSelectedTypeIds(rows.filter((row) => row.sourceType !== "BUILTIN").map((row) => row.id));
   }
 
   function openCreateItem() {
@@ -395,6 +483,20 @@ export function DictAdminPage() {
   const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(
     () => [
       {
+        key: "select",
+        title: "选择",
+        width: 64,
+        render: (row) =>
+          batchMode ? (
+            <input
+              type="checkbox"
+              checked={selectedTypeIds.includes(row.id)}
+              disabled={row.sourceType === "BUILTIN"}
+              onChange={(event) => toggleTypeSelection(row.id, event.target.checked)}
+            />
+          ) : null,
+      },
+      {
         key: "code",
         title: "编码",
         width: 240,
@@ -444,10 +546,12 @@ export function DictAdminPage() {
         key: "actions",
         title: "操作",
         width: 210,
+        className: "is-fixed-right",
+        headerClassName: "is-fixed-right",
         render: (row) => <AdminActionBar actions={getTypeRowActions(row)} />,
       },
     ],
-    [canView, canEdit, drawerOpen],
+    [batchMode, canView, canEdit, drawerOpen, selectedTypeIds],
   );
 
   const itemColumns = useMemo<Array<BzTableColumn<DictItem>>>(() => {
@@ -458,6 +562,8 @@ export function DictAdminPage() {
               key: "actions",
               title: "操作",
               width: 180,
+              className: "is-fixed-right",
+              headerClassName: "is-fixed-right",
               render: (row) => <AdminActionBar actions={getItemRowActions(row)} />,
             },
           ]
@@ -521,12 +627,31 @@ export function DictAdminPage() {
     ];
   }, [drawerMode, canEdit, currentItems]);
 
-  const drawerTitle = drawerMode === "detail" ? "字典详情" : "编辑字典";
+  const detailSections = useMemo<AdminDetailSection[]>(() => {
+    if (!currentType || drawerMode !== "detail") return [];
+    return [
+      {
+        title: "字典详情",
+        fields: [
+          { label: "编码", value: currentType.code },
+          { label: "名称", value: currentType.name },
+          { label: "值类型", value: resolveValueTypeLabel(currentType.valueType) },
+          { label: "结构", value: resolveStructureTypeLabel(currentType.structureType) },
+          { label: "来源", value: sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType },
+          { label: "状态", value: currentType.enabled ? "启用" : "停用" },
+          { label: "枚举类", value: currentType.enumClass || "-", span: "full" },
+          { label: "描述", value: currentType.description || "-", span: "full", multiline: true },
+        ],
+      },
+    ];
+  }, [currentType, drawerMode]);
+
+  const drawerTitle = drawerMode === "create" ? "新增字典" : drawerMode === "detail" ? "字典详情" : "编辑字典";
 
   const drawerFooter = (
     <>
       <BzButton onClick={closeDrawer}>{drawerMode === "detail" ? "关闭" : "取消"}</BzButton>
-      {drawerMode === "edit" ? (
+      {drawerMode !== "detail" ? (
         <BzButton buttonType="primary" loading={savingType} onClick={() => void submitType()}>
           确定
         </BzButton>
@@ -548,26 +673,25 @@ export function DictAdminPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard className="admin-panel admin-filter-card" shadow="never">
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    applyFilters();
-                  }}
-                >
+          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
+            <div className="admin-list-region">
+              {queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        applyFilters();
+                      }}
+                    >
                   <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">编码</div>
                     <div className="admin-query-field__control">
@@ -614,32 +738,50 @@ export function DictAdminPage() {
                       </button>
                     ) : null}
                   </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
+                    </form>
+                  </div>
+                </div>
+              ) : null}
 
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">字典列表</div>
-                <div className="admin-table-tools">
+              {batchMode ? (
+                <div className="admin-batch-toolbar">
+                  <div className="admin-batch-toolbar__summary">批量删除中，已选 {selectedTypeIds.length} 项</div>
+                  <div className="admin-batch-toolbar__actions">
+                    <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
+                    <BzButton buttonType="primary" disabled={selectedTypeIds.length === 0} onClick={() => void handleBatchDelete()}>确认删除</BzButton>
+                    <BzButton onClick={() => {
+                      setBatchMode(false);
+                      setSelectedTypeIds([]);
+                    }}>取消</BzButton>
+                  </div>
+                </div>
+              ) : (
+                <div className="admin-list-toolbar-row">
+                  <div className="admin-list-business-actions">
+                    {canCreate ? (
+                      <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateType}>
+                        新增
+                      </BzButton>
+                    ) : null}
+                    {canEdit ? (
+                      <BzButton onClick={() => setBatchMode(true)}>批量删除</BzButton>
+                    ) : null}
+                  </div>
+                  <div className="admin-list-query-tools">
                   <AdminTableTools
                     queryPanelVisible={queryPanelVisible}
                     onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
                     onRefresh={() => void reload()}
                   />
                 </div>
-              </div>
-            }
-          >
-            <div className="admin-table-surface">
+                </div>
+              )}
+
+              <div className="admin-table-surface admin-list-table-area">
               <BzTable columns={columns} data={rows} loading={loading} rowKey="id" emptyText="暂无字典记录" size="small" />
-            </div>
-            {page.totalElements > 0 ? (
-              <div className="dict-pagination-bar">
+              </div>
+              {page.totalElements > 0 ? (
+                <div className="dict-pagination-bar admin-list-table-footer">
                 <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
                 <div className="dict-pagination-right">
                   <BzPagination
@@ -655,54 +797,22 @@ export function DictAdminPage() {
                     }}
                   />
                 </div>
-              </div>
-            ) : null}
+                </div>
+              ) : null}
+            </div>
           </BzCard>
         </div>
 
         <AdminEntityDrawer open={drawerOpen} title={drawerTitle} width="1120px" loading={drawerLoading} onClose={closeDrawer} footer={drawerFooter}>
-          {currentType ? (
+          {currentType || drawerMode === "create" ? (
             <div className="dict-drawer-stack">
-              {drawerMode === "detail" ? (
-                <div className="detail-grid">
-                  <div className="detail-field">
-                    <span className="detail-field__label">编码</span>
-                    <span className="detail-field__value">{currentType.code}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">名称</span>
-                    <span className="detail-field__value">{currentType.name}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">值类型</span>
-                    <span className="detail-field__value">{resolveValueTypeLabel(currentType.valueType)}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">结构</span>
-                    <span className="detail-field__value">{resolveStructureTypeLabel(currentType.structureType)}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">来源</span>
-                    <span className="detail-field__value">{sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">状态</span>
-                    <span className="detail-field__value">{currentType.enabled ? "启用" : "停用"}</span>
-                  </div>
-                  <div className="detail-field detail-field--wide">
-                    <span className="detail-field__label">枚举类</span>
-                    <span className="detail-field__value">{currentType.enumClass || "-"}</span>
-                  </div>
-                  <div className="detail-field detail-field--wide">
-                    <span className="detail-field__label">描述</span>
-                    <span className="detail-field__value">{currentType.description || "-"}</span>
-                  </div>
-                </div>
+              {drawerMode === "detail" && currentType ? (
+                <AdminDetailTable sections={detailSections} />
               ) : (
                 <BzForm>
                   <div className="group-form-grid">
                     <BzFormItem label="编码">
-                      <BzInput modelValue={currentType.code} disabled />
+                      <BzInput modelValue={drawerMode === "create" ? typeForm.code : currentType?.code || ""} disabled={drawerMode !== "create"} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, code: value }))} />
                     </BzFormItem>
                     <BzFormItem label="名称">
                       <BzInput modelValue={typeForm.name} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, name: value }))} />
@@ -721,9 +831,11 @@ export function DictAdminPage() {
                         ))}
                       </BzSelect>
                     </BzFormItem>
-                    <BzFormItem label="来源">
-                      <BzInput modelValue={sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType} disabled />
-                    </BzFormItem>
+                    {drawerMode !== "create" ? (
+                      <BzFormItem label="来源">
+                        <BzInput modelValue={sourceTypeLabelMap[currentType?.sourceType || ""] || currentType?.sourceType || "-"} disabled />
+                      </BzFormItem>
+                    ) : null}
                     <BzFormItem label="启用状态">
                       <BzSwitch modelValue={typeForm.enabled} activeText="启用" inactiveText="停用" onValueChange={(value) => setTypeForm((prev) => ({ ...prev, enabled: value }))} />
                     </BzFormItem>
@@ -737,6 +849,7 @@ export function DictAdminPage() {
                 </BzForm>
               )}
 
+              {drawerMode !== "create" ? (
               <section className="dict-items-section">
                 <div className="admin-table-header">
                   <div className="admin-table-title">字典项</div>
@@ -755,6 +868,7 @@ export function DictAdminPage() {
                   <BzTable columns={itemColumns} data={currentItems} rowKey="id" emptyText="暂无字典项" size="small" />
                 </div>
               </section>
+              ) : null}
             </div>
           ) : null}
         </AdminEntityDrawer>

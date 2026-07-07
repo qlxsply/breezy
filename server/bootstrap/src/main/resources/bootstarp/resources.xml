@@ -288,6 +288,21 @@
                             <permission code="usr.del"/>
                         </permissions>
                     </button>
+                    <button code="user-manage-batch-disable" name="批量停用账号" sortNo="90" visible="true">
+                        <permissions>
+                            <permission code="usr.edit"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-batch-reset-password" name="批量重置密码" sortNo="100" visible="true">
+                        <permissions>
+                            <permission code="usr.pwd.reset"/>
+                        </permissions>
+                    </button>
+                    <button code="user-manage-batch-delete" name="批量删除账号" sortNo="110" visible="true">
+                        <permissions>
+                            <permission code="usr.del"/>
+                        </permissions>
+                    </button>
                 </buttons>
             </menu>
 

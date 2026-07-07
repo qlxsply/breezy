@@ -1,7 +1,9 @@
 package com.corwin.system.role.interfaces.web;
 
 import com.corwin.framework.constant.UserType;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.audit.domain.model.AuditAction;
 import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditResource;
@@ -18,6 +20,7 @@ import com.corwin.system.role.application.view.RoleGrantResourceView;
 import com.corwin.system.role.application.view.RoleGrantSelectionView;
 import com.corwin.system.role.domain.model.Role;
 import com.corwin.system.role.interfaces.web.req.CreateRoleReq;
+import com.corwin.system.role.interfaces.web.req.RolePageReq;
 import com.corwin.system.role.interfaces.web.req.UpdateRoleGrantReq;
 import com.corwin.system.role.interfaces.web.req.UpdateRoleReq;
 import com.corwin.system.role.interfaces.web.res.RoleGrantResourceRes;
@@ -51,6 +54,13 @@ public class RoleAdminController {
     @Authorize(userType = UserType.INTERNAL, permissions = {"rol.view"})
     public ApiResponse<List<RoleRes>> list() {
         return ApiResponse.ok(roleAdminService.list().stream().map(RoleAdminController::toDto).toList());
+    }
+
+    @PostMapping("/page")
+    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.view"})
+    public ApiResponse<PageResult<RoleRes>> page(@RequestBody RolePageReq req) {
+        return ApiResponse.ok(PageResult.of(roleAdminService.page(req.keyword(), req.enabled(),
+                PageSpecFactory.of(req.page(), req.sort())), RoleAdminController::toDto));
     }
 
     @PostMapping
