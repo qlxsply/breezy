@@ -165,7 +165,7 @@
 
 .role-manage-section__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   min-height: 32px;
@@ -188,7 +188,6 @@
 .role-manage-section__hint,
 .role-manage-section__stat,
 .permission-dialog-footer__summary,
-.role-permission-table__meta,
 .role-permission-empty {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
@@ -558,12 +557,6 @@
   min-height: 240px;
   color: var(--color-text-disabled);
   font-size: var(--font-size-md);
-}
-
-.role-permission-table__meta {
-  padding: 10px 12px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-surface-soft);
 }
 
 .permission-dialog-footer {

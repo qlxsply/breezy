@@ -113,14 +113,6 @@ export function RolePermissionDialog({
     return new Set([...expandedIds, ...filteredTreeResult.autoExpandedIds]);
   }, [expandedIds, keywordText, filteredTreeResult]);
 
-  const filteredResourceCount = useMemo(() => {
-    let count = 0;
-    walkTree(filteredRoots, () => {
-      count += 1;
-    });
-    return count;
-  }, [filteredRoots]);
-
   const selectableResourceCount = useMemo(
     () => resources.filter((row) => row.selectable).length,
     [resources],
@@ -439,11 +431,7 @@ export function RolePermissionDialog({
   const footer = (
     <div className="permission-dialog-footer">
       <div className="permission-dialog-footer__summary">
-        {confirming
-          ? "确认保存后，受影响用户重新登录后权限才会完全生效。"
-          : showPermissionSection
-            ? summaryText
-            : ""}
+        {confirming ? "确认保存后，受影响用户重新登录后权限才会完全生效。" : ""}
       </div>
       <div className="permission-dialog-footer__actions">
         {!confirming ? (
@@ -662,10 +650,6 @@ export function RolePermissionDialog({
                       ))
                     )}
                   </div>
-                </div>
-
-                <div className="role-permission-table__meta">
-                  当前筛选结果 {filteredResourceCount} 项，共 {resources.length} 项资源
                 </div>
               </div>
             </section>
