@@ -7,6 +7,9 @@ interface BzPaginationProps {
   pageSize: number;
   currentPage: number;
   pageSizes?: number[];
+  showSizeChanger?: boolean;
+  showFirstLast?: boolean;
+  showJumper?: boolean;
   onCurrentChange?: (pageNo: number) => void;
   onSizeChange?: (pageSize: number) => void;
 }
@@ -16,6 +19,9 @@ export function BzPagination({
   pageSize,
   currentPage,
   pageSizes = [10, 20, 50, 100],
+  showSizeChanger = true,
+  showFirstLast = true,
+  showJumper = true,
   onCurrentChange,
   onSizeChange,
 }: BzPaginationProps) {
@@ -56,37 +62,41 @@ export function BzPagination({
 
   return (
     <div className="bz-pagination">
-      <div className="bz-pagination__size">
-        <span>每页</span>
-        <select
-          className="bz-pagination__size-select"
-          value={pageSize}
-          onChange={(event) => {
-            const nextPageSize = Number(event.currentTarget.value);
-            if (!Number.isFinite(nextPageSize) || nextPageSize <= 0) return;
-            onSizeChange?.(nextPageSize);
-          }}
-        >
-          {pageSizes.map((size) => (
-            <option
-              key={size}
-              value={size}
-            >
-              {size}
-            </option>
-          ))}
-        </select>
-        <span>项</span>
-      </div>
+      {showSizeChanger ? (
+        <div className="bz-pagination__size">
+          <span>每页</span>
+          <select
+            className="bz-pagination__size-select"
+            value={pageSize}
+            onChange={(event) => {
+              const nextPageSize = Number(event.currentTarget.value);
+              if (!Number.isFinite(nextPageSize) || nextPageSize <= 0) return;
+              onSizeChange?.(nextPageSize);
+            }}
+          >
+            {pageSizes.map((size) => (
+              <option
+                key={size}
+                value={size}
+              >
+                {size}
+              </option>
+            ))}
+          </select>
+          <span>项</span>
+        </div>
+      ) : null}
       <div className="bz-pagination__pages">
-        <button
-          className="bz-page-btn"
-          type="button"
-          disabled={isFirstPage}
-          onClick={() => goToPage(1)}
-        >
-          首页
-        </button>
+        {showFirstLast ? (
+          <button
+            className="bz-page-btn"
+            type="button"
+            disabled={isFirstPage}
+            onClick={() => goToPage(1)}
+          >
+            首页
+          </button>
+        ) : null}
         <button
           className="bz-page-btn"
           type="button"
@@ -122,41 +132,45 @@ export function BzPagination({
         >
           下一页
         </button>
-        <button
-          className="bz-page-btn"
-          type="button"
-          disabled={isLastPage}
-          onClick={() => goToPage(totalPages)}
-        >
-          末页
-        </button>
+        {showFirstLast ? (
+          <button
+            className="bz-page-btn"
+            type="button"
+            disabled={isLastPage}
+            onClick={() => goToPage(totalPages)}
+          >
+            末页
+          </button>
+        ) : null}
       </div>
-      <form
-        className="bz-pagination__jump"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const raw = Number(jumpValue);
-          if (!Number.isFinite(raw)) return;
-          goToPage(Math.trunc(raw));
-        }}
-      >
-        <span>跳转</span>
-        <input
-          className="bz-pagination__jump-input"
-          type="number"
-          min={1}
-          max={totalPages}
-          value={jumpValue}
-          onChange={(event) => setJumpValue(event.currentTarget.value)}
-        />
-        <span>页</span>
-        <button
-          className="bz-page-btn"
-          type="submit"
+      {showJumper ? (
+        <form
+          className="bz-pagination__jump"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const raw = Number(jumpValue);
+            if (!Number.isFinite(raw)) return;
+            goToPage(Math.trunc(raw));
+          }}
         >
-          确定
-        </button>
-      </form>
+          <span>跳转</span>
+          <input
+            className="bz-pagination__jump-input"
+            type="number"
+            min={1}
+            max={totalPages}
+            value={jumpValue}
+            onChange={(event) => setJumpValue(event.currentTarget.value)}
+          />
+          <span>页</span>
+          <button
+            className="bz-page-btn"
+            type="submit"
+          >
+            确定
+          </button>
+        </form>
+      ) : null}
     </div>
   );
 }

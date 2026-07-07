@@ -3,6 +3,7 @@ import type { AdminActionItem } from "../../types/admin-action";
 import type { UserEntry } from "../../types/user-admin";
 import { AdminActionBar } from "../admin/AdminActionBar";
 import type { BzTableColumn } from "../bz/BzTable";
+import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
@@ -28,6 +29,7 @@ interface UserTableProps {
   onReset: (user: UserEntry) => void;
   onRemove: (user: UserEntry) => void;
   onToggleSelect?: (user: UserEntry, checked: boolean) => void;
+  onToggleSelectAll?: (checked: boolean) => void;
 }
 
 export function UserTable({
@@ -47,6 +49,7 @@ export function UserTable({
   onReset,
   onRemove,
   onToggleSelect,
+  onToggleSelectAll,
 }: UserTableProps) {
   function isProtectedUser(user: UserEntry): boolean {
     return user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin");
@@ -60,6 +63,15 @@ export function UserTable({
     if (t === "success" || t === "warning" || t === "danger" || t === "info") return t;
     return "info";
   }
+
+  const currentPageSelectableRows = rows.filter((row) => !isProtectedUser(row));
+  const currentPageSelectableIds = currentPageSelectableRows.map((row) => row.id);
+  const allCurrentPageSelected =
+    currentPageSelectableIds.length > 0 &&
+    currentPageSelectableIds.every((id) => selectedIds.includes(id));
+  const someCurrentPageSelected =
+    !allCurrentPageSelected && currentPageSelectableIds.some((id) => selectedIds.includes(id));
+
   function getActions(user: UserEntry): AdminActionItem[] {
     const maintainDisabled = isProtectedUser(user);
     const toggleDisabled = isProtectedUser(user);
@@ -84,27 +96,56 @@ export function UserTable({
   }
 
   const columns: Array<BzTableColumn<UserEntry>> = [
-    {
-      key: "select",
-      title: "选择",
-      width: 48,
-      render: (row) =>
-        batchMode ? (
-          <input
-            type="checkbox"
-            checked={selectedIds.includes(row.id)}
-            disabled={isProtectedUser(row)}
-            onChange={(event) => onToggleSelect?.(row, event.target.checked)}
-          />
-        ) : null,
-    },
+    ...(batchMode
+      ? [
+          {
+            key: "select",
+            title: "",
+            width: 48,
+            className: "user-manage-col-select is-sticky-left",
+            headerClassName: "user-manage-col-select is-sticky-left",
+            headerRender: () => (
+              <input
+                className="user-manage-checkbox"
+                type="checkbox"
+                checked={allCurrentPageSelected}
+                disabled={currentPageSelectableIds.length === 0}
+                ref={(el) => {
+                  if (el) el.indeterminate = someCurrentPageSelected;
+                }}
+                onChange={(event) => onToggleSelectAll?.(event.target.checked)}
+              />
+            ),
+            render: (row: UserEntry) => (
+              <input
+                className="user-manage-checkbox"
+                type="checkbox"
+                checked={selectedIds.includes(row.id)}
+                disabled={isProtectedUser(row)}
+                onChange={(event) => onToggleSelect?.(row, event.target.checked)}
+              />
+            ),
+          } as BzTableColumn<UserEntry>,
+        ]
+      : []),
     {
       key: "username",
       title: "账号",
       minWidth: 180,
-      render: (row) => <div className="name">{row.username}</div>,
+      className: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
+      headerClassName: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
+      render: (row) => (
+        <BzOverflowTooltip text={row.username}>
+          <span className="user-manage-text user-manage-text--primary">{row.username}</span>
+        </BzOverflowTooltip>
+      ),
     },
-    { key: "nickname", title: "昵称", minWidth: 160, render: (row) => row.nickname || "-" },
+    {
+      key: "nickname",
+      title: "昵称",
+      minWidth: 160,
+      render: (row) => <span className="user-manage-text">{row.nickname || "-"}</span>,
+    },
     {
       key: "userType",
       title: "类型",
@@ -129,21 +170,26 @@ export function UserTable({
       key: "createdAt",
       title: "创建时间",
       width: 170,
-      render: (row) => formatDateTime(row.createdAt),
+      render: (row) => <span className="user-manage-text">{formatDateTime(row.createdAt)}</span>,
     },
-    { key: "updatedBy", title: "更新人", width: 140, render: (row) => row.updatedBy || "-" },
+    {
+      key: "updatedBy",
+      title: "更新人",
+      width: 140,
+      render: (row) => <span className="user-manage-text">{row.updatedBy || "-"}</span>,
+    },
     {
       key: "updatedAt",
       title: "更新时间",
       width: 170,
-      render: (row) => formatDateTime(row.updatedAt),
+      render: (row) => <span className="user-manage-text">{formatDateTime(row.updatedAt)}</span>,
     },
     {
       key: "actions",
       title: "操作",
       width: 220,
-      className: "is-fixed-right",
-      headerClassName: "is-fixed-right",
+      className: "user-manage-col-actions is-fixed-right",
+      headerClassName: "user-manage-col-actions is-fixed-right",
       render: (row) => {
         const all = getActions(row);
         return <AdminActionBar actions={all} />;
@@ -152,13 +198,15 @@ export function UserTable({
   ];
 
   return (
-    <BzTable
-      data={rows}
-      columns={columns}
-      rowKey="id"
-      loading={loading}
-      emptyText="暂无数据"
-      size="small"
-    />
+    <div className="user-manage-table-scope">
+      <BzTable
+        data={rows}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        emptyText="暂无数据"
+        size="small"
+      />
+    </div>
   );
 }

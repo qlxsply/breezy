@@ -9,6 +9,7 @@ export interface BzTableColumn<Row> {
   minWidth?: number | string;
   className?: string;
   headerClassName?: string;
+  headerRender?: () => ReactNode;
   render?: (row: Row, rowIndex: number) => ReactNode;
 }
 
@@ -65,7 +66,7 @@ export function BzTable<Row>({
                     style={resolveColumnStyle(column)}
                     className={column.headerClassName}
                   >
-                    {column.title}
+                    {column.headerRender ? column.headerRender() : column.title}
                   </th>
                 ))}
               </tr>

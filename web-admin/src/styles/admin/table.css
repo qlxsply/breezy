@@ -341,6 +341,108 @@
   white-space: nowrap;
 }
 
+.user-manage-table-scope .bz-table__scroll {
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.user-manage-table-scope .bz-table__inner {
+  min-width: 1480px;
+  table-layout: fixed;
+}
+
+.user-manage-table-scope .bz-table__inner th,
+.user-manage-table-scope .bz-table__inner td {
+  height: 44px;
+  padding: 10px 12px;
+  border-right: var(--border-width-1) solid var(--color-border-muted);
+  border-bottom: var(--border-width-1) solid var(--color-border-muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.user-manage-table-scope .bz-table__inner th {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-bg-surface-soft);
+}
+
+.user-manage-table-scope .bz-table__inner td {
+  background: var(--color-bg-surface);
+}
+
+.user-manage-table-scope .bz-table__inner tbody tr:hover td {
+  background: var(--color-bg-surface-selected);
+}
+
+.user-manage-table-scope .bz-table__inner th:last-child,
+.user-manage-table-scope .bz-table__inner td:last-child {
+  border-right: none;
+}
+
+.user-manage-col-select,
+.user-manage-col-username {
+  position: sticky;
+  z-index: 5;
+}
+
+.user-manage-col-select.is-sticky-left {
+  left: 0;
+}
+
+.user-manage-col-username.is-sticky-left {
+  left: 0;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.user-manage-col-username.has-select-offset {
+  left: 48px;
+}
+
+.user-manage-table-scope .bz-table__inner th.user-manage-col-select,
+.user-manage-table-scope .bz-table__inner th.user-manage-col-username {
+  z-index: 8;
+  background: var(--color-bg-surface-soft);
+}
+
+.user-manage-table-scope .bz-table__inner td.user-manage-col-select,
+.user-manage-table-scope .bz-table__inner td.user-manage-col-username {
+  background: var(--color-bg-surface);
+}
+
+.user-manage-table-scope .bz-table__inner tbody tr:hover td.user-manage-col-select,
+.user-manage-table-scope .bz-table__inner tbody tr:hover td.user-manage-col-username {
+  background: var(--color-bg-surface-selected);
+}
+
+.user-manage-table-scope .bz-table__inner th.user-manage-col-select,
+.user-manage-table-scope .bz-table__inner td.user-manage-col-select {
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+}
+
+.user-manage-checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--primary-color);
+}
+
+.user-manage-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-manage-text--primary {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
 @media (max-width: 768px) {
   .admin-table-header {
     flex-direction: column;

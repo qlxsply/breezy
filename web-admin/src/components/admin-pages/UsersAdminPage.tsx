@@ -289,8 +289,17 @@ export function UsersAdminPage() {
     });
   }
 
-  function selectAllCurrentPage() {
-    setSelectedIds(rows.filter((row) => !isProtectedUser(row)).map((row) => row.id));
+  function toggleSelectAllCurrentPage(checked: boolean) {
+    const currentPageSelectableIds = rows.filter((row) => !isProtectedUser(row)).map((row) => row.id);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        currentPageSelectableIds.forEach((id) => next.add(id));
+      } else {
+        currentPageSelectableIds.forEach((id) => next.delete(id));
+      }
+      return Array.from(next);
+    });
   }
 
   async function confirmBatchAction() {
@@ -407,7 +416,6 @@ export function UsersAdminPage() {
                 <div className="admin-batch-toolbar">
                   <div className="admin-batch-toolbar__summary">{batchLabel}，已选 {selectedIds.length} 项</div>
                   <div className="admin-batch-toolbar__actions">
-                    <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
                     <BzButton buttonType="primary" disabled={selectedIds.length === 0} onClick={() => void confirmBatchAction()}>
                       确认
                     </BzButton>
@@ -437,24 +445,25 @@ export function UsersAdminPage() {
               )}
 
               <div className="admin-table-surface admin-list-table-area">
-              <UserTable
-                rows={rows}
-                loading={loading}
-                batchMode={Boolean(batchAction)}
-                selectedIds={selectedIds}
-                canEdit={canEdit}
-                canToggle={canToggle}
-                canReset={canReset}
-                canRoles={canRoles}
-                canDelete={canDelete}
-                userTypeMetaMap={userTypeMetaMap}
-                onDetail={openDetail}
-                onEdit={openEdit}
-                onToggle={onToggle}
-                onReset={openReset}
-                onRemove={onRemove}
-                onToggleSelect={toggleSelect}
-              />
+                <UserTable
+                  rows={rows}
+                  loading={loading}
+                  batchMode={Boolean(batchAction)}
+                  selectedIds={selectedIds}
+                  canEdit={canEdit}
+                  canToggle={canToggle}
+                  canReset={canReset}
+                  canRoles={canRoles}
+                  canDelete={canDelete}
+                  userTypeMetaMap={userTypeMetaMap}
+                  onDetail={openDetail}
+                  onEdit={openEdit}
+                  onToggle={onToggle}
+                  onReset={openReset}
+                  onRemove={onRemove}
+                  onToggleSelect={toggleSelect}
+                  onToggleSelectAll={toggleSelectAllCurrentPage}
+                />
               </div>
 
               {page.totalElements > 0 ? (

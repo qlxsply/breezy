@@ -57,7 +57,6 @@ export function UserManageDrawer({
   const [rolePageNo, setRolePageNo] = useState(1);
   const [rolePageSize, setRolePageSize] = useState(10);
   const [roleTotal, setRoleTotal] = useState(0);
-  const [rolePageSizeOptions] = useState([10, 20, 30, 50]);
   const [rolePageLoading, setRolePageLoading] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
   const [err, setErr] = useState("");
@@ -168,14 +167,23 @@ export function UserManageDrawer({
     setRolePageNo(1);
   }
 
+  function resetRoleSearch() {
+    setKeyword("");
+    setAppliedKeyword("");
+    setRolePageNo(1);
+  }
+
   const footer = (
-    <div className="admin-drawer-footer">
-      <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
-      {editable ? (
-        <BzButton buttonType="primary" onClick={handleSubmit}>
-          保存
-        </BzButton>
-      ) : null}
+    <div className="permission-dialog-footer">
+      <div className="permission-dialog-footer__summary" />
+      <div className="permission-dialog-footer__actions">
+        <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
+        {editable ? (
+          <BzButton buttonType="primary" onClick={handleSubmit}>
+            保存
+          </BzButton>
+        ) : null}
+      </div>
     </div>
   );
 
@@ -225,7 +233,7 @@ export function UserManageDrawer({
   return (
     <AdminEntityDrawer
       open={open}
-      className="role-manage-drawer"
+      className="role-manage-drawer user-manage-drawer"
       title={mode === "create" ? "新增用户" : mode === "detail" ? "用户详情" : "编辑用户"}
       width="1180px"
       loading={loading}
@@ -235,7 +243,7 @@ export function UserManageDrawer({
       <div className="role-manage-shell">
         <section className="role-manage-section">
           <div className="role-manage-section__head">
-            <div className="role-manage-section__title">基础信息</div>
+            <div className="role-manage-section__title">用户信息</div>
           </div>
 
           <div className="role-info-table-wrap">
@@ -311,9 +319,9 @@ export function UserManageDrawer({
               <div className="role-manage-section__stat">已选 {selectedSet.size} / {roleTotal} 项</div>
             </div>
 
-            <div className="role-permission-toolbar">
-              <BzInput
-                modelValue={keyword}
+              <div className="role-permission-toolbar">
+                <BzInput
+                  modelValue={keyword}
                 placeholder="搜索角色编码/名称"
                 clearable
                 className="role-permission-toolbar__search"
@@ -321,29 +329,34 @@ export function UserManageDrawer({
                 onKeyUp={(event) => {
                   if (event.key === "Enter") applyRoleSearch();
                 }}
-              />
-              <div className="role-permission-toolbar__actions">
-                <BzButton className="permission-toolbar-button" onClick={applyRoleSearch}>
-                  查询
-                </BzButton>
+                />
+                <div className="role-permission-toolbar__actions">
+                  <BzButton className="permission-toolbar-button" onClick={resetRoleSearch}>
+                    重置
+                  </BzButton>
+                  <BzButton className="permission-toolbar-button" onClick={applyRoleSearch}>
+                    搜索
+                  </BzButton>
+                </div>
               </div>
-            </div>
 
-            <div className="role-permission-table">
-              <div className="role-permission-table__viewport">
-                <div className="role-permission-row role-permission-row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
-                  <div className="role-permission-cell role-permission-cell--check">
-                    <input
-                      className="permission-node-checkbox"
-                      type="checkbox"
-                      checked={currentPageAllSelected}
-                      ref={(el) => {
-                        if (el) el.indeterminate = !currentPageAllSelected && currentPageSomeSelected;
-                      }}
-                      disabled={!canEditRoles || roleRows.length === 0 || mode === "detail"}
-                      onChange={(event) => toggleCurrentPageAll(event.target.checked)}
-                    />
-                  </div>
+              <div className="role-permission-table">
+                <div className="role-permission-table__viewport">
+                  <div className="role-permission-row role-permission-row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                    <div className="role-permission-cell role-permission-cell--check">
+                      {mode === "detail" ? null : (
+                        <input
+                          className="permission-node-checkbox"
+                          type="checkbox"
+                          checked={currentPageAllSelected}
+                          ref={(el) => {
+                            if (el) el.indeterminate = !currentPageAllSelected && currentPageSomeSelected;
+                          }}
+                          disabled={!canEditRoles || roleRows.length === 0}
+                          onChange={(event) => toggleCurrentPageAll(event.target.checked)}
+                        />
+                      )}
+                    </div>
                   <div className="role-permission-cell role-permission-cell--resource">角色编码</div>
                   <div className="role-permission-cell role-permission-cell--code">角色名称</div>
                 </div>
@@ -375,7 +388,6 @@ export function UserManageDrawer({
                 </div>
               </div>
 
-              <div className="role-permission-table__meta">当前页 {roleRows.length} 项，共 {roleTotal} 项角色</div>
               {roleTotal > 0 ? (
                 <div className="dict-pagination-bar">
                   <div className="dict-pagination-summary">共 {roleTotal} 条记录</div>
@@ -384,13 +396,10 @@ export function UserManageDrawer({
                       total={roleTotal}
                       pageSize={rolePageSize}
                       currentPage={rolePageNo}
-                      pageSizes={rolePageSizeOptions}
+                      showSizeChanger={false}
+                      showFirstLast={false}
+                      showJumper={false}
                       onCurrentChange={setRolePageNo}
-                      onSizeChange={(size) => {
-                        if (!Number.isFinite(size) || size <= 0 || size === rolePageSize) return;
-                        setRolePageSize(size);
-                        setRolePageNo(1);
-                      }}
                     />
                   </div>
                 </div>
