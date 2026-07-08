@@ -5,7 +5,7 @@ import {
   pageUserFeatureApplications,
   updateUserFeatureApplicationStatus,
 } from "@admin/api/user-features";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
@@ -157,7 +157,8 @@ export function UserFeatureApplicationsPage() {
   }
 
   const columns = useMemo<Array<BzTableColumn<UserFeatureApplicationEntry>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<UserFeatureApplicationEntry>> = [
       {
         key: "icon",
         title: "图标",
@@ -205,16 +206,11 @@ export function UserFeatureApplicationsPage() {
       },
       { key: "featureCount", title: "功能数", width: 90 },
       { key: "permissionBindingCount", title: "权限绑定", width: 100 },
-      {
-        key: "actions",
-        title: "操作",
-        width: 120,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
-      },
-    ],
-    [canToggle],
+      ];
+      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [canToggle, rows],
   );
 
   const featureColumns = useMemo(

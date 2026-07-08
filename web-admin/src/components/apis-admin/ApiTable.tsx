@@ -1,4 +1,4 @@
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { BzOverflowTooltip, BzTable, type BzTableColumn, BzTag, BzTooltip } from "@admin/components/bz";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { ApiEntry } from "@admin/types/api-admin";
@@ -150,19 +150,16 @@ export function ApiTable({
         </BzTag>
       ),
     },
-    {
-      key: "actions",
-      title: "操作",
-      width: 90,
-      className: "api-table__actions-cell is-fixed-right",
-      headerClassName: "is-fixed-right",
-      render: (row: ApiEntry) => (
-        <AdminActionBar
-          actions={getRowActions(row, canDetail, canPublish, canDisable, onDetail, onPublish, onDisable)}
-        />
-      ),
-    },
   ];
+
+  const actionsColumn = createAdminActionsColumn({
+    rows,
+    getActions: (row) =>
+      getRowActions(row, canDetail, canPublish, canDisable, onDetail, onPublish, onDisable),
+    stickyClassName: "api-table__actions-cell is-fixed-right",
+    stickyHeaderClassName: "api-table__actions-cell is-fixed-right",
+  });
+  if (actionsColumn) baseColumns.push(actionsColumn);
 
   const columns: Array<BzTableColumn<ApiEntry>> = baseColumns.map((column) => ({
     ...column,

@@ -9,7 +9,7 @@ import {
   updateResource,
   updateResourcePermissions,
 } from "@admin/api/resources";
-import {AdminActionBar} from "@admin/components/admin/AdminActionBar";
+import {createAdminActionsColumn} from "@admin/components/admin/admin-actions-column";
 import {AdminTableTools} from "@admin/components/admin/AdminTableTools";
 import {AdminEntityDrawer} from "@admin/components/admin/AdminEntityDrawer";
 import {useAdminQueryPanelLayout} from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -170,7 +170,8 @@ export function ResourcesAdminPage() {
   const structureReadOnly = readOnly;
 
   const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<ResourceTableRow>> = [
       {
         key: "name",
         title: "资源名称",
@@ -284,13 +285,10 @@ export function ResourcesAdminPage() {
           );
         },
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 220,
-        className: "resource-manage-col-actions is-sticky-right",
-        headerClassName: "resource-manage-col-actions is-sticky-right",
-        render: ({ row }) => {
+      ];
+      const actionsColumn = createAdminActionsColumn({
+        rows: tableRows,
+        getActions: ({ row }) => {
           const childrenAllowed = canHaveChildren(row.resourceType);
           const actions: AdminActionItem[] = [];
           actions.push({
@@ -325,11 +323,14 @@ export function ResourcesAdminPage() {
               handler: () => openCreateChild(row),
             });
           }
-          return <AdminActionBar actions={actions} />;
+          return actions;
         },
-      },
-    ],
-    [canCreate, canDelete, canEdit, expandedIds, hasActiveFilter],
+        stickyClassName: "resource-manage-col-actions is-sticky-right",
+        stickyHeaderClassName: "resource-manage-col-actions is-sticky-right",
+      });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [canCreate, canDelete, canEdit, expandedIds, hasActiveFilter, tableRows],
   );
 
   async function reload() {

@@ -1,7 +1,7 @@
 import { formatDateTime } from "../../core/formatter";
+import { createAdminActionsColumn } from "../admin/admin-actions-column";
 import type { AdminActionItem } from "../../types/admin-action";
 import type { RoleEntry } from "../../types/role-admin";
-import { AdminActionBar } from "../admin/AdminActionBar";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzTable } from "../bz/BzTable";
@@ -93,18 +93,15 @@ export function RoleTable({
       width: 170,
       render: (row) => <span className="role-table-text">{formatDateTime(row.updatedAt)}</span>,
     },
-    {
-      key: "actions",
-      title: "操作",
-      width: 220,
-      className: "role-manage-col-actions is-sticky-right",
-      headerClassName: "role-manage-col-actions is-sticky-right",
-      render: (row) => {
-        const actions = getActions(row);
-        return <AdminActionBar actions={actions} />;
-      },
-    },
   ];
+
+  const actionsColumn = createAdminActionsColumn({
+    rows,
+    getActions,
+    stickyClassName: "role-manage-col-actions is-sticky-right",
+    stickyHeaderClassName: "role-manage-col-actions is-sticky-right",
+  });
+  if (actionsColumn) columns.push(actionsColumn);
 
   return (
     <div className="role-manage-table-scope">

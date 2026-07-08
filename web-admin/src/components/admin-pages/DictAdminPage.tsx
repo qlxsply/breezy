@@ -15,7 +15,7 @@ import {
   validateDisableDict,
   validateDisableDictItem,
 } from "@admin/api/dicts";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
@@ -481,7 +481,8 @@ export function DictAdminPage() {
   }
 
   const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<DictTypeItem>> = [
       {
         key: "select",
         title: "选择",
@@ -542,32 +543,18 @@ export function DictAdminPage() {
           </span>
         ),
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 210,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => <AdminActionBar actions={getTypeRowActions(row)} />,
-      },
-    ],
-    [batchMode, canView, canEdit, drawerOpen, selectedTypeIds],
+      ];
+      const actionsColumn = createAdminActionsColumn({ rows, getActions: getTypeRowActions });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [batchMode, canView, canEdit, drawerOpen, selectedTypeIds, rows],
   );
 
   const itemColumns = useMemo<Array<BzTableColumn<DictItem>>>(() => {
-    const actionColumn: Array<BzTableColumn<DictItem>> =
+    const actionColumn =
       drawerMode === "edit" && canEdit
-        ? [
-            {
-              key: "actions",
-              title: "操作",
-              width: 180,
-              className: "is-fixed-right",
-              headerClassName: "is-fixed-right",
-              render: (row) => <AdminActionBar actions={getItemRowActions(row)} />,
-            },
-          ]
-        : [];
+        ? createAdminActionsColumn({ rows: currentItems, getActions: getItemRowActions })
+        : null;
 
     return [
       {
@@ -623,7 +610,7 @@ export function DictAdminPage() {
           </span>
         ),
       },
-      ...actionColumn,
+      ...(actionColumn ? [actionColumn] : []),
     ];
   }, [drawerMode, canEdit, currentItems]);
 

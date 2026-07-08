@@ -10,7 +10,7 @@ import {
   updateUserFeaturePackage,
   updateUserFeaturePackageStatus,
 } from "@admin/api/user-features";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -414,7 +414,8 @@ export function UserFeaturePackagesPage() {
   }
 
   const columns = useMemo<Array<BzTableColumn<UserFeaturePackageEntry>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<UserFeaturePackageEntry>> = [
       { key: "code", title: "编码", minWidth: 180, className: "admin-freeze-col--feature-package-code is-sticky-left", headerClassName: "admin-freeze-col--feature-package-code is-sticky-left", render: (row) => <>{row.code}</> },
       { key: "name", title: "名称", minWidth: 160, render: (row) => <>{row.name}</> },
       {
@@ -457,18 +458,14 @@ export function UserFeaturePackagesPage() {
         width: 90,
         render: (row) => <>{row.applicationAccesses.length}</>,
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 160,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => (
-          <AdminActionBar actions={[...getRowActions(row), ...getRowMoreActions(row)]} />
-        ),
-      },
-    ],
-    [packageTypeMetaMap, canEdit],
+      ];
+      const actionsColumn = createAdminActionsColumn({
+        rows,
+        getActions: (row) => [...getRowActions(row), ...getRowMoreActions(row)],
+      });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [packageTypeMetaMap, canEdit, rows],
   );
 
   const drawerTitle =

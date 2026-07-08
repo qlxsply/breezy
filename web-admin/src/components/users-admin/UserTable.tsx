@@ -1,7 +1,7 @@
 import { formatDateTime } from "../../core/formatter";
 import type { AdminActionItem } from "../../types/admin-action";
 import type { UserEntry } from "../../types/user-admin";
-import { AdminActionBar } from "../admin/AdminActionBar";
+import { createAdminActionsColumn } from "../admin/admin-actions-column";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
 import { BzTable } from "../bz/BzTable";
@@ -184,18 +184,15 @@ export function UserTable({
       width: 170,
       render: (row) => <span className="user-manage-text">{formatDateTime(row.updatedAt)}</span>,
     },
-    {
-      key: "actions",
-      title: "操作",
-      width: 220,
-      className: "user-manage-col-actions is-fixed-right",
-      headerClassName: "user-manage-col-actions is-fixed-right",
-      render: (row) => {
-        const all = getActions(row);
-        return <AdminActionBar actions={all} />;
-      },
-    },
   ];
+
+  const actionsColumn = createAdminActionsColumn({
+    rows,
+    getActions,
+    stickyClassName: "user-manage-col-actions is-fixed-right",
+    stickyHeaderClassName: "user-manage-col-actions is-fixed-right",
+  });
+  if (actionsColumn) columns.push(actionsColumn);
 
   return (
     <div className="user-manage-table-scope">

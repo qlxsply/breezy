@@ -6,7 +6,7 @@ import {
   pageUserFeaturePackages,
   saveUserFeatureUserManagement,
 } from "@admin/api/user-features";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
@@ -404,7 +404,8 @@ export function WebUsersAdminPage() {
   }
 
   const columns = useMemo<Array<BzTableColumn<ExternalUserEntry>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<ExternalUserEntry>> = [
       { key: "account", title: "账号", minWidth: 180, render: (row) => <>{row.account}</> },
       {
         key: "nickname",
@@ -432,16 +433,11 @@ export function WebUsersAdminPage() {
         minWidth: 160,
         render: (row) => <>{formatDateTime(row.createdAt) || "-"}</>,
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 160,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
-      },
-    ],
-    [canEdit, canFeatureManage],
+      ];
+      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [canEdit, canFeatureManage, rows],
   );
 
   const detailSections = useMemo(

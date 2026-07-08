@@ -3,7 +3,7 @@
 import { pageLoginLogs } from "@admin/api/login-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
@@ -226,7 +226,8 @@ export function LoginLogsPage() {
   );
 
   const columns = useMemo<Array<BzTableColumn<LoginLogEntry>>>(
-    () => [
+    () => {
+      const baseColumns: Array<BzTableColumn<LoginLogEntry>> = [
       {
         key: "username",
         title: "账号",
@@ -299,16 +300,11 @@ export function LoginLogsPage() {
         width: 180,
         render: (row) => <>{formatDateTime(row.occurredAt)}</>,
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 88,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
-      },
-    ],
-    [loginEventMetaMap],
+      ];
+      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [loginEventMetaMap, rows],
   );
 
   async function applyFilters() {

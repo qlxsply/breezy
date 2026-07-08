@@ -14,7 +14,7 @@ import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AdminActionBar } from "../admin/AdminActionBar";
+import { createAdminActionsColumn } from "../admin/admin-actions-column";
 import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
 import { BzEmpty } from "../bz/BzEmpty";
@@ -560,15 +560,9 @@ export function AuditLogsPage() {
       width: 180,
       render: (row) => formatDateTime(row.createdAt),
     },
-    {
-      key: "actions",
-      title: "操作",
-      width: 88,
-      className: "is-fixed-right",
-      headerClassName: "is-fixed-right",
-      render: (row) => <AdminActionBar actions={getRowActions(row)} />,
-    },
   ];
+  const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+  if (actionsColumn) columns.push(actionsColumn);
 
   return (
     <AdminListPageTemplate

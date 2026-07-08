@@ -409,18 +409,13 @@
   white-space: nowrap;
 }
 
-.api-table-scope .api-table__actions-cell,
-.api-table-scope .admin-action-bar {
+.api-table-scope .api-table__actions-cell {
   min-width: 0;
-  overflow: hidden;
 }
 
-.api-table-scope .admin-action-link {
-  min-width: 4em;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.api-table-scope .api-table__actions-cell .admin-action-bar {
+  min-width: 0;
+  overflow: visible;
 }
 
 .user-manage-table-scope .bz-table__scroll {

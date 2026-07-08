@@ -6,7 +6,7 @@ import {
   previewTimeOffset,
   updateConfigValue,
 } from "@admin/api/configs";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
@@ -1027,7 +1027,8 @@ export function ConfigsAdminPage() {
   }
 
   const columns = useMemo<BzTableColumn<ConfigItem>[]>(
-    () => [
+    () => {
+      const baseColumns: BzTableColumn<ConfigItem>[] = [
       {
         key: "code",
         title: "配置键",
@@ -1090,16 +1091,11 @@ export function ConfigsAdminPage() {
           </BzTag>
         ),
       },
-      {
-        key: "actions",
-        title: "操作",
-        width: 120,
-        className: "is-fixed-right",
-        headerClassName: "is-fixed-right",
-        render: (row) => <AdminActionBar actions={getRowActions(row)} />,
-      },
-    ],
-    [canUpdate, configValueTypeLabelMap, configLevelLabelMap],
+      ];
+      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+    },
+    [canUpdate, configValueTypeLabelMap, configLevelLabelMap, rows],
   );
 
   const detailSections = useMemo<AdminDetailSection[]>(() => {

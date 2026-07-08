@@ -7,7 +7,7 @@ import {
   listPhysicalFileLogicalRefs,
   listSystemNodes,
 } from "@admin/api/system-files";
-import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -432,15 +432,9 @@ export function SystemFilesPage() {
       width: 180,
       render: (row) => <span>{formatDateTime(row.updatedAt || row.createdAt || "")}</span>,
     },
-    {
-      key: "actions",
-      title: "操作",
-      minWidth: 220,
-      className: "is-fixed-right",
-      headerClassName: "is-fixed-right",
-      render: (row) => <AdminActionBar actions={getItemActions(row)} />,
-    },
   ];
+  const listActionsColumn = createAdminActionsColumn({ rows: items, getActions: getItemActions });
+  if (listActionsColumn) listColumns.push(listActionsColumn);
 
   const refsColumns: Array<BzTableColumn<SystemFileItem>> = [
     {
@@ -476,17 +470,12 @@ export function SystemFilesPage() {
       width: 180,
       render: (row) => <span>{formatDateTime(row.updatedAt || row.createdAt || "")}</span>,
     },
-    {
-      key: "actions",
-      title: "操作",
-      minWidth: 180,
-      className: "is-fixed-right",
-      headerClassName: "is-fixed-right",
-      render: (row) => (
-        <AdminActionBar actions={getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter")} />
-      ),
-    },
   ];
+  const refsActionsColumn = createAdminActionsColumn({
+    rows: reverseRefs,
+    getActions: (row) => getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter"),
+  });
+  if (refsActionsColumn) refsColumns.push(refsActionsColumn);
 
   const showSearchTip = !!activeKeyword;
 
