@@ -15,6 +15,11 @@
   box-shadow: none;
 }
 
+.admin-list-template .admin-vben-circle-button {
+  border: var(--border-width-1) solid var(--color-border-strong);
+  box-shadow: none;
+}
+
 .admin-table-card .bz-card__header {
   padding: 10px 20px 10px;
   border-bottom: none;
@@ -43,6 +48,11 @@
 
 .admin-list-region {
   overflow: hidden;
+}
+
+.admin-list-template {
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border);
 }
 
 .admin-list-query-panel {
@@ -82,7 +92,8 @@
 }
 
 .admin-list-table-area,
-.admin-list-card .admin-table-surface {
+.admin-list-card .admin-table-surface,
+.admin-list-template .admin-table-surface {
   overflow: hidden;
   border: none;
   border-radius: 0;
@@ -499,6 +510,17 @@
   height: 14px;
   margin: 0;
   accent-color: var(--primary-color);
+}
+
+.admin-freeze-col--config-code.is-sticky-left,
+.admin-freeze-col--feature-package-code.is-sticky-left,
+.admin-freeze-col--feature-application-icon.is-sticky-left,
+.admin-freeze-col--feature-application-code.is-sticky-left {
+  z-index: 5;
+}
+
+.admin-freeze-col--feature-application-code.is-sticky-left {
+  left: 80px;
 }
 
 .user-manage-text {

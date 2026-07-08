@@ -2,12 +2,14 @@
 
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
+import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
 import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
-import { BzButton, BzCard, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
+import { BzButton, BzFormItem, BzInput, BzOption, BzPagination, BzSelect } from "@admin/components/bz";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
@@ -227,273 +229,54 @@ export function ApisAdminPage() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
-            <div className="admin-list-region">
-              {queryPanelVisible ? (
-                <div className="admin-list-query-panel">
-                  <div
-                    ref={queryCardRef}
-                    className={[
-                      "admin-query-layout",
-                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                    ].join(" ")}
-                  >
-                    <form
-                      ref={queryGridRef}
-                      className="bz-form admin-query-grid"
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        applyFilters();
-                      }}
-                    >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">模块</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={moduleDraft}
-                        placeholder="请输入模块"
-                        clearable
-                        onValueChange={setModuleDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">路径</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={pathPatternDraft}
-                        placeholder="请输入路径"
-                        clearable
-                        onValueChange={setPathPatternDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">处理类</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={handlerClassDraft}
-                        placeholder="请输入处理类"
-                        clearable
-                        onValueChange={setHandlerClassDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">处理方法</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={handlerMethodDraft}
-                        placeholder="请输入处理方法"
-                        clearable
-                        onValueChange={setHandlerMethodDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">权限声明</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={permissionDeclaredDraft || undefined}
-                        placeholder="请选择权限声明"
-                        clearable
-                        onValueChange={(value) => setPermissionDeclaredDraft(value || "")}
-                      >
-                        {permissionDeclaredOptions.map((option) => (
-                          <BzOption
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">访问类型</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={accessTypeDraft || undefined}
-                        placeholder="请选择访问类型"
-                        clearable
-                        onValueChange={(value) => setAccessTypeDraft(value || "")}
-                      >
-                        {accessTypeOptions.map((option) => (
-                          <BzOption
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">用户类型</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={userTypeDraft || undefined}
-                        placeholder="请选择用户类型"
-                        clearable
-                        onValueChange={(value) => setUserTypeDraft(value || "")}
-                      >
-                        {userTypeOptions.map((option) => (
-                          <BzOption
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">审计</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={auditDeclaredDraft || undefined}
-                        placeholder="请选择审计状态"
-                        clearable
-                        onValueChange={(value) => setAuditDeclaredDraft(value || "")}
-                      >
-                        {auditDeclaredOptions.map((option) => (
-                          <BzOption
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={statusDraft || undefined}
-                        placeholder="请选择状态"
-                        clearable
-                        onValueChange={(value) => setStatusDraft(value || "")}
-                      >
-                        {statusOptions.map((option) => (
-                          <BzOption
-                            key={option.value}
-                            label={option.label}
-                            value={option.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      nativeType="button"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      nativeType="button"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
-                    </form>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="admin-list-toolbar-row">
-                <div className="admin-list-business-actions" />
-                <div className="admin-list-query-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
-                    onRefresh={() => void reload()}
-                  />
-                </div>
-              </div>
-
-              <div className="admin-table-surface admin-list-table-area">
-              <ApiTable
-                rows={enrichedRows}
-                loading={loading}
-                canDetail
-                canPublish={canPublish}
-                canDisable={canDisable}
-                onDetail={(api) => {
-                  setDetailItem(api);
-                  setDetailOpen(true);
-                }}
-                onPublish={(api) => void onPublish(api)}
-                onDisable={(api) => void onDisable(api)}
-              />
-              </div>
-              {page.totalElements > 0 ? (
-                <div className="dict-pagination-bar admin-list-table-footer">
-                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                <div className="dict-pagination-right">
-                  <BzPagination
-                    total={page.totalElements}
-                    pageSize={pageSize}
-                    currentPage={pageNo}
-                    pageSizes={pageSizeOptions}
-                    onCurrentChange={setPageNo}
-                    onSizeChange={(size) => {
-                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                      setPageSize(size);
-                      setPageNo(1);
-                    }}
-                  />
-                </div>
-                </div>
-              ) : null}
-            </div>
-          </BzCard>
-        </div>
-      </div>
-
-      <AdminEntityDrawer
+    <>
+      <AdminListPageTemplate
+        queryPanelVisible={queryPanelVisible}
+        queryPanel={
+          <div
+            ref={queryCardRef}
+            className={[
+              "admin-query-layout",
+              querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+            ].join(" ")}
+          >
+            <form
+              ref={queryGridRef}
+              className="bz-form admin-query-grid"
+              onSubmit={(event) => {
+                event.preventDefault();
+                applyFilters();
+              }}
+            >
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">模块</div><div className="admin-query-field__control"><BzInput modelValue={moduleDraft} placeholder="请输入模块" clearable onValueChange={setModuleDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} /></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">路径</div><div className="admin-query-field__control"><BzInput modelValue={pathPatternDraft} placeholder="请输入路径" clearable onValueChange={setPathPatternDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} /></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">处理类</div><div className="admin-query-field__control"><BzInput modelValue={handlerClassDraft} placeholder="请输入处理类" clearable onValueChange={setHandlerClassDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} /></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">处理方法</div><div className="admin-query-field__control"><BzInput modelValue={handlerMethodDraft} placeholder="请输入处理方法" clearable onValueChange={setHandlerMethodDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} /></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">权限声明</div><div className="admin-query-field__control"><BzSelect modelValue={permissionDeclaredDraft || undefined} placeholder="请选择权限声明" clearable onValueChange={(value) => setPermissionDeclaredDraft(value || "")}>{permissionDeclaredOptions.map((option) => <BzOption key={option.value} label={option.label} value={option.value} />)}</BzSelect></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">访问类型</div><div className="admin-query-field__control"><BzSelect modelValue={accessTypeDraft || undefined} placeholder="请选择访问类型" clearable onValueChange={(value) => setAccessTypeDraft(value || "")}>{accessTypeOptions.map((option) => <BzOption key={option.value} label={option.label} value={option.value} />)}</BzSelect></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">用户类型</div><div className="admin-query-field__control"><BzSelect modelValue={userTypeDraft || undefined} placeholder="请选择用户类型" clearable onValueChange={(value) => setUserTypeDraft(value || "")}>{userTypeOptions.map((option) => <BzOption key={option.value} label={option.label} value={option.value} />)}</BzSelect></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">审计</div><div className="admin-query-field__control"><BzSelect modelValue={auditDeclaredDraft || undefined} placeholder="请选择审计状态" clearable onValueChange={(value) => setAuditDeclaredDraft(value || "")}>{auditDeclaredOptions.map((option) => <BzOption key={option.value} label={option.label} value={option.value} />)}</BzSelect></div></BzFormItem>
+              <BzFormItem className="admin-query-field"><div className="admin-query-field__label">状态</div><div className="admin-query-field__control"><BzSelect modelValue={statusDraft || undefined} placeholder="请选择状态" clearable onValueChange={(value) => setStatusDraft(value || "")}>{statusOptions.map((option) => <BzOption key={option.value} label={option.label} value={option.value} />)}</BzSelect></div></BzFormItem>
+              <div className="admin-query-actions"><BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton><BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>{!querySingleRow ? <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((value) => !value)}><span>{queryExpanded ? "收起" : "展开"}</span><i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" /></button> : null}</div>
+            </form>
+          </div>
+        }
+        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)} onRefresh={() => void reload()} />}
+        table={<ApiTable rows={enrichedRows} loading={loading} canDetail canPublish={canPublish} canDisable={canDisable} onDetail={(api) => { setDetailItem(api); setDetailOpen(true); }} onPublish={(api) => void onPublish(api)} onDisable={(api) => void onDisable(api)} />}
+        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+      />
+      <AdminDetailDrawerTemplate
         open={detailOpen}
         title="接口详情"
         width="960px"
+        sections={detailItem ? detailSections : []}
+        plain={false}
         onClose={() => {
           setDetailOpen(false);
           setDetailItem(null);
         }}
-        footer={<BzButton onClick={() => {
-          setDetailOpen(false);
-          setDetailItem(null);
-        }}>关闭</BzButton>}
-      >
-        {detailItem ? <AdminDetailTable sections={detailSections} /> : null}
-      </AdminEntityDrawer>
-    </div>
+      />
+    </>
   );
 
   async function onPublish(api: ApiEntry) {

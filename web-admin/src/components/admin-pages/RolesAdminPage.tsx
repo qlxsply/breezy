@@ -9,6 +9,7 @@ import {
   updateRole,
   updateRoleGrantSelection,
 } from "@admin/api/roles";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { bzConfirm } from "@admin/core/confirm";
@@ -22,7 +23,6 @@ import type {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzOption } from "../bz/BzOption";
@@ -245,146 +245,97 @@ export function RolesAdminPage() {
   }
 
   return (
-    <div className="admin-page role-admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          <BzCard className="admin-panel admin-table-card role-admin-card" shadow="never">
-            <div className="role-admin-region">
-              {queryPanelVisible ? (
-                <div className="role-admin-query-panel">
-                  <div
-                    ref={queryCardRef}
-                    className={[
-                      "admin-query-layout",
-                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                    ].join(" ")}
-                  >
-                    <form
-                      ref={queryGridRef}
-                      className="bz-form admin-query-grid"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        applyFilters();
-                      }}
-                    >
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">角色</div>
-                        <div className="admin-query-field__control">
-                          <BzInput
-                            modelValue={keywordDraft}
-                            placeholder="搜索角色编码/名称"
-                            clearable
-                            onValueChange={setKeywordDraft}
-                            onKeyUp={(event) => {
-                              if (event.key === "Enter") applyFilters();
-                            }}
-                          />
-                        </div>
-                      </BzFormItem>
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">状态</div>
-                        <div className="admin-query-field__control">
-                          <BzSelect
-                            modelValue={enabledDraft}
-                            placeholder="全部状态"
-                            clearable
-                            onValueChange={(v) => setEnabledDraft((v ?? "") as "" | "true" | "false")}
-                          >
-                            <BzOption label="启用" value="true" />
-                            <BzOption label="停用" value="false" />
-                          </BzSelect>
-                        </div>
-                      </BzFormItem>
-                      <div className="admin-query-actions">
-                        <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
-                          重置
-                        </BzButton>
-                        <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
-                          搜索
-                        </BzButton>
-                        {!querySingleRow ? (
-                          <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
-                            <span>{queryExpanded ? "收起" : "展开"}</span>
-                            <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                          </button>
-                        ) : null}
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="role-admin-toolbar-row">
-                <div className="role-admin-business-actions">
-                  {canCreate ? (
-                    <BzButton
-                      className="admin-toolbar-primary"
-                      buttonType="primary"
-                      onClick={openCreate}
-                    >
-                      新增
-                    </BzButton>
-                  ) : null}
-                </div>
-                <div className="role-admin-query-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={reload}
-                  />
-                </div>
-              </div>
-
-              <div className="admin-table-surface role-admin-table-area">
-                <RoleTable
-                  rows={pagedRows}
-                  loading={loading}
-                  canEdit={canManage}
-                  canDelete={canDelete}
-                  onDetail={openDetail}
-                  onEdit={openEdit}
-                  onRemove={onRemove}
+    <AdminListPageTemplate
+      className="role-admin-page role-admin-card"
+      regionClassName="role-admin-region"
+      queryPanelClassName="role-admin-query-panel"
+      toolbarRowClassName="role-admin-toolbar-row"
+      businessActionsClassName="role-admin-business-actions"
+      queryToolsClassName="role-admin-query-tools"
+      tableAreaClassName="role-admin-table-area"
+      queryPanelVisible={queryPanelVisible}
+      queryPanel={
+        <div
+          ref={queryCardRef}
+          className={[
+            "admin-query-layout",
+            querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+          ].join(" ")}
+        >
+          <form
+            ref={queryGridRef}
+            className="bz-form admin-query-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilters();
+            }}
+          >
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">角色</div>
+              <div className="admin-query-field__control">
+                <BzInput
+                  modelValue={keywordDraft}
+                  placeholder="搜索角色编码/名称"
+                  clearable
+                  onValueChange={setKeywordDraft}
+                  onKeyUp={(event) => {
+                    if (event.key === "Enter") applyFilters();
+                  }}
                 />
               </div>
-
-              {filteredRows.length > 0 ? (
-                <div className="dict-pagination-bar role-admin-table-footer">
-                  <div className="dict-pagination-summary">共 {filteredRows.length} 条记录</div>
-                  <div className="dict-pagination-right">
-                    <BzPagination
-                      total={filteredRows.length}
-                      pageSize={pageSize}
-                      currentPage={pageNo}
-                      pageSizes={pageSizeOptions}
-                      onCurrentChange={setPageNo}
-                      onSizeChange={(size) => {
-                        if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                        setPageSize(size);
-                        setPageNo(1);
-                      }}
-                    />
-                  </div>
-                </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">状态</div>
+              <div className="admin-query-field__control">
+                <BzSelect
+                  modelValue={enabledDraft}
+                  placeholder="全部状态"
+                  clearable
+                  onValueChange={(v) => setEnabledDraft((v ?? "") as "" | "true" | "false")}
+                >
+                  <BzOption label="启用" value="true" />
+                  <BzOption label="停用" value="false" />
+                </BzSelect>
+              </div>
+            </BzFormItem>
+            <div className="admin-query-actions">
+              <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
+              <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
+              {!querySingleRow ? (
+                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                  <span>{queryExpanded ? "收起" : "展开"}</span>
+                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                </button>
               ) : null}
             </div>
-          </BzCard>
-
-          {manageOpen ? (
-            <RolePermissionDialog
-              mode={manageMode}
-              role={manageTarget}
-              resources={grantResourceRows}
-              selection={manageSelection}
-              loading={manageLoading || grantResourcesLoading}
-              canEditBasic={canEdit}
-              canViewPermissions={canGrant}
-              canEditPermissions={canGrantEdit}
-              onClose={() => setManageOpen(false)}
-              onSubmit={onManageSubmit}
-            />
-          ) : null}
+          </form>
         </div>
-      </div>
-    </div>
+      }
+      businessActions={canCreate ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
+      queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={reload} />}
+      table={<RoleTable rows={pagedRows} loading={loading} canEdit={canManage} canDelete={canDelete} onDetail={openDetail} onEdit={openEdit} onRemove={onRemove} />}
+      footer={
+        filteredRows.length > 0 ? (
+          <div className="dict-pagination-bar role-admin-table-footer">
+            <div className="dict-pagination-summary">共 {filteredRows.length} 条记录</div>
+            <div className="dict-pagination-right">
+              <BzPagination
+                total={filteredRows.length}
+                pageSize={pageSize}
+                currentPage={pageNo}
+                pageSizes={pageSizeOptions}
+                onCurrentChange={setPageNo}
+                onSizeChange={(size) => {
+                  if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                  setPageSize(size);
+                  setPageNo(1);
+                }}
+              />
+            </div>
+          </div>
+        ) : null
+      }
+      overlays={manageOpen ? <RolePermissionDialog mode={manageMode} role={manageTarget} resources={grantResourceRows} selection={manageSelection} loading={manageLoading || grantResourcesLoading} canEditBasic={canEdit} canViewPermissions={canGrant} canEditPermissions={canGrantEdit} onClose={() => setManageOpen(false)} onSubmit={onManageSubmit} /> : null}
+    />
   );
 }

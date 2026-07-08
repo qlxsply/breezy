@@ -3,11 +3,19 @@
   gap: var(--space-4);
 }
 
+.admin-detail-table-stack.is-plain {
+  gap: 0;
+}
+
 .admin-detail-table-section {
   overflow: hidden;
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border);
   border-radius: var(--radius-xl);
+}
+
+.admin-detail-table-section--plain {
+  border-radius: 0;
 }
 
 .admin-detail-table-section__title {

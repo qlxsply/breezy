@@ -3,6 +3,8 @@
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
+import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { formatDateTime } from "@admin/core/formatter";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
@@ -13,11 +15,8 @@ import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AdminActionBar } from "../admin/AdminActionBar";
-import { AdminDetailTable } from "../admin/AdminDetailTable";
-import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
 import { AdminTableTools } from "../admin/AdminTableTools";
 import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
@@ -566,178 +565,154 @@ export function AuditLogsPage() {
       title: "操作",
       width: 88,
       className: "is-fixed-right",
+      headerClassName: "is-fixed-right",
       render: (row) => <AdminActionBar actions={getRowActions(row)} />,
     },
   ];
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
-            >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applyFilters();
+    <AdminListPageTemplate
+      queryPanelVisible={queryPanelVisible}
+      queryPanel={
+        <div
+          ref={queryCardRef}
+          className={[
+            "admin-query-layout",
+            querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+          ].join(" ")}
+        >
+          <form
+            ref={queryGridRef}
+            className="bz-form admin-query-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilters();
+            }}
+          >
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">追踪ID</div>
+              <div className="admin-query-field__control">
+                <BzInput modelValue={traceIdDraft} placeholder="按追踪ID搜索" clearable onValueChange={setTraceIdDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">操作人</div>
+              <div className="admin-query-field__control">
+                <BzInput modelValue={operatorUsernameDraft} placeholder="按操作人搜索" clearable onValueChange={setOperatorUsernameDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">资源</div>
+              <div className="admin-query-field__control">
+                <BzSelect modelValue={auditResourceDraft} placeholder="全部资源" clearable onValueChange={(v) => setAuditResourceDraft(v ?? "") }>
+                  {auditResourceOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                </BzSelect>
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">动作</div>
+              <div className="admin-query-field__control">
+                <BzSelect modelValue={auditActionDraft} placeholder="全部动作" clearable onValueChange={(v) => setAuditActionDraft(v ?? "") }>
+                  {auditActionOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                </BzSelect>
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">等级</div>
+              <div className="admin-query-field__control">
+                <BzSelect modelValue={auditLevelDraft} placeholder="全部等级" clearable onValueChange={(v) => setAuditLevelDraft((v ?? "") as "" | AuditLevel)}>
+                  {auditLevelOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
+                </BzSelect>
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">结果</div>
+              <div className="admin-query-field__control">
+                <BzSelect modelValue={successDraft} placeholder="全部结果" clearable onValueChange={(v) => setSuccessDraft((v ?? "") as "" | "true" | "false") }>
+                  <BzOption label="成功" value="true" />
+                  <BzOption label="失败" value="false" />
+                </BzSelect>
+              </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">时间</div>
+              <div className="admin-query-field__control">
+                <AdminDateTimeRangeField
+                  startValue={startAtDraft}
+                  endValue={endAtDraft}
+                  onRangeChange={({ start, end }) => {
+                    setStartAtDraft(start);
+                    setEndAtDraft(end);
                   }}
-                >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">追踪ID</div>
-                    <div className="admin-query-field__control">
-                      <BzInput modelValue={traceIdDraft} placeholder="按追踪ID搜索" clearable onValueChange={setTraceIdDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">操作人</div>
-                    <div className="admin-query-field__control">
-                      <BzInput modelValue={operatorUsernameDraft} placeholder="按操作人搜索" clearable onValueChange={setOperatorUsernameDraft} onKeyUp={(e) => e.key === "Enter" && applyFilters()} />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">资源</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect modelValue={auditResourceDraft} placeholder="全部资源" clearable onValueChange={(v) => setAuditResourceDraft(v ?? "") }>
-                        {auditResourceOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">动作</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect modelValue={auditActionDraft} placeholder="全部动作" clearable onValueChange={(v) => setAuditActionDraft(v ?? "") }>
-                        {auditActionOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">等级</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect modelValue={auditLevelDraft} placeholder="全部等级" clearable onValueChange={(v) => setAuditLevelDraft((v ?? "") as "" | AuditLevel)}>
-                        {auditLevelOptions.map((item) => <BzOption key={item.value} label={item.label} value={item.value} />)}
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">结果</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect modelValue={successDraft} placeholder="全部结果" clearable onValueChange={(v) => setSuccessDraft((v ?? "") as "" | "true" | "false") }>
-                        <BzOption label="成功" value="true" />
-                        <BzOption label="失败" value="false" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">时间</div>
-                    <div className="admin-query-field__control">
-                      <AdminDateTimeRangeField
-                        startValue={startAtDraft}
-                        endValue={endAtDraft}
-                        onRangeChange={({ start, end }) => {
-                          setStartAtDraft(start);
-                          setEndAtDraft(end);
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
-                    {!querySingleRow ? (
-                      <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                      </button>
-                    ) : null}
-                  </div>
-                </form>
+                />
               </div>
-            </BzCard>
-          ) : null}
-
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">审计日志</div>
-                <div className="admin-table-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={() => reload()}
-                  />
-                </div>
-              </div>
-            }
-          >
-            {!canView ? (
-              <BzEmpty description="无权限查看审计日志" />
-            ) : (
-              <>
-                <div className="admin-table-surface">
-                  <BzTable
-                    data={rows}
-                    columns={columns}
-                    rowKey="id"
-                    loading={loading}
-                    emptyText="暂无日志"
-                    size="small"
-                  />
-                </div>
-
-                {page.totalElements > 0 ? (
-                  <div className="dict-pagination-bar">
-                    <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                    <div className="dict-pagination-right">
-                      <BzPagination
-                        total={page.totalElements}
-                        pageSize={pageSize}
-                        currentPage={pageNo}
-                        pageSizes={pageSizeOptions}
-                        onCurrentChange={setPageNo}
-                        onSizeChange={(size) => {
-                          if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                          setPageSize(size);
-                          setPageNo(1);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </>
-            )}
-          </BzCard>
-
-          <AdminEntityDrawer
-            open={detailOpen}
-            loading={detailLoading}
-            title="审计日志详情"
-            width="960px"
-            onClose={() => setDetailOpen(false)}
-            footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
-          >
-            {detail ? (
-              <AdminDetailTable sections={detailSections} />
-            ) : null}
-          </AdminEntityDrawer>
+            </BzFormItem>
+            <div className="admin-query-actions">
+              <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
+              <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
+              {!querySingleRow ? (
+                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                  <span>{queryExpanded ? "收起" : "展开"}</span>
+                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
+          </form>
         </div>
-      </div>
-    </div>
+      }
+      queryTools={
+        <AdminTableTools
+          queryPanelVisible={queryPanelVisible}
+          onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+          onRefresh={() => reload()}
+        />
+      }
+      table={
+        !canView ? (
+          <BzEmpty description="无权限查看审计日志" />
+        ) : (
+          <BzTable
+            data={rows}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            emptyText="暂无日志"
+            size="small"
+          />
+        )
+      }
+      footer={
+        canView && page.totalElements > 0 ? (
+          <div className="dict-pagination-bar admin-list-table-footer">
+            <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+            <div className="dict-pagination-right">
+              <BzPagination
+                total={page.totalElements}
+                pageSize={pageSize}
+                currentPage={pageNo}
+                pageSizes={pageSizeOptions}
+                onCurrentChange={setPageNo}
+                onSizeChange={(size) => {
+                  if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                  setPageSize(size);
+                  setPageNo(1);
+                }}
+              />
+            </div>
+          </div>
+        ) : null
+      }
+      overlays={
+        <AdminDetailDrawerTemplate
+          open={detailOpen}
+          loading={detailLoading}
+          title="审计日志详情"
+          width="960px"
+          sections={detailSections}
+          plain={false}
+          onClose={() => setDetailOpen(false)}
+        />
+      }
+    />
   );
 }

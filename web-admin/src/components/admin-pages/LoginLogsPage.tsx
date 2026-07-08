@@ -4,8 +4,8 @@ import { pageLoginLogs } from "@admin/api/login-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
-import { AdminDetailTable } from "@admin/components/admin/AdminDetailTable";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { formatDateTime } from "@admin/core/formatter";
@@ -17,7 +17,6 @@ import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
 import { BzEmpty } from "../bz/BzEmpty";
 import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
@@ -170,7 +169,7 @@ export function LoginLogsPage() {
       detail
         ? [
             {
-              title: "基础信息",
+              title: "登录日志信息",
               fields: [
                 { label: "账号", value: detail.username || "-" },
                 {
@@ -207,11 +206,6 @@ export function LoginLogsPage() {
                   span: "full" as const,
                 },
                 { label: "记录时间", value: formatDateTime(detail.occurredAt) },
-              ],
-            },
-            {
-              title: "说明信息",
-              fields: [
                 {
                   label: "失败原因",
                   value: <pre className="admin-log-pre">{detail.failureReason || "-"}</pre>,
@@ -310,6 +304,7 @@ export function LoginLogsPage() {
         title: "操作",
         width: 88,
         className: "is-fixed-right",
+        headerClassName: "is-fixed-right",
         render: (row) => <AdminActionBar actions={getRowActions(row)} />,
       },
     ],
@@ -334,146 +329,120 @@ export function LoginLogsPage() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
-            >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applyFilters();
+    <AdminListPageTemplate
+      queryPanelVisible={queryPanelVisible}
+      queryPanel={
+        <div
+          ref={queryCardRef}
+          className={[
+            "admin-query-layout",
+            querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+          ].join(" ")}
+        >
+          <form
+            ref={queryGridRef}
+            className="bz-form admin-query-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilters();
+            }}
+          >
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">账号</div>
+              <div className="admin-query-field__control">
+                <BzInput
+                  modelValue={accountDraft}
+                  placeholder="按账号搜索"
+                  clearable
+                  onValueChange={setAccountDraft}
+                  onKeyUp={(e) => {
+                    if (e.key === "Enter") applyFilters();
                   }}
-                >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">账号</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={accountDraft}
-                        placeholder="按账号搜索"
-                        clearable
-                        onValueChange={setAccountDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">时间</div>
-                    <div className="admin-query-field__control">
-                      <AdminDateTimeRangeField
-                        startValue={startAtDraft}
-                        endValue={endAtDraft}
-                        onRangeChange={({ start, end }) => {
-                          setStartAtDraft(start);
-                          setEndAtDraft(end);
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
-                      重置
-                    </BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                      </button>
-                    ) : null}
-                  </div>
-                </form>
+                />
               </div>
-            </BzCard>
-          ) : null}
-
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">登录日志</div>
-                <div className="admin-table-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={() => reload()}
-                  />
-                </div>
+            </BzFormItem>
+            <BzFormItem className="admin-query-field">
+              <div className="admin-query-field__label">时间</div>
+              <div className="admin-query-field__control">
+                <AdminDateTimeRangeField
+                  startValue={startAtDraft}
+                  endValue={endAtDraft}
+                  onRangeChange={({ start, end }) => {
+                    setStartAtDraft(start);
+                    setEndAtDraft(end);
+                  }}
+                />
               </div>
-            }
-          >
-            {!canView ? (
-              <BzEmpty description="无权限查看登录日志" />
-            ) : (
-              <>
-                <div className="admin-table-surface">
-                  <BzTable
-                    data={rows}
-                    columns={columns}
-                    rowKey="id"
-                    loading={loading}
-                    emptyText="暂无日志"
-                    size="small"
-                  />
-                </div>
-
-                {page.totalElements > 0 ? (
-                  <div className="dict-pagination-bar">
-                    <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                    <div className="dict-pagination-right">
-                      <BzPagination
-                        total={page.totalElements}
-                        pageSize={pageSize}
-                        currentPage={pageNo}
-                        pageSizes={pageSizeOptions}
-                        onCurrentChange={setPageNo}
-                        onSizeChange={(size) => {
-                          if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                          setPageSize(size);
-                          setPageNo(1);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </>
-            )}
-          </BzCard>
-
-          <AdminEntityDrawer
-            open={detailOpen}
-            title="登录日志详情"
-            width="960px"
-            onClose={closeDetail}
-            footer={<BzButton onClick={closeDetail}>关闭</BzButton>}
-          >
-            {detail ? (
-              <AdminDetailTable sections={detailSections} />
-            ) : null}
-          </AdminEntityDrawer>
+            </BzFormItem>
+            <div className="admin-query-actions">
+              <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
+                重置
+              </BzButton>
+              <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
+                搜索
+              </BzButton>
+              {!querySingleRow ? (
+                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                  <span>{queryExpanded ? "收起" : "展开"}</span>
+                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                </button>
+              ) : null}
+            </div>
+          </form>
         </div>
-      </div>
-    </div>
+      }
+      queryTools={
+        <AdminTableTools
+          queryPanelVisible={queryPanelVisible}
+          onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+          onRefresh={() => reload()}
+        />
+      }
+      table={
+        !canView ? (
+          <BzEmpty description="无权限查看登录日志" />
+        ) : (
+          <BzTable
+            data={rows}
+            columns={columns}
+            rowKey="id"
+            loading={loading}
+            emptyText="暂无日志"
+            size="small"
+          />
+        )
+      }
+      footer={
+        canView && page.totalElements > 0 ? (
+          <div className="dict-pagination-bar admin-list-table-footer">
+            <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+            <div className="dict-pagination-right">
+              <BzPagination
+                total={page.totalElements}
+                pageSize={pageSize}
+                currentPage={pageNo}
+                pageSizes={pageSizeOptions}
+                onCurrentChange={setPageNo}
+                onSizeChange={(size) => {
+                  if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                  setPageSize(size);
+                  setPageNo(1);
+                }}
+              />
+            </div>
+          </div>
+        ) : null
+      }
+      overlays={
+        <AdminDetailDrawerTemplate
+          open={detailOpen}
+          title="登录日志详情"
+          width="960px"
+          sections={detailSections}
+          onClose={closeDetail}
+        />
+      }
+    />
   );
 }
 

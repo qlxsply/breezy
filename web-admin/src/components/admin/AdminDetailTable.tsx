@@ -20,13 +20,14 @@ export interface AdminDetailSection {
 
 interface AdminDetailTableProps {
   sections: AdminDetailSection[];
+  variant?: "sectioned" | "plain";
 }
 
 interface ResolvedField extends AdminDetailField {
   spanPairs: number;
 }
 
-export function AdminDetailTable({ sections }: AdminDetailTableProps) {
+export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetailTableProps) {
   const pairCount = useResponsivePairCount();
 
   const resolvedSections = useMemo(
@@ -35,10 +36,18 @@ export function AdminDetailTable({ sections }: AdminDetailTableProps) {
   );
 
   return (
-    <div className="admin-detail-table-stack">
+    <div className={["admin-detail-table-stack", variant === "plain" ? "is-plain" : ""].filter(Boolean).join(" ")}>
       {resolvedSections.map((section) => (
-        <section key={String(section.title)} className="admin-detail-table-section">
-          <div className="admin-detail-table-section__title">{section.title}</div>
+        <section
+          key={String(section.title)}
+          className={[
+            "admin-detail-table-section",
+            variant === "plain" ? "admin-detail-table-section--plain" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {variant === "sectioned" ? <div className="admin-detail-table-section__title">{section.title}</div> : null}
           <table className="admin-detail-table">
             <colgroup>
               {Array.from({ length: pairCount }).flatMap((_, index) => [

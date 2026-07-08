@@ -9,6 +9,7 @@ import {
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
 import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { batchListDictOptions, listDictOptions } from "@admin/api/dicts";
 import { previewMsgPush } from "@admin/api/sse";
 import {
@@ -1031,6 +1032,8 @@ export function ConfigsAdminPage() {
         key: "code",
         title: "配置键",
         width: 280,
+        className: "admin-freeze-col--config-code is-sticky-left",
+        headerClassName: "admin-freeze-col--config-code is-sticky-left",
         render: (row) => (
           <div className="configs-code-cell">
             <span className="configs-code-text">
@@ -1144,29 +1147,26 @@ export function ConfigsAdminPage() {
   }, [configLevelLabelMap, configValueTypeLabelMap, editorItem]);
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
-            <div className="admin-list-region">
-              {queryPanelVisible ? (
-                <div className="admin-list-query-panel">
-                  <div
-                    ref={queryCardRef}
-                    className={[
-                      "admin-query-layout",
-                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                    ].join(" ")}
-                  >
-                    <form
-                      ref={queryGridRef}
-                      className="bz-form admin-query-grid"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        applyFilters();
-                      }}
-                    >
-                  <BzFormItem className="admin-query-field">
+    <>
+      <AdminListPageTemplate
+        queryPanelVisible={queryPanelVisible}
+        queryPanel={
+          <div
+            ref={queryCardRef}
+            className={[
+              "admin-query-layout",
+              querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+            ].join(" ")}
+          >
+          <form
+            ref={queryGridRef}
+            className="bz-form admin-query-grid"
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilters();
+            }}
+          >
+            <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">配置键</div>
                     <div className="admin-query-field__control">
                       <BzInput
@@ -1225,56 +1225,13 @@ export function ConfigsAdminPage() {
                       </button>
                     ) : null}
                   </div>
-                    </form>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="admin-list-toolbar-row">
-                <div className="admin-list-business-actions" />
-                <div className="admin-list-query-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={() => reload()}
-                  />
-                </div>
-              </div>
-
-              <div className="admin-table-surface admin-list-table-area">
-              <BzTable
-                data={rows}
-                columns={columns}
-                rowKey="code"
-                loading={loading}
-                emptyText="暂无配置"
-                size="small"
-              />
-              </div>
-
-              {page.totalElements > 0 ? (
-                <div className="dict-pagination-bar admin-list-table-footer">
-                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                <div className="dict-pagination-right">
-                  <BzPagination
-                    total={page.totalElements}
-                    pageSize={pageSize}
-                    currentPage={pageNo}
-                    pageSizes={pageSizeOptions}
-                    onCurrentChange={setPageNo}
-                    onSizeChange={(size) => {
-                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                      setPageSize(size);
-                      setPageNo(1);
-                    }}
-                  />
-                </div>
-                </div>
-              ) : null}
-            </div>
-          </BzCard>
-        </div>
-      </div>
+            </form>
+          </div>
+        }
+        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => reload()} />}
+        table={<BzTable data={rows} columns={columns} rowKey="code" loading={loading} emptyText="暂无配置" size="small" />}
+        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+      />
 
       <AdminEntityDrawer
         open={detailOpen}
@@ -1883,7 +1840,7 @@ export function ConfigsAdminPage() {
           </div>
         </AdminEntityDrawer>
       ) : null}
-    </div>
+    </>
   );
 
   function getRowActions(row: ConfigItem): AdminActionItem[] {

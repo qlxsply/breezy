@@ -11,11 +11,11 @@ import {
   updateUserFeaturePackageStatus,
 } from "@admin/api/user-features";
 import { AdminActionBar } from "@admin/components/admin/AdminActionBar";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
-  BzCard,
   BzDialog,
   BzForm,
   BzFormItem,
@@ -415,7 +415,7 @@ export function UserFeaturePackagesPage() {
 
   const columns = useMemo<Array<BzTableColumn<UserFeaturePackageEntry>>>(
     () => [
-      { key: "code", title: "编码", minWidth: 180, render: (row) => <>{row.code}</> },
+      { key: "code", title: "编码", minWidth: 180, className: "admin-freeze-col--feature-package-code is-sticky-left", headerClassName: "admin-freeze-col--feature-package-code is-sticky-left", render: (row) => <>{row.code}</> },
       { key: "name", title: "名称", minWidth: 160, render: (row) => <>{row.name}</> },
       {
         key: "packageType",
@@ -461,6 +461,8 @@ export function UserFeaturePackagesPage() {
         key: "actions",
         title: "操作",
         width: 160,
+        className: "is-fixed-right",
+        headerClassName: "is-fixed-right",
         render: (row) => (
           <AdminActionBar actions={[...getRowActions(row), ...getRowMoreActions(row)]} />
         ),
@@ -489,33 +491,26 @@ export function UserFeaturePackagesPage() {
   );
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          {queryPanelVisible ? (
-            <BzCard
-              className="admin-panel admin-filter-card"
-              shadow="never"
+    <>
+      <AdminListPageTemplate
+        queryPanelVisible={queryPanelVisible}
+        queryPanel={
+          <div
+            ref={queryCardRef}
+            className={[
+              "admin-query-layout",
+              querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+            ].join(" ")}
+          >
+            <form
+              ref={queryGridRef}
+              className="bz-form admin-query-grid"
+              onSubmit={(e) => {
+                e.preventDefault();
+                applyFilters();
+              }}
             >
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <div className="admin-query-header">
-                  <div className="admin-query-title">筛选条件</div>
-                </div>
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    applyFilters();
-                  }}
-                >
-                  <BzFormItem className="admin-query-field">
+              <BzFormItem className="admin-query-field">
                     <div className="admin-query-field__label">关键词</div>
                     <div className="admin-query-field__control">
                       <BzInput
@@ -578,68 +573,16 @@ export function UserFeaturePackagesPage() {
                       </button>
                     ) : null}
                   </div>
-                </form>
-              </div>
-            </BzCard>
-          ) : null}
+            </form>
+          </div>
+        }
+        businessActions={canEdit ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
+        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => void reload()} />}
+        table={<BzTable columns={columns} data={rows} loading={loading} rowKey="id" emptyText="暂无应用包" size="small" />}
+        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+      />
 
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">应用包管理</div>
-                <div className="admin-table-tools">
-                  {canEdit ? (
-                    <BzButton
-                      className="admin-toolbar-primary"
-                      buttonType="primary"
-                      onClick={openCreate}
-                    >
-                      新增
-                    </BzButton>
-                  ) : null}
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
-                    onRefresh={() => void reload()}
-                  />
-                </div>
-              </div>
-            }
-          >
-            <div className="admin-table-surface">
-              <BzTable
-                columns={columns}
-                data={rows}
-                loading={loading}
-                rowKey="id"
-                emptyText="暂无应用包"
-                size="small"
-              />
-            </div>
-            {page.totalElements > 0 ? (
-              <div className="dict-pagination-bar">
-                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                <div className="dict-pagination-right">
-                  <BzPagination
-                    total={page.totalElements}
-                    pageSize={pageSize}
-                    currentPage={pageNo}
-                    pageSizes={pageSizeOptions}
-                    onCurrentChange={setPageNo}
-                    onSizeChange={(size) => {
-                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                      setPageSize(size);
-                      setPageNo(1);
-                    }}
-                  />
-                </div>
-              </div>
-            ) : null}
-          </BzCard>
-
-          <BzDialog
+      <BzDialog
             modelValue={drawerOpen}
             title={drawerTitle}
             width="1080px"
@@ -879,9 +822,7 @@ export function UserFeaturePackagesPage() {
                 </>
               ) : null}
             </BzLoading>
-          </BzDialog>
-        </div>
-      </div>
-    </div>
+      </BzDialog>
+    </>
   );
 }

@@ -49,7 +49,7 @@
   color: var(--admin-dt-text-color);
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--admin-dt-border-color);
-  border-radius: var(--admin-dt-radius);
+  border-radius: 0;
   cursor: pointer;
   font-size: var(--admin-dt-font-size);
   line-height: var(--admin-dt-control-height);
