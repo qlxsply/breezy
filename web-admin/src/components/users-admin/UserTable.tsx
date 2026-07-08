@@ -131,7 +131,7 @@ export function UserTable({
     {
       key: "username",
       title: "账号",
-      minWidth: 180,
+      width: 120,
       className: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
       headerClassName: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
       render: (row) => (
@@ -143,13 +143,13 @@ export function UserTable({
     {
       key: "nickname",
       title: "昵称",
-      minWidth: 160,
+      width: 160,
       render: (row) => <span className="user-manage-text">{row.nickname || "-"}</span>,
     },
     {
       key: "userType",
       title: "类型",
-      width: 120,
+      width: 100,
       render: (row) => (
         <BzTag type={resolveUserTypeTagType(row.userType)}>
           {resolveUserTypeLabel(row.userType)}
@@ -159,7 +159,7 @@ export function UserTable({
     {
       key: "status",
       title: "状态",
-      width: 110,
+      width: 100,
       render: (row) => {
         const active = row.status === "ENABLED";
         return <BzTag type={active ? "success" : "danger"}>{active ? "启用" : "停用"}</BzTag>;
