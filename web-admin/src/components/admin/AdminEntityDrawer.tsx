@@ -42,14 +42,6 @@ export function AdminEntityDrawer({
           <div className="admin-entity-drawer__title-wrap">
             <div className="admin-entity-drawer__title">{title}</div>
           </div>
-          <button
-            className="admin-entity-drawer__close"
-            type="button"
-            aria-label="关闭抽屉"
-            onClick={onClose}
-          >
-            <span aria-hidden="true">x</span>
-          </button>
         </header>
 
         <div className="admin-entity-drawer__body">

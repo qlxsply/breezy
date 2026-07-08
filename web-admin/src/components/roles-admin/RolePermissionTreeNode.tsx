@@ -123,10 +123,10 @@ export function RolePermissionTreeNode({
 
   return (
     <>
-      <div className={`role-permission-row role-permission-row--${kind.toLowerCase()} ${diffClass}`}>
-        <div className="role-permission-cell role-permission-cell--check">
+      <div className={`admin-grid-table__row role-permission-row--${kind.toLowerCase()} ${diffClass}`}>
+        <div className="admin-grid-table__cell admin-grid-table__cell--check">
           <input
-            className="permission-node-checkbox"
+            className="admin-node-checkbox"
             type="checkbox"
             checked={checked}
             disabled={readonly || !canEdit || !node.row.enabled}
@@ -137,7 +137,7 @@ export function RolePermissionTreeNode({
           />
         </div>
 
-        <div className="role-permission-cell role-permission-cell--resource">
+        <div className="admin-grid-table__cell role-permission-cell--resource">
           <div className={`role-permission-resource ${resolveDepthClass(depth)}`}>
             <button
               className={`permission-node-toggle${!hasNestedChildren ? " is-placeholder" : ""}`}
@@ -150,19 +150,19 @@ export function RolePermissionTreeNode({
           </div>
         </div>
 
-        <div className="role-permission-cell role-permission-cell--type">
+        <div className="admin-grid-table__cell role-permission-cell--type">
           <span className={`permission-tag ${typeClass()}`}>{typeLabel()}</span>
         </div>
 
-        <div className="role-permission-cell role-permission-cell--code mono">{node.row.code || "-"}</div>
+        <div className="admin-grid-table__cell role-permission-cell--code mono">{node.row.code || "-"}</div>
 
-        <div className="role-permission-cell role-permission-cell--status">
+        <div className="admin-grid-table__cell role-permission-cell--status">
           <span className={`role-permission-status${node.row.enabled ? " is-enabled" : " is-disabled"}`}>
             {node.row.enabled ? "启用" : "停用"}
           </span>
         </div>
 
-        <div className="role-permission-cell role-permission-cell--actions">
+        <div className="admin-grid-table__cell role-permission-cell--actions">
           {buttonChildren.length > 0 ? (
             <div className="role-permission-button-list" role="group" aria-label={`${node.row.name}按钮权限`}>
               {buttonChildren.map((child) => {

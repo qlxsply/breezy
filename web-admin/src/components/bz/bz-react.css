@@ -770,6 +770,12 @@
 }
 
 .bz-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 30px;
+  height: 30px;
   min-height: 30px;
   padding: 0 10px;
   border: 1px solid var(--border-color);
@@ -778,17 +784,41 @@
   color: var(--text-main, #111827);
   cursor: pointer;
   font-size: 12px;
+  font-weight: 400;
+
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
-.bz-page-btn:hover:not(:disabled) {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+/* 只允许非当前页应用普通悬浮效果 */
+.bz-page-btn:hover:not(:disabled):not(.is-active) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
 }
 
+/* 当前页常态 */
 .bz-page-btn.is-active {
   border-color: #3b82f6;
   background: #3b82f6;
   color: #fff;
+  cursor: default;
+}
+
+/* 当前页悬浮时保持白字和蓝色背景，仅加深颜色 */
+.bz-page-btn.is-active:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.bz-page-btn:focus-visible {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
 }
 
 .bz-page-btn:disabled {

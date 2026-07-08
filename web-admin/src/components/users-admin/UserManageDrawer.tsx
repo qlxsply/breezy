@@ -7,8 +7,8 @@ import type { RoleEntry } from "../../types/role-admin";
 import type { UserEntry, UserStatus } from "../../types/user-admin";
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
-import { BzCheckbox } from "../bz/BzCheckbox";
 import { BzInput } from "../bz/BzInput";
+import { BzLoading } from "../bz/BzLoading";
 import { BzOption } from "../bz/BzOption";
 import { BzPagination } from "../bz/BzPagination";
 import { BzSelect } from "../bz/BzSelect";
@@ -340,13 +340,13 @@ export function UserManageDrawer({
                 </div>
               </div>
 
-              <div className="role-permission-table">
-                <div className="role-permission-table__viewport">
-                  <div className="role-permission-row role-permission-row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
-                    <div className="role-permission-cell role-permission-cell--check">
+              <div className="admin-grid-table">
+                <div className="admin-grid-table__viewport">
+                  <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                    <div className="admin-grid-table__cell admin-grid-table__cell--check">
                       {mode === "detail" ? null : (
                         <input
-                          className="permission-node-checkbox"
+                          className="admin-node-checkbox"
                           type="checkbox"
                           checked={currentPageAllSelected}
                           ref={(el) => {
@@ -357,39 +357,41 @@ export function UserManageDrawer({
                         />
                       )}
                     </div>
-                  <div className="role-permission-cell role-permission-cell--resource">角色编码</div>
-                  <div className="role-permission-cell role-permission-cell--code">角色名称</div>
+                  <div className="admin-grid-table__cell">角色编码</div>
+                  <div className="admin-grid-table__cell">角色名称</div>
                 </div>
 
-                <div className="role-permission-table__body">
-                  {rolePageLoading ? (
-                    <div className="permission-empty">加载中...</div>
-                  ) : roleRows.length === 0 ? (
-                    <div className="permission-empty">暂无角色</div>
-                  ) : (
-                    roleRows.map((role) => (
-                      <div key={role.id} className="role-permission-row" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
-                        <div className="role-permission-cell role-permission-cell--check">
-                          <BzCheckbox
-                            modelValue={selectedSet.has(role.id)}
-                            disabled={!canEditRoles || mode === "detail"}
-                            onValueChange={() => toggleRole(role.id)}
-                          />
+                <BzLoading loading={rolePageLoading && roleRows.length > 0} text="加载中...">
+                  <div className="admin-grid-table__body">
+                    {roleRows.length === 0 ? (
+                      <div className="permission-empty">{rolePageLoading ? "加载中..." : "暂无角色"}</div>
+                    ) : (
+                      roleRows.map((role) => (
+                        <div key={role.id} className="admin-grid-table__row" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                          <div className="admin-grid-table__cell admin-grid-table__cell--check">
+                            <input
+                              className="admin-node-checkbox"
+                              type="checkbox"
+                              checked={selectedSet.has(role.id)}
+                              disabled={!canEditRoles || mode === "detail"}
+                              onChange={() => toggleRole(role.id)}
+                            />
+                          </div>
+                          <div className="admin-grid-table__cell">
+                            <span className="role-table-mono">{role.code}</span>
+                          </div>
+                          <div className="admin-grid-table__cell">
+                            <span className="role-table-text">{role.name}</span>
+                          </div>
                         </div>
-                        <div className="role-permission-cell role-permission-cell--resource">
-                          <span className="role-table-mono">{role.code}</span>
-                        </div>
-                        <div className="role-permission-cell role-permission-cell--code">
-                          <span className="role-table-text">{role.name}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                      ))
+                    )}
+                  </div>
+                </BzLoading>
               </div>
 
               {roleTotal > 0 ? (
-                <div className="dict-pagination-bar">
+                <div className="dict-pagination-bar admin-grid-table__footer">
                   <div className="dict-pagination-summary">共 {roleTotal} 条记录</div>
                   <div className="dict-pagination-right">
                     <BzPagination

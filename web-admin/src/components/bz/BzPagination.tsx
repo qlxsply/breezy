@@ -111,6 +111,7 @@ export function BzPagination({
               key={`${token}-${index}`}
               className={`bz-page-btn${token === currentPage ? " is-active" : ""}`}
               type="button"
+              aria-current={token === currentPage ? "page" : undefined}
               onClick={() => goToPage(token)}
             >
               {token}

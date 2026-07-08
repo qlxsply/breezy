@@ -608,13 +608,13 @@ export function RolePermissionDialog({
                 </div>
               </div>
 
-              <div className="role-permission-table">
-                <div className="role-permission-table__viewport" ref={treeWrapRef}>
-                  <div className="role-permission-row role-permission-row--head role-permission-table__head">
-                    <div className="role-permission-cell role-permission-cell--check">
+              <div className="admin-grid-table role-permission-table">
+                <div className="admin-grid-table__viewport" ref={treeWrapRef}>
+                  <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head">
+                    <div className="admin-grid-table__cell admin-grid-table__cell--check">
                       {permissionEditable ? (
                         <input
-                          className="permission-node-checkbox"
+                          className="admin-node-checkbox"
                           type="checkbox"
                           checked={allRowsSelected}
                           ref={(el) => {
@@ -624,14 +624,14 @@ export function RolePermissionDialog({
                         />
                       ) : null}
                     </div>
-                    <div className="role-permission-cell role-permission-cell--resource">资源名称</div>
-                    <div className="role-permission-cell role-permission-cell--type">类型</div>
-                    <div className="role-permission-cell role-permission-cell--code">资源编码</div>
-                    <div className="role-permission-cell role-permission-cell--status">状态</div>
-                    <div className="role-permission-cell role-permission-cell--actions">按钮权限</div>
+                    <div className="admin-grid-table__cell role-permission-cell--resource">资源名称</div>
+                    <div className="admin-grid-table__cell role-permission-cell--type">类型</div>
+                    <div className="admin-grid-table__cell role-permission-cell--code">资源编码</div>
+                    <div className="admin-grid-table__cell role-permission-cell--status">状态</div>
+                    <div className="admin-grid-table__cell role-permission-cell--actions">按钮权限</div>
                   </div>
 
-                  <div className="role-permission-table__body">
+                  <div className="admin-grid-table__body">
                     {filteredRoots.length === 0 ? (
                       <div className="permission-empty">暂无可授权资源</div>
                     ) : (
@@ -665,18 +665,18 @@ export function RolePermissionDialog({
                 <div className="role-manage-section__stat">{diffSummaryText}</div>
               </div>
 
-              <div className="role-permission-table">
-                <div className="role-permission-table__viewport">
-                  <div className="role-permission-row role-permission-row--head role-permission-table__head">
-                    <div className="role-permission-cell role-permission-cell--check" />
-                    <div className="role-permission-cell role-permission-cell--resource">资源名称</div>
-                    <div className="role-permission-cell role-permission-cell--type">类型</div>
-                    <div className="role-permission-cell role-permission-cell--code">资源编码</div>
-                    <div className="role-permission-cell role-permission-cell--status">状态</div>
-                    <div className="role-permission-cell role-permission-cell--actions">按钮权限</div>
+              <div className="admin-grid-table role-permission-table">
+                <div className="admin-grid-table__viewport">
+                  <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head">
+                    <div className="admin-grid-table__cell admin-grid-table__cell--check" />
+                    <div className="admin-grid-table__cell role-permission-cell--resource">资源名称</div>
+                    <div className="admin-grid-table__cell role-permission-cell--type">类型</div>
+                    <div className="admin-grid-table__cell role-permission-cell--code">资源编码</div>
+                    <div className="admin-grid-table__cell role-permission-cell--status">状态</div>
+                    <div className="admin-grid-table__cell role-permission-cell--actions">按钮权限</div>
                   </div>
 
-                  <div className="role-permission-table__body">
+                  <div className="admin-grid-table__body">
                     {diffRoots.length === 0 ? (
                       <div className="permission-empty">权限未发生变更</div>
                     ) : (
