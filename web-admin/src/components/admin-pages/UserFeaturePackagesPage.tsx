@@ -11,16 +11,15 @@ import {
   updateUserFeaturePackageStatus,
 } from "@admin/api/user-features";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
-  BzDialog,
   BzForm,
   BzFormItem,
   BzInput,
-  BzLoading,
   BzOption,
   BzPagination,
   BzSelect,
@@ -579,54 +578,53 @@ export function UserFeaturePackagesPage() {
         footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
       />
 
-      <BzDialog
-            modelValue={drawerOpen}
+      <AdminEntityDrawer
+            open={drawerOpen}
             title={drawerTitle}
-            width="1080px"
-            maxWidth="1080px"
-            closeOnOverlay={false}
-            showClose={true}
-            onUpdateModelValue={(v) => setDrawerOpen(v)}
+            width="1180px"
+            className="role-manage-drawer"
+            loading={drawerLoading}
             onClose={() => setDrawerOpen(false)}
             footer={drawerFooter}
           >
-            <BzLoading loading={drawerLoading}>
               {drawerMode === "detail" && currentPackage ? (
-                <>
-                  <div className="detail-grid">
-                    <div className="detail-field">
-                      <span className="detail-field__label">编码</span>
-                      <span className="detail-field__value">{currentPackage.code}</span>
+                <div className="role-manage-shell">
+                  <section className="role-manage-section">
+                    <div className="role-manage-section__head">
+                      <div className="role-manage-section__title">应用包信息</div>
                     </div>
-                    <div className="detail-field">
-                      <span className="detail-field__label">名称</span>
-                      <span className="detail-field__value">{currentPackage.name}</span>
+                    <div className="role-info-table-wrap">
+                      <table className="role-info-table" aria-label="应用包详情">
+                        <tbody>
+                          <tr>
+                            <th>编码</th>
+                            <td>{currentPackage.code}</td>
+                            <th>名称</th>
+                            <td>{currentPackage.name}</td>
+                            <th>类型</th>
+                            <td>{resolveLabel(packageTypeMetaMap, currentPackage.packageType)}</td>
+                          </tr>
+                          <tr>
+                            <th>默认包</th>
+                            <td>{currentPackage.defaultPackage ? "是" : "否"}</td>
+                            <th>状态</th>
+                            <td>{currentPackage.enabled ? "启用" : "停用"}</td>
+                            <th></th>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <th>描述</th>
+                            <td colSpan={5}>{currentPackage.description || "-"}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                    <div className="detail-field">
-                      <span className="detail-field__label">类型</span>
-                      <span className="detail-field__value">
-                        {resolveLabel(packageTypeMetaMap, currentPackage.packageType)}
-                      </span>
+                  </section>
+                  <section className="role-manage-section">
+                    <div className="role-manage-section__head">
+                      <div className="role-manage-section__title">应用授权</div>
+                      <div className="role-manage-section__stat">共 {currentPackage.applicationAccesses.length} 个应用</div>
                     </div>
-                    <div className="detail-field">
-                      <span className="detail-field__label">默认包</span>
-                      <span className="detail-field__value">
-                        {currentPackage.defaultPackage ? "是" : "否"}
-                      </span>
-                    </div>
-                    <div className="detail-field">
-                      <span className="detail-field__label">状态</span>
-                      <span className="detail-field__value">
-                        {currentPackage.enabled ? "启用" : "停用"}
-                      </span>
-                    </div>
-                    <div className="detail-field detail-field--wide">
-                      <span className="detail-field__label">描述</span>
-                      <span className="detail-field__value">
-                        {currentPackage.description || "-"}
-                      </span>
-                    </div>
-                  </div>
                   <div className="package-access-list">
                     {currentPackage.applicationAccesses.map((access) => (
                       <div
@@ -657,11 +655,12 @@ export function UserFeaturePackagesPage() {
                       </div>
                     ))}
                   </div>
-                </>
+                  </section>
+                </div>
               ) : null}
 
               {drawerMode !== "detail" ? (
-                <>
+                <div className="role-manage-shell">
                   <BzForm>
                     <div className="group-form-grid">
                       <BzFormItem label="编码">
@@ -816,10 +815,9 @@ export function UserFeaturePackagesPage() {
                       })}
                     </div>
                   </div>
-                </>
+                </div>
               ) : null}
-            </BzLoading>
-      </BzDialog>
+      </AdminEntityDrawer>
     </>
   );
 }

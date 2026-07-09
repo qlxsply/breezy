@@ -16,7 +16,6 @@ import {
   validateDisableDictItem,
 } from "@admin/api/dicts";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -614,25 +613,6 @@ export function DictAdminPage() {
     ];
   }, [drawerMode, canEdit, currentItems]);
 
-  const detailSections = useMemo<AdminDetailSection[]>(() => {
-    if (!currentType || drawerMode !== "detail") return [];
-    return [
-      {
-        title: "字典详情",
-        fields: [
-          { label: "编码", value: currentType.code },
-          { label: "名称", value: currentType.name },
-          { label: "值类型", value: resolveValueTypeLabel(currentType.valueType) },
-          { label: "结构", value: resolveStructureTypeLabel(currentType.structureType) },
-          { label: "来源", value: sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType },
-          { label: "状态", value: currentType.enabled ? "启用" : "停用" },
-          { label: "枚举类", value: currentType.enumClass || "-", span: "full" },
-          { label: "描述", value: currentType.description || "-", span: "full", multiline: true },
-        ],
-      },
-    ];
-  }, [currentType, drawerMode]);
-
   const drawerTitle = drawerMode === "create" ? "新增字典" : drawerMode === "detail" ? "字典详情" : "编辑字典";
 
   const drawerFooter = (
@@ -790,11 +770,45 @@ export function DictAdminPage() {
           </BzCard>
         </div>
 
-        <AdminEntityDrawer open={drawerOpen} title={drawerTitle} width="1120px" loading={drawerLoading} onClose={closeDrawer} footer={drawerFooter}>
+        <AdminEntityDrawer open={drawerOpen} title={drawerTitle} width="1180px" className="role-manage-drawer" loading={drawerLoading} onClose={closeDrawer} footer={drawerFooter}>
           {currentType || drawerMode === "create" ? (
-            <div className="dict-drawer-stack">
+            <div className="role-manage-shell">
               {drawerMode === "detail" && currentType ? (
-                <AdminDetailTable sections={detailSections} />
+                <section className="role-manage-section">
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">字典详情</div>
+                  </div>
+                  <div className="role-info-table-wrap">
+                    <table className="role-info-table" aria-label="字典详情">
+                      <tbody>
+                        <tr>
+                          <th>编码</th>
+                          <td>{currentType.code}</td>
+                          <th>名称</th>
+                          <td>{currentType.name}</td>
+                          <th>值类型</th>
+                          <td>{resolveValueTypeLabel(currentType.valueType)}</td>
+                        </tr>
+                        <tr>
+                          <th>结构</th>
+                          <td>{resolveStructureTypeLabel(currentType.structureType)}</td>
+                          <th>来源</th>
+                          <td>{sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType}</td>
+                          <th>状态</th>
+                          <td>{currentType.enabled ? "启用" : "停用"}</td>
+                        </tr>
+                        <tr>
+                          <th>枚举类</th>
+                          <td colSpan={5}>{currentType.enumClass || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>描述</th>
+                          <td colSpan={5}>{currentType.description || "-"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
               ) : (
                 <BzForm>
                   <div className="group-form-grid">
@@ -837,7 +851,7 @@ export function DictAdminPage() {
               )}
 
               {drawerMode !== "create" ? (
-              <section className="dict-items-section">
+              <section className="role-manage-section dict-items-section">
                 <div className="admin-table-header">
                   <div className="admin-table-title">字典项</div>
                   <div className="admin-table-tools">

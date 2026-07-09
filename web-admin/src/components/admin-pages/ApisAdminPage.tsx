@@ -2,8 +2,6 @@
 
 import { disableApi, pageApis, publishApi } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
-import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
@@ -114,36 +112,6 @@ export function ApisAdminPage() {
     () => toOptions(statusLabelMap).filter((item) => item.value === "ACTIVE" || item.value === "DISABLED"),
     [statusLabelMap],
   );
-
-  const detailSections = useMemo<AdminDetailSection[]>(() => {
-    if (!detailItem) return [];
-    return [
-      {
-        title: "基础信息",
-        fields: [
-          { label: "模块", value: detailItem.module || "-" },
-          { label: "协议", value: detailItem.protocolLabel || detailItem.protocol || "-" },
-          { label: "方法", value: detailItem.httpMethodLabel || detailItem.httpMethod || "-" },
-          { label: "访问类型", value: detailItem.accessTypeLabel || detailItem.accessType || "-" },
-          { label: "用户类型", value: detailItem.userTypeLabel || detailItem.userType || "-" },
-          { label: "接口状态", value: detailItem.enabled ? "启用" : "停用" },
-          { label: "路径", value: detailItem.pathPattern || "-", span: "full" },
-          { label: "处理类", value: detailItem.handlerClass || "-", span: "full" },
-          { label: "处理方法", value: detailItem.handlerMethod || "-", span: "full" },
-        ],
-      },
-      {
-        title: "权限与审计",
-        fields: [
-          { label: "权限声明", value: detailItem.permissionDeclared ? "已声明" : "未声明" },
-          { label: "审计状态", value: detailItem.auditDeclared ? "已开启" : "未开启" },
-          { label: "审计资源", value: detailItem.auditResource || "-" },
-          { label: "审计动作", value: detailItem.auditAction || "-" },
-          { label: "审计说明", value: detailItem.auditDescription || "-", span: "full", multiline: true },
-        ],
-      },
-    ];
-  }, [detailItem]);
 
   async function loadDictionaries() {
     try {
@@ -264,17 +232,91 @@ export function ApisAdminPage() {
         queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)} onRefresh={() => void reload()} />}
         table={<ApiTable rows={enrichedRows} loading={loading} canDetail canPublish={canPublish} canDisable={canDisable} onDetail={(api) => { setDetailItem(api); setDetailOpen(true); }} onPublish={(api) => void onPublish(api)} onDisable={(api) => void onDisable(api)} />}
         footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
-      />
-      <AdminDetailDrawerTemplate
-        open={detailOpen}
-        title="接口详情"
-        width="960px"
-        sections={detailItem ? detailSections : []}
-        plain={false}
-        onClose={() => {
-          setDetailOpen(false);
-          setDetailItem(null);
-        }}
+        overlays={
+          <AdminEntityDrawer
+            open={detailOpen}
+            title="接口详情"
+            width="1180px"
+            className="role-manage-drawer"
+            onClose={() => {
+              setDetailOpen(false);
+              setDetailItem(null);
+            }}
+            footer={<BzButton onClick={() => { setDetailOpen(false); setDetailItem(null); }}>关闭</BzButton>}
+          >
+            {detailItem ? (
+              <div className="role-manage-shell">
+                <section className="role-manage-section">
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">基础信息</div>
+                  </div>
+                  <div className="role-info-table-wrap">
+                    <table className="role-info-table" aria-label="接口基础信息">
+                      <tbody>
+                        <tr>
+                          <th>模块</th>
+                          <td>{detailItem.module || "-"}</td>
+                          <th>协议</th>
+                          <td>{detailItem.protocolLabel || detailItem.protocol || "-"}</td>
+                          <th>方法</th>
+                          <td>{detailItem.httpMethodLabel || detailItem.httpMethod || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>访问类型</th>
+                          <td>{detailItem.accessTypeLabel || detailItem.accessType || "-"}</td>
+                          <th>用户类型</th>
+                          <td>{detailItem.userTypeLabel || detailItem.userType || "-"}</td>
+                          <th>接口状态</th>
+                          <td>{detailItem.enabled ? "启用" : "停用"}</td>
+                        </tr>
+                        <tr>
+                          <th>路径</th>
+                          <td colSpan={5}>{detailItem.pathPattern || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>处理类</th>
+                          <td colSpan={5}>{detailItem.handlerClass || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>处理方法</th>
+                          <td colSpan={5}>{detailItem.handlerMethod || "-"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section className="role-manage-section">
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">权限与审计</div>
+                  </div>
+                  <div className="role-info-table-wrap">
+                    <table className="role-info-table" aria-label="接口权限与审计">
+                      <tbody>
+                        <tr>
+                          <th>权限声明</th>
+                          <td>{detailItem.permissionDeclared ? "已声明" : "未声明"}</td>
+                          <th>审计状态</th>
+                          <td>{detailItem.auditDeclared ? "已开启" : "未开启"}</td>
+                          <th>审计资源</th>
+                          <td>{detailItem.auditResource || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>审计动作</th>
+                          <td colSpan={5}>{detailItem.auditAction || "-"}</td>
+                        </tr>
+                        <tr>
+                          <th>审计说明</th>
+                          <td colSpan={5}>{detailItem.auditDescription || "-"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            ) : null}
+          </AdminEntityDrawer>
+        }
       />
     </>
   );

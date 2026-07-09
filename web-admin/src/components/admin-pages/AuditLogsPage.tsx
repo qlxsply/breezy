@@ -3,7 +3,7 @@
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
-import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { formatDateTime } from "@admin/core/formatter";
@@ -302,152 +302,6 @@ export function AuditLogsPage() {
     return `${value} ms`;
   }
 
-  const detailSections = useMemo(
-    () =>
-      detail
-        ? [
-            {
-              title: "基础信息",
-              fields: [
-                { label: "追踪ID", value: <span className="admin-log-mono">{detail.traceId || "-"}</span> },
-                { label: "请求ID", value: <span className="admin-log-mono">{detail.requestId || "-"}</span> },
-                { label: "操作人", value: detail.operatorUsername || "-" },
-                {
-                  label: "用户类型",
-                  value: (
-                    <BzTag
-                      size="small"
-                      type={
-                        resolveTagType(userTypeMetaMap, detail.operatorUserType) as
-                          | "info"
-                          | "warning"
-                          | "danger"
-                          | "success"
-                      }
-                    >
-                      {resolveLabel(userTypeMetaMap, detail.operatorUserType)}
-                    </BzTag>
-                  ),
-                },
-                {
-                  label: "资源",
-                  value: <BzTag size="small">{resolveLabel(auditResourceMetaMap, detail.auditResource)}</BzTag>,
-                },
-                {
-                  label: "动作",
-                  value: <BzTag size="small">{resolveLabel(auditActionMetaMap, detail.auditAction)}</BzTag>,
-                },
-                {
-                  label: "等级",
-                  value: (
-                    <BzTag
-                      size="small"
-                      type={
-                        resolveTagType(auditLevelMetaMap, detail.auditLevel) as
-                          | "info"
-                          | "warning"
-                          | "danger"
-                          | "success"
-                      }
-                    >
-                      {resolveLabel(auditLevelMetaMap, detail.auditLevel)}
-                    </BzTag>
-                  ),
-                },
-                {
-                  label: "结果",
-                  value: (
-                    <BzTag size="small" type={detail.success ? "success" : "danger"}>
-                      {detail.success ? "成功" : "失败"}
-                    </BzTag>
-                  ),
-                },
-                { label: "记录时间", value: formatDateTime(detail.createdAt) },
-                { label: "耗时", value: formatDuration(detail.durationMs) },
-              ],
-            },
-            {
-              title: "请求信息",
-              fields: [
-                { label: "协议", value: resolveLabel(apiProtocolMetaMap, detail.protocol) },
-                { label: "方法", value: resolveLabel(apiMethodMetaMap, detail.httpMethod) },
-                { label: "请求IP", value: detail.requestIp || "-" },
-                {
-                  label: "请求地址",
-                  value: <span className="admin-log-mono">{detail.requestUri || "-"}</span>,
-                  span: "full" as const,
-                },
-                {
-                  label: "路径模式",
-                  value: <span className="admin-log-mono">{detail.pathPattern || "-"}</span>,
-                  span: "full" as const,
-                },
-                {
-                  label: "User-Agent",
-                  value: <pre className="admin-log-pre">{detail.userAgent || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-              ],
-            },
-            {
-              title: "审计摘要",
-              fields: [
-                {
-                  label: "审计描述",
-                  value: <pre className="admin-log-pre">{detail.auditDescription || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-                {
-                  label: "权限码",
-                  value: <span className="admin-log-mono">{detail.permissionCodes.length ? detail.permissionCodes.join(", ") : "-"}</span>,
-                  span: "full" as const,
-                },
-              ],
-            },
-            {
-              title: "请求与响应",
-              fields: [
-                {
-                  label: "请求参数",
-                  value: <pre className="admin-log-pre">{detail.requestParamSummary || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-                {
-                  label: "请求体",
-                  value: <pre className="admin-log-pre">{detail.requestBodySummary || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-                {
-                  label: "响应体",
-                  value: <pre className="admin-log-pre">{detail.responseSummary || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-                {
-                  label: "错误信息",
-                  value: <pre className="admin-log-pre">{detail.errorMessage || detail.errorCode || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-              ],
-            },
-          ]
-        : [],
-    [
-      apiMethodMetaMap,
-      apiProtocolMetaMap,
-      auditActionMetaMap,
-      auditLevelMetaMap,
-      auditResourceMetaMap,
-      detail,
-      userTypeMetaMap,
-    ],
-  );
-
   const columns: Array<BzTableColumn<AuditLogEntry>> = [
     {
       key: "traceId",
@@ -697,15 +551,161 @@ export function AuditLogsPage() {
         ) : null
       }
       overlays={
-        <AdminDetailDrawerTemplate
+        <AdminEntityDrawer
           open={detailOpen}
           loading={detailLoading}
           title="审计日志详情"
-          width="960px"
-          sections={detailSections}
-          plain={false}
+          width="1180px"
+          className="role-manage-drawer"
           onClose={() => setDetailOpen(false)}
-        />
+          footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
+        >
+          {detail ? (
+            <div className="role-manage-shell">
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">基础信息</div>
+                </div>
+
+                <div className="role-info-table-wrap">
+                  <table className="role-info-table" aria-label="审计日志基础信息">
+                    <tbody>
+                      <tr>
+                        <th>追踪ID</th>
+                        <td><span className="admin-log-mono">{detail.traceId || "-"}</span></td>
+                        <th>请求ID</th>
+                        <td><span className="admin-log-mono">{detail.requestId || "-"}</span></td>
+                        <th>操作人</th>
+                        <td>{detail.operatorUsername || "-"}</td>
+                      </tr>
+                      <tr>
+                        <th>用户类型</th>
+                        <td>
+                          <BzTag
+                            size="small"
+                            type={resolveTagType(userTypeMetaMap, detail.operatorUserType) as "info" | "warning" | "danger" | "success"}
+                          >
+                            {resolveLabel(userTypeMetaMap, detail.operatorUserType)}
+                          </BzTag>
+                        </td>
+                        <th>资源</th>
+                        <td><BzTag size="small">{resolveLabel(auditResourceMetaMap, detail.auditResource)}</BzTag></td>
+                        <th>动作</th>
+                        <td><BzTag size="small">{resolveLabel(auditActionMetaMap, detail.auditAction)}</BzTag></td>
+                      </tr>
+                      <tr>
+                        <th>等级</th>
+                        <td>
+                          <BzTag
+                            size="small"
+                            type={resolveTagType(auditLevelMetaMap, detail.auditLevel) as "info" | "warning" | "danger" | "success"}
+                          >
+                            {resolveLabel(auditLevelMetaMap, detail.auditLevel)}
+                          </BzTag>
+                        </td>
+                        <th>结果</th>
+                        <td>
+                          <BzTag size="small" type={detail.success ? "success" : "danger"}>
+                            {detail.success ? "成功" : "失败"}
+                          </BzTag>
+                        </td>
+                        <th>记录时间</th>
+                        <td>{formatDateTime(detail.createdAt)}</td>
+                      </tr>
+                      <tr>
+                        <th>耗时</th>
+                        <td><span className="admin-log-mono">{formatDuration(detail.durationMs)}</span></td>
+                        <th>协议</th>
+                        <td>{resolveLabel(apiProtocolMetaMap, detail.protocol)}</td>
+                        <th>方法</th>
+                        <td>{resolveLabel(apiMethodMetaMap, detail.httpMethod)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">请求信息</div>
+                </div>
+
+                <div className="role-info-table-wrap">
+                  <table className="role-info-table" aria-label="审计日志请求信息">
+                    <tbody>
+                      <tr>
+                        <th>请求IP</th>
+                        <td><span className="admin-log-mono">{detail.requestIp || "-"}</span></td>
+                        <th>请求地址</th>
+                        <td colSpan={3}><span className="admin-log-mono">{detail.requestUri || "-"}</span></td>
+                      </tr>
+                      <tr>
+                        <th>路径模式</th>
+                        <td colSpan={5}><span className="admin-log-mono">{detail.pathPattern || "-"}</span></td>
+                      </tr>
+                      <tr>
+                        <th>User-Agent</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.userAgent || "-"}</pre></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">审计摘要</div>
+                </div>
+
+                <div className="role-info-table-wrap">
+                  <table className="role-info-table" aria-label="审计日志摘要">
+                    <tbody>
+                      <tr>
+                        <th>权限码</th>
+                        <td colSpan={5}>
+                          <span className="admin-log-mono">{detail.permissionCodes.length ? detail.permissionCodes.join(", ") : "-"}</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>审计描述</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.auditDescription || "-"}</pre></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">请求与响应</div>
+                </div>
+
+                <div className="role-info-table-wrap">
+                  <table className="role-info-table" aria-label="审计日志请求与响应">
+                    <tbody>
+                      <tr>
+                        <th>请求参数</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.requestParamSummary || "-"}</pre></td>
+                      </tr>
+                      <tr>
+                        <th>请求体</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.requestBodySummary || "-"}</pre></td>
+                      </tr>
+                      <tr>
+                        <th>响应体</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.responseSummary || "-"}</pre></td>
+                      </tr>
+                      <tr>
+                        <th>错误信息</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.errorMessage || detail.errorCode || "-"}</pre></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          ) : null}
+        </AdminEntityDrawer>
       }
     />
   );

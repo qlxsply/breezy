@@ -1,18 +1,14 @@
 "use client";
 
 import {
-  createResource,
   deleteResource,
-  getResource,
   listPermissions,
   listResources,
-  updateResource,
-  updateResourcePermissions,
 } from "@admin/api/resources";
 import {createAdminActionsColumn} from "@admin/components/admin/admin-actions-column";
 import {AdminTableTools} from "@admin/components/admin/AdminTableTools";
-import {AdminEntityDrawer} from "@admin/components/admin/AdminEntityDrawer";
 import {useAdminQueryPanelLayout} from "@admin/components/admin/useAdminQueryPanelLayout";
+import {ResourceManageDrawer} from "@admin/components/resources-admin/ResourceManageDrawer";
 import type {BzTableColumn} from "@admin/components/bz";
 import {
   BzChevronIcon,
@@ -23,7 +19,6 @@ import {
   BzOption,
   BzOverflowTooltip,
   BzSelect,
-  BzSwitch,
   BzTable,
   BzTag,
 } from "@admin/components/bz";
@@ -35,35 +30,15 @@ import type {AdminActionItem} from "@admin/types/admin-action";
 import type {
   ManageResourceType,
   ResourceManageEntry,
-  ResourceManagePermissionSelection,
-  ResourceManageSaveRequest,
   ResourcePermissionOption,
 } from "@admin/types/resource-manage";
 import {useEffect, useMemo, useState} from "react";
 
-type DrawerPurpose = "create" | "detail" | "edit";
+type DrawerMode = "create" | "detail" | "edit";
 
 interface ResourceTableRow {
   row: ResourceManageEntry;
   level: number;
-}
-
-interface ResourceFormState {
-  id?: string;
-  parentId: string;
-  code: string;
-  name: string;
-  resourceType: ManageResourceType;
-  path: string;
-  component: string;
-  icon: string;
-  sortNo: number;
-  visible: boolean;
-  enabled: boolean;
-  defaultEntry: boolean;
-  systemBuiltin: boolean;
-  remark: string;
-  permissionIds: string[];
 }
 
 const RESOURCE_TYPE_LABEL: Record<ManageResourceType, string> = {
@@ -82,22 +57,9 @@ const ALLOWED_CHILDREN: Record<ManageResourceType, ManageResourceType[]> = {
 
 const ROOT_ALLOWED_TYPES: ManageResourceType[] = ["DIRECTORY", "MENU"];
 
-const EMPTY_FORM: ResourceFormState = {
-  parentId: "",
-  code: "",
-  name: "",
-  resourceType: "DIRECTORY",
-  path: "",
-  component: "",
-  icon: "",
-  sortNo: 10,
-  visible: true,
-  enabled: true,
-  defaultEntry: false,
-  systemBuiltin: false,
-  remark: "",
-  permissionIds: [],
-};
+function canHaveChildren(resourceType: ManageResourceType): boolean {
+  return ALLOWED_CHILDREN[resourceType].length > 0;
+}
 
 export function ResourcesAdminPage() {
   const [rows, setRows] = useState<ResourceManageEntry[]>([]);
@@ -115,10 +77,9 @@ export function ResourcesAdminPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerPurpose, setDrawerPurpose] = useState<DrawerPurpose>("create");
-  const [drawerLoading, setDrawerLoading] = useState(false);
-  const [form, setForm] = useState<ResourceFormState>(EMPTY_FORM);
-  const [formError, setFormError] = useState("");
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>("create");
+  const [drawerResourceId, setDrawerResourceId] = useState<string | null>(null);
+  const [drawerParentId, setDrawerParentId] = useState<string | null>(null);
 
   const canView = hasResourceCodeAccess("resource-manage-view");
   const canCreate = hasResourceCodeAccess("resource-manage-create");
@@ -152,22 +113,6 @@ export function ResourcesAdminPage() {
     () => flattenVisibleRows(filteredRoots, expandedIds, hasActiveFilter),
     [expandedIds, filteredRoots, hasActiveFilter],
   );
-
-  const parentOptions = useMemo(() => buildParentOptions(rows, form.id), [rows, form.id]);
-
-  const currentParent = form.parentId ? rowMap.get(form.parentId) : undefined;
-  const allowedTypes = currentParent ? ALLOWED_CHILDREN[currentParent.resourceType] : ROOT_ALLOWED_TYPES;
-  const canHaveChildren = (resourceType: ManageResourceType) => ALLOWED_CHILDREN[resourceType].length > 0;
-  const isDetailDrawer = drawerPurpose === "detail";
-  const showPermissionArea = form.resourceType === "BUTTON" && (canPermissionView || canPermissionEdit);
-  const canSavePermissions = drawerPurpose !== "detail" && showPermissionArea && canPermissionEdit;
-  const selectedPermissions = useMemo(
-    () => permissions.filter((permission) => form.permissionIds.includes(permission.id)),
-    [form.permissionIds, permissions],
-  );
-  const readOnly =
-    drawerPurpose === "detail" ? true : drawerPurpose === "create" ? !canCreate : !canEdit;
-  const structureReadOnly = readOnly;
 
   const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(
     () => {
@@ -349,10 +294,6 @@ export function ResourcesAdminPage() {
     }
   }
 
-  function updateForm<K extends keyof ResourceFormState>(key: K, value: ResourceFormState[K]) {
-    setForm((current) => ({ ...current, [key]: value }));
-  }
-
   function applyFilters() {
     setKeyword(keywordDraft.trim());
     setTypeFilter(typeFilterDraft);
@@ -363,42 +304,34 @@ export function ResourcesAdminPage() {
 
   function openCreateRoot() {
     if (!canCreate) return;
-    setDrawerPurpose("create");
-    setForm({ ...EMPTY_FORM, sortNo: nextSortNo(rows, null), resourceType: "DIRECTORY" });
-    setFormError("");
+    setDrawerMode("create");
+    setDrawerResourceId(null);
+    setDrawerParentId(null);
     setDrawerOpen(true);
   }
 
   function openCreateChild(target: ResourceManageEntry) {
     if (!canCreate) return;
-    const nextTypes = ALLOWED_CHILDREN[target.resourceType];
-    if (nextTypes.length === 0) return;
-    setDrawerPurpose("create");
-    setForm({
-      ...EMPTY_FORM,
-      parentId: target.id,
-      resourceType: nextTypes[0],
-      sortNo: nextSortNo(rows, target.id),
-      visible: true,
-      enabled: true,
-    });
-    setFormError("");
+    if (!canHaveChildren(target.resourceType)) return;
+    setDrawerMode("create");
+    setDrawerResourceId(null);
+    setDrawerParentId(target.id);
     setDrawerOpen(true);
   }
 
-  async function openEdit(target: ResourceManageEntry, purpose: DrawerPurpose = "edit") {
-    if (purpose === "edit" && !canEdit) return;
-    if (purpose === "detail" && !canView) return;
-    setDrawerPurpose(purpose);
-    setDrawerLoading(true);
+  function openEdit(target: ResourceManageEntry, mode: DrawerMode = "edit") {
+    if (mode === "edit" && !canEdit) return;
+    if (mode === "detail" && !canView) return;
+    setDrawerMode(mode);
+    setDrawerResourceId(target.id);
+    setDrawerParentId(null);
     setDrawerOpen(true);
-    setFormError("");
-    try {
-      const detail = await getResource(target.id);
-      setForm(toForm(detail));
-    } finally {
-      setDrawerLoading(false);
-    }
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    setDrawerResourceId(null);
+    setDrawerParentId(null);
   }
 
   async function onDelete(target: ResourceManageEntry) {
@@ -422,13 +355,6 @@ export function ResourcesAdminPage() {
     await refreshRegistryLoaded();
     message.success("删除成功");
     await reload();
-  }
-
-  function closeDrawer() {
-    setDrawerOpen(false);
-    setDrawerLoading(false);
-    setForm(EMPTY_FORM);
-    setFormError("");
   }
 
   function toggleExpand(id: string) {
@@ -459,96 +385,6 @@ export function ResourcesAdminPage() {
     setBuiltinFilter("");
     setExpandedIds(new Set());
   }
-
-  function handleParentChange(parentId: string) {
-    const parent = parentId ? rowMap.get(parentId) : undefined;
-    const nextTypes = parent ? ALLOWED_CHILDREN[parent.resourceType] : ROOT_ALLOWED_TYPES;
-    const nextType = nextTypes.includes(form.resourceType) ? form.resourceType : nextTypes[0];
-    setForm((current) => ({
-      ...current,
-      parentId,
-      resourceType: nextType,
-      sortNo: current.id ? current.sortNo : nextSortNo(rows, parentId || null),
-    }));
-  }
-
-  function handleTypeChange(resourceType: ManageResourceType) {
-    setForm((current) => ({
-      ...current,
-      resourceType,
-      path: resourceType === "MENU" || resourceType === "FUNCTION" ? current.path : "",
-      component: resourceType === "MENU" || resourceType === "FUNCTION" ? current.component : "",
-      icon: resourceType === "DIRECTORY" || resourceType === "MENU" ? current.icon : "",
-      defaultEntry:
-        resourceType === "MENU" || resourceType === "FUNCTION" ? current.defaultEntry : false,
-      permissionIds: resourceType === "BUTTON" ? current.permissionIds : [],
-    }));
-  }
-
-  function togglePermission(permissionId: string, checked: boolean) {
-    setForm((current) => {
-      const next = new Set(current.permissionIds);
-      if (checked) next.add(permissionId);
-      else next.delete(permissionId);
-      return { ...current, permissionIds: Array.from(next) };
-    });
-  }
-
-  function validateForm(): string {
-    if (!form.name.trim()) return "资源名称不能为空";
-    if (!form.code.trim()) return "资源编码不能为空";
-    if (!Number.isFinite(form.sortNo)) return "排序号不能为空";
-    if (!allowedTypes.includes(form.resourceType)) return "当前父级不允许创建该资源类型";
-    if ((form.resourceType === "MENU" || form.resourceType === "FUNCTION") && !form.path.trim()) {
-      return "菜单或功能资源必须填写路由路径";
-    }
-    if ((form.resourceType === "MENU" || form.resourceType === "FUNCTION") && !form.component.trim()) {
-      return "菜单或功能资源必须填写组件路径";
-    }
-    return "";
-  }
-
-  async function handleSubmit() {
-    if (readOnly) return;
-    const error = validateForm();
-    setFormError(error);
-    if (error) return;
-    const payload = toSaveRequest(form);
-    const permissionSelection: ResourceManagePermissionSelection = {
-      permissionIds: form.resourceType === "BUTTON" ? [...form.permissionIds] : [],
-    };
-    if (drawerPurpose === "create") {
-      const created = await createResource(payload);
-      if (form.resourceType === "BUTTON" && canSavePermissions) {
-        await updateResourcePermissions(created.id, permissionSelection);
-      }
-      await refreshRegistryLoaded();
-      message.success("资源创建成功");
-    } else {
-      if (!form.id) return;
-      await updateResource(form.id, payload);
-      if (form.resourceType === "BUTTON" && canSavePermissions) {
-        await updateResourcePermissions(form.id, permissionSelection);
-      }
-      await refreshRegistryLoaded();
-      message.success("资源更新成功");
-    }
-    closeDrawer();
-    await reload();
-  }
-
-  const drawerFooter = readOnly ? (
-    <div className="permission-dialog-footer__actions">
-      <BzButton onClick={closeDrawer}>关闭</BzButton>
-    </div>
-  ) : (
-    <div className="permission-dialog-footer__actions">
-      <BzButton onClick={closeDrawer}>取消</BzButton>
-      <BzButton buttonType="primary" onClick={handleSubmit}>
-        保存
-      </BzButton>
-    </div>
-  );
 
   return (
     <div className="admin-page">
@@ -707,170 +543,17 @@ export function ResourcesAdminPage() {
         </div>
 
         {drawerOpen ? (
-          <AdminEntityDrawer
-            open={drawerOpen}
-            title={resolveDrawerTitle(drawerPurpose, form.resourceType)}
-            width="min(860px, 100vw)"
-            loading={drawerLoading}
+          <ResourceManageDrawer
+            mode={drawerMode}
+            resourceId={drawerResourceId}
+            parentId={drawerParentId}
+            allResources={rows}
+            permissions={permissions}
+            canEdit={canEdit}
+            canPermissionEdit={canPermissionEdit}
             onClose={closeDrawer}
-            footer={drawerFooter}
-          >
-            <div className="detail-grid resource-manage-drawer-grid">
-              <section className="resource-manage-section detail-field detail-field--wide">
-                <div className="resource-manage-section__title">基础信息</div>
-                <div className="resource-manage-form-grid">
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">父级资源</div>
-                    <BzSelect modelValue={form.parentId} disabled={structureReadOnly} onValueChange={(value) => handleParentChange(value ?? "") }>
-                      <BzOption value="" label="无父级，作为根资源" />
-                      {parentOptions.map((option) => (
-                        <BzOption key={option.id} value={option.id} label={option.label} />
-                      ))}
-                    </BzSelect>
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">资源类型</div>
-                    <BzSelect
-                      modelValue={form.resourceType}
-                      disabled={structureReadOnly}
-                      onValueChange={(value) => handleTypeChange((value as ManageResourceType) || "DIRECTORY")}
-                    >
-                      {(["DIRECTORY", "MENU", "FUNCTION", "BUTTON"] as ManageResourceType[]).map((type) => (
-                        <BzOption
-                          key={type}
-                          value={type}
-                          label={RESOURCE_TYPE_LABEL[type]}
-                          disabled={!allowedTypes.includes(type)}
-                        />
-                      ))}
-                    </BzSelect>
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">资源名称</div>
-                    <BzInput modelValue={form.name} disabled={structureReadOnly} placeholder="例如：资源管理" onValueChange={(value) => updateForm("name", value)} />
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">资源编码</div>
-                    <BzInput modelValue={form.code} disabled={structureReadOnly} placeholder="例如：platform.resource" onValueChange={(value) => updateForm("code", value)} />
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">图标</div>
-                    <BzInput modelValue={form.icon} disabled={structureReadOnly || !(form.resourceType === "DIRECTORY" || form.resourceType === "MENU")} placeholder="例如：Setting" onValueChange={(value) => updateForm("icon", value)} />
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">排序号</div>
-                    <BzInput
-                      modelValue={String(form.sortNo)}
-                      disabled={structureReadOnly}
-                      placeholder="例如：10"
-                      onValueChange={(value) => updateForm("sortNo", Number(value || 0))}
-                    />
-                  </div>
-                  <div className="resource-manage-form-item resource-manage-form-item--full">
-                    <div className="resource-manage-form-label">备注</div>
-                    <textarea
-                      className="resource-manage-textarea"
-                      value={form.remark}
-                      disabled={structureReadOnly}
-                      placeholder="资源说明"
-                      rows={3}
-                      onChange={(event) => updateForm("remark", event.target.value)}
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <section className="resource-manage-section detail-field detail-field--wide">
-                <div className="resource-manage-section__title">路由信息</div>
-                <div className="resource-manage-form-grid">
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">路由路径</div>
-                    <BzInput
-                      modelValue={form.path}
-                      disabled={structureReadOnly || !(form.resourceType === "MENU" || form.resourceType === "FUNCTION")}
-                      placeholder="例如：/admin/resources"
-                      onValueChange={(value) => updateForm("path", value)}
-                    />
-                  </div>
-                  <div className="resource-manage-form-item">
-                    <div className="resource-manage-form-label">组件路径</div>
-                    <BzInput
-                      modelValue={form.component}
-                      disabled={structureReadOnly || !(form.resourceType === "MENU" || form.resourceType === "FUNCTION")}
-                      placeholder="例如：pages/ResourcesAdminPage"
-                      onValueChange={(value) => updateForm("component", value)}
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <section className="resource-manage-section detail-field detail-field--wide">
-                <div className="resource-manage-section__title">状态配置</div>
-                <div className="resource-manage-switch-row">
-                  <label className="resource-manage-switch-item">
-                    <span>可见</span>
-                    <BzSwitch modelValue={form.visible} disabled={structureReadOnly} onValueChange={(value) => updateForm("visible", value)} />
-                  </label>
-                  <label className="resource-manage-switch-item">
-                    <span>启用</span>
-                    <BzSwitch modelValue={form.enabled} disabled={structureReadOnly} onValueChange={(value) => updateForm("enabled", value)} />
-                  </label>
-                  <label className="resource-manage-switch-item">
-                    <span>默认入口</span>
-                    <BzSwitch
-                      modelValue={form.defaultEntry}
-                      disabled={structureReadOnly || !(form.resourceType === "MENU" || form.resourceType === "FUNCTION")}
-                      onValueChange={(value) => updateForm("defaultEntry", value)}
-                    />
-                  </label>
-                  <label className="resource-manage-switch-item">
-                    <span>系统内置</span>
-                    <BzSwitch modelValue={form.systemBuiltin} disabled={structureReadOnly} onValueChange={(value) => updateForm("systemBuiltin", value)} />
-                  </label>
-                </div>
-              </section>
-
-              {showPermissionArea ? (
-                <section className="resource-manage-section detail-field detail-field--wide">
-                  <div className="resource-manage-section__title">权限码绑定</div>
-                  {isDetailDrawer ? (
-                    <div className="resource-manage-permission-box is-readonly">
-                      {selectedPermissions.length > 0 ? (
-                        selectedPermissions.map((permission) => (
-                          <div key={permission.id} className="resource-manage-permission-item is-readonly">
-                            <span>{permission.name}</span>
-                            <span className="resource-manage-permission-code">({permission.code})</span>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="resource-manage-tip">暂无权限码绑定</div>
-                      )}
-                    </div>
-                  ) : (
-                  <div className="resource-manage-permission-box">
-                    {permissions.map((permission) => {
-                      const checked = form.permissionIds.includes(permission.id);
-                      return (
-                        <label key={permission.id} className="resource-manage-permission-item">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={!canSavePermissions}
-                            onChange={(event) => togglePermission(permission.id, event.target.checked)}
-                          />
-                          <span>{permission.name}</span>
-                          <span className="resource-manage-permission-code">({permission.code})</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                  )}
-                </section>
-              ) : null}
-
-              {formError ? <div className="resource-manage-error">{formError}</div> : null}
-            </div>
-          </AdminEntityDrawer>
+            onSaved={() => void reload()}
+          />
         ) : null}
       </div>
     </div>
@@ -938,91 +621,6 @@ function matchRow(
     .some((value) => String(value).toLowerCase().includes(keyword));
 }
 
-function buildParentOptions(rows: ResourceManageEntry[], currentId?: string): Array<{ id: string; label: string }> {
-  const result: Array<{ id: string; label: string }> = [];
-  const current = currentId ? findById(rows, currentId) : null;
-  const currentDescendants = current ? new Set(flattenRows(current.children).map((row) => row.id)) : new Set<string>();
-  const walk = (items: ResourceManageEntry[], level: number) => {
-    items.forEach((row) => {
-      if (row.id !== currentId && !currentDescendants.has(row.id)) {
-        result.push({
-          id: row.id,
-          label: `${"　".repeat(level)}${row.name}（${RESOURCE_TYPE_LABEL[row.resourceType]}）`,
-        });
-      }
-      walk(row.children, level + 1);
-    });
-  };
-  walk(rows, 0);
-  return result;
-}
-
-function findById(rows: ResourceManageEntry[], id: string): ResourceManageEntry | null {
-  for (const row of rows) {
-    if (row.id === id) return row;
-    const child = findById(row.children, id);
-    if (child) return child;
-  }
-  return null;
-}
-
-function nextSortNo(rows: ResourceManageEntry[], parentId: string | null): number {
-  const siblings = flattenRows(rows).filter((row) => (row.parentId ?? null) === parentId);
-  if (siblings.length === 0) return 10;
-  return Math.max(...siblings.map((row) => row.sortNo)) + 10;
-}
-
 function countDescendants(row: ResourceManageEntry): number {
   return flattenRows(row.children).length;
-}
-
-function toForm(entry: ResourceManageEntry): ResourceFormState {
-  return {
-    id: entry.id,
-    parentId: entry.parentId ?? "",
-    code: entry.code,
-    name: entry.name,
-    resourceType: entry.resourceType,
-    path: entry.path ?? "",
-    component: entry.component ?? "",
-    icon: entry.icon ?? "",
-    sortNo: entry.sortNo,
-    visible: entry.visible,
-    enabled: entry.enabled,
-    defaultEntry: entry.defaultEntry,
-    systemBuiltin: entry.systemBuiltin,
-    remark: entry.remark ?? "",
-    permissionIds: [...entry.permissionIds],
-  };
-}
-
-function toSaveRequest(form: ResourceFormState): ResourceManageSaveRequest {
-  return {
-    parentId: form.parentId || null,
-    code: form.code.trim(),
-    name: form.name.trim(),
-    resourceType: form.resourceType,
-    path: form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? blankToNull(form.path) : null,
-    component:
-      form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? blankToNull(form.component) : null,
-    icon: form.resourceType === "DIRECTORY" || form.resourceType === "MENU" ? blankToNull(form.icon) : null,
-    sortNo: form.sortNo,
-    visible: form.visible,
-    enabled: form.enabled,
-    defaultEntry:
-      form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? form.defaultEntry : false,
-    systemBuiltin: form.systemBuiltin,
-    remark: blankToNull(form.remark),
-  };
-}
-
-function blankToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
-
-function resolveDrawerTitle(purpose: DrawerPurpose, resourceType: ManageResourceType): string {
-  if (purpose === "create") return "新增资源";
-  if (purpose === "detail") return `${RESOURCE_TYPE_LABEL[resourceType]}详情`;
-  return "编辑资源";
 }

@@ -341,55 +341,58 @@ export function UserFeatureApplicationsPage() {
             open={detailOpen}
             loading={detailLoading}
             title="应用详情"
-            width="980px"
+            width="1180px"
+            className="role-manage-drawer"
             onClose={() => setDetailOpen(false)}
             footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
           >
             {detail ? (
-              <>
-                <div className="detail-grid">
-                  <div className="detail-field">
-                    <span className="detail-field__label">应用编码</span>
-                    <span className="detail-field__value">{detail.code}</span>
+              <div className="role-manage-shell">
+                <section className="role-manage-section">
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">应用信息</div>
                   </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">名称</span>
-                    <span className="detail-field__value">{detail.name}</span>
+                  <div className="role-info-table-wrap">
+                    <table className="role-info-table" aria-label="应用详情">
+                      <tbody>
+                        <tr>
+                          <th>应用编码</th>
+                          <td>{detail.code}</td>
+                          <th>名称</th>
+                          <td>{detail.name}</td>
+                          <th>状态</th>
+                          <td>{detail.enabled ? "启用" : "停用"}</td>
+                        </tr>
+                        <tr>
+                          <th>路由</th>
+                          <td>{detail.routePath || "-"}</td>
+                          <th>组件</th>
+                          <td>{detail.componentPath || "-"}</td>
+                          <th>图标</th>
+                          <td>
+                            {resolveResourceIconUrl(detail.icon) ? (
+                              <img
+                                src={resolveResourceIconUrl(detail.icon) || undefined}
+                                alt={detail.name}
+                                className="application-detail-icon"
+                              />
+                            ) : null}{" "}
+                            {detail.icon || "-"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>描述</th>
+                          <td colSpan={5}>{detail.description || "-"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">路由</span>
-                    <span className="detail-field__value">{detail.routePath || "-"}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">组件</span>
-                    <span className="detail-field__value">{detail.componentPath || "-"}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">状态</span>
-                    <span className="detail-field__value">{detail.enabled ? "启用" : "停用"}</span>
-                  </div>
-                  <div className="detail-field">
-                    <span className="detail-field__label">图标</span>
-                    <span className="detail-field__value detail-field__value--icon">
-                      {resolveResourceIconUrl(detail.icon) ? (
-                        <img
-                          src={resolveResourceIconUrl(detail.icon) || undefined}
-                          alt={detail.name}
-                          className="application-detail-icon"
-                        />
-                      ) : null}
-                      <span>{detail.icon || "-"}</span>
-                    </span>
-                  </div>
-                  <div className="detail-field detail-field--wide">
-                    <span className="detail-field__label">描述</span>
-                    <span className="detail-field__value">{detail.description || "-"}</span>
-                  </div>
-                </div>
-                <div className="app-feature-panel">
-                  <div className="app-feature-panel__head">
-                    <div className="app-feature-panel__title">应用功能</div>
-                    <div className="app-feature-panel__meta">共 {detail.features.length} 项</div>
+                </section>
+
+                <section className="role-manage-section">
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">应用功能</div>
+                    <div className="role-manage-section__stat">共 {detail.features.length} 项</div>
                   </div>
                   <div className="admin-table-surface">
                     <BzTable
@@ -400,8 +403,8 @@ export function UserFeatureApplicationsPage() {
                       emptyText="暂无功能"
                     />
                   </div>
-                </div>
-              </>
+                </section>
+              </div>
             ) : null}
       </AdminEntityDrawer>
     </>

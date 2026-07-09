@@ -3,8 +3,8 @@
 import { pageLoginLogs } from "@admin/api/login-logs";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeRangeField, buildAdminDateTimeRangeSubmitParams } from "@admin/components/admin/AdminDateTimeRangeField";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminDetailDrawerTemplate } from "@admin/components/admin/AdminDetailDrawerTemplate";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
@@ -163,67 +163,6 @@ export function LoginLogsPage() {
   function getRowActions(row: LoginLogEntry): AdminActionItem[] {
     return [{ key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row) }];
   }
-
-  const detailSections = useMemo(
-    () =>
-      detail
-        ? [
-            {
-              title: "登录日志信息",
-              fields: [
-                { label: "账号", value: detail.username || "-" },
-                {
-                  label: "事件",
-                  value: (
-                    <BzTag
-                      size="small"
-                      type={
-                        resolveTagType(loginEventMetaMap, detail.eventType) as
-                          | "info"
-                          | "warning"
-                          | "danger"
-                          | "success"
-                      }
-                    >
-                      {resolveLabel(loginEventMetaMap, detail.eventType)}
-                    </BzTag>
-                  ),
-                },
-                {
-                  label: "结果",
-                  value: (
-                    <BzTag size="small" type={detail.success ? "success" : "danger"}>
-                      {detail.success ? "成功" : "失败"}
-                    </BzTag>
-                  ),
-                },
-                { label: "IP", value: <span className="admin-log-mono">{detail.loginIp || "-"}</span> },
-                { label: "用户ID", value: <span className="admin-log-mono">{detail.userId || "-"}</span> },
-                { label: "操作人ID", value: <span className="admin-log-mono">{detail.operatorId || "-"}</span> },
-                {
-                  label: "会话ID",
-                  value: <span className="admin-log-mono">{detail.sessionId || "-"}</span>,
-                  span: "full" as const,
-                },
-                { label: "记录时间", value: formatDateTime(detail.occurredAt) },
-                {
-                  label: "失败原因",
-                  value: <pre className="admin-log-pre">{detail.failureReason || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-                {
-                  label: "备注",
-                  value: <pre className="admin-log-pre">{detail.remark || "-"}</pre>,
-                  span: "full" as const,
-                  multiline: true,
-                },
-              ],
-            },
-          ]
-        : [],
-    [detail, loginEventMetaMap],
-  );
 
   const columns = useMemo<Array<BzTableColumn<LoginLogEntry>>>(
     () => {
@@ -430,13 +369,74 @@ export function LoginLogsPage() {
         ) : null
       }
       overlays={
-        <AdminDetailDrawerTemplate
+        <AdminEntityDrawer
           open={detailOpen}
           title="登录日志详情"
-          width="960px"
-          sections={detailSections}
+          width="1180px"
+          className="role-manage-drawer"
           onClose={closeDetail}
-        />
+          footer={<BzButton onClick={closeDetail}>关闭</BzButton>}
+        >
+          {detail ? (
+            <div className="role-manage-shell">
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">登录日志信息</div>
+                </div>
+
+                <div className="role-info-table-wrap">
+                  <table className="role-info-table" aria-label="登录日志详情">
+                    <tbody>
+                      <tr>
+                        <th>账号</th>
+                        <td>{detail.username || "-"}</td>
+                        <th>事件</th>
+                        <td>
+                          <BzTag
+                            size="small"
+                            type={resolveTagType(loginEventMetaMap, detail.eventType) as "info" | "warning" | "danger" | "success"}
+                          >
+                            {resolveLabel(loginEventMetaMap, detail.eventType)}
+                          </BzTag>
+                        </td>
+                        <th>结果</th>
+                        <td>
+                          <BzTag size="small" type={detail.success ? "success" : "danger"}>
+                            {detail.success ? "成功" : "失败"}
+                          </BzTag>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>IP</th>
+                        <td><span className="admin-log-mono">{detail.loginIp || "-"}</span></td>
+                        <th>用户ID</th>
+                        <td><span className="admin-log-mono">{detail.userId || "-"}</span></td>
+                        <th>操作人ID</th>
+                        <td><span className="admin-log-mono">{detail.operatorId || "-"}</span></td>
+                      </tr>
+                      <tr>
+                        <th>会话ID</th>
+                        <td colSpan={5}><span className="admin-log-mono">{detail.sessionId || "-"}</span></td>
+                      </tr>
+                      <tr>
+                        <th>记录时间</th>
+                        <td colSpan={5}>{formatDateTime(detail.occurredAt)}</td>
+                      </tr>
+                      <tr>
+                        <th>失败原因</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.failureReason || "-"}</pre></td>
+                      </tr>
+                      <tr>
+                        <th>备注</th>
+                        <td colSpan={5}><pre className="admin-log-pre">{detail.remark || "-"}</pre></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+          ) : null}
+        </AdminEntityDrawer>
       }
     />
   );
