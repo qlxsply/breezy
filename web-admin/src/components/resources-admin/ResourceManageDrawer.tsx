@@ -137,7 +137,7 @@ export function ResourceManageDrawer({
   parentId,
   allResources,
   permissions,
-  canEdit,
+  canEdit: _canEdit,
   canPermissionEdit,
   onClose,
   onSaved,

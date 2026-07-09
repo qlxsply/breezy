@@ -65,7 +65,6 @@ export function UserFeatureApplicationsPage() {
 
   const canView = hasResourceCodeAccess("user-feature-application-view");
   const canToggle = hasResourceCodeAccess("user-feature-application-edit");
-  const totalPages = Math.max(1, page.totalPages || 1);
 
   useEffect(() => {
     if (loadedRef.current) return;

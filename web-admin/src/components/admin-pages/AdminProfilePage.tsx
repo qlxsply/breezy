@@ -52,11 +52,6 @@ export function AdminProfilePage() {
     void Promise.all([reloadProfile(), reloadActivities()]);
   }, []);
 
-  const activityTotalPages = useMemo(
-    () => Math.max(1, activityPage.totalPages || 1),
-    [activityPage.totalPages],
-  );
-
   async function reloadProfile() {
     try {
       const data = await getAdminProfile();

@@ -265,14 +265,6 @@ export function ConfigsAdminPage() {
     return "760px";
   }, [isMsgTypeConfigsEditor, isAuthWhitelistEditor]);
 
-  const editorDialogMaxWidth = useMemo(() => {
-    if (isMsgTypeConfigsEditor) return "96vw";
-    if (isAuthWhitelistEditor) return "96vw";
-    return "min(92vw, 760px)";
-  }, [isMsgTypeConfigsEditor, isAuthWhitelistEditor]);
-
-  const totalPages = useMemo(() => Math.max(1, page.totalPages || 1), [page.totalPages]);
-
   const previewSendOptions = useMemo(() => {
     return editorMsgTypeConfigs
       .map((item) => normalizeMsgTypeValue(item.msgType))

@@ -51,8 +51,6 @@ const ALLOWED_CHILDREN: Record<ManageResourceType, ManageResourceType[]> = {
   BUTTON: [],
 };
 
-const ROOT_ALLOWED_TYPES: ManageResourceType[] = ["DIRECTORY", "MENU"];
-
 function canHaveChildren(resourceType: ManageResourceType): boolean {
   return ALLOWED_CHILDREN[resourceType].length > 0;
 }

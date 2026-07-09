@@ -121,7 +121,6 @@ export function UserFeaturePackagesPage() {
 
   const canView = hasResourceCodeAccess("user-feature-package-view");
   const canEdit = hasResourceCodeAccess("user-feature-package-edit");
-  const totalPages = Math.max(1, page.totalPages || 1);
   const selectedApplicationCount = Object.keys(selectedApplications).length;
 
   const packageTypeOptions = useMemo(

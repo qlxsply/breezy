@@ -101,7 +101,6 @@ export function WebUsersAdminPage() {
     hasResourceCodeAccess("user-feature-user-view") ||
     hasResourceCodeAccess("user-feature-user-edit");
   const canFeatureSave = hasResourceCodeAccess("user-feature-user-edit");
-  const totalPages = Math.max(1, page.totalPages || 1);
 
   const flattenedFeatures = useMemo(
     () => applicationStates.flatMap((app) => app.features),
