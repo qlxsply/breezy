@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { BzButton } from "../bz/BzButton";
-import { AdminDetailTable, type AdminDetailSection } from "./AdminDetailTable";
+import { type AdminDetailSection, AdminDetailTable } from "./AdminDetailTable";
 import { AdminEntityDrawer } from "./AdminEntityDrawer";
 
 interface AdminDetailDrawerTemplateProps {
@@ -37,7 +37,10 @@ export function AdminDetailDrawerTemplate({
       onClose={onClose}
       footer={footer ?? <BzButton onClick={onClose}>关闭</BzButton>}
     >
-      <AdminDetailTable sections={sections} variant={plain ? "plain" : "sectioned"} />
+      <AdminDetailTable
+        sections={sections}
+        variant={plain ? "plain" : "sectioned"}
+      />
     </AdminEntityDrawer>
   );
 }

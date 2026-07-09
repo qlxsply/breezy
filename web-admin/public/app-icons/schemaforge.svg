@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28">
+  <!-- 背景 -->
+  <rect width="28" height="28" rx="6" fill="#0D1B2A" />
+
+  <!-- 表格外框 -->
+  <rect x="4" y="5" width="20" height="18" rx="1.5" fill="none" stroke="#4FC3F7" stroke-width="1.2" />
+
+  <!-- 表头行（深色高亮） -->
+  <rect x="4" y="5" width="20" height="5" rx="1.5" fill="#2196F3" opacity="0.6" />
+  <!-- 遮盖外框圆角，使表头与外框融合 -->
+  <rect x="4.5" y="5" width="19" height="5" fill="#2196F3" opacity="0.6" />
+
+  <!-- 列分隔线（竖线，分成4列） -->
+  <line x1="8" y1="5" x2="8" y2="23" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+  <line x1="12" y1="5" x2="12" y2="23" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+  <line x1="16" y1="5" x2="16" y2="23" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+  <line x1="20" y1="5" x2="20" y2="23" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+
+  <!-- 行分隔线（横线，共3行数据） -->
+  <line x1="4" y1="10" x2="24" y2="10" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+  <line x1="4" y1="14" x2="24" y2="14" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+  <line x1="4" y1="18" x2="24" y2="18" stroke="#4FC3F7" stroke-width="0.8" opacity="0.5" />
+
+  <!-- 表头文字示意（用短横线表示字段名） -->
+  <line x1="5.5" y1="7.5" x2="7" y2="7.5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+  <line x1="9.5" y1="7.5" x2="11" y2="7.5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+  <line x1="13.5" y1="7.5" x2="15" y2="7.5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+  <line x1="17.5" y1="7.5" x2="19" y2="7.5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+  <line x1="21.5" y1="7.5" x2="22.5" y2="7.5" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+
+  <!-- 数据行示意（用短横线表示数据类型/值） -->
+  <!-- 第1行数据 -->
+  <line x1="5.5" y1="12" x2="7" y2="12" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="9.5" y1="12" x2="11.5" y2="12" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="13.5" y1="12" x2="15.5" y2="12" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="17.5" y1="12" x2="19.5" y2="12" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="21.5" y1="12" x2="22.5" y2="12" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+
+  <!-- 第2行数据 -->
+  <line x1="5.5" y1="16" x2="6.5" y2="16" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="9.5" y1="16" x2="10.5" y2="16" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="13.5" y1="16" x2="15" y2="16" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="17.5" y1="16" x2="19" y2="16" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="21.5" y1="16" x2="22.5" y2="16" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+
+  <!-- 第3行数据 -->
+  <line x1="5.5" y1="20" x2="7.5" y2="20" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="9.5" y1="20" x2="11" y2="20" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="13.5" y1="20" x2="15.5" y2="20" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="17.5" y1="20" x2="19" y2="20" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+  <line x1="21.5" y1="20" x2="22.5" y2="20" stroke="#64B5F6" stroke-width="0.6" opacity="0.5" />
+
+  <!-- 左上角钥匙（主键标识） -->
+  <!-- 钥匙环 -->
+  <circle cx="5.5" cy="5.5" r="1.8" fill="none" stroke="#FFD700" stroke-width="0.9" />
+  <!-- 钥匙柄 -->
+  <rect x="5.5" y="4.5" width="0.8" height="2" fill="#FFD700" />
+  <!-- 钥匙齿 -->
+  <rect x="6.3" y="5.5" width="0.4" height="0.8" fill="#FFD700" />
+  <rect x="6.3" y="6.5" width="0.4" height="0.8" fill="#FFD700" />
+</svg>

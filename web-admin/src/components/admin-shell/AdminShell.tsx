@@ -1,7 +1,6 @@
 "use client";
 
 import brandLogo from "@admin/assets/brand-logo.png";
-import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import { formatDateTime } from "@admin/core/formatter";
 import { logout, useAuthUser } from "@admin/core/registry/auth-registry";
 import {
@@ -10,12 +9,18 @@ import {
   useUnreadCount,
   useUnreadList,
 } from "@admin/core/registry/notifications-registry";
+import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { getAdminRoute, type AdminMenuNode, useAdminBreadcrumb, useAdminMenuTree } from "./admin-routes";
+import {
+  type AdminMenuNode,
+  getAdminRoute,
+  useAdminBreadcrumb,
+  useAdminMenuTree,
+} from "./admin-routes";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathnameValue = usePathname();
@@ -42,9 +47,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const previewList = useMemo(() => unreadList.slice(0, 4), [unreadList]);
   const menuIndex = useMemo(() => buildMenuIndex(menuTree), [menuTree]);
   const currentMenuEntry = menuIndex.byPath.get(pathname);
-  const currentTabEntry = useMemo(() => resolveTabEntry(pathname, menuIndex.byPath), [menuIndex.byPath, pathname]);
+  const currentTabEntry = useMemo(
+    () => resolveTabEntry(pathname, menuIndex.byPath),
+    [menuIndex.byPath, pathname],
+  );
   const activeTabs = useMemo(
-    () => openTabs.map((href) => resolveTabEntry(href, menuIndex.byPath)).filter((item): item is TabEntry => Boolean(item)),
+    () =>
+      openTabs
+        .map((href) => resolveTabEntry(href, menuIndex.byPath))
+        .filter((item): item is TabEntry => Boolean(item)),
     [menuIndex.byPath, openTabs],
   );
   const displayBlankWorkspace = pathname === "/admin" && blankMode;
@@ -58,9 +69,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       return;
     }
     setOpenTabs((current) =>
-      current.includes(currentTabEntry.path)
-        ? current
-        : [...current, currentTabEntry.path],
+      current.includes(currentTabEntry.path) ? current : [...current, currentTabEntry.path],
     );
   }, [currentTabEntry, blankMode]);
 
@@ -311,7 +320,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       全部标记为已读
                     </button>
                     <div className="notification-list">
-                      {previewList.length === 0 ? <div className="notification-empty">暂无未读消息</div> : null}
+                      {previewList.length === 0 ? (
+                        <div className="notification-empty">暂无未读消息</div>
+                      ) : null}
                       {previewList.map((item) => (
                         <button
                           key={item.id}
@@ -319,7 +330,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                           type="button"
                           onClick={() => void markRead(item.id)}
                         >
-                          <span className="notification-avatar">{item.title.slice(0, 1).toUpperCase()}</span>
+                          <span className="notification-avatar">
+                            {item.title.slice(0, 1).toUpperCase()}
+                          </span>
                           <span className="notification-body">
                             <strong>{item.title}</strong>
                             <span>{item.content || "暂无摘要内容"}</span>
@@ -368,10 +381,30 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       </div>
                     </div>
                     <div className="user-menu">
-                      <button type="button" onClick={() => openUtilityPage("/admin/profile")}>个人中心</button>
-                      <button type="button" onClick={() => openUtilityPage("/admin/profile/password")}>修改密码</button>
-                      <button type="button" onClick={() => openUtilityPage("/admin/profile/preferences")}>偏好设置</button>
-                      <button type="button" onClick={() => openUtilityPage("/admin/help")}>问题与帮助</button>
+                      <button
+                        type="button"
+                        onClick={() => openUtilityPage("/admin/profile")}
+                      >
+                        个人中心
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openUtilityPage("/admin/profile/password")}
+                      >
+                        修改密码
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openUtilityPage("/admin/profile/preferences")}
+                      >
+                        偏好设置
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openUtilityPage("/admin/help")}
+                      >
+                        问题与帮助
+                      </button>
                       <button
                         type="button"
                         onClick={() => void logout()}
@@ -399,7 +432,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         href={tab.path}
                         className="tab-link"
                       >
-                        <span className="tab-icon" aria-hidden="true">
+                        <span
+                          className="tab-icon"
+                          aria-hidden="true"
+                        >
                           <img
                             src={tab.iconUrl}
                             alt=""
@@ -417,7 +453,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                           closeTab(tab.path);
                         }}
                       >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
                           <path
                             d="M7 7l10 10M17 7 7 17"
                             fill="none"
@@ -560,15 +599,31 @@ function AdminNavItem({
           onClick={() => onToggle(node.id)}
         >
           <span className="nav-item-main">
-            <span className="nav-icon" aria-hidden="true">
-              <img src={node.iconUrl} alt="" />
+            <span
+              className="nav-icon"
+              aria-hidden="true"
+            >
+              <img
+                src={node.iconUrl}
+                alt=""
+              />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
           </span>
           {!collapsed ? (
-            <span className="nav-caret" aria-hidden="true">
+            <span
+              className="nav-caret"
+              aria-hidden="true"
+            >
               <svg viewBox="0 0 24 24">
-                <path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                <path
+                  d="m9 6 6 6-6 6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.8"
+                />
               </svg>
             </span>
           ) : null}
@@ -576,7 +631,15 @@ function AdminNavItem({
         {expanded ? (
           <div className="nav-children">
             {node.children.map((child) => (
-              <AdminNavItem key={child.id} node={child} pathname={pathname} collapsed={collapsed} expandedIds={expandedIds} onToggle={onToggle} depth={depth + 1} />
+              <AdminNavItem
+                key={child.id}
+                node={child}
+                pathname={pathname}
+                collapsed={collapsed}
+                expandedIds={expandedIds}
+                onToggle={onToggle}
+                depth={depth + 1}
+              />
             ))}
           </div>
         ) : null}
@@ -584,22 +647,42 @@ function AdminNavItem({
     );
   }
 
-  const activeDescendantExpanded = hasChildren && hasActiveDescendant && expandedIds.includes(node.id);
+  const activeDescendantExpanded =
+    hasChildren && hasActiveDescendant && expandedIds.includes(node.id);
 
   return (
     <div className={`nav-node nav-level-menu`}>
-      <div className={`nav-item nav-menu${active ? " active" : ""}`} style={!collapsed ? { paddingLeft: `${12 + depth * 14}px` } : undefined}>
+      <div
+        className={`nav-item nav-menu${active ? " active" : ""}`}
+        style={!collapsed ? { paddingLeft: `${12 + depth * 14}px` } : undefined}
+      >
         {node.path ? (
-          <Link href={node.path} className="nav-item-main" title={node.title}>
-            <span className="nav-icon" aria-hidden="true">
-              <img src={node.iconUrl} alt="" />
+          <Link
+            href={node.path}
+            className="nav-item-main"
+            title={node.title}
+          >
+            <span
+              className="nav-icon"
+              aria-hidden="true"
+            >
+              <img
+                src={node.iconUrl}
+                alt=""
+              />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
           </Link>
         ) : (
           <span className="nav-item-main nav-linkless">
-            <span className="nav-icon" aria-hidden="true">
-              <img src={node.iconUrl} alt="" />
+            <span
+              className="nav-icon"
+              aria-hidden="true"
+            >
+              <img
+                src={node.iconUrl}
+                alt=""
+              />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
           </span>
@@ -608,7 +691,15 @@ function AdminNavItem({
       {activeDescendantExpanded ? (
         <div className="nav-children">
           {node.children.map((child) => (
-            <AdminNavItem key={child.id} node={child} pathname={pathname} collapsed={collapsed} expandedIds={expandedIds} onToggle={onToggle} depth={depth + 1} />
+            <AdminNavItem
+              key={child.id}
+              node={child}
+              pathname={pathname}
+              collapsed={collapsed}
+              expandedIds={expandedIds}
+              onToggle={onToggle}
+              depth={depth + 1}
+            />
           ))}
         </div>
       ) : null}

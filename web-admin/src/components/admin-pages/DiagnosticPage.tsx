@@ -1,7 +1,5 @@
 "use client";
 
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
 import {
   getDiagnosticCapabilities,
   getDiagnosticEvents,
@@ -12,6 +10,11 @@ import {
   stopDiagnostic,
   updateDiagnosticConfig,
 } from "@admin/api/diagnostic";
+import {
+  type AdminDetailSection,
+  AdminDetailTable,
+} from "@admin/components/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { formatDateTime, formatDecimal } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
@@ -29,13 +32,10 @@ import { BzButton } from "../bz/BzButton";
 import { BzCard } from "../bz/BzCard";
 import { BzCheckbox } from "../bz/BzCheckbox";
 import { BzEmpty } from "../bz/BzEmpty";
-import { BzForm } from "../bz/BzForm";
-import { BzFormItem } from "../bz/BzFormItem";
 import { BzInput } from "../bz/BzInput";
 import { BzSwitch } from "../bz/BzSwitch";
 import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
-import { BzTag } from "../bz/BzTag";
 
 const itemOptions: Array<{ label: string; value: DiagnosticItem; description: string }> = [
   { label: "JVM", value: "JVM", description: "关注堆、非堆、GC 与进程 CPU。" },
@@ -105,32 +105,93 @@ function createDefaultConfig(): DiagnosticConfigPayload {
 function ToolIcon({ kind }: { kind: "refresh" | "settings" | "start" | "stop" }) {
   if (kind === "refresh") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M20 11a8 8 0 0 0-13.66-5.66L4 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 4v4h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 13a8 8 0 0 0 13.66 5.66L20 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M20 20v-4h-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M20 11a8 8 0 0 0-13.66-5.66L4 8"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M4 4v4h4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M4 13a8 8 0 0 0 13.66 5.66L20 16"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M20 20v-4h-4"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     );
   }
   if (kind === "settings") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M10.4 2.8h3.2l.64 2.27c.35.11.69.25 1.02.42l2.08-1.04 2.26 2.26-1.04 2.08c.17.33.31.67.42 1.02l2.27.64v3.2l-2.27.64c-.11.35-.25.69-.42 1.02l1.04 2.08-2.26 2.26-2.08-1.04c-.33.17-.67.31-1.02.42l-.64 2.27h-3.2l-.64-2.27a6.8 6.8 0 0 1-1.02-.42l-2.08 1.04-2.26-2.26 1.04-2.08a6.8 6.8 0 0 1-.42-1.02l-2.27-.64v-3.2l2.27-.64c.11-.35.25-.69.42-1.02L4.45 6.71l2.26-2.26 2.08 1.04c.33-.17.67-.31 1.02-.42z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M10.4 2.8h3.2l.64 2.27c.35.11.69.25 1.02.42l2.08-1.04 2.26 2.26-1.04 2.08c.17.33.31.67.42 1.02l2.27.64v3.2l-2.27.64c-.11.35-.25.69-.42 1.02l1.04 2.08-2.26 2.26-2.08-1.04c-.33.17-.67.31-1.02.42l-.64 2.27h-3.2l-.64-2.27a6.8 6.8 0 0 1-1.02-.42l-2.08 1.04-2.26-2.26 1.04-2.08a6.8 6.8 0 0 1-.42-1.02l-2.27-.64v-3.2l2.27-.64c.11-.35.25-.69.42-1.02L4.45 6.71l2.26-2.26 2.08 1.04c.33-.17.67-.31 1.02-.42z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <circle
+          cx="12"
+          cy="12"
+          r="3.2"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
       </svg>
     );
   }
   if (kind === "start") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M8 6.5v11l9-5.5-9-5.5z" fill="currentColor" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 6.5v11l9-5.5-9-5.5z"
+          fill="currentColor"
+        />
       </svg>
     );
   }
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="7"
+        y="7"
+        width="10"
+        height="10"
+        rx="1.5"
+        fill="currentColor"
+      />
     </svg>
   );
 }
@@ -351,7 +412,8 @@ export function DiagnosticPage() {
       key: "pool",
       title: "连接池",
       width: 160,
-      render: (row) => `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
+      render: (row) =>
+        `${row.dbPool?.activeConnections ?? 0} / ${row.dbPool?.totalConnections ?? 0}`,
     },
     {
       key: "sql",
@@ -368,7 +430,12 @@ export function DiagnosticPage() {
       width: 68,
       render: (row) => {
         const checked = activeItems.has(row.value);
-        return <BzCheckbox modelValue={checked} onValueChange={(value) => toggleDrawerItem(row.value, value)} />;
+        return (
+          <BzCheckbox
+            modelValue={checked}
+            onValueChange={(value) => toggleDrawerItem(row.value, value)}
+          />
+        );
       },
     },
     {
@@ -461,93 +528,160 @@ export function DiagnosticPage() {
     },
   ];
 
-  const overviewSections = useMemo<AdminDetailSection[]>(() => [
-    {
-      title: "运行概览",
-      fields: [
-        { label: "运行状态", value: isActive ? "采集中" : "未开启" },
-        { label: "剩余 TTL", value: `${status?.remainingTtlSeconds ?? 0} 秒` },
-        { label: "最近采样", value: latestSnapshot?.capturedAt ? formatDateTime(latestSnapshot.capturedAt) : "-" },
-        { label: "JFR", value: capability?.jfrAvailable ? "可用" : "不可用" },
-        { label: "数据源", value: capability?.dataSourceNames?.length ? capability.dataSourceNames.join(" / ") : "-", span: "full" },
-        { label: "采集项", value: status?.config.items.length ? status.config.items.join(" / ") : "-", span: "full", multiline: true },
-      ],
-    },
-    {
-      title: "核心指标",
-      fields: [
-        { label: "JVM 堆使用", value: formatBytes(latestSnapshot?.jvm?.heapUsedBytes) },
-        { label: "进程 CPU", value: formatPercent(latestSnapshot?.jvm?.processCpuLoad) },
-        { label: "线程数", value: formatInteger(latestSnapshot?.thread?.threadCount) },
-        { label: "阻塞线程", value: formatInteger(latestSnapshot?.thread?.blockedCount) },
-        { label: "P95 延迟", value: `${latestSnapshot?.http?.p95DurationMs ?? 0} ms` },
-        { label: "慢 SQL", value: formatInteger(latestSnapshot?.sql?.slowSqlCount) },
-      ],
-    },
-    ...runtimeDetails.map((section) => ({
-      title: section.title,
-      fields: section.rows.map(([label, value]) => ({ label, value })),
-    })),
-  ], [capability?.dataSourceNames, capability?.jfrAvailable, isActive, latestSnapshot, runtimeDetails, status?.config.items, status?.remainingTtlSeconds]);
+  const overviewSections = useMemo<AdminDetailSection[]>(
+    () => [
+      {
+        title: "运行概览",
+        fields: [
+          { label: "运行状态", value: isActive ? "采集中" : "未开启" },
+          { label: "剩余 TTL", value: `${status?.remainingTtlSeconds ?? 0} 秒` },
+          {
+            label: "最近采样",
+            value: latestSnapshot?.capturedAt ? formatDateTime(latestSnapshot.capturedAt) : "-",
+          },
+          { label: "JFR", value: capability?.jfrAvailable ? "可用" : "不可用" },
+          {
+            label: "数据源",
+            value: capability?.dataSourceNames?.length
+              ? capability.dataSourceNames.join(" / ")
+              : "-",
+            span: "full",
+          },
+          {
+            label: "采集项",
+            value: status?.config.items.length ? status.config.items.join(" / ") : "-",
+            span: "full",
+            multiline: true,
+          },
+        ],
+      },
+      {
+        title: "核心指标",
+        fields: [
+          { label: "JVM 堆使用", value: formatBytes(latestSnapshot?.jvm?.heapUsedBytes) },
+          { label: "进程 CPU", value: formatPercent(latestSnapshot?.jvm?.processCpuLoad) },
+          { label: "线程数", value: formatInteger(latestSnapshot?.thread?.threadCount) },
+          { label: "阻塞线程", value: formatInteger(latestSnapshot?.thread?.blockedCount) },
+          { label: "P95 延迟", value: `${latestSnapshot?.http?.p95DurationMs ?? 0} ms` },
+          { label: "慢 SQL", value: formatInteger(latestSnapshot?.sql?.slowSqlCount) },
+        ],
+      },
+      ...runtimeDetails.map((section) => ({
+        title: section.title,
+        fields: section.rows.map(([label, value]) => ({ label, value })),
+      })),
+    ],
+    [
+      capability?.dataSourceNames,
+      capability?.jfrAvailable,
+      isActive,
+      latestSnapshot,
+      runtimeDetails,
+      status?.config.items,
+      status?.remainingTtlSeconds,
+    ],
+  );
 
   const drawerFooter = (
     <>
       <BzButton onClick={() => setDrawerOpen(false)}>取消</BzButton>
-      <BzButton buttonType="primary" loading={actionLoading} onClick={handleUpdate}>
+      <BzButton
+        buttonType="primary"
+        loading={actionLoading}
+        onClick={handleUpdate}
+      >
         确认
       </BzButton>
     </>
   );
 
-  const configSections = useMemo<AdminDetailSection[]>(() => [
-    {
-      title: "通用配置",
-      fields: [
-        {
-          label: "采样间隔(ms)",
-          value: (
-            <div className="admin-detail-form-control">
-              <BzInput modelValue={drawerForm.intervalMs} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, intervalMs: Number(value) }))} />
-            </div>
-          ),
-        },
-        {
-          label: "历史容量",
-          value: (
-            <div className="admin-detail-form-control">
-              <BzInput modelValue={drawerForm.historyCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, historyCapacity: Number(value) }))} />
-            </div>
-          ),
-        },
-        {
-          label: "事件容量",
-          value: (
-            <div className="admin-detail-form-control">
-              <BzInput modelValue={drawerForm.eventCapacity} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, eventCapacity: Number(value) }))} />
-            </div>
-          ),
-        },
-        {
-          label: "最长持续时间(秒)",
-          value: (
-            <div className="admin-detail-form-control">
-              <BzInput modelValue={drawerForm.ttlSeconds} type="number" onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, ttlSeconds: Number(value) }))} />
-            </div>
-          ),
-        },
-        {
-          label: "深度模式",
-          value: <BzSwitch modelValue={drawerForm.deepMode} onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, deepMode: value }))} />,
-        },
-        {
-          label: "模式说明",
-          value: "适合短时间排障，会带来更高采样成本。",
-          span: "full",
-          multiline: true,
-        },
-      ],
-    },
-  ], [drawerForm.deepMode, drawerForm.eventCapacity, drawerForm.historyCapacity, drawerForm.intervalMs, drawerForm.ttlSeconds]);
+  const configSections = useMemo<AdminDetailSection[]>(
+    () => [
+      {
+        title: "通用配置",
+        fields: [
+          {
+            label: "采样间隔(ms)",
+            value: (
+              <div className="admin-detail-form-control">
+                <BzInput
+                  modelValue={drawerForm.intervalMs}
+                  type="number"
+                  onValueChange={(value) =>
+                    setDrawerForm((prev) => ({ ...prev, intervalMs: Number(value) }))
+                  }
+                />
+              </div>
+            ),
+          },
+          {
+            label: "历史容量",
+            value: (
+              <div className="admin-detail-form-control">
+                <BzInput
+                  modelValue={drawerForm.historyCapacity}
+                  type="number"
+                  onValueChange={(value) =>
+                    setDrawerForm((prev) => ({ ...prev, historyCapacity: Number(value) }))
+                  }
+                />
+              </div>
+            ),
+          },
+          {
+            label: "事件容量",
+            value: (
+              <div className="admin-detail-form-control">
+                <BzInput
+                  modelValue={drawerForm.eventCapacity}
+                  type="number"
+                  onValueChange={(value) =>
+                    setDrawerForm((prev) => ({ ...prev, eventCapacity: Number(value) }))
+                  }
+                />
+              </div>
+            ),
+          },
+          {
+            label: "最长持续时间(秒)",
+            value: (
+              <div className="admin-detail-form-control">
+                <BzInput
+                  modelValue={drawerForm.ttlSeconds}
+                  type="number"
+                  onValueChange={(value) =>
+                    setDrawerForm((prev) => ({ ...prev, ttlSeconds: Number(value) }))
+                  }
+                />
+              </div>
+            ),
+          },
+          {
+            label: "深度模式",
+            value: (
+              <BzSwitch
+                modelValue={drawerForm.deepMode}
+                onValueChange={(value) => setDrawerForm((prev) => ({ ...prev, deepMode: value }))}
+              />
+            ),
+          },
+          {
+            label: "模式说明",
+            value: "适合短时间排障，会带来更高采样成本。",
+            span: "full",
+            multiline: true,
+          },
+        ],
+      },
+    ],
+    [
+      drawerForm.deepMode,
+      drawerForm.eventCapacity,
+      drawerForm.historyCapacity,
+      drawerForm.intervalMs,
+      drawerForm.ttlSeconds,
+    ],
+  );
 
   return (
     <div className="admin-page">
@@ -560,40 +694,83 @@ export function DiagnosticPage() {
             <div className="admin-list-region">
               <div className="admin-list-toolbar-row">
                 <div className="admin-list-business-actions">
-                  <span className="admin-batch-toolbar__summary">{isActive ? "运行时诊断采集中" : "运行时诊断未开启"}</span>
+                  <span className="admin-batch-toolbar__summary">
+                    {isActive ? "运行时诊断采集中" : "运行时诊断未开启"}
+                  </span>
                 </div>
                 <div className="admin-list-query-tools">
-                  {canEdit && isActive ? <ToolButton title="诊断设置" kind="settings" disabled={actionLoading} onClick={openDrawer} /> : null}
-                  {canStart && !isActive ? <ToolButton title="开启诊断" kind="start" disabled={actionLoading} onClick={() => void handleStart()} /> : null}
-                  {canStop && isActive ? <ToolButton title="停止诊断" kind="stop" active disabled={actionLoading} onClick={() => void handleStop()} /> : null}
-                  {canView ? <ToolButton title="刷新数据" kind="refresh" disabled={loading || actionLoading} onClick={() => void reloadAll(true)} /> : null}
+                  {canEdit && isActive ? (
+                    <ToolButton
+                      title="诊断设置"
+                      kind="settings"
+                      disabled={actionLoading}
+                      onClick={openDrawer}
+                    />
+                  ) : null}
+                  {canStart && !isActive ? (
+                    <ToolButton
+                      title="开启诊断"
+                      kind="start"
+                      disabled={actionLoading}
+                      onClick={() => void handleStart()}
+                    />
+                  ) : null}
+                  {canStop && isActive ? (
+                    <ToolButton
+                      title="停止诊断"
+                      kind="stop"
+                      active
+                      disabled={actionLoading}
+                      onClick={() => void handleStop()}
+                    />
+                  ) : null}
+                  {canView ? (
+                    <ToolButton
+                      title="刷新数据"
+                      kind="refresh"
+                      disabled={loading || actionLoading}
+                      onClick={() => void reloadAll(true)}
+                    />
+                  ) : null}
                 </div>
               </div>
-            {!canView ? (
-              <BzEmpty description="无权限查看运行时诊断" />
-            ) : (
-              <div className="admin-page-stack diagnostic-page-body">
-                <AdminDetailTable sections={overviewSections} />
-                <section className="admin-selection-section diagnostic-section-card">
-                  <div className="admin-selection-section__header">
-                    <div className="admin-selection-section__title">最近事件</div>
-                    <div className="admin-selection-section__meta">最新 {events.length} 条</div>
-                  </div>
-                  <div className="admin-selection-table-wrap">
-                    <BzTable loading={loading} data={events} columns={eventColumns} emptyText="暂无事件" size="small" />
-                  </div>
-                </section>
-                <section className="admin-selection-section diagnostic-section-card">
-                  <div className="admin-selection-section__header">
-                    <div className="admin-selection-section__title">快照历史</div>
-                    <div className="admin-selection-section__meta">最新 {history.length} 条</div>
-                  </div>
-                  <div className="admin-selection-table-wrap">
-                    <BzTable loading={loading} data={history} columns={historyColumns} emptyText="暂无快照" size="small" />
-                  </div>
-                </section>
-              </div>
-            )}
+              {!canView ? (
+                <BzEmpty description="无权限查看运行时诊断" />
+              ) : (
+                <div className="admin-page-stack diagnostic-page-body">
+                  <AdminDetailTable sections={overviewSections} />
+                  <section className="admin-selection-section diagnostic-section-card">
+                    <div className="admin-selection-section__header">
+                      <div className="admin-selection-section__title">最近事件</div>
+                      <div className="admin-selection-section__meta">最新 {events.length} 条</div>
+                    </div>
+                    <div className="admin-selection-table-wrap">
+                      <BzTable
+                        loading={loading}
+                        data={events}
+                        columns={eventColumns}
+                        emptyText="暂无事件"
+                        size="small"
+                      />
+                    </div>
+                  </section>
+                  <section className="admin-selection-section diagnostic-section-card">
+                    <div className="admin-selection-section__header">
+                      <div className="admin-selection-section__title">快照历史</div>
+                      <div className="admin-selection-section__meta">最新 {history.length} 条</div>
+                    </div>
+                    <div className="admin-selection-table-wrap">
+                      <BzTable
+                        loading={loading}
+                        data={history}
+                        columns={historyColumns}
+                        emptyText="暂无快照"
+                        size="small"
+                      />
+                    </div>
+                  </section>
+                </div>
+              )}
             </div>
           </BzCard>
         </div>
@@ -615,12 +792,17 @@ export function DiagnosticPage() {
               <div className="admin-selection-section__meta">共 {itemOptions.length} 项</div>
             </div>
             <div className="admin-selection-table-wrap">
-              <BzTable data={itemOptions} columns={itemConfigColumns} rowKey="value" emptyText="暂无采集项" size="small" />
+              <BzTable
+                data={itemOptions}
+                columns={itemConfigColumns}
+                rowKey="value"
+                emptyText="暂无采集项"
+                size="small"
+              />
             </div>
           </section>
         </div>
       </AdminEntityDrawer>
-
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  createDictType,
   createDictItem,
+  createDictType,
   deleteDictItem,
   deleteDictType,
   getDictType,
@@ -41,7 +41,12 @@ import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
-import type { DictItem, DictStructureType, DictTypeItem, DictValueType } from "@admin/types/dict-admin";
+import type {
+  DictItem,
+  DictStructureType,
+  DictTypeItem,
+  DictValueType,
+} from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -479,9 +484,8 @@ export function DictAdminPage() {
     await refreshDrawerItems();
   }
 
-  const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(
-    () => {
-      const baseColumns: Array<BzTableColumn<DictTypeItem>> = [
+  const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(() => {
+    const baseColumns: Array<BzTableColumn<DictTypeItem>> = [
       {
         key: "select",
         title: "选择",
@@ -530,24 +534,20 @@ export function DictAdminPage() {
         key: "enabled",
         title: "状态",
         width: 100,
-        render: (row) => <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>,
+        render: (row) => (
+          <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
+        ),
       },
       {
         key: "description",
         title: "描述",
         minWidth: 220,
-        render: (row) => (
-          <span className="cell-text">
-            {row.description || "-"}
-          </span>
-        ),
+        render: (row) => <span className="cell-text">{row.description || "-"}</span>,
       },
-      ];
-      const actionsColumn = createAdminActionsColumn({ rows, getActions: getTypeRowActions });
-      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
-    },
-    [batchMode, canView, canEdit, drawerOpen, selectedTypeIds, rows],
-  );
+    ];
+    const actionsColumn = createAdminActionsColumn({ rows, getActions: getTypeRowActions });
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+  }, [batchMode, canView, canEdit, drawerOpen, selectedTypeIds, rows]);
 
   const itemColumns = useMemo<Array<BzTableColumn<DictItem>>>(() => {
     const actionColumn =
@@ -580,7 +580,10 @@ export function DictAdminPage() {
         width: 100,
         render: (row) =>
           row.tagType ? (
-            <BzTag size="small" type={row.tagType as "info" | "success" | "warning" | "danger"}>
+            <BzTag
+              size="small"
+              type={row.tagType as "info" | "success" | "warning" | "danger"}
+            >
               {tagTypeLabelMap[row.tagType] || row.tagType}
             </BzTag>
           ) : (
@@ -597,29 +600,32 @@ export function DictAdminPage() {
         key: "enabled",
         title: "状态",
         width: 90,
-        render: (row) => <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>,
+        render: (row) => (
+          <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
+        ),
       },
       {
         key: "description",
         title: "备注",
         minWidth: 180,
-        render: (row) => (
-          <span className="cell-text">
-            {row.description || "-"}
-          </span>
-        ),
+        render: (row) => <span className="cell-text">{row.description || "-"}</span>,
       },
       ...(actionColumn ? [actionColumn] : []),
     ];
   }, [drawerMode, canEdit, currentItems]);
 
-  const drawerTitle = drawerMode === "create" ? "新增字典" : drawerMode === "detail" ? "字典详情" : "编辑字典";
+  const drawerTitle =
+    drawerMode === "create" ? "新增字典" : drawerMode === "detail" ? "字典详情" : "编辑字典";
 
   const drawerFooter = (
     <>
       <BzButton onClick={closeDrawer}>{drawerMode === "detail" ? "关闭" : "取消"}</BzButton>
       {drawerMode !== "detail" ? (
-        <BzButton buttonType="primary" loading={savingType} onClick={() => void submitType()}>
+        <BzButton
+          buttonType="primary"
+          loading={savingType}
+          onClick={() => void submitType()}
+        >
           确定
         </BzButton>
       ) : null}
@@ -640,7 +646,10 @@ export function DictAdminPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <BzCard className="admin-panel admin-table-card admin-list-card" shadow="never">
+          <BzCard
+            className="admin-panel admin-table-card admin-list-card"
+            shadow="never"
+          >
             <div className="admin-list-region">
               {queryPanelVisible ? (
                 <div className="admin-list-query-panel">
@@ -648,7 +657,11 @@ export function DictAdminPage() {
                     ref={queryCardRef}
                     className={[
                       "admin-query-layout",
-                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                      querySingleRow
+                        ? "is-single-row"
+                        : queryExpanded
+                          ? "is-expanded"
+                          : "is-collapsed",
                     ].join(" ")}
                   >
                     <form
@@ -659,52 +672,61 @@ export function DictAdminPage() {
                         applyFilters();
                       }}
                     >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">编码</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={codeDraft}
-                        placeholder="请输入字典编码"
-                        clearable
-                        onValueChange={setCodeDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">名称</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={nameDraft}
-                        placeholder="请输入字典名称"
-                        clearable
-                        onValueChange={setNameDraft}
-                        onKeyUp={(event) => event.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
-                      重置
-                    </BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">编码</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={codeDraft}
+                            placeholder="请输入字典编码"
+                            clearable
+                            onValueChange={setCodeDraft}
+                            onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">名称</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={nameDraft}
+                            placeholder="请输入字典名称"
+                            clearable
+                            onValueChange={setNameDraft}
+                            onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <div className="admin-query-actions">
+                        <BzButton
+                          className="admin-filter-secondary"
+                          nativeType="button"
+                          onClick={resetFilters}
+                        >
+                          重置
+                        </BzButton>
+                        <BzButton
+                          className="admin-filter-primary"
+                          buttonType="primary"
+                          nativeType="button"
+                          onClick={applyFilters}
+                        >
+                          搜索
+                        </BzButton>
+                        {!querySingleRow ? (
+                          <button
+                            className="admin-filter-toggle"
+                            type="button"
+                            aria-expanded={queryExpanded}
+                            onClick={() => setQueryExpanded((value) => !value)}
+                          >
+                            <span>{queryExpanded ? "收起" : "展开"}</span>
+                            <i
+                              className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ) : null}
+                      </div>
                     </form>
                   </div>
                 </div>
@@ -712,21 +734,37 @@ export function DictAdminPage() {
 
               {batchMode ? (
                 <div className="admin-batch-toolbar">
-                  <div className="admin-batch-toolbar__summary">批量删除中，已选 {selectedTypeIds.length} 项</div>
+                  <div className="admin-batch-toolbar__summary">
+                    批量删除中，已选 {selectedTypeIds.length} 项
+                  </div>
                   <div className="admin-batch-toolbar__actions">
                     <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
-                    <BzButton buttonType="primary" disabled={selectedTypeIds.length === 0} onClick={() => void handleBatchDelete()}>确认删除</BzButton>
-                    <BzButton onClick={() => {
-                      setBatchMode(false);
-                      setSelectedTypeIds([]);
-                    }}>取消</BzButton>
+                    <BzButton
+                      buttonType="primary"
+                      disabled={selectedTypeIds.length === 0}
+                      onClick={() => void handleBatchDelete()}
+                    >
+                      确认删除
+                    </BzButton>
+                    <BzButton
+                      onClick={() => {
+                        setBatchMode(false);
+                        setSelectedTypeIds([]);
+                      }}
+                    >
+                      取消
+                    </BzButton>
                   </div>
                 </div>
               ) : (
                 <div className="admin-list-toolbar-row">
                   <div className="admin-list-business-actions">
                     {canCreate ? (
-                      <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateType}>
+                      <BzButton
+                        className="admin-toolbar-primary"
+                        buttonType="primary"
+                        onClick={openCreateType}
+                      >
                         新增
                       </BzButton>
                     ) : null}
@@ -735,42 +773,57 @@ export function DictAdminPage() {
                     ) : null}
                   </div>
                   <div className="admin-list-query-tools">
-                  <AdminTableTools
-                    queryPanelVisible={queryPanelVisible}
-                    onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
-                    onRefresh={() => void reload()}
-                  />
-                </div>
+                    <AdminTableTools
+                      queryPanelVisible={queryPanelVisible}
+                      onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                      onRefresh={() => void reload()}
+                    />
+                  </div>
                 </div>
               )}
 
               <div className="admin-table-surface admin-list-table-area">
-              <BzTable columns={columns} data={rows} loading={loading} rowKey="id" emptyText="暂无字典记录" size="small" />
+                <BzTable
+                  columns={columns}
+                  data={rows}
+                  loading={loading}
+                  rowKey="id"
+                  emptyText="暂无字典记录"
+                  size="small"
+                />
               </div>
               {page.totalElements > 0 ? (
                 <div className="dict-pagination-bar admin-list-table-footer">
-                <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-                <div className="dict-pagination-right">
-                  <BzPagination
-                    total={page.totalElements}
-                    pageSize={pageSize}
-                    currentPage={pageNo}
-                    pageSizes={pageSizeOptions}
-                    onCurrentChange={setPageNo}
-                    onSizeChange={(size) => {
-                      if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                      setPageSize(size);
-                      setPageNo(1);
-                    }}
-                  />
-                </div>
+                  <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+                  <div className="dict-pagination-right">
+                    <BzPagination
+                      total={page.totalElements}
+                      pageSize={pageSize}
+                      currentPage={pageNo}
+                      pageSizes={pageSizeOptions}
+                      onCurrentChange={setPageNo}
+                      onSizeChange={(size) => {
+                        if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                        setPageSize(size);
+                        setPageNo(1);
+                      }}
+                    />
+                  </div>
                 </div>
               ) : null}
             </div>
           </BzCard>
         </div>
 
-        <AdminEntityDrawer open={drawerOpen} title={drawerTitle} width="1180px" className="role-manage-drawer" loading={drawerLoading} onClose={closeDrawer} footer={drawerFooter}>
+        <AdminEntityDrawer
+          open={drawerOpen}
+          title={drawerTitle}
+          width="1180px"
+          className="role-manage-drawer"
+          loading={drawerLoading}
+          onClose={closeDrawer}
+          footer={drawerFooter}
+        >
           {currentType || drawerMode === "create" ? (
             <div className="role-manage-shell">
               {drawerMode === "detail" && currentType ? (
@@ -779,7 +832,10 @@ export function DictAdminPage() {
                     <div className="role-manage-section__title">字典详情</div>
                   </div>
                   <div className="role-info-table-wrap">
-                    <table className="role-info-table" aria-label="字典详情">
+                    <table
+                      className="role-info-table"
+                      aria-label="字典详情"
+                    >
                       <tbody>
                         <tr>
                           <th>编码</th>
@@ -793,7 +849,9 @@ export function DictAdminPage() {
                           <th>结构</th>
                           <td>{resolveStructureTypeLabel(currentType.structureType)}</td>
                           <th>来源</th>
-                          <td>{sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType}</td>
+                          <td>
+                            {sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType}
+                          </td>
                           <th>状态</th>
                           <td>{currentType.enabled ? "启用" : "停用"}</td>
                         </tr>
@@ -813,62 +871,151 @@ export function DictAdminPage() {
                 <BzForm>
                   <div className="group-form-grid">
                     <BzFormItem label="编码">
-                      <BzInput modelValue={drawerMode === "create" ? typeForm.code : currentType?.code || ""} disabled={drawerMode !== "create"} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, code: value }))} />
+                      <BzInput
+                        modelValue={
+                          drawerMode === "create" ? typeForm.code : currentType?.code || ""
+                        }
+                        disabled={drawerMode !== "create"}
+                        onValueChange={(value) => setTypeForm((prev) => ({ ...prev, code: value }))}
+                      />
                     </BzFormItem>
                     <BzFormItem label="名称">
-                      <BzInput modelValue={typeForm.name} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, name: value }))} />
+                      <BzInput
+                        modelValue={typeForm.name}
+                        onValueChange={(value) => setTypeForm((prev) => ({ ...prev, name: value }))}
+                      />
                     </BzFormItem>
                     <BzFormItem label="值类型">
-                      <BzSelect modelValue={typeForm.valueType} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, valueType: (value || "STRING") as DictValueType }))}>
+                      <BzSelect
+                        modelValue={typeForm.valueType}
+                        onValueChange={(value) =>
+                          setTypeForm((prev) => ({
+                            ...prev,
+                            valueType: (value || "STRING") as DictValueType,
+                          }))
+                        }
+                      >
                         {valueTypeOptions.map((item) => (
-                          <BzOption key={item.value} label={item.label} value={item.value} />
+                          <BzOption
+                            key={item.value}
+                            label={item.label}
+                            value={item.value}
+                          />
                         ))}
                       </BzSelect>
                     </BzFormItem>
                     <BzFormItem label="结构">
-                      <BzSelect modelValue={typeForm.structureType} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, structureType: (value || "FLAT") as DictStructureType }))}>
+                      <BzSelect
+                        modelValue={typeForm.structureType}
+                        onValueChange={(value) =>
+                          setTypeForm((prev) => ({
+                            ...prev,
+                            structureType: (value || "FLAT") as DictStructureType,
+                          }))
+                        }
+                      >
                         {structureTypeOptions.map((item) => (
-                          <BzOption key={item.value} label={item.label} value={item.value} />
+                          <BzOption
+                            key={item.value}
+                            label={item.label}
+                            value={item.value}
+                          />
                         ))}
                       </BzSelect>
                     </BzFormItem>
                     {drawerMode !== "create" ? (
                       <BzFormItem label="来源">
-                        <BzInput modelValue={sourceTypeLabelMap[currentType?.sourceType || ""] || currentType?.sourceType || "-"} disabled />
+                        <BzInput
+                          modelValue={
+                            sourceTypeLabelMap[currentType?.sourceType || ""] ||
+                            currentType?.sourceType ||
+                            "-"
+                          }
+                          disabled
+                        />
                       </BzFormItem>
                     ) : null}
                     <BzFormItem label="启用状态">
-                      <BzSwitch modelValue={typeForm.enabled} activeText="启用" inactiveText="停用" onValueChange={(value) => setTypeForm((prev) => ({ ...prev, enabled: value }))} />
+                      <BzSwitch
+                        modelValue={typeForm.enabled}
+                        activeText="启用"
+                        inactiveText="停用"
+                        onValueChange={(value) =>
+                          setTypeForm((prev) => ({ ...prev, enabled: value }))
+                        }
+                      />
                     </BzFormItem>
                     <BzFormItem label="枚举类">
-                      <BzInput modelValue={typeForm.enumClass} onValueChange={(value) => setTypeForm((prev) => ({ ...prev, enumClass: value }))} />
+                      <BzInput
+                        modelValue={typeForm.enumClass}
+                        onValueChange={(value) =>
+                          setTypeForm((prev) => ({ ...prev, enumClass: value }))
+                        }
+                      />
                     </BzFormItem>
-                    <BzFormItem label="描述" className="group-form-grid__wide">
-                      <BzTextField modelValue={typeForm.description} type="textarea" rows={3} maxlength={255} showCounter onValueChange={(value) => setTypeForm((prev) => ({ ...prev, description: value }))} />
+                    <BzFormItem
+                      label="描述"
+                      className="group-form-grid__wide"
+                    >
+                      <BzTextField
+                        modelValue={typeForm.description}
+                        type="textarea"
+                        rows={3}
+                        maxlength={255}
+                        showCounter
+                        onValueChange={(value) =>
+                          setTypeForm((prev) => ({ ...prev, description: value }))
+                        }
+                      />
                     </BzFormItem>
                   </div>
                 </BzForm>
               )}
 
               {drawerMode !== "create" ? (
-              <section className="role-manage-section dict-items-section">
-                <div className="admin-table-header">
-                  <div className="admin-table-title">字典项</div>
-                  <div className="admin-table-tools">
-                    {drawerMode === "edit" && canEdit ? (
-                      <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateItem}>
-                        新增
-                      </BzButton>
-                    ) : null}
-                    <button className="admin-vben-circle-button" type="button" title="刷新字典项" onClick={() => void refreshDrawerItems()}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M2.5 12a9 9 0 0 1 15.46-6.35L21.5 8" /><path d="M2.5 22v-6h6M21.5 12a9 9 0 0 1-15.46 6.35L2.5 16" /></svg>
-                    </button>
+                <section className="role-manage-section dict-items-section">
+                  <div className="admin-table-header">
+                    <div className="admin-table-title">字典项</div>
+                    <div className="admin-table-tools">
+                      {drawerMode === "edit" && canEdit ? (
+                        <BzButton
+                          className="admin-toolbar-primary"
+                          buttonType="primary"
+                          onClick={openCreateItem}
+                        >
+                          新增
+                        </BzButton>
+                      ) : null}
+                      <button
+                        className="admin-vben-circle-button"
+                        type="button"
+                        title="刷新字典项"
+                        onClick={() => void refreshDrawerItems()}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21.5 2v6h-6M2.5 12a9 9 0 0 1 15.46-6.35L21.5 8" />
+                          <path d="M2.5 22v-6h6M21.5 12a9 9 0 0 1-15.46 6.35L2.5 16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div className="admin-table-surface">
-                  <BzTable columns={itemColumns} data={currentItems} rowKey="id" emptyText="暂无字典项" size="small" />
-                </div>
-              </section>
+                  <div className="admin-table-surface">
+                    <BzTable
+                      columns={itemColumns}
+                      data={currentItems}
+                      rowKey="id"
+                      emptyText="暂无字典项"
+                      size="small"
+                    />
+                  </div>
+                </section>
               ) : null}
             </div>
           ) : null}
@@ -885,7 +1032,11 @@ export function DictAdminPage() {
           footer={
             <>
               <BzButton onClick={() => setItemEditorOpen(false)}>取消</BzButton>
-              <BzButton buttonType="primary" loading={savingItem} onClick={() => void saveItem()}>
+              <BzButton
+                buttonType="primary"
+                loading={savingItem}
+                onClick={() => void saveItem()}
+              >
                 保存
               </BzButton>
             </>
@@ -894,26 +1045,66 @@ export function DictAdminPage() {
           <BzForm onSubmit={(event) => event.preventDefault()}>
             <div className="group-form-grid">
               <BzFormItem label="标签">
-                <BzTextField modelValue={itemForm.label} maxlength={128} onValueChange={(value) => setItemForm((prev) => ({ ...prev, label: value }))} />
+                <BzTextField
+                  modelValue={itemForm.label}
+                  maxlength={128}
+                  onValueChange={(value) => setItemForm((prev) => ({ ...prev, label: value }))}
+                />
               </BzFormItem>
               <BzFormItem label="值">
-                <BzTextField modelValue={itemForm.value} maxlength={512} onValueChange={(value) => setItemForm((prev) => ({ ...prev, value }))} />
+                <BzTextField
+                  modelValue={itemForm.value}
+                  maxlength={512}
+                  onValueChange={(value) => setItemForm((prev) => ({ ...prev, value }))}
+                />
               </BzFormItem>
               <BzFormItem label="标签类型">
-                <BzSelect modelValue={itemForm.tagType || undefined} placeholder="无" clearable onValueChange={(value) => setItemForm((prev) => ({ ...prev, tagType: value || "" }))}>
+                <BzSelect
+                  modelValue={itemForm.tagType || undefined}
+                  placeholder="无"
+                  clearable
+                  onValueChange={(value) =>
+                    setItemForm((prev) => ({ ...prev, tagType: value || "" }))
+                  }
+                >
                   {tagTypeOptions.map((item) => (
-                    <BzOption key={item.value} label={item.label} value={item.value} />
+                    <BzOption
+                      key={item.value}
+                      label={item.label}
+                      value={item.value}
+                    />
                   ))}
                 </BzSelect>
               </BzFormItem>
               <BzFormItem label="排序">
-                <BzInputNumber modelValue={itemForm.sortNo} min={0} onValueChange={(value) => setItemForm((prev) => ({ ...prev, sortNo: value }))} />
+                <BzInputNumber
+                  modelValue={itemForm.sortNo}
+                  min={0}
+                  onValueChange={(value) => setItemForm((prev) => ({ ...prev, sortNo: value }))}
+                />
               </BzFormItem>
               <BzFormItem label="启用状态">
-                <BzSwitch modelValue={itemForm.enabled} activeText="启用" inactiveText="停用" onValueChange={(value) => setItemForm((prev) => ({ ...prev, enabled: value }))} />
+                <BzSwitch
+                  modelValue={itemForm.enabled}
+                  activeText="启用"
+                  inactiveText="停用"
+                  onValueChange={(value) => setItemForm((prev) => ({ ...prev, enabled: value }))}
+                />
               </BzFormItem>
-              <BzFormItem label="备注" className="group-form-grid__wide">
-                <BzTextField modelValue={itemForm.description} type="textarea" rows={3} maxlength={255} showCounter onValueChange={(value) => setItemForm((prev) => ({ ...prev, description: value }))} />
+              <BzFormItem
+                label="备注"
+                className="group-form-grid__wide"
+              >
+                <BzTextField
+                  modelValue={itemForm.description}
+                  type="textarea"
+                  rows={3}
+                  maxlength={255}
+                  showCounter
+                  onValueChange={(value) =>
+                    setItemForm((prev) => ({ ...prev, description: value }))
+                  }
+                />
               </BzFormItem>
             </div>
           </BzForm>
@@ -925,10 +1116,20 @@ export function DictAdminPage() {
   function getTypeRowActions(row: DictTypeItem): AdminActionItem[] {
     const actions: AdminActionItem[] = [];
     if (canView || canEdit) {
-      actions.push({ key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => void loadDrawer(row.id, "detail") });
+      actions.push({
+        key: `detail-${row.id}`,
+        label: "详情",
+        tone: "detail",
+        handler: () => void loadDrawer(row.id, "detail"),
+      });
     }
     if (canEdit && row.sourceType !== "BUILTIN") {
-      actions.push({ key: `edit-${row.id}`, label: "编辑", tone: "edit", handler: () => void loadDrawer(row.id, "edit") });
+      actions.push({
+        key: `edit-${row.id}`,
+        label: "编辑",
+        tone: "edit",
+        handler: () => void loadDrawer(row.id, "edit"),
+      });
     }
     if (canEdit && row.sourceType !== "BUILTIN") {
       actions.push({
@@ -939,7 +1140,12 @@ export function DictAdminPage() {
       });
     }
     if (canEdit && row.sourceType !== "BUILTIN") {
-      actions.push({ key: `delete-${row.id}`, label: "删除", tone: "delete", handler: () => void handleDeleteType(row) });
+      actions.push({
+        key: `delete-${row.id}`,
+        label: "删除",
+        tone: "delete",
+        handler: () => void handleDeleteType(row),
+      });
     }
     return actions;
   }
@@ -953,7 +1159,12 @@ export function DictAdminPage() {
         tone: row.enabled ? "disable" : "enable",
         handler: () => void handleItemStatus(row),
       },
-      { key: `delete-item-${row.id}`, label: "删除", tone: "delete", handler: () => void handleDeleteItem(row) },
+      {
+        key: `delete-item-${row.id}`,
+        label: "删除",
+        tone: "delete",
+        handler: () => void handleDeleteItem(row),
+      },
     ];
   }
 }

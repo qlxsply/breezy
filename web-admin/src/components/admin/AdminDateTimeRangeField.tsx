@@ -1,7 +1,5 @@
 "use client";
 
-import type { ClipboardEvent, CSSProperties, MouseEvent as ReactMouseEvent, RefObject } from "react";
-
 import {
   buildDateTimeRangeSubmitValue,
   formatDateTimeInputValue,
@@ -11,8 +9,14 @@ import {
   resolveUserTimeZoneCode,
 } from "@admin/core/formatter";
 import { usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
-import { createPortal } from "react-dom";
+import type {
+  ClipboardEvent,
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+  RefObject,
+} from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { BzButton } from "../bz/BzButton";
 
@@ -138,7 +142,10 @@ export function AdminDateTimeRangeField({
   }, [open]);
 
   return (
-    <div ref={rootRef} className="admin-datetime-range">
+    <div
+      ref={rootRef}
+      className="admin-datetime-range"
+    >
       <button
         ref={triggerRef}
         className={`admin-datetime-range-trigger${displayText ? " has-value" : ""}${open ? " is-open" : ""}`}
@@ -146,17 +153,26 @@ export function AdminDateTimeRangeField({
         title={displayText || placeholder}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className={`admin-datetime-range-trigger__text${displayText ? "" : " is-placeholder"}`}>
+        <span
+          className={`admin-datetime-range-trigger__text${displayText ? "" : " is-placeholder"}`}
+        >
           {displayText || placeholder}
         </span>
-        <span className="admin-datetime-range-trigger__icon" aria-hidden="true">
+        <span
+          className="admin-datetime-range-trigger__icon"
+          aria-hidden="true"
+        >
           <CalendarIcon />
         </span>
       </button>
 
       {open && typeof document !== "undefined"
         ? createPortal(
-            <div ref={panelRef} className="admin-datetime-range-popover" style={panelStyle}>
+            <div
+              ref={panelRef}
+              className="admin-datetime-range-popover"
+              style={panelStyle}
+            >
               <AdminDateTimeRangePanel
                 startValue={startValue}
                 endValue={endValue}
@@ -203,7 +219,9 @@ function AdminDateTimeRangePanel({
   const pickerRef = useRef<HTMLDivElement | null>(null);
   const dateFieldRefs = useRef<Record<RangeRow, HTMLDivElement | null>>({ start: null, end: null });
   const timeFieldRefs = useRef<Record<RangeRow, HTMLDivElement | null>>({ start: null, end: null });
-  const inputRefs = useRef<Record<RangeRow, Partial<Record<DateTimePart, HTMLInputElement | null>>>>({
+  const inputRefs = useRef<
+    Record<RangeRow, Partial<Record<DateTimePart, HTMLInputElement | null>>>
+  >({
     start: {},
     end: {},
   });
@@ -213,7 +231,9 @@ function AdminDateTimeRangePanel({
   });
   const [error, setError] = useState("");
   const [activePicker, setActivePicker] = useState<ActivePicker | null>(null);
-  const [calendarMonth, setCalendarMonth] = useState(() => initCalendarMonth(startValue || endValue, timeZone));
+  const [calendarMonth, setCalendarMonth] = useState(() =>
+    initCalendarMonth(startValue || endValue, timeZone),
+  );
   const [pickerStyle, setPickerStyle] = useState<CSSProperties>({});
   const [activeShortcut, setActiveShortcut] = useState("");
 
@@ -235,8 +255,16 @@ function AdminDateTimeRangePanel({
     function handleMouseDown(event: MouseEvent) {
       const target = event.target as Node;
       if (pickerRef.current?.contains(target)) return;
-      if (dateFieldRefs.current.start?.contains(target) || dateFieldRefs.current.end?.contains(target)) return;
-      if (timeFieldRefs.current.start?.contains(target) || timeFieldRefs.current.end?.contains(target)) return;
+      if (
+        dateFieldRefs.current.start?.contains(target) ||
+        dateFieldRefs.current.end?.contains(target)
+      )
+        return;
+      if (
+        timeFieldRefs.current.start?.contains(target) ||
+        timeFieldRefs.current.end?.contains(target)
+      )
+        return;
       setActivePicker(null);
     }
 
@@ -245,7 +273,10 @@ function AdminDateTimeRangePanel({
   }, [activePicker]);
 
   function positionPicker(picker: ActivePicker) {
-    const anchor = picker.type === "date" ? dateFieldRefs.current[picker.row] : timeFieldRefs.current[picker.row];
+    const anchor =
+      picker.type === "date"
+        ? dateFieldRefs.current[picker.row]
+        : timeFieldRefs.current[picker.row];
     if (!anchor || !mainRef.current) return;
     const anchorRect = anchor.getBoundingClientRect();
     const mainRect = mainRef.current.getBoundingClientRect();
@@ -298,7 +329,11 @@ function AdminDateTimeRangePanel({
     }));
   }
 
-  function handleFieldShellClick(event: ReactMouseEvent<HTMLDivElement>, row: RangeRow, type: PickerType) {
+  function handleFieldShellClick(
+    event: ReactMouseEvent<HTMLDivElement>,
+    row: RangeRow,
+    type: PickerType,
+  ) {
     const target = event.target as HTMLElement;
     if (target.closest("button") || target.closest("input")) return;
     setActivePicker(null);
@@ -342,7 +377,11 @@ function AdminDateTimeRangePanel({
     setRowParts(row, { [part]: normalizePartValue(part, value) } as Partial<DateTimeParts>);
   }
 
-  function handleSegmentPaste(event: ClipboardEvent<HTMLInputElement>, row: RangeRow, part: DateTimePart) {
+  function handleSegmentPaste(
+    event: ClipboardEvent<HTMLInputElement>,
+    row: RangeRow,
+    part: DateTimePart,
+  ) {
     const digits = event.clipboardData.getData("text").replace(/\D/g, "");
     if (!digits) return;
 
@@ -364,7 +403,7 @@ function AdminDateTimeRangePanel({
       setRowParts(row, {
         hour: digits.slice(0, 2),
         minute: digits.slice(2, 4),
-        second: precision === "second" ? (digits.slice(4, 6) || "00") : "",
+        second: precision === "second" ? digits.slice(4, 6) || "00" : "",
       });
       const nextPart = precision === "second" ? "second" : null;
       if (nextPart) focusSegment(row, nextPart);
@@ -386,7 +425,10 @@ function AdminDateTimeRangePanel({
     focusSegment(activePicker.row, "hour");
   }
 
-  function handleTimeSelect(part: Extract<DateTimePart, "hour" | "minute" | "second">, value: string) {
+  function handleTimeSelect(
+    part: Extract<DateTimePart, "hour" | "minute" | "second">,
+    value: string,
+  ) {
     if (!activePicker || activePicker.type !== "time") return;
     clearShortcutState();
     ensureTimeDefaults(activePicker.row);
@@ -399,9 +441,15 @@ function AdminDateTimeRangePanel({
     const last7Start = shiftDays(today, -6);
     const last30Start = shiftDays(today, -29);
     const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1, 12, 0, 0));
-    const monthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0, 12, 0, 0));
-    const lastMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1, 12, 0, 0));
-    const lastMonthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 0, 12, 0, 0));
+    const monthEnd = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0, 12, 0, 0),
+    );
+    const lastMonthStart = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 1, 1, 12, 0, 0),
+    );
+    const lastMonthEnd = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 0, 12, 0, 0),
+    );
 
     let start = today;
     let end = today;
@@ -469,7 +517,9 @@ function AdminDateTimeRangePanel({
   }
 
   const selectedDate = activePicker ? toDateStringFromParts(range[activePicker.row]) : "";
-  const selectedTime = activePicker ? toTimeStringFromParts(range[activePicker.row], precision) : "";
+  const selectedTime = activePicker
+    ? toTimeStringFromParts(range[activePicker.row], precision)
+    : "";
 
   return (
     <div className="admin-datetime-range-panel">
@@ -487,10 +537,18 @@ function AdminDateTimeRangePanel({
         ))}
       </div>
 
-      <div ref={mainRef} className="admin-datetime-range-panel__main">
+      <div
+        ref={mainRef}
+        className="admin-datetime-range-panel__main"
+      >
         {RANGE_ROWS.map((row) => (
-          <div key={row} className="admin-datetime-range-panel__row">
-            <div className="admin-datetime-range-panel__row-label">{row === "start" ? "开始时间" : "结束时间"}</div>
+          <div
+            key={row}
+            className="admin-datetime-range-panel__row"
+          >
+            <div className="admin-datetime-range-panel__row-label">
+              {row === "start" ? "开始时间" : "结束时间"}
+            </div>
             <div
               ref={(element) => setDateFieldRef(row, element)}
               className={`admin-datetime-range-panel__seg-field${activePicker?.row === row && activePicker.type === "date" ? " is-active" : ""}`}
@@ -545,7 +603,11 @@ function AdminDateTimeRangePanel({
                   }}
                 />
               </div>
-              <button className="admin-datetime-range-panel__icon-button" type="button" onClick={() => openDatePicker(row)}>
+              <button
+                className="admin-datetime-range-panel__icon-button"
+                type="button"
+                onClick={() => openDatePicker(row)}
+              >
                 <CalendarIcon />
               </button>
             </div>
@@ -610,7 +672,11 @@ function AdminDateTimeRangePanel({
                   }}
                 />
               </div>
-              <button className="admin-datetime-range-panel__icon-button" type="button" onClick={() => openTimePicker(row)}>
+              <button
+                className="admin-datetime-range-panel__icon-button"
+                type="button"
+                onClick={() => openTimePicker(row)}
+              >
                 <ClockIcon />
               </button>
             </div>
@@ -620,7 +686,11 @@ function AdminDateTimeRangePanel({
         {error ? <div className="admin-datetime-range-panel__error">{error}</div> : null}
 
         {activePicker ? (
-          <div ref={pickerRef} className="admin-datetime-range-panel__picker-popover" style={pickerStyle}>
+          <div
+            ref={pickerRef}
+            className="admin-datetime-range-panel__picker-popover"
+            style={pickerStyle}
+          >
             {activePicker.type === "date" ? (
               <CalendarPanel
                 month={calendarMonth}
@@ -628,23 +698,38 @@ function AdminDateTimeRangePanel({
                 today={getTodayDateString(timeZone)}
                 yearOptions={yearOptions}
                 monthOptions={monthOptions}
-                onYearChange={(value) => setCalendarMonth((current) => ({ ...current, year: value }))}
-                onMonthChange={(value) => setCalendarMonth((current) => ({ ...current, month: value }))}
+                onYearChange={(value) =>
+                  setCalendarMonth((current) => ({ ...current, year: value }))
+                }
+                onMonthChange={(value) =>
+                  setCalendarMonth((current) => ({ ...current, month: value }))
+                }
                 onSelect={handleDateSelect}
               />
             ) : (
-              <TimePanel precision={precision} selectedTime={selectedTime} onSelect={handleTimeSelect} />
+              <TimePanel
+                precision={precision}
+                selectedTime={selectedTime}
+                onSelect={handleTimeSelect}
+              />
             )}
           </div>
         ) : null}
 
         <div className="admin-datetime-range-panel__footer">
-          <button className="admin-datetime-range-panel__clear" type="button" onClick={clearRange}>
+          <button
+            className="admin-datetime-range-panel__clear"
+            type="button"
+            onClick={clearRange}
+          >
             清空
           </button>
           <div className="admin-datetime-range-panel__footer-actions">
             <BzButton onClick={onCancel}>取消</BzButton>
-            <BzButton buttonType="primary" onClick={confirm}>
+            <BzButton
+              buttonType="primary"
+              onClick={confirm}
+            >
               确定
             </BzButton>
           </div>
@@ -686,7 +771,10 @@ function CalendarPanel({
             onChange={(event) => onYearChange(Number(event.currentTarget.value))}
           >
             {yearOptions.map((year) => (
-              <option key={year} value={year}>
+              <option
+                key={year}
+                value={year}
+              >
                 {year}年
               </option>
             ))}
@@ -698,7 +786,10 @@ function CalendarPanel({
             onChange={(event) => onMonthChange(Number(event.currentTarget.value))}
           >
             {monthOptions.map((item) => (
-              <option key={item} value={Number(item)}>
+              <option
+                key={item}
+                value={Number(item)}
+              >
                 {item}月
               </option>
             ))}
@@ -734,8 +825,18 @@ function CalendarPanel({
         })}
       </div>
       <div className="admin-datetime-range-calendar__footer">
-        <button type="button" onClick={() => onSelect("")}>清除</button>
-        <button type="button" onClick={() => onSelect(today)}>今天</button>
+        <button
+          type="button"
+          onClick={() => onSelect("")}
+        >
+          清除
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelect(today)}
+        >
+          今天
+        </button>
       </div>
     </div>
   );
@@ -758,7 +859,9 @@ function TimePanel({
 
   useEffect(() => {
     [hourRef.current, minuteRef.current, secondRef.current].forEach((column) => {
-      const activeCell = column?.querySelector<HTMLElement>(".admin-datetime-range-time__cell.is-active");
+      const activeCell = column?.querySelector<HTMLElement>(
+        ".admin-datetime-range-time__cell.is-active",
+      );
       if (column && activeCell) {
         column.scrollTop = Math.max(0, activeCell.offsetTop - 56);
       }
@@ -767,8 +870,18 @@ function TimePanel({
 
   return (
     <div className={`admin-datetime-range-time${precision === "second" ? " is-second" : ""}`}>
-      <TimeColumn columnRef={hourRef} values={buildNumberList(0, 23)} selected={selectedHour} onSelect={(value) => onSelect("hour", value)} />
-      <TimeColumn columnRef={minuteRef} values={buildNumberList(0, 59)} selected={selectedMinute} onSelect={(value) => onSelect("minute", value)} />
+      <TimeColumn
+        columnRef={hourRef}
+        values={buildNumberList(0, 23)}
+        selected={selectedHour}
+        onSelect={(value) => onSelect("hour", value)}
+      />
+      <TimeColumn
+        columnRef={minuteRef}
+        values={buildNumberList(0, 59)}
+        selected={selectedMinute}
+        onSelect={(value) => onSelect("minute", value)}
+      />
       {precision === "second" ? (
         <TimeColumn
           columnRef={secondRef}
@@ -793,7 +906,10 @@ function TimeColumn({
   onSelect: (value: string) => void;
 }) {
   return (
-    <div ref={columnRef} className="admin-datetime-range-time__column">
+    <div
+      ref={columnRef}
+      className="admin-datetime-range-time__column"
+    >
       {values.map((value) => (
         <button
           key={value}
@@ -847,7 +963,9 @@ function buildComparableDate(parts: DateTimeParts, precision: Precision): Date |
     Number(parts.day),
     Number(normalizePartValue("hour", parts.hour || "0") || "00"),
     Number(normalizePartValue("minute", parts.minute || "0") || "00"),
-    Number(precision === "second" ? normalizePartValue("second", parts.second || "0") || "00" : "00"),
+    Number(
+      precision === "second" ? normalizePartValue("second", parts.second || "0") || "00" : "00",
+    ),
   );
 }
 
@@ -916,7 +1034,12 @@ function buildCalendarCells(year: number, month: number) {
   }
 
   for (let day = 1; day <= last.getUTCDate(); day += 1) {
-    cells.push({ key: `current-${day}`, label: String(day), value: toDateString(year, month, day), muted: false });
+    cells.push({
+      key: `current-${day}`,
+      label: String(day),
+      value: toDateString(year, month, day),
+      muted: false,
+    });
   }
 
   let nextDay = 1;
@@ -945,28 +1068,62 @@ function initCalendarMonth(value: string, timeZone: string): { year: number; mon
 
 function buildShortcutRanges(timeZone: string, precision: Precision) {
   return [
-    { key: "today", label: "今天", ...buildDayRange(getTodayMarker(timeZone), getTodayMarker(timeZone), precision) },
+    {
+      key: "today",
+      label: "今天",
+      ...buildDayRange(getTodayMarker(timeZone), getTodayMarker(timeZone), precision),
+    },
     {
       key: "yesterday",
       label: "昨天",
-      ...buildDayRange(shiftDays(getTodayMarker(timeZone), -1), shiftDays(getTodayMarker(timeZone), -1), precision),
+      ...buildDayRange(
+        shiftDays(getTodayMarker(timeZone), -1),
+        shiftDays(getTodayMarker(timeZone), -1),
+        precision,
+      ),
     },
     {
       key: "last7",
       label: "近 7 天",
-      ...buildDayRange(shiftDays(getTodayMarker(timeZone), -6), getTodayMarker(timeZone), precision),
+      ...buildDayRange(
+        shiftDays(getTodayMarker(timeZone), -6),
+        getTodayMarker(timeZone),
+        precision,
+      ),
     },
     {
       key: "last30",
       label: "近 30 天",
-      ...buildDayRange(shiftDays(getTodayMarker(timeZone), -29), getTodayMarker(timeZone), precision),
+      ...buildDayRange(
+        shiftDays(getTodayMarker(timeZone), -29),
+        getTodayMarker(timeZone),
+        precision,
+      ),
     },
     {
       key: "thisMonth",
       label: "本月",
       ...buildDayRange(
-        new Date(Date.UTC(getTodayMarker(timeZone).getUTCFullYear(), getTodayMarker(timeZone).getUTCMonth(), 1, 12, 0, 0)),
-        new Date(Date.UTC(getTodayMarker(timeZone).getUTCFullYear(), getTodayMarker(timeZone).getUTCMonth() + 1, 0, 12, 0, 0)),
+        new Date(
+          Date.UTC(
+            getTodayMarker(timeZone).getUTCFullYear(),
+            getTodayMarker(timeZone).getUTCMonth(),
+            1,
+            12,
+            0,
+            0,
+          ),
+        ),
+        new Date(
+          Date.UTC(
+            getTodayMarker(timeZone).getUTCFullYear(),
+            getTodayMarker(timeZone).getUTCMonth() + 1,
+            0,
+            12,
+            0,
+            0,
+          ),
+        ),
         precision,
       ),
     },
@@ -974,8 +1131,26 @@ function buildShortcutRanges(timeZone: string, precision: Precision) {
       key: "lastMonth",
       label: "上月",
       ...buildDayRange(
-        new Date(Date.UTC(getTodayMarker(timeZone).getUTCFullYear(), getTodayMarker(timeZone).getUTCMonth() - 1, 1, 12, 0, 0)),
-        new Date(Date.UTC(getTodayMarker(timeZone).getUTCFullYear(), getTodayMarker(timeZone).getUTCMonth(), 0, 12, 0, 0)),
+        new Date(
+          Date.UTC(
+            getTodayMarker(timeZone).getUTCFullYear(),
+            getTodayMarker(timeZone).getUTCMonth() - 1,
+            1,
+            12,
+            0,
+            0,
+          ),
+        ),
+        new Date(
+          Date.UTC(
+            getTodayMarker(timeZone).getUTCFullYear(),
+            getTodayMarker(timeZone).getUTCMonth(),
+            0,
+            12,
+            0,
+            0,
+          ),
+        ),
         precision,
       ),
     },
@@ -989,7 +1164,11 @@ function buildDayRange(startDate: Date, endDate: Date, precision: Precision) {
   };
 }
 
-function buildPartsFromMarker(marker: Date, precision: Precision, endOfDay: boolean): DateTimeParts {
+function buildPartsFromMarker(
+  marker: Date,
+  precision: Precision,
+  endOfDay: boolean,
+): DateTimeParts {
   const year = String(marker.getUTCFullYear());
   const month = pad(marker.getUTCMonth() + 1);
   const day = pad(marker.getUTCDate());
@@ -1136,7 +1315,10 @@ function pad(value: number | string): string {
 
 function CalendarIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path
         d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
         fill="none"
@@ -1151,9 +1333,26 @@ function CalendarIcon() {
 
 function ClockIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M12 7.5v5l3 1.8" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="8.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M12 7.5v5l3 1.8"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
     </svg>
   );
 }

@@ -4,18 +4,10 @@ interface BzChevronIconProps {
   className?: string;
 }
 
-export function BzChevronIcon({
-  direction = "right",
-  size = 14,
-  className,
-}: BzChevronIconProps) {
+export function BzChevronIcon({ direction = "right", size = 14, className }: BzChevronIconProps) {
   return (
     <svg
-      className={[
-        "bz-chevron-icon",
-        direction === "down" ? "is-down" : "is-right",
-        className,
-      ]
+      className={["bz-chevron-icon", direction === "down" ? "is-down" : "is-right", className]
         .filter(Boolean)
         .join(" ")}
       viewBox="0 0 16 16"

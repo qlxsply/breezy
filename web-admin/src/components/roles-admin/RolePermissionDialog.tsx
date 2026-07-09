@@ -69,7 +69,9 @@ export function RolePermissionDialog({
     resources.forEach((row) => {
       const list = map.get(row.parentId ?? null) ?? [];
       list.push(row);
-      list.sort((left, right) => left.orderNo - right.orderNo || left.name.localeCompare(right.name));
+      list.sort(
+        (left, right) => left.orderNo - right.orderNo || left.name.localeCompare(right.name),
+      );
       map.set(row.parentId ?? null, list);
     });
     return map;
@@ -356,8 +358,12 @@ export function RolePermissionDialog({
   function buildSelectionDiff(before: RoleGrantSelection, after: RoleGrantSelection) {
     const beforeResourceIds = new Set((before.resourceIds || []).map(String));
     const afterResourceIds = new Set((after.resourceIds || []).map(String));
-    const addedResourceIds = new Set([...afterResourceIds].filter((id) => !beforeResourceIds.has(id)));
-    const removedResourceIds = new Set([...beforeResourceIds].filter((id) => !afterResourceIds.has(id)));
+    const addedResourceIds = new Set(
+      [...afterResourceIds].filter((id) => !beforeResourceIds.has(id)),
+    );
+    const removedResourceIds = new Set(
+      [...beforeResourceIds].filter((id) => !afterResourceIds.has(id)),
+    );
     return {
       addedResourceIds,
       removedResourceIds,
@@ -438,7 +444,10 @@ export function RolePermissionDialog({
           <>
             <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
             {editable ? (
-              <BzButton buttonType="primary" onClick={handleSubmit}>
+              <BzButton
+                buttonType="primary"
+                onClick={handleSubmit}
+              >
                 保存
               </BzButton>
             ) : null}
@@ -446,7 +455,10 @@ export function RolePermissionDialog({
         ) : (
           <>
             <BzButton onClick={backToEdit}>返回</BzButton>
-            <BzButton buttonType="primary" onClick={confirmSubmit}>
+            <BzButton
+              buttonType="primary"
+              onClick={confirmSubmit}
+            >
               确认
             </BzButton>
           </>
@@ -469,8 +481,14 @@ export function RolePermissionDialog({
               }))
             }
           >
-            <BzOption label="启用" value="true" />
-            <BzOption label="停用" value="false" />
+            <BzOption
+              label="启用"
+              value="true"
+            />
+            <BzOption
+              label="停用"
+              value="false"
+            />
           </BzSelect>
         </td>
       );
@@ -491,7 +509,12 @@ export function RolePermissionDialog({
     return <td className={`role-info-cell${options?.mono ? " mono" : ""}`}>{value || "-"}</td>;
   }
 
-  function renderEditableTextCell(value: string, placeholder: string, onChange: (value: string) => void, options?: { mono?: boolean }) {
+  function renderEditableTextCell(
+    value: string,
+    placeholder: string,
+    onChange: (value: string) => void,
+    options?: { mono?: boolean },
+  ) {
     return (
       <td className={`role-info-cell role-info-cell--edit${options?.mono ? " mono" : ""}`}>
         <BzInput
@@ -529,20 +552,30 @@ export function RolePermissionDialog({
           </div>
 
           <div className="role-info-table-wrap">
-            <table className="role-info-table" aria-label="角色信息">
+            <table
+              className="role-info-table"
+              aria-label="角色信息"
+            >
               <tbody>
                 <tr>
                   <th>
                     <span className={basicEditable ? "is-required" : undefined}>角色编码</span>
                   </th>
                   {basicEditable
-                    ? renderEditableTextCell(form.code, "请输入角色编码", (value) => setForm((current) => ({ ...current, code: value })), { mono: true })
+                    ? renderEditableTextCell(
+                        form.code,
+                        "请输入角色编码",
+                        (value) => setForm((current) => ({ ...current, code: value })),
+                        { mono: true },
+                      )
                     : renderValueCell(form.code || "-", { mono: true })}
                   <th>
                     <span className={basicEditable ? "is-required" : undefined}>角色名称</span>
                   </th>
                   {basicEditable
-                    ? renderEditableTextCell(form.name, "请输入角色名称", (value) => setForm((current) => ({ ...current, name: value })))
+                    ? renderEditableTextCell(form.name, "请输入角色名称", (value) =>
+                        setForm((current) => ({ ...current, name: value })),
+                      )
                     : renderValueCell(form.name || "-")}
                   <th>
                     <span className={basicEditable ? "is-required" : undefined}>状态</span>
@@ -574,7 +607,14 @@ export function RolePermissionDialog({
             </table>
           </div>
 
-          {error ? <BzAlert title={error} type="error" showIcon className="form-error role-manage-error" /> : null}
+          {error ? (
+            <BzAlert
+              title={error}
+              type="error"
+              showIcon
+              className="form-error role-manage-error"
+            />
+          ) : null}
         </section>
 
         {showPermissionSection ? (
@@ -594,14 +634,23 @@ export function RolePermissionDialog({
                   onValueChange={setKeyword}
                 />
                 <div className="role-permission-toolbar__actions">
-                  <BzButton className="permission-toolbar-button" onClick={expandAll}>
+                  <BzButton
+                    className="permission-toolbar-button"
+                    onClick={expandAll}
+                  >
                     全部展开
                   </BzButton>
-                  <BzButton className="permission-toolbar-button" onClick={collapseAll}>
+                  <BzButton
+                    className="permission-toolbar-button"
+                    onClick={collapseAll}
+                  >
                     全部收起
                   </BzButton>
                   {permissionEditable ? (
-                    <BzButton className="permission-toolbar-button" onClick={clearAll}>
+                    <BzButton
+                      className="permission-toolbar-button"
+                      onClick={clearAll}
+                    >
                       清空选择
                     </BzButton>
                   ) : null}
@@ -609,7 +658,10 @@ export function RolePermissionDialog({
               </div>
 
               <div className="admin-grid-table role-permission-table">
-                <div className="admin-grid-table__viewport" ref={treeWrapRef}>
+                <div
+                  className="admin-grid-table__viewport"
+                  ref={treeWrapRef}
+                >
                   <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head">
                     <div className="admin-grid-table__cell admin-grid-table__cell--check">
                       {permissionEditable ? (
@@ -624,11 +676,17 @@ export function RolePermissionDialog({
                         />
                       ) : null}
                     </div>
-                    <div className="admin-grid-table__cell role-permission-cell--resource">资源名称</div>
+                    <div className="admin-grid-table__cell role-permission-cell--resource">
+                      资源名称
+                    </div>
                     <div className="admin-grid-table__cell role-permission-cell--type">类型</div>
-                    <div className="admin-grid-table__cell role-permission-cell--code">资源编码</div>
+                    <div className="admin-grid-table__cell role-permission-cell--code">
+                      资源编码
+                    </div>
                     <div className="admin-grid-table__cell role-permission-cell--status">状态</div>
-                    <div className="admin-grid-table__cell role-permission-cell--actions">按钮权限</div>
+                    <div className="admin-grid-table__cell role-permission-cell--actions">
+                      按钮权限
+                    </div>
                   </div>
 
                   <div className="admin-grid-table__body">
@@ -669,11 +727,17 @@ export function RolePermissionDialog({
                 <div className="admin-grid-table__viewport">
                   <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head">
                     <div className="admin-grid-table__cell admin-grid-table__cell--check" />
-                    <div className="admin-grid-table__cell role-permission-cell--resource">资源名称</div>
+                    <div className="admin-grid-table__cell role-permission-cell--resource">
+                      资源名称
+                    </div>
                     <div className="admin-grid-table__cell role-permission-cell--type">类型</div>
-                    <div className="admin-grid-table__cell role-permission-cell--code">资源编码</div>
+                    <div className="admin-grid-table__cell role-permission-cell--code">
+                      资源编码
+                    </div>
                     <div className="admin-grid-table__cell role-permission-cell--status">状态</div>
-                    <div className="admin-grid-table__cell role-permission-cell--actions">按钮权限</div>
+                    <div className="admin-grid-table__cell role-permission-cell--actions">
+                      按钮权限
+                    </div>
                   </div>
 
                   <div className="admin-grid-table__body">

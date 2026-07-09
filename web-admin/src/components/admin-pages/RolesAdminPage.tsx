@@ -293,27 +293,80 @@ export function RolesAdminPage() {
                   clearable
                   onValueChange={(v) => setEnabledDraft((v ?? "") as "" | "true" | "false")}
                 >
-                  <BzOption label="启用" value="true" />
-                  <BzOption label="停用" value="false" />
+                  <BzOption
+                    label="启用"
+                    value="true"
+                  />
+                  <BzOption
+                    label="停用"
+                    value="false"
+                  />
                 </BzSelect>
               </div>
             </BzFormItem>
             <div className="admin-query-actions">
-              <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
-              <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
+              <BzButton
+                className="admin-filter-secondary"
+                nativeType="button"
+                onClick={resetFilters}
+              >
+                重置
+              </BzButton>
+              <BzButton
+                className="admin-filter-primary"
+                buttonType="primary"
+                nativeType="button"
+                onClick={applyFilters}
+              >
+                搜索
+              </BzButton>
               {!querySingleRow ? (
-                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                <button
+                  className="admin-filter-toggle"
+                  type="button"
+                  aria-expanded={queryExpanded}
+                  onClick={() => setQueryExpanded((v) => !v)}
+                >
                   <span>{queryExpanded ? "收起" : "展开"}</span>
-                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                  <i
+                    className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                    aria-hidden="true"
+                  />
                 </button>
               ) : null}
             </div>
           </form>
         </div>
       }
-      businessActions={canCreate ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
-      queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={reload} />}
-      table={<RoleTable rows={pagedRows} loading={loading} canEdit={canManage} canDelete={canDelete} onDetail={openDetail} onEdit={openEdit} onRemove={onRemove} />}
+      businessActions={
+        canCreate ? (
+          <BzButton
+            className="admin-toolbar-primary"
+            buttonType="primary"
+            onClick={openCreate}
+          >
+            新增
+          </BzButton>
+        ) : null
+      }
+      queryTools={
+        <AdminTableTools
+          queryPanelVisible={queryPanelVisible}
+          onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+          onRefresh={reload}
+        />
+      }
+      table={
+        <RoleTable
+          rows={pagedRows}
+          loading={loading}
+          canEdit={canManage}
+          canDelete={canDelete}
+          onDetail={openDetail}
+          onEdit={openEdit}
+          onRemove={onRemove}
+        />
+      }
       footer={
         filteredRows.length > 0 ? (
           <div className="dict-pagination-bar role-admin-table-footer">
@@ -335,7 +388,22 @@ export function RolesAdminPage() {
           </div>
         ) : null
       }
-      overlays={manageOpen ? <RolePermissionDialog mode={manageMode} role={manageTarget} resources={grantResourceRows} selection={manageSelection} loading={manageLoading || grantResourcesLoading} canEditBasic={canEdit} canViewPermissions={canGrant} canEditPermissions={canGrantEdit} onClose={() => setManageOpen(false)} onSubmit={onManageSubmit} /> : null}
+      overlays={
+        manageOpen ? (
+          <RolePermissionDialog
+            mode={manageMode}
+            role={manageTarget}
+            resources={grantResourceRows}
+            selection={manageSelection}
+            loading={manageLoading || grantResourcesLoading}
+            canEditBasic={canEdit}
+            canViewPermissions={canGrant}
+            canEditPermissions={canGrantEdit}
+            onClose={() => setManageOpen(false)}
+            onSubmit={onManageSubmit}
+          />
+        ) : null
+      }
     />
   );
 }

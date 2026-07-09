@@ -41,18 +41,48 @@ export function AdminListPageTemplate({
         <div className="admin-page-stack">
           <div className={["admin-list-template", className].filter(Boolean).join(" ")}>
             <div className={["admin-list-region", regionClassName].filter(Boolean).join(" ")}>
-              {queryPanelVisible && queryPanel ? <div className={["admin-list-query-panel", queryPanelClassName].filter(Boolean).join(" ")}>{queryPanel}</div> : null}
+              {queryPanelVisible && queryPanel ? (
+                <div
+                  className={["admin-list-query-panel", queryPanelClassName]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {queryPanel}
+                </div>
+              ) : null}
 
               {batchToolbar ? (
                 batchToolbar
               ) : (
-                <div className={["admin-list-toolbar-row", toolbarRowClassName].filter(Boolean).join(" ")}>
-                  <div className={["admin-list-business-actions", businessActionsClassName].filter(Boolean).join(" ")}>{businessActions}</div>
-                  <div className={["admin-list-query-tools", queryToolsClassName].filter(Boolean).join(" ")}>{queryTools}</div>
+                <div
+                  className={["admin-list-toolbar-row", toolbarRowClassName]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <div
+                    className={["admin-list-business-actions", businessActionsClassName]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {businessActions}
+                  </div>
+                  <div
+                    className={["admin-list-query-tools", queryToolsClassName]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {queryTools}
+                  </div>
                 </div>
               )}
 
-              <div className={["admin-table-surface", "admin-list-table-area", tableAreaClassName].filter(Boolean).join(" ")}>{table}</div>
+              <div
+                className={["admin-table-surface", "admin-list-table-area", tableAreaClassName]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {table}
+              </div>
 
               {footer}
             </div>

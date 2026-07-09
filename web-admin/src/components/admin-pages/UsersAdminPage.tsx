@@ -174,7 +174,13 @@ export function UsersAdminPage() {
   function openCreate() {
     if (!canCreate) return;
     setManageMode("create");
-    setManageTarget({ id: "", username: "", nickname: "", userType: "INTERNAL", status: "ENABLED" });
+    setManageTarget({
+      id: "",
+      username: "",
+      nickname: "",
+      userType: "INTERNAL",
+      status: "ENABLED",
+    });
     setRoleSelected([]);
     setManageOpen(true);
   }
@@ -267,7 +273,9 @@ export function UsersAdminPage() {
   }
 
   function isProtectedUser(user: UserEntry): boolean {
-    return user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin");
+    return (
+      user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin")
+    );
   }
 
   function beginBatch(nextAction: BatchAction) {
@@ -290,7 +298,9 @@ export function UsersAdminPage() {
   }
 
   function toggleSelectAllCurrentPage(checked: boolean) {
-    const currentPageSelectableIds = rows.filter((row) => !isProtectedUser(row)).map((row) => row.id);
+    const currentPageSelectableIds = rows
+      .filter((row) => !isProtectedUser(row))
+      .map((row) => row.id);
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) {
@@ -335,7 +345,13 @@ export function UsersAdminPage() {
   }
 
   const batchLabel =
-    batchAction === "disable" ? "批量停用中" : batchAction === "reset-password" ? "批量重置密码中" : batchAction === "delete" ? "批量删除中" : "";
+    batchAction === "disable"
+      ? "批量停用中"
+      : batchAction === "reset-password"
+        ? "批量重置密码中"
+        : batchAction === "delete"
+          ? "批量删除中"
+          : "";
 
   return (
     <AdminListPageTemplate
@@ -379,18 +395,45 @@ export function UsersAdminPage() {
                   clearable
                   onValueChange={(v) => setStatusDraft((v ?? "") as "" | UserStatus)}
                 >
-                  <BzOption label="启用" value="ENABLED" />
-                  <BzOption label="停用" value="DISABLED" />
+                  <BzOption
+                    label="启用"
+                    value="ENABLED"
+                  />
+                  <BzOption
+                    label="停用"
+                    value="DISABLED"
+                  />
                 </BzSelect>
               </div>
             </BzFormItem>
             <div className="admin-query-actions">
-              <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
-              <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
+              <BzButton
+                className="admin-filter-secondary"
+                nativeType="button"
+                onClick={resetFilters}
+              >
+                重置
+              </BzButton>
+              <BzButton
+                className="admin-filter-primary"
+                buttonType="primary"
+                nativeType="button"
+                onClick={applyFilters}
+              >
+                搜索
+              </BzButton>
               {!querySingleRow ? (
-                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((v) => !v)}>
+                <button
+                  className="admin-filter-toggle"
+                  type="button"
+                  aria-expanded={queryExpanded}
+                  onClick={() => setQueryExpanded((v) => !v)}
+                >
                   <span>{queryExpanded ? "收起" : "展开"}</span>
-                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
+                  <i
+                    className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                    aria-hidden="true"
+                  />
                 </button>
               ) : null}
             </div>
@@ -400,9 +443,17 @@ export function UsersAdminPage() {
       batchToolbar={
         batchAction ? (
           <div className="admin-batch-toolbar">
-            <div className="admin-batch-toolbar__summary">{batchLabel}，已选 {selectedIds.length} 项</div>
+            <div className="admin-batch-toolbar__summary">
+              {batchLabel}，已选 {selectedIds.length} 项
+            </div>
             <div className="admin-batch-toolbar__actions">
-              <BzButton buttonType="primary" disabled={selectedIds.length === 0} onClick={() => void confirmBatchAction()}>确认</BzButton>
+              <BzButton
+                buttonType="primary"
+                disabled={selectedIds.length === 0}
+                onClick={() => void confirmBatchAction()}
+              >
+                确认
+              </BzButton>
               <BzButton onClick={cancelBatch}>取消</BzButton>
             </div>
           </div>
@@ -411,14 +462,36 @@ export function UsersAdminPage() {
       businessActions={
         !batchAction ? (
           <>
-            {canCreate ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
-            {canBatchDisable ? <BzButton onClick={() => beginBatch("disable")}>批量停用</BzButton> : null}
-            {canBatchReset ? <BzButton onClick={() => beginBatch("reset-password")}>批量重置密码</BzButton> : null}
-            {canBatchDelete ? <BzButton onClick={() => beginBatch("delete")}>批量删除</BzButton> : null}
+            {canCreate ? (
+              <BzButton
+                className="admin-toolbar-primary"
+                buttonType="primary"
+                onClick={openCreate}
+              >
+                新增
+              </BzButton>
+            ) : null}
+            {canBatchDisable ? (
+              <BzButton onClick={() => beginBatch("disable")}>批量停用</BzButton>
+            ) : null}
+            {canBatchReset ? (
+              <BzButton onClick={() => beginBatch("reset-password")}>批量重置密码</BzButton>
+            ) : null}
+            {canBatchDelete ? (
+              <BzButton onClick={() => beginBatch("delete")}>批量删除</BzButton>
+            ) : null}
           </>
         ) : null
       }
-      queryTools={!batchAction ? <AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => reload()} /> : null}
+      queryTools={
+        !batchAction ? (
+          <AdminTableTools
+            queryPanelVisible={queryPanelVisible}
+            onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+            onRefresh={() => reload()}
+          />
+        ) : null
+      }
       table={
         <UserTable
           rows={rows}
@@ -463,8 +536,27 @@ export function UsersAdminPage() {
       }
       overlays={
         <>
-          {resetOpen ? <PasswordResetDialog onClose={() => setResetOpen(false)} onSubmit={onResetSubmit} /> : null}
-          {manageOpen ? <UserManageDrawer open={manageOpen} mode={manageMode} model={manageTarget} selectedIds={roleSelected} loading={roleLoading} canEditBasic={manageMode === "create" ? canCreate : canEdit} canEditRoles={canRoleEdit} canViewRoles={canRoles} userTypeMetaMap={userTypeMetaMap} onClose={() => setManageOpen(false)} onSubmit={onManageSubmit} /> : null}
+          {resetOpen ? (
+            <PasswordResetDialog
+              onClose={() => setResetOpen(false)}
+              onSubmit={onResetSubmit}
+            />
+          ) : null}
+          {manageOpen ? (
+            <UserManageDrawer
+              open={manageOpen}
+              mode={manageMode}
+              model={manageTarget}
+              selectedIds={roleSelected}
+              loading={roleLoading}
+              canEditBasic={manageMode === "create" ? canCreate : canEdit}
+              canEditRoles={canRoleEdit}
+              canViewRoles={canRoles}
+              userTypeMetaMap={userTypeMetaMap}
+              onClose={() => setManageOpen(false)}
+              onSubmit={onManageSubmit}
+            />
+          ) : null}
         </>
       }
     />

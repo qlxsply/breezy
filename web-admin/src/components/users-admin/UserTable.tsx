@@ -2,8 +2,8 @@ import { formatDateTime } from "../../core/formatter";
 import type { AdminActionItem } from "../../types/admin-action";
 import type { UserEntry } from "../../types/user-admin";
 import { createAdminActionsColumn } from "../admin/admin-actions-column";
-import type { BzTableColumn } from "../bz/BzTable";
 import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
+import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 
@@ -52,7 +52,9 @@ export function UserTable({
   onToggleSelectAll,
 }: UserTableProps) {
   function isProtectedUser(user: UserEntry): boolean {
-    return user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin");
+    return (
+      user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin")
+    );
   }
 
   function resolveUserTypeLabel(userType: string): string {
@@ -80,7 +82,13 @@ export function UserTable({
       { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(user) },
     ];
     if (canEdit || canRoles)
-      actions.push({ key: "edit", label: "维护", tone: "edit", disabled: maintainDisabled, handler: () => onEdit(user) });
+      actions.push({
+        key: "edit",
+        label: "维护",
+        tone: "edit",
+        disabled: maintainDisabled,
+        handler: () => onEdit(user),
+      });
     if (canToggle)
       actions.push({
         key: "toggle",
@@ -89,7 +97,13 @@ export function UserTable({
         disabled: toggleDisabled,
         handler: () => onToggle(user),
       });
-    if (canReset) actions.push({ key: "reset", label: "重置密码", disabled: resetDisabled, handler: () => onReset(user) });
+    if (canReset)
+      actions.push({
+        key: "reset",
+        label: "重置密码",
+        disabled: resetDisabled,
+        handler: () => onReset(user),
+      });
     if (canDelete)
       actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
     return actions;

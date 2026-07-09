@@ -1,6 +1,11 @@
 "use client";
 
-import { createResource, getResource, updateResource, updateResourcePermissions } from "@admin/api/resources";
+import {
+  createResource,
+  getResource,
+  updateResource,
+  updateResourcePermissions,
+} from "@admin/api/resources";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import type { BzTableColumn } from "@admin/components/bz";
 import {
@@ -100,12 +105,18 @@ function flattenRows(rows: ResourceManageEntry[]): ResourceManageEntry[] {
   return result;
 }
 
-function buildParentOptions(rows: ResourceManageEntry[], currentId?: string): Array<{ id: string; label: string }> {
+function buildParentOptions(
+  rows: ResourceManageEntry[],
+  currentId?: string,
+): Array<{ id: string; label: string }> {
   const excludeIds = new Set<string>();
   if (currentId) excludeIds.add(currentId);
   return flattenRows(rows)
     .filter((row) => canHaveChildren(row.resourceType) && !excludeIds.has(row.id))
-    .map((row) => ({ id: row.id, label: `${row.name}（${RESOURCE_TYPE_LABEL[row.resourceType]}）` }));
+    .map((row) => ({
+      id: row.id,
+      label: `${row.name}（${RESOURCE_TYPE_LABEL[row.resourceType]}）`,
+    }));
 }
 
 function canHaveChildren(resourceType: ManageResourceType): boolean {
@@ -146,7 +157,9 @@ export function ResourceManageDrawer({
   }, [allResources]);
 
   const currentParent = form.parentId ? rowMap.get(form.parentId) : undefined;
-  const allowedTypes = currentParent ? ALLOWED_CHILDREN[currentParent.resourceType] : ROOT_ALLOWED_TYPES;
+  const allowedTypes = currentParent
+    ? ALLOWED_CHILDREN[currentParent.resourceType]
+    : ROOT_ALLOWED_TYPES;
   const showPermissionArea = form.resourceType === "BUTTON";
   const canSavePermissions = editable && showPermissionArea && canPermissionEdit;
 
@@ -256,7 +269,10 @@ export function ResourceManageDrawer({
     if (!allowedTypes.includes(form.resourceType)) return "当前父级不允许创建该资源类型";
     if ((form.resourceType === "MENU" || form.resourceType === "FUNCTION") && !form.path.trim())
       return "菜单或功能资源必须填写路由路径";
-    if ((form.resourceType === "MENU" || form.resourceType === "FUNCTION") && !form.component.trim())
+    if (
+      (form.resourceType === "MENU" || form.resourceType === "FUNCTION") &&
+      !form.component.trim()
+    )
       return "菜单或功能资源必须填写组件路径";
     return "";
   }
@@ -272,13 +288,25 @@ export function ResourceManageDrawer({
       code: form.code.trim(),
       name: form.name.trim(),
       resourceType: form.resourceType,
-      path: form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? blankToNull(form.path) : null,
-      component: form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? blankToNull(form.component) : null,
-      icon: form.resourceType === "DIRECTORY" || form.resourceType === "MENU" ? blankToNull(form.icon) : null,
+      path:
+        form.resourceType === "MENU" || form.resourceType === "FUNCTION"
+          ? blankToNull(form.path)
+          : null,
+      component:
+        form.resourceType === "MENU" || form.resourceType === "FUNCTION"
+          ? blankToNull(form.component)
+          : null,
+      icon:
+        form.resourceType === "DIRECTORY" || form.resourceType === "MENU"
+          ? blankToNull(form.icon)
+          : null,
       sortNo: form.sortNo,
       visible: form.visible,
       enabled: form.enabled,
-      defaultEntry: form.resourceType === "MENU" || form.resourceType === "FUNCTION" ? form.defaultEntry : false,
+      defaultEntry:
+        form.resourceType === "MENU" || form.resourceType === "FUNCTION"
+          ? form.defaultEntry
+          : false,
       systemBuiltin: form.systemBuiltin,
       remark: blankToNull(form.remark),
     };
@@ -314,14 +342,21 @@ export function ResourceManageDrawer({
   }
 
   function renderEditCell(children: ReactNode, { mono }: { mono?: boolean } = {}) {
-    return <td className={`role-info-cell role-info-cell--edit${mono ? " mono" : ""}`}>{children}</td>;
+    return (
+      <td className={`role-info-cell role-info-cell--edit${mono ? " mono" : ""}`}>{children}</td>
+    );
   }
 
   function renderValue(value: string | number, { mono }: { mono?: boolean } = {}) {
     return renderCell(value || "-", { mono });
   }
 
-  function renderInput(value: string, placeholder: string, onChange: (v: string) => void, { mono, disabled }: { mono?: boolean; disabled?: boolean } = {}) {
+  function renderInput(
+    value: string,
+    placeholder: string,
+    onChange: (v: string) => void,
+    { mono, disabled }: { mono?: boolean; disabled?: boolean } = {},
+  ) {
     if (disabled) return renderValue(value, { mono });
     return renderEditCell(
       <BzInput
@@ -347,22 +382,44 @@ export function ResourceManageDrawer({
     );
   }
 
-  function renderSwitch(value: boolean, onChange: (v: boolean) => void, { disabled }: { disabled?: boolean } = {}) {
+  function renderSwitch(
+    value: boolean,
+    onChange: (v: boolean) => void,
+    { disabled }: { disabled?: boolean } = {},
+  ) {
     if (disabled || !editable) return renderCell(value ? "是" : "否");
     return renderEditCell(
-      <BzSwitch modelValue={value} disabled={disabled} onValueChange={onChange} />,
+      <BzSwitch
+        modelValue={value}
+        disabled={disabled}
+        onValueChange={onChange}
+      />,
     );
   }
 
-  function renderSelectCell(value: string, onChange: (v: string) => void, options: Array<{ value: string; label: string; disabled?: boolean }>, { disabled }: { disabled?: boolean } = {}) {
+  function renderSelectCell(
+    value: string,
+    onChange: (v: string) => void,
+    options: Array<{ value: string; label: string; disabled?: boolean }>,
+    { disabled }: { disabled?: boolean } = {},
+  ) {
     if (disabled || !editable) {
       const selected = options.find((o) => o.value === value);
       return renderCell(selected?.label || value || "-");
     }
     return renderEditCell(
-      <BzSelect className="role-info-select" modelValue={value} onValueChange={(v) => onChange(v ?? "")}>
+      <BzSelect
+        className="role-info-select"
+        modelValue={value}
+        onValueChange={(v) => onChange(v ?? "")}
+      >
         {options.map((o) => (
-          <BzOption key={o.value} value={o.value} label={o.label} disabled={o.disabled} />
+          <BzOption
+            key={o.value}
+            value={o.value}
+            label={o.label}
+            disabled={o.disabled}
+          />
         ))}
       </BzSelect>,
     );
@@ -372,14 +429,24 @@ export function ResourceManageDrawer({
     return <span className={required ? "is-required" : undefined} />;
   }
 
-  const drawerTitle = mode === "create" ? "新增资源" : mode === "detail" ? `${RESOURCE_TYPE_LABEL[form.resourceType]}详情` : "编辑资源";
+  const drawerTitle =
+    mode === "create"
+      ? "新增资源"
+      : mode === "detail"
+        ? `${RESOURCE_TYPE_LABEL[form.resourceType]}详情`
+        : "编辑资源";
 
   const footer = isDetail ? (
     <BzButton onClick={onClose}>关闭</BzButton>
   ) : (
     <>
       <BzButton onClick={onClose}>取消</BzButton>
-      <BzButton buttonType="primary" onClick={handleSave}>保存</BzButton>
+      <BzButton
+        buttonType="primary"
+        onClick={handleSave}
+      >
+        保存
+      </BzButton>
     </>
   );
 
@@ -388,7 +455,9 @@ export function ResourceManageDrawer({
     ...parentOptions.map((o) => ({ value: o.id, label: o.label })),
   ];
 
-  const typeSelectOptions = (["DIRECTORY", "MENU", "FUNCTION", "BUTTON"] as ManageResourceType[]).map((type) => ({
+  const typeSelectOptions = (
+    ["DIRECTORY", "MENU", "FUNCTION", "BUTTON"] as ManageResourceType[]
+  ).map((type) => ({
     value: type,
     label: RESOURCE_TYPE_LABEL[type],
     disabled: !allowedTypes.includes(type),
@@ -415,7 +484,10 @@ export function ResourceManageDrawer({
           </div>
 
           <div className="role-info-table-wrap">
-            <table className="role-info-table" aria-label="资源基础信息">
+            <table
+              className="role-info-table"
+              aria-label="资源基础信息"
+            >
               <tbody>
                 <tr>
                   <th>父级资源</th>
@@ -424,7 +496,11 @@ export function ResourceManageDrawer({
                     : renderCell(currentParent?.name || "-")}
                   <th>资源类型</th>
                   {editable && !typeLocked
-                    ? renderSelectCell(form.resourceType, handleTypeChange as (v: string) => void, typeSelectOptions)
+                    ? renderSelectCell(
+                        form.resourceType,
+                        handleTypeChange as (v: string) => void,
+                        typeSelectOptions,
+                      )
                     : renderCell(RESOURCE_TYPE_LABEL[form.resourceType])}
                   <th>{thRequired(editable)}资源名称</th>
                   {editable
@@ -434,15 +510,27 @@ export function ResourceManageDrawer({
                 <tr>
                   <th>{thRequired(editable)}资源编码</th>
                   {editable
-                    ? renderInput(form.code, "例如：platform.resource", (v) => updateForm("code", v), { mono: true })
+                    ? renderInput(
+                        form.code,
+                        "例如：platform.resource",
+                        (v) => updateForm("code", v),
+                        { mono: true },
+                      )
                     : renderValue(form.code, { mono: true })}
                   <th>图标</th>
                   {editable
-                    ? renderInput(form.icon, "例如：Setting", (v) => updateForm("icon", v), { disabled: iconDisabled })
+                    ? renderInput(form.icon, "例如：Setting", (v) => updateForm("icon", v), {
+                        disabled: iconDisabled,
+                      })
                     : renderValue(form.icon)}
                   <th>排序号</th>
                   {editable
-                    ? renderInput(String(form.sortNo), "例如：10", (v) => updateForm("sortNo", Number(v || 0)), { mono: true })
+                    ? renderInput(
+                        String(form.sortNo),
+                        "例如：10",
+                        (v) => updateForm("sortNo", Number(v || 0)),
+                        { mono: true },
+                      )
                     : renderValue(form.sortNo, { mono: true })}
                 </tr>
                 <tr>
@@ -450,7 +538,10 @@ export function ResourceManageDrawer({
                   {editable
                     ? renderTextarea(form.remark, "资源说明", (v) => updateForm("remark", v))
                     : renderValue(form.remark)}
-                  <th></th><td></td><th></th><td></td>
+                  <th></th>
+                  <td></td>
+                  <th></th>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
@@ -463,18 +554,32 @@ export function ResourceManageDrawer({
           </div>
 
           <div className="role-info-table-wrap">
-            <table className="role-info-table" aria-label="资源路由信息">
+            <table
+              className="role-info-table"
+              aria-label="资源路由信息"
+            >
               <tbody>
                 <tr>
                   <th>路由路径</th>
                   {editable
-                    ? renderInput(form.path, "例如：/admin/resources", (v) => updateForm("path", v), { disabled: routeDisabled })
+                    ? renderInput(
+                        form.path,
+                        "例如：/admin/resources",
+                        (v) => updateForm("path", v),
+                        { disabled: routeDisabled },
+                      )
                     : renderValue(form.path)}
                   <th>组件路径</th>
                   {editable
-                    ? renderInput(form.component, "例如：pages/ResourcesAdminPage", (v) => updateForm("component", v), { disabled: routeDisabled })
+                    ? renderInput(
+                        form.component,
+                        "例如：pages/ResourcesAdminPage",
+                        (v) => updateForm("component", v),
+                        { disabled: routeDisabled },
+                      )
                     : renderValue(form.component)}
-                  <th></th><td></td>
+                  <th></th>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
@@ -487,7 +592,10 @@ export function ResourceManageDrawer({
           </div>
 
           <div className="role-info-table-wrap">
-            <table className="role-info-table" aria-label="资源状态配置">
+            <table
+              className="role-info-table"
+              aria-label="资源状态配置"
+            >
               <tbody>
                 <tr>
                   <th>可见</th>
@@ -495,12 +603,17 @@ export function ResourceManageDrawer({
                   <th>启用</th>
                   {renderSwitch(form.enabled, (v) => updateForm("enabled", v))}
                   <th>默认入口</th>
-                  {renderSwitch(form.defaultEntry, (v) => updateForm("defaultEntry", v), { disabled: defaultEntryDisabled })}
+                  {renderSwitch(form.defaultEntry, (v) => updateForm("defaultEntry", v), {
+                    disabled: defaultEntryDisabled,
+                  })}
                 </tr>
                 <tr>
                   <th>系统内置</th>
                   {renderSwitch(form.systemBuiltin, (v) => updateForm("systemBuiltin", v))}
-                  <th></th><td></td><th></th><td></td>
+                  <th></th>
+                  <td></td>
+                  <th></th>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
@@ -528,8 +641,16 @@ export function ResourceManageDrawer({
                 {permissions.map((permission) => {
                   const checked = form.permissionIds.includes(permission.id);
                   return (
-                    <label key={permission.id} className="resource-manage-permission-item">
-                      <input type="checkbox" checked={checked} disabled={!canSavePermissions} onChange={(event) => togglePermission(permission.id, event.target.checked)} />
+                    <label
+                      key={permission.id}
+                      className="resource-manage-permission-item"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={!canSavePermissions}
+                        onChange={(event) => togglePermission(permission.id, event.target.checked)}
+                      />
                       <span>{permission.name}</span>
                       <span className="resource-manage-permission-code">({permission.code})</span>
                     </label>
@@ -540,7 +661,14 @@ export function ResourceManageDrawer({
           </section>
         ) : null}
 
-        {formError ? <div className="form-error" style={{ marginTop: 12 }}>{formError}</div> : null}
+        {formError ? (
+          <div
+            className="form-error"
+            style={{ marginTop: 12 }}
+          >
+            {formError}
+          </div>
+        ) : null}
       </div>
     </AdminEntityDrawer>
   );

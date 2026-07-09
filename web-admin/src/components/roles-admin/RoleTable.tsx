@@ -1,9 +1,9 @@
 import { formatDateTime } from "../../core/formatter";
-import { createAdminActionsColumn } from "../admin/admin-actions-column";
 import type { AdminActionItem } from "../../types/admin-action";
 import type { RoleEntry } from "../../types/role-admin";
-import type { BzTableColumn } from "../bz/BzTable";
+import { createAdminActionsColumn } from "../admin/admin-actions-column";
 import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
+import type { BzTableColumn } from "../bz/BzTable";
 import { BzTable } from "../bz/BzTable";
 import { BzTag } from "../bz/BzTag";
 

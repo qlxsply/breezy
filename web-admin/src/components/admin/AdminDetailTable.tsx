@@ -36,7 +36,11 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
   );
 
   return (
-    <div className={["admin-detail-table-stack", variant === "plain" ? "is-plain" : ""].filter(Boolean).join(" ")}>
+    <div
+      className={["admin-detail-table-stack", variant === "plain" ? "is-plain" : ""]
+        .filter(Boolean)
+        .join(" ")}
+    >
       {resolvedSections.map((section) => (
         <section
           key={String(section.title)}
@@ -47,11 +51,16 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
             .filter(Boolean)
             .join(" ")}
         >
-          {variant === "sectioned" ? <div className="admin-detail-table-section__title">{section.title}</div> : null}
+          {variant === "sectioned" ? (
+            <div className="admin-detail-table-section__title">{section.title}</div>
+          ) : null}
           <table className="admin-detail-table">
             <colgroup>
               {Array.from({ length: pairCount }).flatMap((_, index) => [
-                <col key={`label-${index}`} className="admin-detail-table__col--label" />,
+                <col
+                  key={`label-${index}`}
+                  className="admin-detail-table__col--label"
+                />,
                 <col key={`value-${index}`} />,
               ])}
             </colgroup>

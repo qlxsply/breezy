@@ -1,19 +1,14 @@
 "use client";
 
+import { deleteResource, listPermissions, listResources } from "@admin/api/resources";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import type { BzTableColumn } from "@admin/components/bz";
 import {
-  deleteResource,
-  listPermissions,
-  listResources,
-} from "@admin/api/resources";
-import {createAdminActionsColumn} from "@admin/components/admin/admin-actions-column";
-import {AdminTableTools} from "@admin/components/admin/AdminTableTools";
-import {useAdminQueryPanelLayout} from "@admin/components/admin/useAdminQueryPanelLayout";
-import {ResourceManageDrawer} from "@admin/components/resources-admin/ResourceManageDrawer";
-import type {BzTableColumn} from "@admin/components/bz";
-import {
-  BzChevronIcon,
   BzButton,
   BzCard,
+  BzChevronIcon,
   BzFormItem,
   BzInput,
   BzOption,
@@ -22,17 +17,18 @@ import {
   BzTable,
   BzTag,
 } from "@admin/components/bz";
-import {bzConfirm} from "@admin/core/confirm";
-import {message} from "@admin/core/message";
-import {refreshRegistryLoaded} from "@admin/core/registry/bootstrap-registry";
-import {hasResourceCodeAccess} from "@admin/core/registry/resources-registry";
-import type {AdminActionItem} from "@admin/types/admin-action";
+import { ResourceManageDrawer } from "@admin/components/resources-admin/ResourceManageDrawer";
+import { bzConfirm } from "@admin/core/confirm";
+import { message } from "@admin/core/message";
+import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
+import type { AdminActionItem } from "@admin/types/admin-action";
 import type {
   ManageResourceType,
   ResourceManageEntry,
   ResourcePermissionOption,
 } from "@admin/types/resource-manage";
-import {useEffect, useMemo, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DrawerMode = "create" | "detail" | "edit";
 
@@ -114,9 +110,8 @@ export function ResourcesAdminPage() {
     [expandedIds, filteredRoots, hasActiveFilter],
   );
 
-  const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(
-    () => {
-      const baseColumns: Array<BzTableColumn<ResourceTableRow>> = [
+  const columns = useMemo<Array<BzTableColumn<ResourceTableRow>>>(() => {
+    const baseColumns: Array<BzTableColumn<ResourceTableRow>> = [
       {
         key: "name",
         title: "资源名称",
@@ -128,9 +123,15 @@ export function ResourcesAdminPage() {
           const expanded = expandedIds.has(row.id);
           return (
             <div className="resource-name-cell">
-              <span className="resource-indent" aria-hidden="true">
+              <span
+                className="resource-indent"
+                aria-hidden="true"
+              >
                 {Array.from({ length: level }).map((_, index) => (
-                  <span key={index} className="resource-indent__unit" />
+                  <span
+                    key={index}
+                    className="resource-indent__unit"
+                  />
                 ))}
               </span>
               <button
@@ -230,53 +231,51 @@ export function ResourcesAdminPage() {
           );
         },
       },
-      ];
-      const actionsColumn = createAdminActionsColumn({
-        rows: tableRows,
-        getActions: ({ row }) => {
-          const childrenAllowed = canHaveChildren(row.resourceType);
-          const actions: AdminActionItem[] = [];
+    ];
+    const actionsColumn = createAdminActionsColumn({
+      rows: tableRows,
+      getActions: ({ row }) => {
+        const childrenAllowed = canHaveChildren(row.resourceType);
+        const actions: AdminActionItem[] = [];
+        actions.push({
+          key: "detail",
+          label: "详情",
+          tone: "detail",
+          handler: () => void openEdit(row, "detail"),
+        });
+        if (canEdit) {
           actions.push({
-            key: "detail",
-            label: "详情",
-            tone: "detail",
-            handler: () => void openEdit(row, "detail"),
+            key: "edit",
+            label: "编辑",
+            tone: "edit",
+            handler: () => void openEdit(row, "edit"),
           });
-          if (canEdit) {
-            actions.push({
-              key: "edit",
-              label: "编辑",
-              tone: "edit",
-              handler: () => void openEdit(row, "edit"),
-            });
-          }
-          if (canDelete) {
-            actions.push({
-              key: "delete",
-              label: "删除",
-              tone: "delete",
-              disabled: row.systemBuiltin,
-              handler: () => void onDelete(row),
-            });
-          }
-          if (canCreate) {
-            actions.push({
-              key: "create-child",
-              label: "新增子项",
-              tone: "neutral",
-              disabled: !childrenAllowed,
-              handler: () => openCreateChild(row),
-            });
-          }
-          return actions;
-        },
-        stickyClassName: "resource-manage-col-actions is-sticky-right",
-        stickyHeaderClassName: "resource-manage-col-actions is-sticky-right",
-      });
-      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
-    },
-    [canCreate, canDelete, canEdit, expandedIds, hasActiveFilter, tableRows],
-  );
+        }
+        if (canDelete) {
+          actions.push({
+            key: "delete",
+            label: "删除",
+            tone: "delete",
+            disabled: row.systemBuiltin,
+            handler: () => void onDelete(row),
+          });
+        }
+        if (canCreate) {
+          actions.push({
+            key: "create-child",
+            label: "新增子项",
+            tone: "neutral",
+            disabled: !childrenAllowed,
+            handler: () => openCreateChild(row),
+          });
+        }
+        return actions;
+      },
+      stickyClassName: "resource-manage-col-actions is-sticky-right",
+      stickyHeaderClassName: "resource-manage-col-actions is-sticky-right",
+    });
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+  }, [canCreate, canDelete, canEdit, expandedIds, hasActiveFilter, tableRows]);
 
   async function reload() {
     if (!canView) return;
@@ -284,7 +283,9 @@ export function ResourcesAdminPage() {
     try {
       const [resourceTree, permissionRows] = await Promise.all([
         listResources(),
-        canPermissionView || canPermissionEdit ? listPermissions() : Promise.resolve<ResourcePermissionOption[]>([]),
+        canPermissionView || canPermissionEdit
+          ? listPermissions()
+          : Promise.resolve<ResourcePermissionOption[]>([]),
       ]);
       setRows(resourceTree);
       setPermissions(permissionRows);
@@ -397,121 +398,189 @@ export function ResourcesAdminPage() {
             <div className="resource-manage-region">
               {queryPanelVisible ? (
                 <div className="resource-manage-query-panel">
-              <div
-                ref={queryCardRef}
-                className={[
-                  "admin-query-layout",
-                  querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-                ].join(" ")}
-              >
-                <form
-                  ref={queryGridRef}
-                  className="bz-form admin-query-grid"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    applyFilters();
-                  }}
-                >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">关键字</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="搜索资源名称 / 编码 / 路径 / 组件"
-                        clearable
-                        onValueChange={setKeywordDraft}
-                        onKeyUp={(event) => {
-                          if (event.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">资源类型</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={typeFilterDraft}
-                        placeholder="全部类型"
-                        clearable
-                        onValueChange={(value) => setTypeFilterDraft(value ?? "")}
-                      >
-                        <BzOption value="DIRECTORY" label="目录" />
-                        <BzOption value="MENU" label="菜单" />
-                        <BzOption value="FUNCTION" label="功能" />
-                        <BzOption value="BUTTON" label="按钮" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">启用状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={enabledFilterDraft}
-                        placeholder="全部状态"
-                        clearable
-                        onValueChange={(value) => setEnabledFilterDraft(value ?? "")}
-                      >
-                        <BzOption value="true" label="启用" />
-                        <BzOption value="false" label="停用" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">内置状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={builtinFilterDraft}
-                        placeholder="全部"
-                        clearable
-                        onValueChange={(value) => setBuiltinFilterDraft(value ?? "")}
-                      >
-                        <BzOption value="true" label="系统内置" />
-                        <BzOption value="false" label="非内置" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>
-                      重置
-                    </BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                      </button>
-                    ) : null}
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow
+                        ? "is-single-row"
+                        : queryExpanded
+                          ? "is-expanded"
+                          : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        applyFilters();
+                      }}
+                    >
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">关键字</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={keywordDraft}
+                            placeholder="搜索资源名称 / 编码 / 路径 / 组件"
+                            clearable
+                            onValueChange={setKeywordDraft}
+                            onKeyUp={(event) => {
+                              if (event.key === "Enter") applyFilters();
+                            }}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">资源类型</div>
+                        <div className="admin-query-field__control">
+                          <BzSelect
+                            modelValue={typeFilterDraft}
+                            placeholder="全部类型"
+                            clearable
+                            onValueChange={(value) => setTypeFilterDraft(value ?? "")}
+                          >
+                            <BzOption
+                              value="DIRECTORY"
+                              label="目录"
+                            />
+                            <BzOption
+                              value="MENU"
+                              label="菜单"
+                            />
+                            <BzOption
+                              value="FUNCTION"
+                              label="功能"
+                            />
+                            <BzOption
+                              value="BUTTON"
+                              label="按钮"
+                            />
+                          </BzSelect>
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">启用状态</div>
+                        <div className="admin-query-field__control">
+                          <BzSelect
+                            modelValue={enabledFilterDraft}
+                            placeholder="全部状态"
+                            clearable
+                            onValueChange={(value) => setEnabledFilterDraft(value ?? "")}
+                          >
+                            <BzOption
+                              value="true"
+                              label="启用"
+                            />
+                            <BzOption
+                              value="false"
+                              label="停用"
+                            />
+                          </BzSelect>
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">内置状态</div>
+                        <div className="admin-query-field__control">
+                          <BzSelect
+                            modelValue={builtinFilterDraft}
+                            placeholder="全部"
+                            clearable
+                            onValueChange={(value) => setBuiltinFilterDraft(value ?? "")}
+                          >
+                            <BzOption
+                              value="true"
+                              label="系统内置"
+                            />
+                            <BzOption
+                              value="false"
+                              label="非内置"
+                            />
+                          </BzSelect>
+                        </div>
+                      </BzFormItem>
+                      <div className="admin-query-actions">
+                        <BzButton
+                          className="admin-filter-secondary"
+                          nativeType="button"
+                          onClick={resetFilters}
+                        >
+                          重置
+                        </BzButton>
+                        <BzButton
+                          className="admin-filter-primary"
+                          buttonType="primary"
+                          nativeType="button"
+                          onClick={applyFilters}
+                        >
+                          搜索
+                        </BzButton>
+                        {!querySingleRow ? (
+                          <button
+                            className="admin-filter-toggle"
+                            type="button"
+                            aria-expanded={queryExpanded}
+                            onClick={() => setQueryExpanded((value) => !value)}
+                          >
+                            <span>{queryExpanded ? "收起" : "展开"}</span>
+                            <i
+                              className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ) : null}
+                      </div>
+                    </form>
                   </div>
-                </form>
-              </div>
                 </div>
               ) : null}
 
               <div className="resource-manage-toolbar-row">
                 <div className="resource-manage-business-actions">
                   {canCreate ? (
-                    <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateRoot}>
+                    <BzButton
+                      className="admin-toolbar-primary"
+                      buttonType="primary"
+                      onClick={openCreateRoot}
+                    >
                       新增
                     </BzButton>
                   ) : null}
                 </div>
                 <div className="resource-manage-query-tools">
-                  <button className="admin-vben-circle-button" type="button" title="全部展开" onClick={expandAll}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <button
+                    className="admin-vben-circle-button"
+                    type="button"
+                    title="全部展开"
+                    onClick={expandAll}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M4 6h16" />
                       <path d="M7 12h10" />
                       <path d="M10 18h4" />
                     </svg>
                   </button>
-                  <button className="admin-vben-circle-button" type="button" title="全部收起" onClick={collapseAll}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <button
+                    className="admin-vben-circle-button"
+                    type="button"
+                    title="全部收起"
+                    onClick={collapseAll}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M4 6h16" />
                       <path d="M7 12h10" />
                     </svg>
@@ -569,7 +638,11 @@ function flattenRows(rows: ResourceManageEntry[]): ResourceManageEntry[] {
   return result;
 }
 
-function flattenVisibleRows(rows: ResourceManageEntry[], expandedIds: Set<string>, forceExpand: boolean): ResourceTableRow[] {
+function flattenVisibleRows(
+  rows: ResourceManageEntry[],
+  expandedIds: Set<string>,
+  forceExpand: boolean,
+): ResourceTableRow[] {
   const result: ResourceTableRow[] = [];
   const walk = (items: ResourceManageEntry[], level: number) => {
     items.forEach((row) => {

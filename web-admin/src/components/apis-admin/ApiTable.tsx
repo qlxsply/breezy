@@ -1,5 +1,11 @@
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { BzOverflowTooltip, BzTable, type BzTableColumn, BzTag, BzTooltip } from "@admin/components/bz";
+import {
+  BzOverflowTooltip,
+  BzTable,
+  type BzTableColumn,
+  BzTag,
+  BzTooltip,
+} from "@admin/components/bz";
 import type { AdminActionItem } from "@admin/types/admin-action";
 import type { ApiEntry } from "@admin/types/api-admin";
 
@@ -46,7 +52,9 @@ export function ApiTable({
           type={methodTagType(row.httpMethod)}
           title={row.httpMethodLabel || row.httpMethod || "-"}
         >
-          <span className="api-table__tag-label">{row.httpMethodLabel || row.httpMethod || "-"}</span>
+          <span className="api-table__tag-label">
+            {row.httpMethodLabel || row.httpMethod || "-"}
+          </span>
         </BzTag>
       ),
     },
@@ -79,7 +87,9 @@ export function ApiTable({
           type={row.permissionDeclared ? "success" : "warning"}
           title={row.permissionDeclared ? "已声明" : "未声明"}
         >
-          <span className="api-table__tag-label">{row.permissionDeclared ? "已声明" : "未声明"}</span>
+          <span className="api-table__tag-label">
+            {row.permissionDeclared ? "已声明" : "未声明"}
+          </span>
         </BzTag>
       ),
     },
@@ -94,7 +104,9 @@ export function ApiTable({
           type={accessTagType(row.accessType)}
           title={row.accessTypeLabel || row.accessType || "-"}
         >
-          <span className="api-table__tag-label">{row.accessTypeLabel || row.accessType || "-"}</span>
+          <span className="api-table__tag-label">
+            {row.accessTypeLabel || row.accessType || "-"}
+          </span>
         </BzTag>
       ),
     },
@@ -129,7 +141,9 @@ export function ApiTable({
               type={row.auditDeclared ? "success" : "info"}
               title={row.auditDeclared ? "已开启" : "未开启"}
             >
-              <span className="api-table__tag-label">{row.auditDeclared ? "已开启" : "未开启"}</span>
+              <span className="api-table__tag-label">
+                {row.auditDeclared ? "已开启" : "未开启"}
+              </span>
             </BzTag>
           </span>
         </BzTooltip>
@@ -182,7 +196,9 @@ export function ApiTable({
 }
 
 function renderTextCell(value: string, className?: string, withOverflowTooltip = false) {
-  const content = <span className={["api-table__text", className].filter(Boolean).join(" ")}>{value}</span>;
+  const content = (
+    <span className={["api-table__text", className].filter(Boolean).join(" ")}>{value}</span>
+  );
   if (!withOverflowTooltip) {
     return content;
   }
@@ -237,7 +253,8 @@ function getRowActions(
   onDisable: (api: ApiEntry) => void,
 ): AdminActionItem[] {
   const actions: AdminActionItem[] = [];
-  if (canDetail) actions.push({ key: "detail", label: "详情", tone: "detail", handler: () => onDetail(row) });
+  if (canDetail)
+    actions.push({ key: "detail", label: "详情", tone: "detail", handler: () => onDetail(row) });
   if (canPublish && !row.enabled)
     actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
   if (canDisable && row.enabled)

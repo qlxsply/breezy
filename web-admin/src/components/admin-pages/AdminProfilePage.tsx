@@ -270,7 +270,8 @@ export function AdminProfilePage() {
                         pageSizes={pageSizeOptions}
                         onCurrentChange={setActivityPageNo}
                         onSizeChange={(size) => {
-                          if (!Number.isFinite(size) || size <= 0 || size === activityPageSize) return;
+                          if (!Number.isFinite(size) || size <= 0 || size === activityPageSize)
+                            return;
                           setActivityPageSize(size);
                           setActivityPageNo(1);
                         }}

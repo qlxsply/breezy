@@ -528,6 +528,30 @@
   left: 80px;
 }
 
+.application-icon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.application-icon-cell__image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.application-icon-cell__fallback {
+  color: var(--color-text-disabled);
+  font-size: var(--font-size-xs);
+}
+
+.application-detail-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
 .user-manage-text {
   display: block;
   min-width: 0;

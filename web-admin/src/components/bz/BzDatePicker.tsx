@@ -1,8 +1,8 @@
 "use client";
 
+import type { DateTimePrecision } from "@admin/core/formatter";
 import type { ChangeEvent, MouseEvent } from "react";
 
-import type { DateTimePrecision } from "@admin/core/formatter";
 import { BzIconClose } from "./BzIconClose";
 
 type PickerType = "date" | "datetime";
@@ -19,7 +19,11 @@ interface BzDatePickerProps {
   onChange?: (value: string) => void;
 }
 
-function extractNativeValue(modelValue: string, type: PickerType, precision: DateTimePrecision): string {
+function extractNativeValue(
+  modelValue: string,
+  type: PickerType,
+  precision: DateTimePrecision,
+): string {
   if (!modelValue) return "";
   if (type === "date") {
     return modelValue.slice(0, 10);

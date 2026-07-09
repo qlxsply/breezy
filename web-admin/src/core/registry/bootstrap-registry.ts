@@ -176,14 +176,25 @@ function toNumber(value: unknown, fallback: number): number {
 }
 
 function normalizeNodeType(raw: string): ResourceNodeType {
-  if (raw === "DIRECTORY" || raw === "BUTTON" || raw === "FUNCTION" || raw === "FEATURE" || raw === "DATA") {
+  if (
+    raw === "DIRECTORY" ||
+    raw === "BUTTON" ||
+    raw === "FUNCTION" ||
+    raw === "FEATURE" ||
+    raw === "DATA"
+  ) {
     return raw as ResourceNodeType;
   }
   return "MENU";
 }
 
 function normalizeType(nodeType: ResourceNodeType): ResourceType {
-  if (nodeType === "BUTTON" || nodeType === "FUNCTION" || nodeType === "FEATURE" || nodeType === "DATA") {
+  if (
+    nodeType === "BUTTON" ||
+    nodeType === "FUNCTION" ||
+    nodeType === "FEATURE" ||
+    nodeType === "DATA"
+  ) {
     return nodeType;
   }
   return "MENU";

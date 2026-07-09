@@ -1,3 +1,4 @@
+import type { PageResult, PageRule, SortRule } from "../types/page";
 import type {
   RoleCreateRequest,
   RoleEntry,
@@ -5,7 +6,6 @@ import type {
   RoleGrantSelection,
   RoleUpdateRequest,
 } from "../types/role-admin";
-import type { PageResult, PageRule, SortRule } from "../types/page";
 import { del, get, post, put } from "./http";
 
 const BASE = "/roles";

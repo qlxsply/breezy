@@ -428,15 +428,9 @@ export function MethodStatPage() {
       minWidth: 170,
       render: (row) => (
         <div className="method-stat-lines">
-          <div className="method-stat-line">
-            1分：{formatNumber(row.recent1MinuteCalls)}
-          </div>
-          <div className="method-stat-line">
-            1时：{formatNumber(row.recent1HourCalls)}
-          </div>
-          <div className="method-stat-line">
-            1天：{formatNumber(row.recent1DayCalls)}
-          </div>
+          <div className="method-stat-line">1分：{formatNumber(row.recent1MinuteCalls)}</div>
+          <div className="method-stat-line">1时：{formatNumber(row.recent1HourCalls)}</div>
+          <div className="method-stat-line">1天：{formatNumber(row.recent1DayCalls)}</div>
         </div>
       ),
     },
@@ -446,12 +440,8 @@ export function MethodStatPage() {
       minWidth: 160,
       render: (row) => (
         <div className="method-stat-lines">
-          <div className="method-stat-line is-success">
-            成功：{formatNumber(row.totalSuccess)}
-          </div>
-          <div className="method-stat-line is-danger">
-            失败：{formatNumber(row.totalFailure)}
-          </div>
+          <div className="method-stat-line is-success">成功：{formatNumber(row.totalSuccess)}</div>
+          <div className="method-stat-line is-danger">失败：{formatNumber(row.totalFailure)}</div>
           <div className="method-stat-line">
             成功率：{formatSuccessRate(row.totalSuccess, row.totalCalls)}
           </div>
@@ -464,14 +454,10 @@ export function MethodStatPage() {
       minWidth: 180,
       render: (row) => (
         <div className="method-stat-lines">
-          <div className="method-stat-line">
-            avg：{formatDecimal(row.durationAvg)}
-          </div>
+          <div className="method-stat-line">avg：{formatDecimal(row.durationAvg)}</div>
           <div className="method-stat-line">p95：{formatNumber(row.durationP95)}</div>
           <div className="method-stat-line">max：{formatNumber(row.durationMax)}</div>
-          <div className="method-stat-line">
-            样本：{formatNumber(row.durationSampleSize)}
-          </div>
+          <div className="method-stat-line">样本：{formatNumber(row.durationSampleSize)}</div>
         </div>
       ),
     },
@@ -740,15 +726,23 @@ export function MethodStatPage() {
           {detailData ? (
             <>
               {detailFields.map((item) => (
-                <div key={item.label} className="method-stat-detail-section">
+                <div
+                  key={item.label}
+                  className="method-stat-detail-section"
+                >
                   <div className="method-stat-detail-label">{item.label}</div>
-                  <div className={`method-stat-detail-value${item.code ? " is-code" : ""}`}>{item.value}</div>
+                  <div className={`method-stat-detail-value${item.code ? " is-code" : ""}`}>
+                    {item.value}
+                  </div>
                 </div>
               ))}
 
               <div className="method-stat-detail-metrics">
                 {detailMetrics.map((item) => (
-                  <div key={item.label} className="method-stat-detail-metric">
+                  <div
+                    key={item.label}
+                    className="method-stat-detail-metric"
+                  >
                     <span className="method-stat-detail-metric-label">{item.label}</span>
                     <span className="method-stat-detail-metric-value">{item.value}</span>
                   </div>

@@ -8,13 +8,22 @@ import {
   listSystemNodes,
 } from "@admin/api/system-files";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
+import {
+  type AdminDetailSection,
+  AdminDetailTable,
+} from "@admin/components/admin/AdminDetailTable";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { AdminActionItem } from "@admin/types/admin-action";
-import type { PhysicalFileDetail, StorageListQuery, StorageSortBy, StorageSortOrder, SystemFileItem } from "@admin/types/file-storage";
+import type {
+  PhysicalFileDetail,
+  StorageListQuery,
+  StorageSortBy,
+  StorageSortOrder,
+  SystemFileItem,
+} from "@admin/types/file-storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BzAlert } from "../bz/BzAlert";
@@ -96,7 +105,9 @@ function isTextType(contentType: string): boolean {
   if (!contentType) return false;
   const normalized = contentType.toLowerCase().split(";")[0]!.trim();
   if (normalized.startsWith("text/")) return true;
-  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(normalized);
+  return ["application/json", "application/xml", "application/yaml", "application/sql"].includes(
+    normalized,
+  );
 }
 
 export function SystemFilesPage() {
@@ -194,7 +205,9 @@ export function SystemFilesPage() {
     setRefsLoading(true);
     setRefsErrorMessage("");
     try {
-      setReverseRefs(await listPhysicalFileLogicalRefs(detail.physicalFileId, keyword, sortBy, sortOrder));
+      setReverseRefs(
+        await listPhysicalFileLogicalRefs(detail.physicalFileId, keyword, sortBy, sortOrder),
+      );
     } catch (err) {
       setReverseRefs([]);
       setRefsErrorMessage(extractErrorMessage(err, "反向引用查询失败"));
@@ -364,17 +377,37 @@ export function SystemFilesPage() {
   function getItemActions(item: SystemFileItem): AdminActionItem[] {
     const actions: AdminActionItem[] = [];
     if (item.type === "FOLDER") {
-      actions.push({ key: "enter", label: "进入", tone: "detail", handler: () => enterFolder(item) });
+      actions.push({
+        key: "enter",
+        label: "进入",
+        tone: "detail",
+        handler: () => enterFolder(item),
+      });
     }
     if (item.type === "FILE") {
       if (canView) {
-        actions.push({ key: "preview", label: "预览", tone: "detail", handler: () => void previewFile(item) });
+        actions.push({
+          key: "preview",
+          label: "预览",
+          tone: "detail",
+          handler: () => void previewFile(item),
+        });
       }
       if (canDownload) {
-        actions.push({ key: "download", label: "下载", tone: "neutral", handler: () => void downloadFile(item) });
+        actions.push({
+          key: "download",
+          label: "下载",
+          tone: "neutral",
+          handler: () => void downloadFile(item),
+        });
       }
       if (canPhysical) {
-        actions.push({ key: "physical", label: "物理信息", tone: "edit", handler: () => void loadPhysicalDetail(item) });
+        actions.push({
+          key: "physical",
+          label: "物理信息",
+          tone: "edit",
+          handler: () => void loadPhysicalDetail(item),
+        });
       }
     }
     return actions;
@@ -387,7 +420,11 @@ export function SystemFilesPage() {
       width: 340,
       render: (row) =>
         row.type === "FOLDER" ? (
-          <button type="button" className="system-files-link" onClick={() => enterFolder(row)}>
+          <button
+            type="button"
+            className="system-files-link"
+            onClick={() => enterFolder(row)}
+          >
             <span aria-hidden="true">📁</span>
             <span>{row.name}</span>
           </button>
@@ -473,7 +510,8 @@ export function SystemFilesPage() {
   ];
   const refsActionsColumn = createAdminActionsColumn({
     rows: reverseRefs,
-    getActions: (row) => getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter"),
+    getActions: (row) =>
+      getItemActions(row).filter((action) => action.key !== "physical" && action.key !== "enter"),
   });
   if (refsActionsColumn) refsColumns.push(refsActionsColumn);
 
@@ -487,7 +525,10 @@ export function SystemFilesPage() {
         fields: [
           { label: "逻辑文件ID", value: physicalDetail.logicalFileId },
           { label: "物理文件ID", value: physicalDetail.physicalFileId },
-          { label: "Owner", value: `${physicalDetail.logicalOwnerType}/${physicalDetail.logicalOwnerId}` },
+          {
+            label: "Owner",
+            value: `${physicalDetail.logicalOwnerType}/${physicalDetail.logicalOwnerId}`,
+          },
           { label: "大小", value: formatSize(physicalDetail.fileSize) },
           { label: "内容类型", value: physicalDetail.contentType || "-" },
           { label: "引用数", value: String(physicalDetail.refCount) },
@@ -498,7 +539,12 @@ export function SystemFilesPage() {
         fields: [
           { label: "Hash", value: physicalDetail.hash || "-", span: "full" },
           { label: "相对路径", value: physicalDetail.relativePath || "-", span: "full" },
-          { label: "绝对路径", value: physicalDetail.absolutePath || "-", span: "full", multiline: true },
+          {
+            label: "绝对路径",
+            value: physicalDetail.absolutePath || "-",
+            span: "full",
+            multiline: true,
+          },
         ],
       },
     ];
@@ -519,7 +565,11 @@ export function SystemFilesPage() {
                     ref={queryCardRef}
                     className={[
                       "admin-query-layout",
-                      querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+                      querySingleRow
+                        ? "is-single-row"
+                        : queryExpanded
+                          ? "is-expanded"
+                          : "is-collapsed",
                     ].join(" ")}
                   >
                     <form
@@ -530,62 +580,91 @@ export function SystemFilesPage() {
                         applySearch();
                       }}
                     >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">搜索</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={keywordInput}
-                        placeholder="按名称搜索当前目录及子目录"
-                        clearable
-                        onValueChange={setKeywordInput}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applySearch();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">排序</div>
-                    <div className="admin-query-field__control system-files-sort-controls">
-                      <BzSelect modelValue={sortBy} onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}>
-                        <BzOption label="名称" value="NAME" />
-                        <BzOption label="大小" value="SIZE" />
-                        <BzOption label="类型" value="TYPE" />
-                        <BzOption label="最新修改" value="UPDATED_AT" />
-                      </BzSelect>
-                      <BzSelect modelValue={sortOrder} onValueChange={(v) => setSortOrder((v ?? "ASC") as StorageSortOrder)}>
-                        <BzOption label="升序" value="ASC" />
-                        <BzOption label="降序" value="DESC" />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      nativeType="button"
-                      onClick={clearSearch}
-                      disabled={!activeKeyword && !keywordInput}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applySearch}>
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">搜索</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={keywordInput}
+                            placeholder="按名称搜索当前目录及子目录"
+                            clearable
+                            onValueChange={setKeywordInput}
+                            onKeyUp={(e) => {
+                              if (e.key === "Enter") applySearch();
+                            }}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">排序</div>
+                        <div className="admin-query-field__control system-files-sort-controls">
+                          <BzSelect
+                            modelValue={sortBy}
+                            onValueChange={(v) => setSortBy((v ?? "NAME") as StorageSortBy)}
+                          >
+                            <BzOption
+                              label="名称"
+                              value="NAME"
+                            />
+                            <BzOption
+                              label="大小"
+                              value="SIZE"
+                            />
+                            <BzOption
+                              label="类型"
+                              value="TYPE"
+                            />
+                            <BzOption
+                              label="最新修改"
+                              value="UPDATED_AT"
+                            />
+                          </BzSelect>
+                          <BzSelect
+                            modelValue={sortOrder}
+                            onValueChange={(v) => setSortOrder((v ?? "ASC") as StorageSortOrder)}
+                          >
+                            <BzOption
+                              label="升序"
+                              value="ASC"
+                            />
+                            <BzOption
+                              label="降序"
+                              value="DESC"
+                            />
+                          </BzSelect>
+                        </div>
+                      </BzFormItem>
+                      <div className="admin-query-actions">
+                        <BzButton
+                          className="admin-filter-secondary"
+                          nativeType="button"
+                          onClick={clearSearch}
+                          disabled={!activeKeyword && !keywordInput}
+                        >
+                          重置
+                        </BzButton>
+                        <BzButton
+                          className="admin-filter-primary"
+                          buttonType="primary"
+                          nativeType="button"
+                          onClick={applySearch}
+                        >
+                          搜索
+                        </BzButton>
+                        {!querySingleRow ? (
+                          <button
+                            className="admin-filter-toggle"
+                            type="button"
+                            aria-expanded={queryExpanded}
+                            onClick={() => setQueryExpanded((value) => !value)}
+                          >
+                            <span>{queryExpanded ? "收起" : "展开"}</span>
+                            <i
+                              className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ) : null}
+                      </div>
                     </form>
                   </div>
                 </div>
@@ -593,10 +672,18 @@ export function SystemFilesPage() {
 
               <div className="admin-list-toolbar-row">
                 <div className="admin-list-business-actions system-files-header-stack">
-                  <div className="system-files-breadcrumbs" title={currentPath}>
+                  <div
+                    className="system-files-breadcrumbs"
+                    title={currentPath}
+                  >
                     {pathSegments.map((segment, index) => (
-                      <span key={`${segment.id || "root"}-${index}`} className="system-files-breadcrumbs__segment-wrap">
-                        {index > 0 ? <span className="system-files-breadcrumbs__separator">/</span> : null}
+                      <span
+                        key={`${segment.id || "root"}-${index}`}
+                        className="system-files-breadcrumbs__segment-wrap"
+                      >
+                        {index > 0 ? (
+                          <span className="system-files-breadcrumbs__separator">/</span>
+                        ) : null}
                         <button
                           type="button"
                           className={`system-files-breadcrumbs__segment${index === pathSegments.length - 1 ? " is-current" : ""}`}
@@ -606,7 +693,7 @@ export function SystemFilesPage() {
                         </button>
                       </span>
                     ))}
-                </div>
+                  </div>
                 </div>
                 <div className="admin-list-query-tools">
                   <AdminTableTools
@@ -614,37 +701,80 @@ export function SystemFilesPage() {
                     onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
                     onRefresh={() => void reload()}
                   />
-                  <button className="admin-vben-circle-button" type="button" title="返回根目录" onClick={goRoot}>
-                    <span className="system-files-root-icon" aria-hidden="true">/</span>
+                  <button
+                    className="admin-vben-circle-button"
+                    type="button"
+                    title="返回根目录"
+                    onClick={goRoot}
+                  >
+                    <span
+                      className="system-files-root-icon"
+                      aria-hidden="true"
+                    >
+                      /
+                    </span>
                   </button>
-                  <button className="admin-vben-circle-button" type="button" title="返回上级" onClick={goBack} disabled={breadcrumbs.length === 0}>
-                    <span className="system-files-root-icon" aria-hidden="true">..</span>
+                  <button
+                    className="admin-vben-circle-button"
+                    type="button"
+                    title="返回上级"
+                    onClick={goBack}
+                    disabled={breadcrumbs.length === 0}
+                  >
+                    <span
+                      className="system-files-root-icon"
+                      aria-hidden="true"
+                    >
+                      ..
+                    </span>
                   </button>
                 </div>
               </div>
 
-              <BzLoading loading={loading} text="加载中...">
-              {!canAdmin ? (
-                <BzEmpty description="无权限查看文件管理页面" />
-              ) : errorMessage ? (
-                <div className="state-block">
-                  <BzAlert title={errorMessage} type="error" showIcon />
-                  <BzButton size="small" buttonType="primary" onClick={() => void reload()}>
-                    重试
-                  </BzButton>
-                </div>
-              ) : !loading && items.length === 0 ? (
-                <BzEmpty description={activeKeyword ? "没有匹配结果" : "暂无数据"} />
-              ) : (
-                <div>
-                  {showSearchTip ? (
-                    <BzAlert className="search-tip" type="info" closable={false} showIcon title="搜索中：仅显示当前目录及子目录名称匹配结果" />
-                  ) : null}
-                  <div className="admin-table-surface admin-list-table-area">
-                     <BzTable data={items} columns={listColumns} rowKey="id" size="small" />
-                   </div>
-                 </div>
-               )}
+              <BzLoading
+                loading={loading}
+                text="加载中..."
+              >
+                {!canAdmin ? (
+                  <BzEmpty description="无权限查看文件管理页面" />
+                ) : errorMessage ? (
+                  <div className="state-block">
+                    <BzAlert
+                      title={errorMessage}
+                      type="error"
+                      showIcon
+                    />
+                    <BzButton
+                      size="small"
+                      buttonType="primary"
+                      onClick={() => void reload()}
+                    >
+                      重试
+                    </BzButton>
+                  </div>
+                ) : !loading && items.length === 0 ? (
+                  <BzEmpty description={activeKeyword ? "没有匹配结果" : "暂无数据"} />
+                ) : (
+                  <div>
+                    {showSearchTip ? (
+                      <BzAlert
+                        className="search-tip"
+                        type="info"
+                        closable={false}
+                        showIcon
+                        title="搜索中：仅显示当前目录及子目录名称匹配结果"
+                      />
+                    ) : null}
+                    <div className="admin-table-surface admin-list-table-area">
+                      <BzTable
+                        data={items}
+                        columns={listColumns}
+                        rowKey="id"
+                        size="small"
+                      />
+                    </div>
+                  </div>
+                )}
               </BzLoading>
             </div>
           </BzCard>
@@ -658,18 +788,28 @@ export function SystemFilesPage() {
                 </div>
                 <div className="row-actions">
                   {previewIsText ? (
-                    <BzButton size="small" onClick={() => void copyPreviewText()}>
+                    <BzButton
+                      size="small"
+                      onClick={() => void copyPreviewText()}
+                    >
                       复制文本
                     </BzButton>
                   ) : null}
-                  <BzButton size="small" onClick={clearPreview}>
+                  <BzButton
+                    size="small"
+                    onClick={clearPreview}
+                  >
                     关闭
                   </BzButton>
                 </div>
               </div>
               <div className="preview-body">
                 {previewIsImage ? (
-                  <img src={previewUrl} alt="preview" className="preview-image" />
+                  <img
+                    src={previewUrl}
+                    alt="preview"
+                    className="preview-image"
+                  />
                 ) : previewIsText ? (
                   <pre className="preview-text">{previewText}</pre>
                 ) : (
@@ -686,14 +826,24 @@ export function SystemFilesPage() {
                   <div className="preview-title">物理文件详情：{physicalDetail.fileName}</div>
                   <div className="muted">逻辑文件：{physicalDetail.logicalFileName}</div>
                 </div>
-                <BzButton size="small" onClick={clearPhysicalDetail}>
+                <BzButton
+                  size="small"
+                  onClick={clearPhysicalDetail}
+                >
                   关闭
                 </BzButton>
               </div>
 
               <AdminDetailTable sections={physicalDetailSections} />
 
-              {detailErrorMessage ? <BzAlert title={detailErrorMessage} type="error" showIcon className="detail-error" /> : null}
+              {detailErrorMessage ? (
+                <BzAlert
+                  title={detailErrorMessage}
+                  type="error"
+                  showIcon
+                  className="detail-error"
+                />
+              ) : null}
 
               <div className="refs-head">
                 <h4>同物理文件逻辑引用</h4>
@@ -708,7 +858,10 @@ export function SystemFilesPage() {
                     }}
                   />
                   {canReverse ? <BzButton onClick={applyRefsSearch}>查询</BzButton> : null}
-                  <BzButton disabled={!refsKeyword && !refsKeywordInput} onClick={clearRefsSearch}>
+                  <BzButton
+                    disabled={!refsKeyword && !refsKeywordInput}
+                    onClick={clearRefsSearch}
+                  >
                     清空
                   </BzButton>
                 </div>
@@ -717,12 +870,25 @@ export function SystemFilesPage() {
               {!canReverse ? (
                 <BzEmpty description="无权限查看反向引用信息" />
               ) : (
-                <BzLoading loading={refsLoading} text="引用查询中..." className="refs-body">
+                <BzLoading
+                  loading={refsLoading}
+                  text="引用查询中..."
+                  className="refs-body"
+                >
                   {refsErrorMessage ? (
-                    <BzAlert title={refsErrorMessage} type="error" showIcon />
+                    <BzAlert
+                      title={refsErrorMessage}
+                      type="error"
+                      showIcon
+                    />
                   ) : reverseRefs.length > 0 ? (
                     <div className="refs-table admin-table-surface">
-                      <BzTable data={reverseRefs} columns={refsColumns} rowKey="id" size="small" />
+                      <BzTable
+                        data={reverseRefs}
+                        columns={refsColumns}
+                        rowKey="id"
+                        size="small"
+                      />
                     </div>
                   ) : !refsLoading ? (
                     <BzEmpty description="未查到引用记录" />

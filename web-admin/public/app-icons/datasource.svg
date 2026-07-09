@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28">
+  <!-- 背景 -->
+  <rect width="28" height="28" rx="6" fill="#0D1B2A" />
+
+  <!-- 三层圆柱（整体下移居中） -->
+  <!-- 底层圆柱 -->
+  <ellipse cx="13" cy="22" rx="7" ry="2.5" fill="#1565C0" />
+  <rect x="6" y="17.5" width="14" height="4.5" fill="#1565C0" />
+  <ellipse cx="13" cy="17.5" rx="7" ry="2.5" fill="#1E88E5" />
+
+  <!-- 中层圆柱 -->
+  <ellipse cx="13" cy="16" rx="7" ry="2.5" fill="#1976D2" />
+  <rect x="6" y="11.5" width="14" height="4.5" fill="#1976D2" />
+  <ellipse cx="13" cy="11.5" rx="7" ry="2.5" fill="#42A5F5" />
+
+  <!-- 顶层圆柱 -->
+  <ellipse cx="13" cy="10" rx="7" ry="2.5" fill="#2196F3" />
+  <rect x="6" y="5.5" width="14" height="4.5" fill="#2196F3" />
+  <ellipse cx="13" cy="5.5" rx="7" ry="2.5" fill="#64B5F6" />
+
+  <!-- 圆柱高光 -->
+  <rect x="7.5" y="5.5" width="1.5" height="16.5" rx="0.75" fill="#90CAF9" opacity="0.35" />
+
+  <!-- 黄色闪电（两头尖，右下角） -->
+  <polygon points="21,13 17,20 19.5,20 17.5,26 24.5,17 22,17 23.5,13"
+           fill="#FFD700" stroke="#FFC107" stroke-width="0.6" stroke-linejoin="round" />
+</svg>

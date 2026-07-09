@@ -403,9 +403,8 @@ export function WebUsersAdminPage() {
     setFeatureOpen(false);
   }
 
-  const columns = useMemo<Array<BzTableColumn<ExternalUserEntry>>>(
-    () => {
-      const baseColumns: Array<BzTableColumn<ExternalUserEntry>> = [
+  const columns = useMemo<Array<BzTableColumn<ExternalUserEntry>>>(() => {
+    const baseColumns: Array<BzTableColumn<ExternalUserEntry>> = [
       { key: "account", title: "账号", minWidth: 180, render: (row) => <>{row.account}</> },
       {
         key: "nickname",
@@ -433,12 +432,10 @@ export function WebUsersAdminPage() {
         minWidth: 160,
         render: (row) => <>{formatDateTime(row.createdAt) || "-"}</>,
       },
-      ];
-      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
-      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
-    },
-    [canEdit, canFeatureManage, rows],
-  );
+    ];
+    const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+  }, [canEdit, canFeatureManage, rows]);
 
   const detailSections = useMemo(
     () =>
@@ -480,340 +477,372 @@ export function WebUsersAdminPage() {
                 applyFilters();
               }}
             >
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">关键词</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="按账号或昵称搜索"
-                        clearable
-                        onValueChange={setKeywordDraft}
-                        onKeyUp={(e) => e.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={statusDraft}
-                        placeholder="全部状态"
-                        clearable
-                        onValueChange={(v) => setStatusDraft((v || "") as "" | ExternalUserStatus)}
-                      >
-                        <BzOption
-                          label="启用"
-                          value="ACTIVE"
-                        />
-                        <BzOption
-                          label="停用"
-                          value="DISABLED"
-                        />
-                        <BzOption
-                          label="已注销"
-                          value="CANCELLED"
-                        />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      nativeType="button"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      nativeType="button"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">关键词</div>
+                <div className="admin-query-field__control">
+                  <BzInput
+                    modelValue={keywordDraft}
+                    placeholder="按账号或昵称搜索"
+                    clearable
+                    onValueChange={setKeywordDraft}
+                    onKeyUp={(e) => e.key === "Enter" && applyFilters()}
+                  />
+                </div>
+              </BzFormItem>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">状态</div>
+                <div className="admin-query-field__control">
+                  <BzSelect
+                    modelValue={statusDraft}
+                    placeholder="全部状态"
+                    clearable
+                    onValueChange={(v) => setStatusDraft((v || "") as "" | ExternalUserStatus)}
+                  >
+                    <BzOption
+                      label="启用"
+                      value="ACTIVE"
+                    />
+                    <BzOption
+                      label="停用"
+                      value="DISABLED"
+                    />
+                    <BzOption
+                      label="已注销"
+                      value="CANCELLED"
+                    />
+                  </BzSelect>
+                </div>
+              </BzFormItem>
+              <div className="admin-query-actions">
+                <BzButton
+                  className="admin-filter-secondary"
+                  nativeType="button"
+                  onClick={resetFilters}
+                >
+                  重置
+                </BzButton>
+                <BzButton
+                  className="admin-filter-primary"
+                  buttonType="primary"
+                  nativeType="button"
+                  onClick={applyFilters}
+                >
+                  搜索
+                </BzButton>
+                {!querySingleRow ? (
+                  <button
+                    className="admin-filter-toggle"
+                    type="button"
+                    aria-expanded={queryExpanded}
+                    onClick={() => setQueryExpanded((value) => !value)}
+                  >
+                    <span>{queryExpanded ? "收起" : "展开"}</span>
+                    <i
+                      className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : null}
+              </div>
             </form>
           </div>
         }
-        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => void reload()} />}
-        table={<BzTable columns={columns} data={rows} loading={loading} emptyText="暂无用户" size="small" />}
-        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+        queryTools={
+          <AdminTableTools
+            queryPanelVisible={queryPanelVisible}
+            onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+            onRefresh={() => void reload()}
+          />
+        }
+        table={
+          <BzTable
+            columns={columns}
+            data={rows}
+            loading={loading}
+            emptyText="暂无用户"
+            size="small"
+          />
+        }
+        footer={
+          page.totalElements > 0 ? (
+            <div className="dict-pagination-bar admin-list-table-footer">
+              <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+              <div className="dict-pagination-right">
+                <BzPagination
+                  total={page.totalElements}
+                  pageSize={pageSize}
+                  currentPage={pageNo}
+                  pageSizes={pageSizeOptions}
+                  onCurrentChange={setPageNo}
+                  onSizeChange={(size) => {
+                    if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                    setPageSize(size);
+                    setPageNo(1);
+                  }}
+                />
+              </div>
+            </div>
+          ) : null
+        }
       />
 
-          <AdminDetailDrawerTemplate
-            open={detailOpen}
-            loading={detailLoading}
-            title="用户详情"
-            width="860px"
-            sections={detailSections}
-            plain={false}
-            onClose={() => setDetailOpen(false)}
-          />
+      <AdminDetailDrawerTemplate
+        open={detailOpen}
+        loading={detailLoading}
+        title="用户详情"
+        width="860px"
+        sections={detailSections}
+        plain={false}
+        onClose={() => setDetailOpen(false)}
+      />
 
-          <AdminEntityDrawer
-            open={featureOpen}
-            loading={featureLoading}
-            title="用户应用功能配置"
-            width="1180px"
-            onClose={() => setFeatureOpen(false)}
-            footer={renderFeatureFooter()}
-          >
-            {featureManagement ? (
-              <div className="feature-manage-layout">
-                <div className="feature-manage-cards">
-                  <div className="feature-manage-card">
-                    <span>当前用户</span>
-                    <strong>{featureManagement.account}</strong>
-                  </div>
-                  <div className="feature-manage-card">
-                    <span>已选应用包</span>
-                    <strong>{selectedPackageIds.length}</strong>
-                  </div>
-                  <div className="feature-manage-card">
-                    <span>应用数</span>
-                    <strong>{applicationStates.length}</strong>
-                  </div>
-                  <div className="feature-manage-card">
-                    <span>功能项</span>
-                    <strong>{flattenedFeatures.length}</strong>
-                  </div>
-                </div>
-
-                <div className="feature-section">
-                  <div className="feature-section__head">
-                    <div className="feature-section__title">用户应用包</div>
-                    <div className="feature-section__meta">勾选后参与权限继承计算</div>
-                  </div>
-                  <div className="package-option-grid">
-                    {packageEntries.map((pkg) => (
-                      <label
-                        key={pkg.id}
-                        className="package-option-card"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedPackageIds.includes(pkg.id)}
-                          onChange={(e) => togglePackageSelection(pkg.id, e.target.checked)}
-                        />
-                        <div className="package-option-card__body">
-                          <div className="package-option-card__top">
-                            <strong>{pkg.name}</strong>
-                            <BzTag type={pkg.defaultPackage ? "success" : "info"}>
-                              {pkg.defaultPackage ? "默认包" : "普通包"}
-                            </BzTag>
-                          </div>
-                          <div className="package-option-card__code">{pkg.code}</div>
-                          <div className="package-option-card__desc">
-                            {pkg.description || "无描述"}
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="feature-section">
-                  <div className="feature-section__head">
-                    <div className="feature-section__title">应用特例</div>
-                    <div className="feature-section__meta">优先级高于应用包授权</div>
-                  </div>
-                  <div className="admin-table-surface">
-                    <BzTable
-                      columns={[
-                        {
-                          key: "name",
-                          title: "应用",
-                          minWidth: 180,
-                          render: (row: UserFeatureUserApplicationEntry) => (
-                            <div className="table-title-cell">
-                              <strong>{row.name}</strong>
-                              <small>{row.code}</small>
-                            </div>
-                          ),
-                        },
-                        {
-                          key: "inheritedVisible",
-                          title: "继承可见",
-                          width: 100,
-                          render: (row) => (
-                            <BzTag type={row.inheritedVisible ? "success" : "info"}>
-                              {row.inheritedVisible ? "是" : "否"}
-                            </BzTag>
-                          ),
-                        },
-                        {
-                          key: "packageAccessScope",
-                          title: "继承范围",
-                          width: 110,
-                          render: (row) => <>{row.packageAccessScope}</>,
-                        },
-                        {
-                          key: "effectiveVisible",
-                          title: "最终可见",
-                          width: 100,
-                          render: (row) => (
-                            <BzTag type={row.effectiveVisible ? "success" : "warning"}>
-                              {row.effectiveVisible ? "是" : "否"}
-                            </BzTag>
-                          ),
-                        },
-                        {
-                          key: "overrideType",
-                          title: "特例类型",
-                          width: 140,
-                          render: (row) => (
-                            <select
-                              className="inline-select"
-                              value={row.overrideType}
-                              onChange={(e) =>
-                                updateApplicationOverride(
-                                  row.id,
-                                  e.target.value as UserFeatureOverrideType,
-                                )
-                              }
-                            >
-                              <option value="NONE">继承</option>
-                              <option value="ENABLE">单独启用</option>
-                              <option value="DISABLE">单独禁用</option>
-                            </select>
-                          ),
-                        },
-                        {
-                          key: "overrideAccessScope",
-                          title: "启用范围",
-                          width: 140,
-                          render: (row) => (
-                            <select
-                              className="inline-select"
-                              disabled={row.overrideType !== "ENABLE"}
-                              value={row.overrideAccessScope || "FULL"}
-                              onChange={(e) =>
-                                updateApplicationOverrideScope(
-                                  row.id,
-                                  e.target.value as UserFeatureAccessScope,
-                                )
-                              }
-                            >
-                              <option value="FULL">完整功能</option>
-                              <option value="PARTIAL">部分功能</option>
-                            </select>
-                          ),
-                        },
-                      ]}
-                      data={applicationStates}
-                      rowKey="id"
-                      size="small"
-                      emptyText="暂无应用"
-                    />
-                  </div>
-                </div>
-
-                <div className="feature-section">
-                  <div className="feature-section__head">
-                    <div className="feature-section__title">功能特例</div>
-                    <div className="feature-section__meta">用于补充单个功能的启用或禁用</div>
-                  </div>
-                  <div className="feature-filter-bar">
-                    <BzInput
-                      modelValue={featureKeyword}
-                      placeholder="搜索应用、功能编码或名称"
-                      clearable
-                      onValueChange={setFeatureKeyword}
-                    />
-                    <select
-                      className="inline-select inline-select--filter"
-                      value={featureOverrideFilter}
-                      onChange={(e) =>
-                        setFeatureOverrideFilter(e.target.value as "" | UserFeatureOverrideType)
-                      }
-                    >
-                      <option value="">全部特例</option>
-                      <option value="NONE">继承</option>
-                      <option value="ENABLE">单独启用</option>
-                      <option value="DISABLE">单独禁用</option>
-                    </select>
-                  </div>
-                  <div className="admin-table-surface">
-                    <BzTable
-                      columns={[
-                        {
-                          key: "applicationId",
-                          title: "所属应用",
-                          minWidth: 160,
-                          render: (row) => <>{applicationName(row.applicationId)}</>,
-                        },
-                        { key: "code", title: "功能编码", minWidth: 170 },
-                        { key: "name", title: "名称", minWidth: 160 },
-                        {
-                          key: "inheritedEnabled",
-                          title: "继承可用",
-                          width: 100,
-                          render: (row) => (
-                            <BzTag type={row.inheritedEnabled ? "success" : "info"}>
-                              {row.inheritedEnabled ? "是" : "否"}
-                            </BzTag>
-                          ),
-                        },
-                        {
-                          key: "effectiveEnabled",
-                          title: "最终可用",
-                          width: 100,
-                          render: (row) => (
-                            <BzTag type={row.effectiveEnabled ? "success" : "warning"}>
-                              {row.effectiveEnabled ? "是" : "否"}
-                            </BzTag>
-                          ),
-                        },
-                        {
-                          key: "overrideType",
-                          title: "特例类型",
-                          width: 140,
-                          render: (row) => (
-                            <select
-                              className="inline-select"
-                              value={row.overrideType}
-                              onChange={(e) =>
-                                updateFeatureOverride(
-                                  row.applicationId,
-                                  row.id,
-                                  e.target.value as UserFeatureOverrideType,
-                                )
-                              }
-                            >
-                              <option value="NONE">继承</option>
-                              <option value="ENABLE">单独启用</option>
-                              <option value="DISABLE">单独禁用</option>
-                            </select>
-                          ),
-                        },
-                      ]}
-                      data={filteredFeatures}
-                      rowKey="id"
-                      size="small"
-                      emptyText="暂无功能项"
-                    />
-                  </div>
-                </div>
+      <AdminEntityDrawer
+        open={featureOpen}
+        loading={featureLoading}
+        title="用户应用功能配置"
+        width="1180px"
+        onClose={() => setFeatureOpen(false)}
+        footer={renderFeatureFooter()}
+      >
+        {featureManagement ? (
+          <div className="feature-manage-layout">
+            <div className="feature-manage-cards">
+              <div className="feature-manage-card">
+                <span>当前用户</span>
+                <strong>{featureManagement.account}</strong>
               </div>
-            ) : (
-              <BzEmpty description="暂无数据" />
-            )}
-          </AdminEntityDrawer>
+              <div className="feature-manage-card">
+                <span>已选应用包</span>
+                <strong>{selectedPackageIds.length}</strong>
+              </div>
+              <div className="feature-manage-card">
+                <span>应用数</span>
+                <strong>{applicationStates.length}</strong>
+              </div>
+              <div className="feature-manage-card">
+                <span>功能项</span>
+                <strong>{flattenedFeatures.length}</strong>
+              </div>
+            </div>
+
+            <div className="feature-section">
+              <div className="feature-section__head">
+                <div className="feature-section__title">用户应用包</div>
+                <div className="feature-section__meta">勾选后参与权限继承计算</div>
+              </div>
+              <div className="package-option-grid">
+                {packageEntries.map((pkg) => (
+                  <label
+                    key={pkg.id}
+                    className="package-option-card"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPackageIds.includes(pkg.id)}
+                      onChange={(e) => togglePackageSelection(pkg.id, e.target.checked)}
+                    />
+                    <div className="package-option-card__body">
+                      <div className="package-option-card__top">
+                        <strong>{pkg.name}</strong>
+                        <BzTag type={pkg.defaultPackage ? "success" : "info"}>
+                          {pkg.defaultPackage ? "默认包" : "普通包"}
+                        </BzTag>
+                      </div>
+                      <div className="package-option-card__code">{pkg.code}</div>
+                      <div className="package-option-card__desc">{pkg.description || "无描述"}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="feature-section">
+              <div className="feature-section__head">
+                <div className="feature-section__title">应用特例</div>
+                <div className="feature-section__meta">优先级高于应用包授权</div>
+              </div>
+              <div className="admin-table-surface">
+                <BzTable
+                  columns={[
+                    {
+                      key: "name",
+                      title: "应用",
+                      minWidth: 180,
+                      render: (row: UserFeatureUserApplicationEntry) => (
+                        <div className="table-title-cell">
+                          <strong>{row.name}</strong>
+                          <small>{row.code}</small>
+                        </div>
+                      ),
+                    },
+                    {
+                      key: "inheritedVisible",
+                      title: "继承可见",
+                      width: 100,
+                      render: (row) => (
+                        <BzTag type={row.inheritedVisible ? "success" : "info"}>
+                          {row.inheritedVisible ? "是" : "否"}
+                        </BzTag>
+                      ),
+                    },
+                    {
+                      key: "packageAccessScope",
+                      title: "继承范围",
+                      width: 110,
+                      render: (row) => <>{row.packageAccessScope}</>,
+                    },
+                    {
+                      key: "effectiveVisible",
+                      title: "最终可见",
+                      width: 100,
+                      render: (row) => (
+                        <BzTag type={row.effectiveVisible ? "success" : "warning"}>
+                          {row.effectiveVisible ? "是" : "否"}
+                        </BzTag>
+                      ),
+                    },
+                    {
+                      key: "overrideType",
+                      title: "特例类型",
+                      width: 140,
+                      render: (row) => (
+                        <select
+                          className="inline-select"
+                          value={row.overrideType}
+                          onChange={(e) =>
+                            updateApplicationOverride(
+                              row.id,
+                              e.target.value as UserFeatureOverrideType,
+                            )
+                          }
+                        >
+                          <option value="NONE">继承</option>
+                          <option value="ENABLE">单独启用</option>
+                          <option value="DISABLE">单独禁用</option>
+                        </select>
+                      ),
+                    },
+                    {
+                      key: "overrideAccessScope",
+                      title: "启用范围",
+                      width: 140,
+                      render: (row) => (
+                        <select
+                          className="inline-select"
+                          disabled={row.overrideType !== "ENABLE"}
+                          value={row.overrideAccessScope || "FULL"}
+                          onChange={(e) =>
+                            updateApplicationOverrideScope(
+                              row.id,
+                              e.target.value as UserFeatureAccessScope,
+                            )
+                          }
+                        >
+                          <option value="FULL">完整功能</option>
+                          <option value="PARTIAL">部分功能</option>
+                        </select>
+                      ),
+                    },
+                  ]}
+                  data={applicationStates}
+                  rowKey="id"
+                  size="small"
+                  emptyText="暂无应用"
+                />
+              </div>
+            </div>
+
+            <div className="feature-section">
+              <div className="feature-section__head">
+                <div className="feature-section__title">功能特例</div>
+                <div className="feature-section__meta">用于补充单个功能的启用或禁用</div>
+              </div>
+              <div className="feature-filter-bar">
+                <BzInput
+                  modelValue={featureKeyword}
+                  placeholder="搜索应用、功能编码或名称"
+                  clearable
+                  onValueChange={setFeatureKeyword}
+                />
+                <select
+                  className="inline-select inline-select--filter"
+                  value={featureOverrideFilter}
+                  onChange={(e) =>
+                    setFeatureOverrideFilter(e.target.value as "" | UserFeatureOverrideType)
+                  }
+                >
+                  <option value="">全部特例</option>
+                  <option value="NONE">继承</option>
+                  <option value="ENABLE">单独启用</option>
+                  <option value="DISABLE">单独禁用</option>
+                </select>
+              </div>
+              <div className="admin-table-surface">
+                <BzTable
+                  columns={[
+                    {
+                      key: "applicationId",
+                      title: "所属应用",
+                      minWidth: 160,
+                      render: (row) => <>{applicationName(row.applicationId)}</>,
+                    },
+                    { key: "code", title: "功能编码", minWidth: 170 },
+                    { key: "name", title: "名称", minWidth: 160 },
+                    {
+                      key: "inheritedEnabled",
+                      title: "继承可用",
+                      width: 100,
+                      render: (row) => (
+                        <BzTag type={row.inheritedEnabled ? "success" : "info"}>
+                          {row.inheritedEnabled ? "是" : "否"}
+                        </BzTag>
+                      ),
+                    },
+                    {
+                      key: "effectiveEnabled",
+                      title: "最终可用",
+                      width: 100,
+                      render: (row) => (
+                        <BzTag type={row.effectiveEnabled ? "success" : "warning"}>
+                          {row.effectiveEnabled ? "是" : "否"}
+                        </BzTag>
+                      ),
+                    },
+                    {
+                      key: "overrideType",
+                      title: "特例类型",
+                      width: 140,
+                      render: (row) => (
+                        <select
+                          className="inline-select"
+                          value={row.overrideType}
+                          onChange={(e) =>
+                            updateFeatureOverride(
+                              row.applicationId,
+                              row.id,
+                              e.target.value as UserFeatureOverrideType,
+                            )
+                          }
+                        >
+                          <option value="NONE">继承</option>
+                          <option value="ENABLE">单独启用</option>
+                          <option value="DISABLE">单独禁用</option>
+                        </select>
+                      ),
+                    },
+                  ]}
+                  data={filteredFeatures}
+                  rowKey="id"
+                  size="small"
+                  emptyText="暂无功能项"
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <BzEmpty description="暂无数据" />
+        )}
+      </AdminEntityDrawer>
     </>
   );
 }

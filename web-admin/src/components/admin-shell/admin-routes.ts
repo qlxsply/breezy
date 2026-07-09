@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  getResources,
-  hasMenuAccess,
-  useResources,
-} from "@admin/core/registry/resources-registry";
+import { getResources, hasMenuAccess, useResources } from "@admin/core/registry/resources-registry";
 import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import type { ResourceEntry, ResourceNodeType } from "@admin/types/resource-admin";
 import { useMemo } from "react";
@@ -45,21 +41,98 @@ const staticAdminRoutes: AdminRouteMeta[] = [
   { path: "/admin/apis", title: "接口管理", section: "平台管理", sectionOrder: 20, order: 20 },
   { path: "/admin/resources", title: "资源管理", section: "平台管理", sectionOrder: 20, order: 30 },
   { path: "/admin/dicts", title: "数据字典", section: "平台管理", sectionOrder: 20, order: 40 },
-  { path: "/admin/system-files", title: "系统文件", section: "平台管理", sectionOrder: 20, order: 50 },
-  { path: "/admin/diagnostic", title: "诊断工具", section: "平台管理", sectionOrder: 20, order: 60 },
-  { path: "/admin/method-stat", title: "方法统计", section: "平台管理", sectionOrder: 20, order: 90, hidden: true },
+  {
+    path: "/admin/system-files",
+    title: "系统文件",
+    section: "平台管理",
+    sectionOrder: 20,
+    order: 50,
+  },
+  {
+    path: "/admin/diagnostic",
+    title: "诊断工具",
+    section: "平台管理",
+    sectionOrder: 20,
+    order: 60,
+  },
+  {
+    path: "/admin/method-stat",
+    title: "方法统计",
+    section: "平台管理",
+    sectionOrder: 20,
+    order: 90,
+    hidden: true,
+  },
   { path: "/admin/users", title: "账号管理", section: "权限中心", sectionOrder: 30, order: 10 },
   { path: "/admin/roles", title: "角色管理", section: "权限中心", sectionOrder: 30, order: 20 },
-  { path: "/admin/permission-policies", title: "权限策略", section: "权限中心", sectionOrder: 30, order: 30 },
-  { path: "/admin/login-logs", title: "登录日志", section: "权限中心", sectionOrder: 30, order: 40 },
-  { path: "/admin/audit-logs", title: "审计日志", section: "权限中心", sectionOrder: 30, order: 50 },
+  {
+    path: "/admin/permission-policies",
+    title: "权限策略",
+    section: "权限中心",
+    sectionOrder: 30,
+    order: 30,
+  },
+  {
+    path: "/admin/login-logs",
+    title: "登录日志",
+    section: "权限中心",
+    sectionOrder: 30,
+    order: 40,
+  },
+  {
+    path: "/admin/audit-logs",
+    title: "审计日志",
+    section: "权限中心",
+    sectionOrder: 30,
+    order: 50,
+  },
   { path: "/admin/web-users", title: "用户管理", section: "用户中心", sectionOrder: 40, order: 10 },
-  { path: "/admin/user-feature-packages", title: "应用包管理", section: "用户中心", sectionOrder: 40, order: 20 },
-  { path: "/admin/user-feature-applications", title: "应用配置", section: "用户中心", sectionOrder: 40, order: 30 },
-  { path: "/admin/profile", title: "个人中心", section: "个人中心", sectionOrder: 90, order: 10, hidden: true },
-  { path: "/admin/profile/password", title: "修改密码", section: "个人中心", sectionOrder: 90, order: 20, hidden: true },
-  { path: "/admin/profile/preferences", title: "偏好设置", section: "个人中心", sectionOrder: 90, order: 30, hidden: true },
-  { path: "/admin/help", title: "问题与帮助", section: "个人中心", sectionOrder: 90, order: 40, hidden: true },
+  {
+    path: "/admin/user-feature-packages",
+    title: "应用包管理",
+    section: "用户中心",
+    sectionOrder: 40,
+    order: 20,
+  },
+  {
+    path: "/admin/user-feature-applications",
+    title: "应用配置",
+    section: "用户中心",
+    sectionOrder: 40,
+    order: 30,
+  },
+  {
+    path: "/admin/profile",
+    title: "个人中心",
+    section: "个人中心",
+    sectionOrder: 90,
+    order: 10,
+    hidden: true,
+  },
+  {
+    path: "/admin/profile/password",
+    title: "修改密码",
+    section: "个人中心",
+    sectionOrder: 90,
+    order: 20,
+    hidden: true,
+  },
+  {
+    path: "/admin/profile/preferences",
+    title: "偏好设置",
+    section: "个人中心",
+    sectionOrder: 90,
+    order: 30,
+    hidden: true,
+  },
+  {
+    path: "/admin/help",
+    title: "问题与帮助",
+    section: "个人中心",
+    sectionOrder: 90,
+    order: 40,
+    hidden: true,
+  },
 ];
 
 function normalizePath(pathname: string): string {
@@ -71,7 +144,9 @@ function normalizePath(pathname: string): string {
 
 export function getAdminRoute(pathname: string): AdminRouteMeta | undefined {
   const normalized = normalizePath(pathname);
-  const resourceRoute = buildDynamicRouteList(getResources()).find((route) => route.path === normalized);
+  const resourceRoute = buildDynamicRouteList(getResources()).find(
+    (route) => route.path === normalized,
+  );
   return resourceRoute ?? staticAdminRoutes.find((route) => route.path === normalized);
 }
 
@@ -141,7 +216,10 @@ export function useAdminRouteResolved(pathname: string): AdminResolvedRoute {
   }, [pathname, resources]);
 }
 
-function resolveAdminRoute(pathname: string, resources: ResourceEntry[]): AdminRouteMeta | undefined {
+function resolveAdminRoute(
+  pathname: string,
+  resources: ResourceEntry[],
+): AdminRouteMeta | undefined {
   const dynamicRoute = buildDynamicRouteList(resources).find((route) => route.path === pathname);
   return dynamicRoute ?? staticAdminRoutes.find((route) => route.path === pathname);
 }
@@ -221,7 +299,8 @@ function flattenMenuRoutes(nodes: AdminMenuNode[]): AdminRouteMeta[] {
   const routes: AdminRouteMeta[] = [];
 
   const visit = (node: AdminMenuNode, chain: AdminMenuNode[]) => {
-    const nextChain = node.nodeType === "DIRECTORY" || node.nodeType === "MENU" ? [...chain, node] : chain;
+    const nextChain =
+      node.nodeType === "DIRECTORY" || node.nodeType === "MENU" ? [...chain, node] : chain;
     if (node.nodeType === "MENU" && node.path) {
       routes.push({
         path: node.path,
@@ -275,12 +354,10 @@ function buildBreadcrumbFromResources(
 }
 
 function sortMenuTree(nodes: AdminMenuNode[]): AdminMenuNode[] {
-  return nodes
-    .sort(sortByOrder)
-    .map((node) => ({
-      ...node,
-      children: sortMenuTree(node.children).filter(isVisibleMenuNode),
-    }));
+  return nodes.sort(sortByOrder).map((node) => ({
+    ...node,
+    children: sortMenuTree(node.children).filter(isVisibleMenuNode),
+  }));
 }
 
 function isAdminTreeResource(resource: ResourceEntry): boolean {

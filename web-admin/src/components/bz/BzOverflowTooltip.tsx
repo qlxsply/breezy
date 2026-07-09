@@ -1,6 +1,6 @@
 "use client";
 
-import { type MouseEvent, type ReactNode,useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type PopoverPlacement = "top" | "bottom";
@@ -66,43 +66,40 @@ export function BzOverflowTooltip({
     };
   }, [popover.visible]);
 
-  useEffect(
-    () => {
-      if (!popover.visible) {
+  useEffect(() => {
+    if (!popover.visible) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent | globalThis.MouseEvent) => {
+      const trigger = triggerRef.current;
+      const content = popoverRef.current;
+      const target = event.target as Node | null;
+      if (!target) {
         return;
       }
+      if (trigger?.contains(target) || content?.contains(target)) {
+        return;
+      }
+      setPopover((current) => ({ ...current, visible: false, ready: false }));
+      setCopied(false);
+    };
 
-      const handlePointerDown = (event: MouseEvent | globalThis.MouseEvent) => {
-        const trigger = triggerRef.current;
-        const content = popoverRef.current;
-        const target = event.target as Node | null;
-        if (!target) {
-          return;
-        }
-        if (trigger?.contains(target) || content?.contains(target)) {
-          return;
-        }
-        setPopover((current) => ({ ...current, visible: false, ready: false }));
-        setCopied(false);
-      };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      setPopover((current) => ({ ...current, visible: false, ready: false }));
+      setCopied(false);
+    };
 
-      const handleEscape = (event: KeyboardEvent) => {
-        if (event.key !== "Escape") {
-          return;
-        }
-        setPopover((current) => ({ ...current, visible: false, ready: false }));
-        setCopied(false);
-      };
-
-      document.addEventListener("mousedown", handlePointerDown);
-      document.addEventListener("keydown", handleEscape);
-      return () => {
-        document.removeEventListener("mousedown", handlePointerDown);
-        document.removeEventListener("keydown", handleEscape);
-      };
-    },
-    [popover.visible],
-  );
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [popover.visible]);
 
   useEffect(() => {
     return () => {
@@ -130,7 +127,10 @@ export function BzOverflowTooltip({
     const rect = trigger.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const popoverWidth = Math.min(content.offsetWidth || maxWidth, viewportWidth - VIEWPORT_PADDING * 2);
+    const popoverWidth = Math.min(
+      content.offsetWidth || maxWidth,
+      viewportWidth - VIEWPORT_PADDING * 2,
+    );
     const popoverHeight = content.offsetHeight || 0;
     const topCandidate = rect.top - popoverHeight - POPOVER_GAP;
     const bottomCandidate = rect.bottom + POPOVER_GAP;
@@ -232,7 +232,10 @@ export function BzOverflowTooltip({
                   void handleCopy();
                 }}
               >
-                <span className="bz-overflow-tooltip__glyph" aria-hidden="true">
+                <span
+                  className="bz-overflow-tooltip__glyph"
+                  aria-hidden="true"
+                >
                   {copied ? <CheckIcon /> : <CopyIcon />}
                 </span>
               </button>
@@ -268,8 +271,20 @@ async function copyText(text: string): Promise<boolean> {
 
 function CopyIcon() {
   return (
-    <svg className="bz-overflow-tooltip__svg is-copy" viewBox="0 0 24 24" fill="none">
-      <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" strokeWidth="1.7" />
+    <svg
+      className="bz-overflow-tooltip__svg is-copy"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <rect
+        x="9"
+        y="9"
+        width="10"
+        height="10"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
       <path
         d="M7 15H6C4.9 15 4 14.1 4 13V6C4 4.9 4.9 4 6 4H13C14.1 4 15 4.9 15 6V7"
         stroke="currentColor"
@@ -283,8 +298,18 @@ function CopyIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="bz-overflow-tooltip__svg is-check" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
+    <svg
+      className="bz-overflow-tooltip__svg is-check"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="8"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
       <path
         d="M8.5 12.4L10.9 14.8L15.8 9.8"
         stroke="currentColor"

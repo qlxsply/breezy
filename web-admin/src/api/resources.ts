@@ -55,7 +55,9 @@ function toEntry(payload: ResourceManagePayload): ResourceManageEntry {
     defaultEntry: payload.defaultEntry === true,
     systemBuiltin: payload.systemBuiltin === true,
     remark: payload.remark ?? null,
-    permissionIds: Array.isArray(payload.permissionIds) ? payload.permissionIds.map((item) => String(item)) : [],
+    permissionIds: Array.isArray(payload.permissionIds)
+      ? payload.permissionIds.map((item) => String(item))
+      : [],
     children: Array.isArray(payload.children) ? payload.children.map(toEntry) : [],
   };
 }
@@ -91,8 +93,13 @@ export async function createResource(req: ResourceManageSaveRequest): Promise<Re
   return toEntry(await post<ResourceManagePayload>(BASE, toSavePayload(req)));
 }
 
-export async function updateResource(id: string, req: ResourceManageSaveRequest): Promise<ResourceManageEntry> {
-  return toEntry(await put<ResourceManagePayload>(`${BASE}/${encodeURIComponent(id)}`, toSavePayload(req)));
+export async function updateResource(
+  id: string,
+  req: ResourceManageSaveRequest,
+): Promise<ResourceManageEntry> {
+  return toEntry(
+    await put<ResourceManagePayload>(`${BASE}/${encodeURIComponent(id)}`, toSavePayload(req)),
+  );
 }
 
 export function deleteResource(id: string): Promise<boolean> {
@@ -109,15 +116,26 @@ export async function listPermissions(): Promise<ResourcePermissionOption[]> {
   }));
 }
 
-export async function getResourcePermissions(id: string): Promise<ResourceManagePermissionSelection> {
-  const payload = await get<PermissionSelectionPayload>(`${BASE}/${encodeURIComponent(id)}/permissions`);
+export async function getResourcePermissions(
+  id: string,
+): Promise<ResourceManagePermissionSelection> {
+  const payload = await get<PermissionSelectionPayload>(
+    `${BASE}/${encodeURIComponent(id)}/permissions`,
+  );
   return {
-    permissionIds: Array.isArray(payload.permissionIds) ? payload.permissionIds.map((item) => String(item)) : [],
+    permissionIds: Array.isArray(payload.permissionIds)
+      ? payload.permissionIds.map((item) => String(item))
+      : [],
   };
 }
 
-export function updateResourcePermissions(id: string, selection: ResourceManagePermissionSelection): Promise<boolean> {
+export function updateResourcePermissions(
+  id: string,
+  selection: ResourceManagePermissionSelection,
+): Promise<boolean> {
   return put<boolean>(`${BASE}/${encodeURIComponent(id)}/permissions`, {
-    permissionIds: selection.permissionIds.map((item) => Number(item)).filter((item) => Number.isFinite(item)),
+    permissionIds: selection.permissionIds
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item)),
   });
 }

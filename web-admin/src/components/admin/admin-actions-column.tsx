@@ -1,4 +1,7 @@
-import { AdminActionBar, estimateAdminActionBarWidth } from "@admin/components/admin/AdminActionBar";
+import {
+  AdminActionBar,
+  estimateAdminActionBarWidth,
+} from "@admin/components/admin/AdminActionBar";
 import type { BzTableColumn } from "@admin/components/bz/BzTable";
 import type { AdminActionItem } from "@admin/types/admin-action";
 

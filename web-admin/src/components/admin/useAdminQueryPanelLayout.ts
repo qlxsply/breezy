@@ -45,10 +45,15 @@ export function useAdminQueryPanelLayout(queryPanelVisible: boolean) {
           actions.style.gridColumn = "auto";
         }
 
-        const fieldRowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort((left, right) => left - right);
+        const fieldRowTops = [...new Set(fields.map((field) => Math.round(field.offsetTop)))].sort(
+          (left, right) => left - right,
+        );
         const firstRowTop = fieldRowTops[0] || 0;
         const firstRowItems = fields.filter((field) => Math.round(field.offsetTop) === firstRowTop);
-        const firstRowBottom = Math.max(...firstRowItems.map((item) => item.offsetTop + item.offsetHeight), 0);
+        const firstRowBottom = Math.max(
+          ...firstRowItems.map((item) => item.offsetTop + item.offsetHeight),
+          0,
+        );
         const collapsedHeight = Math.max(firstRowBottom - firstRowTop, 0);
         const expandedHeight = grid.scrollHeight;
 

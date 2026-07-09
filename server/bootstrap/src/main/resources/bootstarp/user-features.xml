@@ -4,16 +4,16 @@
 
     <applications>
         <application code="jsonfmt"
-                     name="JSON 工具"
+                     name="JSON工具"
                      enabled="true"
                      sortNo="10"
-                     icon="icons/applications/jsonfmt.svg"
+                     icon="jsonfmt"
                      routePath="/jsonfmt"
                      componentPath="pages/JsonFormatterPage.vue">
-            <description>JSON 格式化与记录管理能力。</description>
+            <description>JSON格式化、记录、比对</description>
             <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入 JSON 工具并使用其核心能力。</description>
+                <feature code="BASE" name="基础功能" enabled="true" sortNo="10">
+                    <description>JSON工具基础功能</description>
                     <permissions>
                         <permission code="jfm.use"/>
                     </permissions>
@@ -25,13 +25,13 @@
                      name="提醒事项"
                      enabled="true"
                      sortNo="20"
-                     icon="icons/applications/reminder.svg"
+                     icon="reminder"
                      routePath="/todo"
                      componentPath="pages/TodoBoardPage.vue">
-            <description>提醒、日程与待办能力。</description>
+            <description>日程、提醒、待办</description>
             <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入提醒事项并使用其核心能力。</description>
+                <feature code="BASE" name="基础功能" enabled="true" sortNo="10">
+                    <description>提醒事项基础功能</description>
                     <permissions>
                         <permission code="tdo.use"/>
                     </permissions>
@@ -43,13 +43,13 @@
                      name="数据源"
                      enabled="true"
                      sortNo="30"
-                     icon="icons/applications/datasource.svg"
+                     icon="datasource"
                      routePath="/datasource"
                      componentPath="pages/DataSourceAdminPage.vue">
-            <description>数据源连接、元数据与库表管理能力。</description>
+            <description>数据源管理</description>
             <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入数据源并使用其核心能力。</description>
+                <feature code="BASE" name="基础功能" enabled="true" sortNo="10">
+                    <description>数据源管理基础功能</description>
                     <permissions>
                         <permission code="ds.use"/>
                     </permissions>
@@ -58,16 +58,16 @@
         </application>
 
         <application code="schemaforge"
-                     name="SchemaForge"
+                     name="数据库结构工具"
                      enabled="true"
                      sortNo="40"
-                     icon="icons/applications/schemaforge.svg"
+                     icon="schemaforge"
                      routePath="/schemaforge"
                      componentPath="pages/SchemaForgePage.vue">
-            <description>数据库快照、DDL 与结构比对能力。</description>
+            <description>数据库快照、备份、比对</description>
             <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入 SchemaForge 并使用其核心能力。</description>
+                <feature code="BASE" name="基础功能" enabled="true" sortNo="10">
+                    <description>数据库结构工具基础功能</description>
                     <permissions>
                         <permission code="sfg.use"/>
                     </permissions>
@@ -76,16 +76,16 @@
         </application>
 
         <application code="storage"
-                     name="存储空间"
+                     name="个人云盘"
                      enabled="true"
                      sortNo="50"
-                     icon="icons/applications/storage.svg"
+                     icon="storage"
                      routePath="/storage"
                      componentPath="pages/StoragePage.vue">
-            <description>个人文件存储与目录管理能力。</description>
+            <description>个人云盘</description>
             <features>
-                <feature code="USE" name="使用应用" enabled="true" sortNo="10">
-                    <description>允许进入存储空间并使用其核心能力。</description>
+                <feature code="BASE" name="基础功能" enabled="true" sortNo="10">
+                    <description>存储空间基础功能</description>
                     <permissions>
                         <permission code="stg.use"/>
                     </permissions>

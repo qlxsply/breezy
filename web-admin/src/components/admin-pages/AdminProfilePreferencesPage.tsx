@@ -2,7 +2,10 @@
 
 import { updateMyConfig } from "@admin/api/configs";
 import { batchListDictOptions } from "@admin/api/dicts";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
+import {
+  type AdminDetailSection,
+  AdminDetailTable,
+} from "@admin/components/admin/AdminDetailTable";
 import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
 import {
   resolveUserDateFormatCode,
@@ -139,7 +142,11 @@ export function AdminProfilePreferencesPage() {
                 }
               >
                 {timeZoneOptions.map((option) => (
-                  <BzOption key={option.value} label={option.label} value={option.value} />
+                  <BzOption
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
                 ))}
               </BzSelect>
             ) : (
@@ -159,7 +166,11 @@ export function AdminProfilePreferencesPage() {
                 }
               >
                 {dateTimeFormatOptions.map((option) => (
-                  <BzOption key={option.value} label={option.label} value={option.value} />
+                  <BzOption
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
                 ))}
               </BzSelect>
             ) : (
@@ -176,7 +187,11 @@ export function AdminProfilePreferencesPage() {
                 }
               >
                 {dateFormatOptions.map((option) => (
-                  <BzOption key={option.value} label={option.label} value={option.value} />
+                  <BzOption
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
                 ))}
               </BzSelect>
             ) : (
@@ -193,7 +208,11 @@ export function AdminProfilePreferencesPage() {
                 }
               >
                 {decimalFormatOptions.map((option) => (
-                  <BzOption key={option.value} label={option.label} value={option.value} />
+                  <BzOption
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
                 ))}
               </BzSelect>
             ) : (
@@ -313,18 +332,28 @@ export function AdminProfilePreferencesPage() {
               <div className="admin-list-business-actions" />
               <div className="admin-list-query-tools preferences-page-actions">
                 {editing ? (
-                  <BzButton disabled={saving} onClick={cancelEdit}>
+                  <BzButton
+                    disabled={saving}
+                    onClick={cancelEdit}
+                  >
                     取消
                   </BzButton>
                 ) : null}
-                <BzButton buttonType={editing ? "primary" : undefined} loading={saving} onClick={editing ? submit : startEdit}>
+                <BzButton
+                  buttonType={editing ? "primary" : undefined}
+                  loading={saving}
+                  onClick={editing ? submit : startEdit}
+                >
                   {editing ? "保存" : "编辑"}
                 </BzButton>
               </div>
             </div>
 
             <div className="preferences-detail-table">
-              <AdminDetailTable sections={detailSections} variant="plain" />
+              <AdminDetailTable
+                sections={detailSections}
+                variant="plain"
+              />
             </div>
           </div>
         </div>

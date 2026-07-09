@@ -34,7 +34,10 @@ const resourceIconUrlMap: Record<string, string> = {
   "customer-chart": "/admin-icons/chart.svg",
 };
 
-export function resolveResourceIconUrl(iconCode?: string | null, nodeType?: ResourceNodeType | null): string | null {
+export function resolveResourceIconUrl(
+  iconCode?: string | null,
+  nodeType?: ResourceNodeType | null,
+): string | null {
   const normalized = normalizeIconCode(iconCode);
   if (normalized) {
     const mappedUrl = resourceIconUrlMap[normalized];

@@ -190,7 +190,10 @@
 
 .admin-query-grid.bz-form {
   display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width)));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width))
+  );
   gap: var(--space-4);
   justify-content: start;
   align-items: start;

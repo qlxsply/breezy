@@ -412,10 +412,16 @@ export function UserFeaturePackagesPage() {
     await reload();
   }
 
-  const columns = useMemo<Array<BzTableColumn<UserFeaturePackageEntry>>>(
-    () => {
-      const baseColumns: Array<BzTableColumn<UserFeaturePackageEntry>> = [
-      { key: "code", title: "编码", minWidth: 180, className: "admin-freeze-col--feature-package-code is-sticky-left", headerClassName: "admin-freeze-col--feature-package-code is-sticky-left", render: (row) => <>{row.code}</> },
+  const columns = useMemo<Array<BzTableColumn<UserFeaturePackageEntry>>>(() => {
+    const baseColumns: Array<BzTableColumn<UserFeaturePackageEntry>> = [
+      {
+        key: "code",
+        title: "编码",
+        minWidth: 180,
+        className: "admin-freeze-col--feature-package-code is-sticky-left",
+        headerClassName: "admin-freeze-col--feature-package-code is-sticky-left",
+        render: (row) => <>{row.code}</>,
+      },
       { key: "name", title: "名称", minWidth: 160, render: (row) => <>{row.name}</> },
       {
         key: "packageType",
@@ -457,15 +463,13 @@ export function UserFeaturePackagesPage() {
         width: 90,
         render: (row) => <>{row.applicationAccesses.length}</>,
       },
-      ];
-      const actionsColumn = createAdminActionsColumn({
-        rows,
-        getActions: (row) => [...getRowActions(row), ...getRowMoreActions(row)],
-      });
-      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
-    },
-    [packageTypeMetaMap, canEdit, rows],
-  );
+    ];
+    const actionsColumn = createAdminActionsColumn({
+      rows,
+      getActions: (row) => [...getRowActions(row), ...getRowMoreActions(row)],
+    });
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+  }, [packageTypeMetaMap, canEdit, rows]);
 
   const drawerTitle =
     drawerMode === "create" ? "新增应用包" : drawerMode === "edit" ? "编辑应用包" : "应用包详情";
@@ -507,316 +511,358 @@ export function UserFeaturePackagesPage() {
               }}
             >
               <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">关键词</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={keywordDraft}
-                        placeholder="按编码或名称搜索"
-                        clearable
-                        onValueChange={setKeywordDraft}
-                        onKeyUp={(e) => e.key === "Enter" && applyFilters()}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">状态</div>
-                    <div className="admin-query-field__control">
-                      <BzSelect
-                        modelValue={enabledDraft}
-                        placeholder="全部状态"
-                        clearable
-                        onValueChange={(v) => setEnabledDraft((v || "") as "" | "true" | "false")}
-                      >
-                        <BzOption
-                          label="启用"
-                          value="true"
-                        />
-                        <BzOption
-                          label="停用"
-                          value="false"
-                        />
-                      </BzSelect>
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      nativeType="button"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      nativeType="button"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
+                <div className="admin-query-field__label">关键词</div>
+                <div className="admin-query-field__control">
+                  <BzInput
+                    modelValue={keywordDraft}
+                    placeholder="按编码或名称搜索"
+                    clearable
+                    onValueChange={setKeywordDraft}
+                    onKeyUp={(e) => e.key === "Enter" && applyFilters()}
+                  />
+                </div>
+              </BzFormItem>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">状态</div>
+                <div className="admin-query-field__control">
+                  <BzSelect
+                    modelValue={enabledDraft}
+                    placeholder="全部状态"
+                    clearable
+                    onValueChange={(v) => setEnabledDraft((v || "") as "" | "true" | "false")}
+                  >
+                    <BzOption
+                      label="启用"
+                      value="true"
+                    />
+                    <BzOption
+                      label="停用"
+                      value="false"
+                    />
+                  </BzSelect>
+                </div>
+              </BzFormItem>
+              <div className="admin-query-actions">
+                <BzButton
+                  className="admin-filter-secondary"
+                  nativeType="button"
+                  onClick={resetFilters}
+                >
+                  重置
+                </BzButton>
+                <BzButton
+                  className="admin-filter-primary"
+                  buttonType="primary"
+                  nativeType="button"
+                  onClick={applyFilters}
+                >
+                  搜索
+                </BzButton>
+                {!querySingleRow ? (
+                  <button
+                    className="admin-filter-toggle"
+                    type="button"
+                    aria-expanded={queryExpanded}
+                    onClick={() => setQueryExpanded((value) => !value)}
+                  >
+                    <span>{queryExpanded ? "收起" : "展开"}</span>
+                    <i
+                      className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : null}
+              </div>
             </form>
           </div>
         }
-        businessActions={canEdit ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreate}>新增</BzButton> : null}
-        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => void reload()} />}
-        table={<BzTable columns={columns} data={rows} loading={loading} rowKey="id" emptyText="暂无应用包" size="small" />}
-        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+        businessActions={
+          canEdit ? (
+            <BzButton
+              className="admin-toolbar-primary"
+              buttonType="primary"
+              onClick={openCreate}
+            >
+              新增
+            </BzButton>
+          ) : null
+        }
+        queryTools={
+          <AdminTableTools
+            queryPanelVisible={queryPanelVisible}
+            onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+            onRefresh={() => void reload()}
+          />
+        }
+        table={
+          <BzTable
+            columns={columns}
+            data={rows}
+            loading={loading}
+            rowKey="id"
+            emptyText="暂无应用包"
+            size="small"
+          />
+        }
+        footer={
+          page.totalElements > 0 ? (
+            <div className="dict-pagination-bar admin-list-table-footer">
+              <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+              <div className="dict-pagination-right">
+                <BzPagination
+                  total={page.totalElements}
+                  pageSize={pageSize}
+                  currentPage={pageNo}
+                  pageSizes={pageSizeOptions}
+                  onCurrentChange={setPageNo}
+                  onSizeChange={(size) => {
+                    if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                    setPageSize(size);
+                    setPageNo(1);
+                  }}
+                />
+              </div>
+            </div>
+          ) : null
+        }
       />
 
       <AdminEntityDrawer
-            open={drawerOpen}
-            title={drawerTitle}
-            width="1180px"
-            className="role-manage-drawer"
-            loading={drawerLoading}
-            onClose={() => setDrawerOpen(false)}
-            footer={drawerFooter}
-          >
-              {drawerMode === "detail" && currentPackage ? (
-                <div className="role-manage-shell">
-                  <section className="role-manage-section">
-                    <div className="role-manage-section__head">
-                      <div className="role-manage-section__title">应用包信息</div>
+        open={drawerOpen}
+        title={drawerTitle}
+        width="1180px"
+        className="role-manage-drawer"
+        loading={drawerLoading}
+        onClose={() => setDrawerOpen(false)}
+        footer={drawerFooter}
+      >
+        {drawerMode === "detail" && currentPackage ? (
+          <div className="role-manage-shell">
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">应用包信息</div>
+              </div>
+              <div className="role-info-table-wrap">
+                <table
+                  className="role-info-table"
+                  aria-label="应用包详情"
+                >
+                  <tbody>
+                    <tr>
+                      <th>编码</th>
+                      <td>{currentPackage.code}</td>
+                      <th>名称</th>
+                      <td>{currentPackage.name}</td>
+                      <th>类型</th>
+                      <td>{resolveLabel(packageTypeMetaMap, currentPackage.packageType)}</td>
+                    </tr>
+                    <tr>
+                      <th>默认包</th>
+                      <td>{currentPackage.defaultPackage ? "是" : "否"}</td>
+                      <th>状态</th>
+                      <td>{currentPackage.enabled ? "启用" : "停用"}</td>
+                      <th></th>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <th>描述</th>
+                      <td colSpan={5}>{currentPackage.description || "-"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">应用授权</div>
+                <div className="role-manage-section__stat">
+                  共 {currentPackage.applicationAccesses.length} 个应用
+                </div>
+              </div>
+              <div className="package-access-list">
+                {currentPackage.applicationAccesses.map((access) => (
+                  <div
+                    key={access.applicationId}
+                    className="package-access-card"
+                  >
+                    <div className="package-access-card__head">
+                      <strong>{access.applicationName}</strong>
+                      <BzTag type={access.featureAccessScope === "FULL" ? "success" : "warning"}>
+                        {access.featureAccessScope === "FULL" ? "完整功能" : "部分功能"}
+                      </BzTag>
                     </div>
-                    <div className="role-info-table-wrap">
-                      <table className="role-info-table" aria-label="应用包详情">
-                        <tbody>
-                          <tr>
-                            <th>编码</th>
-                            <td>{currentPackage.code}</td>
-                            <th>名称</th>
-                            <td>{currentPackage.name}</td>
-                            <th>类型</th>
-                            <td>{resolveLabel(packageTypeMetaMap, currentPackage.packageType)}</td>
-                          </tr>
-                          <tr>
-                            <th>默认包</th>
-                            <td>{currentPackage.defaultPackage ? "是" : "否"}</td>
-                            <th>状态</th>
-                            <td>{currentPackage.enabled ? "启用" : "停用"}</td>
-                            <th></th>
-                            <td></td>
-                          </tr>
-                          <tr>
-                            <th>描述</th>
-                            <td colSpan={5}>{currentPackage.description || "-"}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </section>
-                  <section className="role-manage-section">
-                    <div className="role-manage-section__head">
-                      <div className="role-manage-section__title">应用授权</div>
-                      <div className="role-manage-section__stat">共 {currentPackage.applicationAccesses.length} 个应用</div>
-                    </div>
-                  <div className="package-access-list">
-                    {currentPackage.applicationAccesses.map((access) => (
-                      <div
-                        key={access.applicationId}
-                        className="package-access-card"
-                      >
-                        <div className="package-access-card__head">
-                          <strong>{access.applicationName}</strong>
-                          <BzTag
-                            type={access.featureAccessScope === "FULL" ? "success" : "warning"}
+                    <div className="package-access-card__meta">{access.applicationCode}</div>
+                    {access.features.length > 0 ? (
+                      <div className="package-access-card__feature-list">
+                        {access.features.map((feature) => (
+                          <span
+                            key={feature.id}
+                            className="package-feature-chip"
                           >
-                            {access.featureAccessScope === "FULL" ? "完整功能" : "部分功能"}
-                          </BzTag>
-                        </div>
-                        <div className="package-access-card__meta">{access.applicationCode}</div>
-                        {access.features.length > 0 ? (
-                          <div className="package-access-card__feature-list">
-                            {access.features.map((feature) => (
-                              <span
-                                key={feature.id}
-                                className="package-feature-chip"
-                              >
-                                {feature.name}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
+                            {feature.name}
+                          </span>
+                        ))}
                       </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        ) : null}
+
+        {drawerMode !== "detail" ? (
+          <div className="role-manage-shell">
+            <BzForm>
+              <div className="group-form-grid">
+                <BzFormItem label="编码">
+                  <BzInput
+                    modelValue={form.code}
+                    disabled={drawerMode === "edit"}
+                    onValueChange={(v) => setForm((prev) => ({ ...prev, code: v }))}
+                  />
+                </BzFormItem>
+                <BzFormItem label="名称">
+                  <BzInput
+                    modelValue={form.name}
+                    onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
+                  />
+                </BzFormItem>
+                <BzFormItem label="类型">
+                  <BzSelect
+                    modelValue={form.packageType}
+                    onValueChange={(v) =>
+                      setForm((prev) => ({ ...prev, packageType: v || "CUSTOM" }))
+                    }
+                  >
+                    {packageTypeOptions.map((opt) => (
+                      <BzOption
+                        key={opt.value}
+                        label={opt.label}
+                        value={opt.value}
+                      />
                     ))}
-                  </div>
-                  </section>
+                  </BzSelect>
+                </BzFormItem>
+                <BzFormItem label="状态">
+                  <BzSwitch
+                    modelValue={form.enabled}
+                    onValueChange={(v) => setForm((prev) => ({ ...prev, enabled: v }))}
+                  />
+                </BzFormItem>
+                <BzFormItem label="默认包">
+                  <BzSwitch
+                    modelValue={form.defaultPackage}
+                    onValueChange={(v) => setForm((prev) => ({ ...prev, defaultPackage: v }))}
+                  />
+                </BzFormItem>
+                <BzFormItem
+                  label="描述"
+                  className="group-form-grid__wide"
+                >
+                  <BzTextField
+                    modelValue={form.description || ""}
+                    type="textarea"
+                    rows={3}
+                    onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))}
+                  />
+                </BzFormItem>
+              </div>
+            </BzForm>
+
+            <div className="package-config-panel">
+              <div className="package-config-panel__head">
+                <div className="package-config-panel__title">应用授权</div>
+                <div className="package-config-panel__meta">
+                  已选 {selectedApplicationCount} 个应用
                 </div>
-              ) : null}
-
-              {drawerMode !== "detail" ? (
-                <div className="role-manage-shell">
-                  <BzForm>
-                    <div className="group-form-grid">
-                      <BzFormItem label="编码">
-                        <BzInput
-                          modelValue={form.code}
-                          disabled={drawerMode === "edit"}
-                          onValueChange={(v) => setForm((prev) => ({ ...prev, code: v }))}
-                        />
-                      </BzFormItem>
-                      <BzFormItem label="名称">
-                        <BzInput
-                          modelValue={form.name}
-                          onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
-                        />
-                      </BzFormItem>
-                      <BzFormItem label="类型">
-                        <BzSelect
-                          modelValue={form.packageType}
-                          onValueChange={(v) =>
-                            setForm((prev) => ({ ...prev, packageType: v || "CUSTOM" }))
-                          }
-                        >
-                          {packageTypeOptions.map((opt) => (
-                            <BzOption
-                              key={opt.value}
-                              label={opt.label}
-                              value={opt.value}
-                            />
-                          ))}
-                        </BzSelect>
-                      </BzFormItem>
-                      <BzFormItem label="状态">
-                        <BzSwitch
-                          modelValue={form.enabled}
-                          onValueChange={(v) => setForm((prev) => ({ ...prev, enabled: v }))}
-                        />
-                      </BzFormItem>
-                      <BzFormItem label="默认包">
-                        <BzSwitch
-                          modelValue={form.defaultPackage}
-                          onValueChange={(v) => setForm((prev) => ({ ...prev, defaultPackage: v }))}
-                        />
-                      </BzFormItem>
-                      <BzFormItem
-                        label="描述"
-                        className="group-form-grid__wide"
-                      >
-                        <BzTextField
-                          modelValue={form.description || ""}
-                          type="textarea"
-                          rows={3}
-                          onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))}
-                        />
-                      </BzFormItem>
-                    </div>
-                  </BzForm>
-
-                  <div className="package-config-panel">
-                    <div className="package-config-panel__head">
-                      <div className="package-config-panel__title">应用授权</div>
-                      <div className="package-config-panel__meta">
-                        已选 {selectedApplicationCount} 个应用
-                      </div>
-                    </div>
-                    <div className="package-config-panel__body">
-                      {applications.map((application) => {
-                        const selected = isApplicationSelected(application.id);
-                        const scope = applicationScopeOf(application.id);
-                        return (
-                          <div
-                            key={application.id}
-                            className="package-config-card"
-                          >
-                            <div className="package-config-card__top">
-                              <label className="package-config-card__select">
-                                <input
-                                  type="checkbox"
-                                  checked={selected}
-                                  onChange={(e) =>
-                                    toggleApplicationSelection(application.id, e.target.checked)
-                                  }
-                                />
-                                <div>
-                                  <div className="package-config-card__name">
-                                    {application.name}
-                                  </div>
-                                  <div className="package-config-card__code">
-                                    {application.code}
-                                  </div>
-                                </div>
-                              </label>
-                              <BzTag type={application.enabled ? "success" : "warning"}>
-                                {application.enabled ? "启用" : "停用"}
-                              </BzTag>
-                            </div>
-                            <div className="package-config-card__path">
-                              {application.routePath || "-"}
-                            </div>
-                            {selected ? (
-                              <div className="package-config-card__scope">
-                                <label>
-                                  <input
-                                    type="radio"
-                                    name={`scope-${application.id}`}
-                                    value="FULL"
-                                    checked={scope === "FULL"}
-                                    onChange={() => updateApplicationScope(application.id, "FULL")}
-                                  />{" "}
-                                  完整功能
-                                </label>
-                                <label>
-                                  <input
-                                    type="radio"
-                                    name={`scope-${application.id}`}
-                                    value="PARTIAL"
-                                    checked={scope === "PARTIAL"}
-                                    onChange={() =>
-                                      updateApplicationScope(application.id, "PARTIAL")
-                                    }
-                                  />{" "}
-                                  部分功能
-                                </label>
-                              </div>
-                            ) : null}
-                            {selected && scope === "PARTIAL" ? (
-                              <div className="package-config-card__features">
-                                {application.features.map((feature) => (
-                                  <label
-                                    key={feature.id}
-                                    className={`package-feature-option${!feature.enabled ? " disabled" : ""}`}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={isFeatureSelected(application.id, feature.id)}
-                                      disabled={!feature.enabled}
-                                      onChange={(e) =>
-                                        toggleFeatureSelection(
-                                          application.id,
-                                          feature.id,
-                                          e.target.checked,
-                                        )
-                                      }
-                                    />
-                                    <span>{feature.name}</span>
-                                    <small>{feature.code}</small>
-                                  </label>
-                                ))}
-                              </div>
-                            ) : null}
+              </div>
+              <div className="package-config-panel__body">
+                {applications.map((application) => {
+                  const selected = isApplicationSelected(application.id);
+                  const scope = applicationScopeOf(application.id);
+                  return (
+                    <div
+                      key={application.id}
+                      className="package-config-card"
+                    >
+                      <div className="package-config-card__top">
+                        <label className="package-config-card__select">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) =>
+                              toggleApplicationSelection(application.id, e.target.checked)
+                            }
+                          />
+                          <div>
+                            <div className="package-config-card__name">{application.name}</div>
+                            <div className="package-config-card__code">{application.code}</div>
                           </div>
-                        );
-                      })}
+                        </label>
+                        <BzTag type={application.enabled ? "success" : "warning"}>
+                          {application.enabled ? "启用" : "停用"}
+                        </BzTag>
+                      </div>
+                      <div className="package-config-card__path">
+                        {application.routePath || "-"}
+                      </div>
+                      {selected ? (
+                        <div className="package-config-card__scope">
+                          <label>
+                            <input
+                              type="radio"
+                              name={`scope-${application.id}`}
+                              value="FULL"
+                              checked={scope === "FULL"}
+                              onChange={() => updateApplicationScope(application.id, "FULL")}
+                            />{" "}
+                            完整功能
+                          </label>
+                          <label>
+                            <input
+                              type="radio"
+                              name={`scope-${application.id}`}
+                              value="PARTIAL"
+                              checked={scope === "PARTIAL"}
+                              onChange={() => updateApplicationScope(application.id, "PARTIAL")}
+                            />{" "}
+                            部分功能
+                          </label>
+                        </div>
+                      ) : null}
+                      {selected && scope === "PARTIAL" ? (
+                        <div className="package-config-card__features">
+                          {application.features.map((feature) => (
+                            <label
+                              key={feature.id}
+                              className={`package-feature-option${!feature.enabled ? " disabled" : ""}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isFeatureSelected(application.id, feature.id)}
+                                disabled={!feature.enabled}
+                                onChange={(e) =>
+                                  toggleFeatureSelection(
+                                    application.id,
+                                    feature.id,
+                                    e.target.checked,
+                                  )
+                                }
+                              />
+                              <span>{feature.name}</span>
+                              <small>{feature.code}</small>
+                            </label>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
-                </div>
-              ) : null}
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </AdminEntityDrawer>
     </>
   );

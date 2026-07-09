@@ -6,12 +6,15 @@ import {
   previewTimeOffset,
   updateConfigValue,
 } from "@admin/api/configs";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminDetailTable, type AdminDetailSection } from "@admin/components/admin/AdminDetailTable";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { batchListDictOptions, listDictOptions } from "@admin/api/dicts";
 import { previewMsgPush } from "@admin/api/sse";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
+import {
+  type AdminDetailSection,
+  AdminDetailTable,
+} from "@admin/components/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import {
   resolveUserConfigLabel,
   resolveUserDateFormatCode,
@@ -34,12 +37,11 @@ import type {
 } from "@admin/types/config-admin";
 import type { DictItem, DictOption } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AdminTableTools } from "../admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "../admin/useAdminQueryPanelLayout";
 import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
 import { BzDatePicker } from "../bz/BzDatePicker";
 import { BzForm } from "../bz/BzForm";
 import { BzFormItem } from "../bz/BzFormItem";
@@ -1026,9 +1028,8 @@ export function ConfigsAdminPage() {
     }
   }
 
-  const columns = useMemo<BzTableColumn<ConfigItem>[]>(
-    () => {
-      const baseColumns: BzTableColumn<ConfigItem>[] = [
+  const columns = useMemo<BzTableColumn<ConfigItem>[]>(() => {
+    const baseColumns: BzTableColumn<ConfigItem>[] = [
       {
         key: "code",
         title: "配置键",
@@ -1037,9 +1038,7 @@ export function ConfigsAdminPage() {
         headerClassName: "admin-freeze-col--config-code is-sticky-left",
         render: (row) => (
           <div className="configs-code-cell">
-            <span className="configs-code-text">
-              {row.code}
-            </span>
+            <span className="configs-code-text">{row.code}</span>
             {row.personalized ? (
               <BzTag
                 size="small"
@@ -1091,12 +1090,10 @@ export function ConfigsAdminPage() {
           </BzTag>
         ),
       },
-      ];
-      const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
-      return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
-    },
-    [canUpdate, configValueTypeLabelMap, configLevelLabelMap, rows],
-  );
+    ];
+    const actionsColumn = createAdminActionsColumn({ rows, getActions: getRowActions });
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
+  }, [canUpdate, configValueTypeLabelMap, configLevelLabelMap, rows]);
 
   const detailSections = useMemo<AdminDetailSection[]>(() => {
     if (!detailItem) return [];
@@ -1133,7 +1130,10 @@ export function ConfigsAdminPage() {
         title: "基础信息",
         fields: [
           { label: "配置键", value: <span className="configs-meta-code">{editorItem.code}</span> },
-          { label: "值类型", value: configValueTypeLabelMap[editorItem.valueType] || editorItem.valueType },
+          {
+            label: "值类型",
+            value: configValueTypeLabelMap[editorItem.valueType] || editorItem.valueType,
+          },
           { label: "级别", value: configLevelLabelMap[editorItem.level] || editorItem.level },
           { label: "个性化", value: editorItem.personalized ? "是" : "否" },
           { label: "说明", value: editorItem.description || "-", span: "full", multiline: true },
@@ -1154,79 +1154,114 @@ export function ConfigsAdminPage() {
               querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
             ].join(" ")}
           >
-          <form
-            ref={queryGridRef}
-            className="bz-form admin-query-grid"
-            onSubmit={(e) => {
-              e.preventDefault();
-              applyFilters();
-            }}
-          >
-            <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">配置键</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={codeLikeDraft}
-                        placeholder="请输入配置键"
-                        clearable
-                        onValueChange={setCodeLikeDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <BzFormItem className="admin-query-field">
-                    <div className="admin-query-field__label">说明</div>
-                    <div className="admin-query-field__control">
-                      <BzInput
-                        modelValue={descriptionLikeDraft}
-                        placeholder="请输入说明"
-                        clearable
-                        onValueChange={setDescriptionLikeDraft}
-                        onKeyUp={(e) => {
-                          if (e.key === "Enter") applyFilters();
-                        }}
-                      />
-                    </div>
-                  </BzFormItem>
-                  <div className="admin-query-actions">
-                    <BzButton
-                      className="admin-filter-secondary"
-                      nativeType="button"
-                      onClick={resetFilters}
-                    >
-                      重置
-                    </BzButton>
-                    <BzButton
-                      className="admin-filter-primary"
-                      buttonType="primary"
-                      nativeType="button"
-                      onClick={applyFilters}
-                    >
-                      搜索
-                    </BzButton>
-                    {!querySingleRow ? (
-                      <button
-                        className="admin-filter-toggle"
-                        type="button"
-                        aria-expanded={queryExpanded}
-                        onClick={() => setQueryExpanded((value) => !value)}
-                      >
-                        <span>{queryExpanded ? "收起" : "展开"}</span>
-                        <i
-                          className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    ) : null}
-                  </div>
+            <form
+              ref={queryGridRef}
+              className="bz-form admin-query-grid"
+              onSubmit={(e) => {
+                e.preventDefault();
+                applyFilters();
+              }}
+            >
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">配置键</div>
+                <div className="admin-query-field__control">
+                  <BzInput
+                    modelValue={codeLikeDraft}
+                    placeholder="请输入配置键"
+                    clearable
+                    onValueChange={setCodeLikeDraft}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") applyFilters();
+                    }}
+                  />
+                </div>
+              </BzFormItem>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">说明</div>
+                <div className="admin-query-field__control">
+                  <BzInput
+                    modelValue={descriptionLikeDraft}
+                    placeholder="请输入说明"
+                    clearable
+                    onValueChange={setDescriptionLikeDraft}
+                    onKeyUp={(e) => {
+                      if (e.key === "Enter") applyFilters();
+                    }}
+                  />
+                </div>
+              </BzFormItem>
+              <div className="admin-query-actions">
+                <BzButton
+                  className="admin-filter-secondary"
+                  nativeType="button"
+                  onClick={resetFilters}
+                >
+                  重置
+                </BzButton>
+                <BzButton
+                  className="admin-filter-primary"
+                  buttonType="primary"
+                  nativeType="button"
+                  onClick={applyFilters}
+                >
+                  搜索
+                </BzButton>
+                {!querySingleRow ? (
+                  <button
+                    className="admin-filter-toggle"
+                    type="button"
+                    aria-expanded={queryExpanded}
+                    onClick={() => setQueryExpanded((value) => !value)}
+                  >
+                    <span>{queryExpanded ? "收起" : "展开"}</span>
+                    <i
+                      className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : null}
+              </div>
             </form>
           </div>
         }
-        queryTools={<AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)} onRefresh={() => reload()} />}
-        table={<BzTable data={rows} columns={columns} rowKey="code" loading={loading} emptyText="暂无配置" size="small" />}
-        footer={page.totalElements > 0 ? <div className="dict-pagination-bar admin-list-table-footer"><div className="dict-pagination-summary">共 {page.totalElements} 条记录</div><div className="dict-pagination-right"><BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => { if (!Number.isFinite(size) || size <= 0 || size === pageSize) return; setPageSize(size); setPageNo(1); }} /></div></div> : null}
+        queryTools={
+          <AdminTableTools
+            queryPanelVisible={queryPanelVisible}
+            onToggleQueryPanel={() => setQueryPanelVisible((v) => !v)}
+            onRefresh={() => reload()}
+          />
+        }
+        table={
+          <BzTable
+            data={rows}
+            columns={columns}
+            rowKey="code"
+            loading={loading}
+            emptyText="暂无配置"
+            size="small"
+          />
+        }
+        footer={
+          page.totalElements > 0 ? (
+            <div className="dict-pagination-bar admin-list-table-footer">
+              <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+              <div className="dict-pagination-right">
+                <BzPagination
+                  total={page.totalElements}
+                  pageSize={pageSize}
+                  currentPage={pageNo}
+                  pageSizes={pageSizeOptions}
+                  onCurrentChange={setPageNo}
+                  onSizeChange={(size) => {
+                    if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                    setPageSize(size);
+                    setPageNo(1);
+                  }}
+                />
+              </div>
+            </div>
+          ) : null
+        }
       />
 
       <AdminEntityDrawer
@@ -1237,10 +1272,16 @@ export function ConfigsAdminPage() {
           setDetailOpen(false);
           setDetailItem(null);
         }}
-        footer={<BzButton onClick={() => {
-          setDetailOpen(false);
-          setDetailItem(null);
-        }}>关闭</BzButton>}
+        footer={
+          <BzButton
+            onClick={() => {
+              setDetailOpen(false);
+              setDetailItem(null);
+            }}
+          >
+            关闭
+          </BzButton>
+        }
       >
         {detailItem ? <AdminDetailTable sections={detailSections} /> : null}
       </AdminEntityDrawer>
@@ -1256,7 +1297,11 @@ export function ConfigsAdminPage() {
             <>
               <BzButton onClick={closeEditor}>取消</BzButton>
               {canSaveEditor ? (
-                <BzButton buttonType="primary" loading={saving} onClick={saveCurrentConfig}>
+                <BzButton
+                  buttonType="primary"
+                  loading={saving}
+                  onClick={saveCurrentConfig}
+                >
                   保存
                 </BzButton>
               ) : null}
@@ -1270,304 +1315,180 @@ export function ConfigsAdminPage() {
                 <div className="admin-selection-section__title">编辑内容</div>
               </div>
               <BzForm>
-            {isClientIpEditor ? (
-              <>
-                <BzFormItem label="IP 获取方式">
-                  <BzSelect
-                    modelValue={editorIpMode}
-                    onValueChange={(v) => setEditorIpMode((v as ClientIpMode) || "REMOTE_ADDR")}
-                  >
-                    {clientIpModeOptions.map((opt) => (
-                      <BzOption
-                        key={opt.value}
-                        label={opt.label}
-                        value={opt.value}
-                      />
-                    ))}
-                  </BzSelect>
-                </BzFormItem>
+                {isClientIpEditor ? (
+                  <>
+                    <BzFormItem label="IP 获取方式">
+                      <BzSelect
+                        modelValue={editorIpMode}
+                        onValueChange={(v) => setEditorIpMode((v as ClientIpMode) || "REMOTE_ADDR")}
+                      >
+                        {clientIpModeOptions.map((opt) => (
+                          <BzOption
+                            key={opt.value}
+                            label={opt.label}
+                            value={opt.value}
+                          />
+                        ))}
+                      </BzSelect>
+                    </BzFormItem>
 
-                <div className="editor-actions-row">
-                  <BzButton
-                    disabled={editorPreviewLoading}
-                    onClick={runClientIpPreview}
-                  >
-                    {editorPreviewLoading ? "测试中..." : "测试当前请求"}
-                  </BzButton>
-                </div>
+                    <div className="editor-actions-row">
+                      <BzButton
+                        disabled={editorPreviewLoading}
+                        onClick={runClientIpPreview}
+                      >
+                        {editorPreviewLoading ? "测试中..." : "测试当前请求"}
+                      </BzButton>
+                    </div>
 
-                <BzLoading loading={editorPreviewLoading}>
-                  <div className="preview-panel">
-                    <div className="preview-title">效果预览</div>
-                    {editorIpPreview ? (
-                      <div className="preview-grid">
-                        <div className="preview-label">解析后客户端 IP</div>
-                        <div className="preview-value strong">
-                          {showText(editorIpPreview.resolvedIp)}
-                        </div>
-                        <div className="preview-label">REMOTE_ADDR</div>
-                        <div className="preview-value">{showText(editorIpPreview.remoteAddr)}</div>
-                        <div className="preview-label">X-Real-IP</div>
-                        <div className="preview-value">{showText(editorIpPreview.xRealIp)}</div>
-                        <div className="preview-label">X-Forwarded-For</div>
-                        <div className="preview-value">
-                          {showText(editorIpPreview.xForwardedFor)}
-                        </div>
-                        <div className="preview-label">CF-Connecting-IP</div>
-                        <div className="preview-value">
-                          {showText(editorIpPreview.cfConnectingIp)}
-                        </div>
-                        <div className="preview-label">True-Client-IP</div>
-                        <div className="preview-value">
-                          {showText(editorIpPreview.trueClientIp)}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="preview-empty">
-                        点击"测试当前请求"查看当前请求下的解析结果。
-                      </div>
-                    )}
-                  </div>
-                </BzLoading>
-              </>
-            ) : isTimeOffsetEditor ? (
-              <>
-                <BzFormItem label="偏移秒数（最终保存值）">
-                  <BzInput
-                    modelValue={editorOffsetSecondsInput}
-                    type="number"
-                    placeholder="例如：0、60、-300"
-                    onValueChange={setEditorOffsetSecondsInput}
-                  />
-                </BzFormItem>
-
-                <div className="editor-actions-row">
-                  <BzButton
-                    disabled={editorPreviewLoading}
-                    onClick={refreshTimeOffsetPreview}
-                  >
-                    {editorPreviewLoading ? "刷新中..." : "刷新预览"}
-                  </BzButton>
-                  <BzButton onClick={resetOffsetSeconds}>重置为 0</BzButton>
-                </div>
-
-                <div className="assist-panel">
-                  <div className="assist-title">辅助计算（不会自动保存）</div>
-                  <div className="assist-row">
-                    <BzDatePicker
-                      modelValue={editorTargetDateTime}
-                      type="datetime"
-                      placeholder="选择目标时间"
-                      onValueChange={setEditorTargetDateTime}
-                    />
-                  </div>
-                  <div className="assist-row">
-                    <BzButton
-                      disabled={editorPreviewLoading}
-                      onClick={calculateOffsetByTarget}
-                    >
-                      计算秒差
-                    </BzButton>
-                    <BzButton
-                      disabled={editorCalculatedOffsetSeconds === null}
-                      onClick={applyCalculatedOffset}
-                    >
-                      回填秒数
-                    </BzButton>
-                    {editorCalculatedOffsetSeconds !== null ? (
-                      <div className="assist-result">
-                        建议秒差：
-                        <span className="strong">{editorCalculatedOffsetSeconds}</span>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-
-                <BzLoading loading={editorPreviewLoading}>
-                  <div className="preview-panel">
-                    <div className="preview-title">效果预览（基于服务器时间）</div>
-                    {editorTimePreview ? (
-                      <div className="preview-grid">
-                        <div className="preview-label">服务器当前时间</div>
-                        <div className="preview-value">
-                          {formatEpoch(editorTimePreview.serverNowEpochMillis)}
-                        </div>
-                        <div className="preview-label">按当前秒数偏移后</div>
-                        <div className="preview-value strong">
-                          {formatEpoch(editorTimePreview.mockedEpochMillis)}
-                        </div>
-                        <div className="preview-label">当前秒数</div>
-                        <div className="preview-value">{editorTimePreview.offsetSeconds}</div>
-                        {editorTimePreview.calculatedOffsetSeconds !== null ? (
-                          <>
-                            <div className="preview-label">目标时间</div>
-                            <div className="preview-value">
-                              {formatEpoch(editorTimePreview.targetEpochMillis)}
-                            </div>
-                            <div className="preview-label">计算出的秒差</div>
+                    <BzLoading loading={editorPreviewLoading}>
+                      <div className="preview-panel">
+                        <div className="preview-title">效果预览</div>
+                        {editorIpPreview ? (
+                          <div className="preview-grid">
+                            <div className="preview-label">解析后客户端 IP</div>
                             <div className="preview-value strong">
-                              {editorTimePreview.calculatedOffsetSeconds}
+                              {showText(editorIpPreview.resolvedIp)}
                             </div>
-                          </>
+                            <div className="preview-label">REMOTE_ADDR</div>
+                            <div className="preview-value">
+                              {showText(editorIpPreview.remoteAddr)}
+                            </div>
+                            <div className="preview-label">X-Real-IP</div>
+                            <div className="preview-value">{showText(editorIpPreview.xRealIp)}</div>
+                            <div className="preview-label">X-Forwarded-For</div>
+                            <div className="preview-value">
+                              {showText(editorIpPreview.xForwardedFor)}
+                            </div>
+                            <div className="preview-label">CF-Connecting-IP</div>
+                            <div className="preview-value">
+                              {showText(editorIpPreview.cfConnectingIp)}
+                            </div>
+                            <div className="preview-label">True-Client-IP</div>
+                            <div className="preview-value">
+                              {showText(editorIpPreview.trueClientIp)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="preview-empty">
+                            点击"测试当前请求"查看当前请求下的解析结果。
+                          </div>
+                        )}
+                      </div>
+                    </BzLoading>
+                  </>
+                ) : isTimeOffsetEditor ? (
+                  <>
+                    <BzFormItem label="偏移秒数（最终保存值）">
+                      <BzInput
+                        modelValue={editorOffsetSecondsInput}
+                        type="number"
+                        placeholder="例如：0、60、-300"
+                        onValueChange={setEditorOffsetSecondsInput}
+                      />
+                    </BzFormItem>
+
+                    <div className="editor-actions-row">
+                      <BzButton
+                        disabled={editorPreviewLoading}
+                        onClick={refreshTimeOffsetPreview}
+                      >
+                        {editorPreviewLoading ? "刷新中..." : "刷新预览"}
+                      </BzButton>
+                      <BzButton onClick={resetOffsetSeconds}>重置为 0</BzButton>
+                    </div>
+
+                    <div className="assist-panel">
+                      <div className="assist-title">辅助计算（不会自动保存）</div>
+                      <div className="assist-row">
+                        <BzDatePicker
+                          modelValue={editorTargetDateTime}
+                          type="datetime"
+                          placeholder="选择目标时间"
+                          onValueChange={setEditorTargetDateTime}
+                        />
+                      </div>
+                      <div className="assist-row">
+                        <BzButton
+                          disabled={editorPreviewLoading}
+                          onClick={calculateOffsetByTarget}
+                        >
+                          计算秒差
+                        </BzButton>
+                        <BzButton
+                          disabled={editorCalculatedOffsetSeconds === null}
+                          onClick={applyCalculatedOffset}
+                        >
+                          回填秒数
+                        </BzButton>
+                        {editorCalculatedOffsetSeconds !== null ? (
+                          <div className="assist-result">
+                            建议秒差：
+                            <span className="strong">{editorCalculatedOffsetSeconds}</span>
+                          </div>
                         ) : null}
                       </div>
-                    ) : (
-                      <div className="preview-empty">输入偏移秒数后可点击"刷新预览"查看效果。</div>
-                    )}
-                  </div>
-                </BzLoading>
-              </>
-            ) : isUserTimeZoneEditor ? (
-              <BzFormItem label="时区">
-                <BzSelect
-                  modelValue={editorRawValue}
-                  onValueChange={(v) => setEditorRawValue(v ?? "")}
-                >
-                  {currentUserFormatOptions.map((opt) => (
-                    <BzOption
-                      key={opt.value}
-                      label={opt.label}
-                      value={opt.value}
-                    />
-                  ))}
-                </BzSelect>
-              </BzFormItem>
-            ) : isDateFormatEditor || isDateTimeFormatEditor ? (
-              <>
-                <BzFormItem label={isDateTimeFormatEditor ? "日期时间格式" : "日期格式"}>
-                  <BzSelect
-                    modelValue={editorRawValue}
-                    onValueChange={(v) => setEditorRawValue(v ?? "")}
-                  >
-                    {currentUserFormatOptions.map((opt) => (
-                      <BzOption
-                        key={opt.value}
-                        label={opt.label}
-                        value={opt.value}
-                      />
-                    ))}
-                  </BzSelect>
-                </BzFormItem>
-                <div className="preview-panel">
-                  <div className="preview-title">格式样例</div>
-                  <div className="preview-grid">
-                    <div className="preview-label">示例时间</div>
-                    <div className="preview-value">{formatEpoch(DATE_PREVIEW_BASE.getTime())}</div>
-                    <div className="preview-label">格式化结果</div>
-                    <div className="preview-value strong">{dateFormatPreviewValue}</div>
-                  </div>
-                  <div className="preview-tip">按统一编码存储，前端按选项语义渲染。</div>
-                </div>
-              </>
-            ) : isDecimalFormatEditor ? (
-              <>
-                <BzFormItem label="小数格式">
-                  <BzSelect
-                    modelValue={editorRawValue}
-                    onValueChange={(v) => setEditorRawValue(v ?? "")}
-                  >
-                    {currentUserFormatOptions.map((opt) => (
-                      <BzOption
-                        key={opt.value}
-                        label={opt.label}
-                        value={opt.value}
-                      />
-                    ))}
-                  </BzSelect>
-                </BzFormItem>
-                <div className="preview-panel">
-                  <div className="preview-title">格式样例</div>
-                  {decimalPreviewRows.map((sample, i) => (
-                    <div
-                      key={i}
-                      className="preview-grid"
-                    >
-                      <div className="preview-label">原始值</div>
-                      <div className="preview-value">{sample.source}</div>
-                      <div className="preview-label">格式化结果</div>
-                      <div className="preview-value strong">{sample.formatted}</div>
                     </div>
-                  ))}
-                </div>
-              </>
-            ) : isBoolEditor ? (
-              <BzFormItem label="配置值">
-                <BzSelect
-                  modelValue={editorBoolValue}
-                  onValueChange={(v) => setEditorBoolValue((v as "true" | "false") || "true")}
-                >
-                  <BzOption
-                    label="true"
-                    value="true"
-                  />
-                  <BzOption
-                    label="false"
-                    value="false"
-                  />
-                </BzSelect>
-              </BzFormItem>
-            ) : isMsgTypeConfigsEditor ? (
-              <div className="msg-config-editor">
-                <div className="msg-config-head">
-                  <div className="msg-col-type">消息类型</div>
-                  <div className="msg-col-route">目标路由</div>
-                  <div className="msg-col-priority">提醒优先级</div>
-                  <div className="msg-col-switch">SSE</div>
-                  <div className="msg-col-switch">WebPush</div>
-                  <div className="msg-col-switch">弹层</div>
-                  <div className="msg-col-switch">系统通知</div>
-                  <div className="msg-col-action"></div>
-                </div>
-                <div className="msg-config-list">
-                  {editorMsgTypeConfigs.map((config, index) => (
-                    <div
-                      key={index}
-                      className="msg-config-item"
+
+                    <BzLoading loading={editorPreviewLoading}>
+                      <div className="preview-panel">
+                        <div className="preview-title">效果预览（基于服务器时间）</div>
+                        {editorTimePreview ? (
+                          <div className="preview-grid">
+                            <div className="preview-label">服务器当前时间</div>
+                            <div className="preview-value">
+                              {formatEpoch(editorTimePreview.serverNowEpochMillis)}
+                            </div>
+                            <div className="preview-label">按当前秒数偏移后</div>
+                            <div className="preview-value strong">
+                              {formatEpoch(editorTimePreview.mockedEpochMillis)}
+                            </div>
+                            <div className="preview-label">当前秒数</div>
+                            <div className="preview-value">{editorTimePreview.offsetSeconds}</div>
+                            {editorTimePreview.calculatedOffsetSeconds !== null ? (
+                              <>
+                                <div className="preview-label">目标时间</div>
+                                <div className="preview-value">
+                                  {formatEpoch(editorTimePreview.targetEpochMillis)}
+                                </div>
+                                <div className="preview-label">计算出的秒差</div>
+                                <div className="preview-value strong">
+                                  {editorTimePreview.calculatedOffsetSeconds}
+                                </div>
+                              </>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div className="preview-empty">
+                            输入偏移秒数后可点击"刷新预览"查看效果。
+                          </div>
+                        )}
+                      </div>
+                    </BzLoading>
+                  </>
+                ) : isUserTimeZoneEditor ? (
+                  <BzFormItem label="时区">
+                    <BzSelect
+                      modelValue={editorRawValue}
+                      onValueChange={(v) => setEditorRawValue(v ?? "")}
                     >
+                      {currentUserFormatOptions.map((opt) => (
+                        <BzOption
+                          key={opt.value}
+                          label={opt.label}
+                          value={opt.value}
+                        />
+                      ))}
+                    </BzSelect>
+                  </BzFormItem>
+                ) : isDateFormatEditor || isDateTimeFormatEditor ? (
+                  <>
+                    <BzFormItem label={isDateTimeFormatEditor ? "日期时间格式" : "日期格式"}>
                       <BzSelect
-                        modelValue={config.msgType}
-                        placeholder="选择类型"
-                        className="msg-col-type"
-                        onValueChange={(v) =>
-                          setEditorMsgTypeConfigs((prev) =>
-                            prev.map((item, i) =>
-                              i === index ? { ...item, msgType: v ?? "" } : item,
-                            ),
-                          )
-                        }
+                        modelValue={editorRawValue}
+                        onValueChange={(v) => setEditorRawValue(v ?? "")}
                       >
-                        {getMsgTypeOptionsFor(index).map((opt) => (
-                          <BzOption
-                            key={opt.value}
-                            label={opt.label}
-                            value={opt.value}
-                            disabled={opt.disabled}
-                          />
-                        ))}
-                      </BzSelect>
-                      <BzInput
-                        modelValue={config.route}
-                        placeholder="例如 /todo/all"
-                        className="msg-col-route"
-                        onValueChange={(v) =>
-                          setEditorMsgTypeConfigs((prev) =>
-                            prev.map((item, i) => (i === index ? { ...item, route: v } : item)),
-                          )
-                        }
-                      />
-                      <BzSelect
-                        modelValue={config.priority}
-                        placeholder="选择优先级"
-                        className="msg-col-priority"
-                        onValueChange={(v) =>
-                          setEditorMsgTypeConfigs((prev) =>
-                            prev.map((item, i) =>
-                              i === index ? { ...item, priority: v ?? "MEDIUM" } : item,
-                            ),
-                          )
-                        }
-                      >
-                        {msgPriorityOptions.map((opt) => (
+                        {currentUserFormatOptions.map((opt) => (
                           <BzOption
                             key={opt.value}
                             label={opt.label}
@@ -1575,159 +1496,28 @@ export function ConfigsAdminPage() {
                           />
                         ))}
                       </BzSelect>
-                      <div className="msg-col-switch">
-                        <BzSwitch
-                          modelValue={config.sseEnabled}
-                          onValueChange={(v) =>
-                            setEditorMsgTypeConfigs((prev) =>
-                              prev.map((item, i) =>
-                                i === index ? { ...item, sseEnabled: v } : item,
-                              ),
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="msg-col-switch">
-                        <BzSwitch
-                          modelValue={config.webPushEnabled}
-                          onValueChange={(v) =>
-                            setEditorMsgTypeConfigs((prev) =>
-                              prev.map((item, i) =>
-                                i === index ? { ...item, webPushEnabled: v } : item,
-                              ),
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="msg-col-switch">
-                        <BzSwitch
-                          modelValue={config.panelAutoOpen}
-                          onValueChange={(v) =>
-                            setEditorMsgTypeConfigs((prev) =>
-                              prev.map((item, i) =>
-                                i === index ? { ...item, panelAutoOpen: v } : item,
-                              ),
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="msg-col-switch">
-                        <BzSwitch
-                          modelValue={config.osNotificationEnabled}
-                          onValueChange={(v) =>
-                            setEditorMsgTypeConfigs((prev) =>
-                              prev.map((item, i) =>
-                                i === index
-                                  ? {
-                                      ...item,
-                                      osNotificationEnabled: v,
-                                    }
-                                  : item,
-                              ),
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="msg-col-action">
-                        <BzIconActionButton
-                          icon="minus"
-                          tone="danger"
-                          title="删除"
-                          onClick={() => removeMsgConfigItem(index)}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="msg-config-foot">
-                  <div className="msg-config-foot-left">
-                    {canUpdate ? (
-                      <BzButton
-                        size="small"
-                        onClick={addMsgConfigItem}
-                      >
-                        <span className="bz-icon bz-icon-plus" />
-                        添加类型配置
-                      </BzButton>
-                    ) : null}
-                  </div>
-                  <div className="msg-config-foot-right">
-                    {canPreviewPush ? (
-                      <BzSelect
-                        modelValue={previewMsgType}
-                        className="msg-preview-type"
-                        placeholder="选择消息类型"
-                        disabled={previewSendOptions.length === 0}
-                        onValueChange={(v) => setPreviewMsgType(v ?? "")}
-                      >
-                        {previewSendOptions.map((opt) => (
-                          <BzOption
-                            key={opt.value}
-                            label={opt.label}
-                            value={opt.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    ) : null}
-                    {canPreviewPush ? (
-                      <BzButton
-                        size="small"
-                        buttonType="primary"
-                        disabled={!canPreviewSend}
-                        loading={previewSending}
-                        onClick={previewSendCurrentRule}
-                      >
-                        预览发送
-                      </BzButton>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="msg-config-preview">
-                  <div className="preview-title">规则预览</div>
-                  {msgConfigPreviewRows.length === 0 ? (
-                    <div className="preview-empty">暂无规则，未配置类型将按默认规则处理。</div>
-                  ) : (
-                    msgConfigPreviewRows.map((row) => (
-                      <div
-                        key={row.msgType}
-                        className="preview-row"
-                      >
-                        <div className="preview-row-title">{row.typeLabel}</div>
-                        <div className="preview-row-meta">
-                          路由：{row.routeLabel} ｜ 优先级：
-                          {row.priorityLabel} ｜ 渠道：
-                          {row.channelLabel}
+                    </BzFormItem>
+                    <div className="preview-panel">
+                      <div className="preview-title">格式样例</div>
+                      <div className="preview-grid">
+                        <div className="preview-label">示例时间</div>
+                        <div className="preview-value">
+                          {formatEpoch(DATE_PREVIEW_BASE.getTime())}
                         </div>
+                        <div className="preview-label">格式化结果</div>
+                        <div className="preview-value strong">{dateFormatPreviewValue}</div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ) : isAuthWhitelistEditor ? (
-              <div className="whitelist-editor">
-                <div className="whitelist-head">
-                  <div className="whitelist-col-type">匹配类型</div>
-                  <div className="whitelist-col-pattern">路径规则</div>
-                  <div className="whitelist-col-action"></div>
-                </div>
-                <div className="whitelist-list">
-                  {editorAuthWhitelistRules.map((rule, index) => (
-                    <div
-                      key={index}
-                      className="whitelist-item"
-                    >
+                      <div className="preview-tip">按统一编码存储，前端按选项语义渲染。</div>
+                    </div>
+                  </>
+                ) : isDecimalFormatEditor ? (
+                  <>
+                    <BzFormItem label="小数格式">
                       <BzSelect
-                        modelValue={rule.type}
-                        className="whitelist-col-type"
-                        onValueChange={(v) =>
-                          setEditorAuthWhitelistRules((prev) =>
-                            prev.map((item, i) =>
-                              i === index ? { ...item, type: v ?? "" } : item,
-                            ),
-                          )
-                        }
+                        modelValue={editorRawValue}
+                        onValueChange={(v) => setEditorRawValue(v ?? "")}
                       >
-                        {authWhitelistMatchTypeOptions.map((opt) => (
+                        {currentUserFormatOptions.map((opt) => (
                           <BzOption
                             key={opt.value}
                             label={opt.label}
@@ -1735,103 +1525,368 @@ export function ConfigsAdminPage() {
                           />
                         ))}
                       </BzSelect>
-                      <BzInput
-                        modelValue={rule.pattern}
-                        className="whitelist-col-pattern"
-                        placeholder="例如 /api/auth/login、/api/public/**"
-                        onValueChange={(v) =>
-                          setEditorAuthWhitelistRules((prev) =>
-                            prev.map((item, i) => (i === index ? { ...item, pattern: v } : item)),
-                          )
-                        }
+                    </BzFormItem>
+                    <div className="preview-panel">
+                      <div className="preview-title">格式样例</div>
+                      {decimalPreviewRows.map((sample, i) => (
+                        <div
+                          key={i}
+                          className="preview-grid"
+                        >
+                          <div className="preview-label">原始值</div>
+                          <div className="preview-value">{sample.source}</div>
+                          <div className="preview-label">格式化结果</div>
+                          <div className="preview-value strong">{sample.formatted}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : isBoolEditor ? (
+                  <BzFormItem label="配置值">
+                    <BzSelect
+                      modelValue={editorBoolValue}
+                      onValueChange={(v) => setEditorBoolValue((v as "true" | "false") || "true")}
+                    >
+                      <BzOption
+                        label="true"
+                        value="true"
                       />
-                      <div className="whitelist-col-action">
-                        <BzIconActionButton
-                          icon="minus"
-                          tone="danger"
-                          title="删除"
-                          onClick={() => removeAuthWhitelistRule(index)}
-                        />
+                      <BzOption
+                        label="false"
+                        value="false"
+                      />
+                    </BzSelect>
+                  </BzFormItem>
+                ) : isMsgTypeConfigsEditor ? (
+                  <div className="msg-config-editor">
+                    <div className="msg-config-head">
+                      <div className="msg-col-type">消息类型</div>
+                      <div className="msg-col-route">目标路由</div>
+                      <div className="msg-col-priority">提醒优先级</div>
+                      <div className="msg-col-switch">SSE</div>
+                      <div className="msg-col-switch">WebPush</div>
+                      <div className="msg-col-switch">弹层</div>
+                      <div className="msg-col-switch">系统通知</div>
+                      <div className="msg-col-action"></div>
+                    </div>
+                    <div className="msg-config-list">
+                      {editorMsgTypeConfigs.map((config, index) => (
+                        <div
+                          key={index}
+                          className="msg-config-item"
+                        >
+                          <BzSelect
+                            modelValue={config.msgType}
+                            placeholder="选择类型"
+                            className="msg-col-type"
+                            onValueChange={(v) =>
+                              setEditorMsgTypeConfigs((prev) =>
+                                prev.map((item, i) =>
+                                  i === index ? { ...item, msgType: v ?? "" } : item,
+                                ),
+                              )
+                            }
+                          >
+                            {getMsgTypeOptionsFor(index).map((opt) => (
+                              <BzOption
+                                key={opt.value}
+                                label={opt.label}
+                                value={opt.value}
+                                disabled={opt.disabled}
+                              />
+                            ))}
+                          </BzSelect>
+                          <BzInput
+                            modelValue={config.route}
+                            placeholder="例如 /todo/all"
+                            className="msg-col-route"
+                            onValueChange={(v) =>
+                              setEditorMsgTypeConfigs((prev) =>
+                                prev.map((item, i) => (i === index ? { ...item, route: v } : item)),
+                              )
+                            }
+                          />
+                          <BzSelect
+                            modelValue={config.priority}
+                            placeholder="选择优先级"
+                            className="msg-col-priority"
+                            onValueChange={(v) =>
+                              setEditorMsgTypeConfigs((prev) =>
+                                prev.map((item, i) =>
+                                  i === index ? { ...item, priority: v ?? "MEDIUM" } : item,
+                                ),
+                              )
+                            }
+                          >
+                            {msgPriorityOptions.map((opt) => (
+                              <BzOption
+                                key={opt.value}
+                                label={opt.label}
+                                value={opt.value}
+                              />
+                            ))}
+                          </BzSelect>
+                          <div className="msg-col-switch">
+                            <BzSwitch
+                              modelValue={config.sseEnabled}
+                              onValueChange={(v) =>
+                                setEditorMsgTypeConfigs((prev) =>
+                                  prev.map((item, i) =>
+                                    i === index ? { ...item, sseEnabled: v } : item,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="msg-col-switch">
+                            <BzSwitch
+                              modelValue={config.webPushEnabled}
+                              onValueChange={(v) =>
+                                setEditorMsgTypeConfigs((prev) =>
+                                  prev.map((item, i) =>
+                                    i === index ? { ...item, webPushEnabled: v } : item,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="msg-col-switch">
+                            <BzSwitch
+                              modelValue={config.panelAutoOpen}
+                              onValueChange={(v) =>
+                                setEditorMsgTypeConfigs((prev) =>
+                                  prev.map((item, i) =>
+                                    i === index ? { ...item, panelAutoOpen: v } : item,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="msg-col-switch">
+                            <BzSwitch
+                              modelValue={config.osNotificationEnabled}
+                              onValueChange={(v) =>
+                                setEditorMsgTypeConfigs((prev) =>
+                                  prev.map((item, i) =>
+                                    i === index
+                                      ? {
+                                          ...item,
+                                          osNotificationEnabled: v,
+                                        }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="msg-col-action">
+                            <BzIconActionButton
+                              icon="minus"
+                              tone="danger"
+                              title="删除"
+                              onClick={() => removeMsgConfigItem(index)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="msg-config-foot">
+                      <div className="msg-config-foot-left">
+                        {canUpdate ? (
+                          <BzButton
+                            size="small"
+                            onClick={addMsgConfigItem}
+                          >
+                            <span className="bz-icon bz-icon-plus" />
+                            添加类型配置
+                          </BzButton>
+                        ) : null}
+                      </div>
+                      <div className="msg-config-foot-right">
+                        {canPreviewPush ? (
+                          <BzSelect
+                            modelValue={previewMsgType}
+                            className="msg-preview-type"
+                            placeholder="选择消息类型"
+                            disabled={previewSendOptions.length === 0}
+                            onValueChange={(v) => setPreviewMsgType(v ?? "")}
+                          >
+                            {previewSendOptions.map((opt) => (
+                              <BzOption
+                                key={opt.value}
+                                label={opt.label}
+                                value={opt.value}
+                              />
+                            ))}
+                          </BzSelect>
+                        ) : null}
+                        {canPreviewPush ? (
+                          <BzButton
+                            size="small"
+                            buttonType="primary"
+                            disabled={!canPreviewSend}
+                            loading={previewSending}
+                            onClick={previewSendCurrentRule}
+                          >
+                            预览发送
+                          </BzButton>
+                        ) : null}
                       </div>
                     </div>
-                  ))}
-                </div>
-                <div className="whitelist-foot">
-                  {canUpdate ? (
-                    <BzButton
-                      size="small"
-                      onClick={addAuthWhitelistRule}
-                    >
-                      <span className="bz-icon bz-icon-plus" />
-                      添加白名单规则
-                    </BzButton>
-                  ) : null}
-                </div>
-                <div className="whitelist-preview">
-                  <div className="preview-title">规则预览</div>
-                  {authWhitelistPreviewRows.length === 0 ? (
-                    <div className="preview-empty">暂无规则。</div>
-                  ) : (
-                    authWhitelistPreviewRows.map((row, index) => (
-                      <div
-                        key={`${row.type}:${row.pattern}:${index}`}
-                        className="preview-row"
-                      >
-                        <div className="preview-row-title">{row.typeLabel}</div>
-                        <div className="preview-row-meta">{row.pattern}</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ) : isListEditor ? (
-              <BzFormItem label="配置值（列表）">
-                <div className="list-editor">
-                  {editorListValue.map((_, index) => (
-                    <div
-                      key={index}
-                      className="list-item"
-                    >
-                      <BzInput
-                        modelValue={editorListValue[index]}
-                        placeholder="输入项..."
-                        onValueChange={(v) =>
-                          setEditorListValue((prev) =>
-                            prev.map((item, i) => (i === index ? v : item)),
-                          )
-                        }
-                      />
+                    <div className="msg-config-preview">
+                      <div className="preview-title">规则预览</div>
+                      {msgConfigPreviewRows.length === 0 ? (
+                        <div className="preview-empty">暂无规则，未配置类型将按默认规则处理。</div>
+                      ) : (
+                        msgConfigPreviewRows.map((row) => (
+                          <div
+                            key={row.msgType}
+                            className="preview-row"
+                          >
+                            <div className="preview-row-title">{row.typeLabel}</div>
+                            <div className="preview-row-meta">
+                              路由：{row.routeLabel} ｜ 优先级：
+                              {row.priorityLabel} ｜ 渠道：
+                              {row.channelLabel}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ) : isAuthWhitelistEditor ? (
+                  <div className="whitelist-editor">
+                    <div className="whitelist-head">
+                      <div className="whitelist-col-type">匹配类型</div>
+                      <div className="whitelist-col-pattern">路径规则</div>
+                      <div className="whitelist-col-action"></div>
+                    </div>
+                    <div className="whitelist-list">
+                      {editorAuthWhitelistRules.map((rule, index) => (
+                        <div
+                          key={index}
+                          className="whitelist-item"
+                        >
+                          <BzSelect
+                            modelValue={rule.type}
+                            className="whitelist-col-type"
+                            onValueChange={(v) =>
+                              setEditorAuthWhitelistRules((prev) =>
+                                prev.map((item, i) =>
+                                  i === index ? { ...item, type: v ?? "" } : item,
+                                ),
+                              )
+                            }
+                          >
+                            {authWhitelistMatchTypeOptions.map((opt) => (
+                              <BzOption
+                                key={opt.value}
+                                label={opt.label}
+                                value={opt.value}
+                              />
+                            ))}
+                          </BzSelect>
+                          <BzInput
+                            modelValue={rule.pattern}
+                            className="whitelist-col-pattern"
+                            placeholder="例如 /api/auth/login、/api/public/**"
+                            onValueChange={(v) =>
+                              setEditorAuthWhitelistRules((prev) =>
+                                prev.map((item, i) =>
+                                  i === index ? { ...item, pattern: v } : item,
+                                ),
+                              )
+                            }
+                          />
+                          <div className="whitelist-col-action">
+                            <BzIconActionButton
+                              icon="minus"
+                              tone="danger"
+                              title="删除"
+                              onClick={() => removeAuthWhitelistRule(index)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="whitelist-foot">
+                      {canUpdate ? (
+                        <BzButton
+                          size="small"
+                          onClick={addAuthWhitelistRule}
+                        >
+                          <span className="bz-icon bz-icon-plus" />
+                          添加白名单规则
+                        </BzButton>
+                      ) : null}
+                    </div>
+                    <div className="whitelist-preview">
+                      <div className="preview-title">规则预览</div>
+                      {authWhitelistPreviewRows.length === 0 ? (
+                        <div className="preview-empty">暂无规则。</div>
+                      ) : (
+                        authWhitelistPreviewRows.map((row, index) => (
+                          <div
+                            key={`${row.type}:${row.pattern}:${index}`}
+                            className="preview-row"
+                          >
+                            <div className="preview-row-title">{row.typeLabel}</div>
+                            <div className="preview-row-meta">{row.pattern}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ) : isListEditor ? (
+                  <BzFormItem label="配置值（列表）">
+                    <div className="list-editor">
+                      {editorListValue.map((_, index) => (
+                        <div
+                          key={index}
+                          className="list-item"
+                        >
+                          <BzInput
+                            modelValue={editorListValue[index]}
+                            placeholder="输入项..."
+                            onValueChange={(v) =>
+                              setEditorListValue((prev) =>
+                                prev.map((item, i) => (i === index ? v : item)),
+                              )
+                            }
+                          />
+                          <BzIconActionButton
+                            icon="minus"
+                            tone="danger"
+                            title="删除"
+                            ariaLabel="删除"
+                            onClick={() => removeListItem(index)}
+                          />
+                        </div>
+                      ))}
                       <BzIconActionButton
-                        icon="minus"
-                        tone="danger"
-                        title="删除"
-                        ariaLabel="删除"
-                        onClick={() => removeListItem(index)}
+                        icon="plus"
+                        tone="primary"
+                        title="新增"
+                        ariaLabel="新增"
+                        onClick={addListItem}
                       />
                     </div>
-                  ))}
-                  <BzIconActionButton
-                    icon="plus"
-                    tone="primary"
-                    title="新增"
-                    ariaLabel="新增"
-                    onClick={addListItem}
-                  />
-                </div>
-              </BzFormItem>
-            ) : (
-              <BzFormItem label="配置值">
-                <BzInput
-                  modelValue={editorRawValue}
-                  type={isNumberType(editorItem) ? "number" : "text"}
-                  clearable
-                  onValueChange={setEditorRawValue}
-                />
-              </BzFormItem>
-            )}
+                  </BzFormItem>
+                ) : (
+                  <BzFormItem label="配置值">
+                    <BzInput
+                      modelValue={editorRawValue}
+                      type={isNumberType(editorItem) ? "number" : "text"}
+                      clearable
+                      onValueChange={setEditorRawValue}
+                    />
+                  </BzFormItem>
+                )}
               </BzForm>
 
-              {editorValidationErrorComputed ? <div className="form-error">{editorValidationErrorComputed}</div> : null}
+              {editorValidationErrorComputed ? (
+                <div className="form-error">{editorValidationErrorComputed}</div>
+              ) : null}
             </section>
           </div>
         </AdminEntityDrawer>

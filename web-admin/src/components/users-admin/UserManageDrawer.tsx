@@ -1,5 +1,5 @@
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { pageRoles } from "@admin/api/roles";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { useEffect, useMemo, useState } from "react";
 
 import { formatDateTime } from "../../core/formatter";
@@ -87,27 +87,28 @@ export function UserManageDrawer({
       keyword: appliedKeyword || undefined,
       enabled: true,
       page: { pageNo: rolePageNo, pageSize: rolePageSize },
-    }).then((page) => {
-      if (cancelled) return;
-      setRoleRows(page.elements);
-      setRoleTotal(page.totalElements);
-      setRolePageNo(page.pageNo || rolePageNo);
-      setRolePageSize(page.pageSize || rolePageSize);
-    }).finally(() => {
-      if (!cancelled) setRolePageLoading(false);
-    });
+    })
+      .then((page) => {
+        if (cancelled) return;
+        setRoleRows(page.elements);
+        setRoleTotal(page.totalElements);
+        setRolePageNo(page.pageNo || rolePageNo);
+        setRolePageSize(page.pageSize || rolePageSize);
+      })
+      .finally(() => {
+        if (!cancelled) setRolePageLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, [appliedKeyword, canShowRoles, open, rolePageNo, rolePageSize]);
 
-  const currentPageSelectableIds = useMemo(
-    () => roleRows.map((role) => role.id),
-    [roleRows],
-  );
+  const currentPageSelectableIds = useMemo(() => roleRows.map((role) => role.id), [roleRows]);
 
   const currentPageAllSelected = useMemo(
-    () => currentPageSelectableIds.length > 0 && currentPageSelectableIds.every((id) => selectedSet.has(id)),
+    () =>
+      currentPageSelectableIds.length > 0 &&
+      currentPageSelectableIds.every((id) => selectedSet.has(id)),
     [currentPageSelectableIds, selectedSet],
   );
 
@@ -179,7 +180,10 @@ export function UserManageDrawer({
       <div className="permission-dialog-footer__actions">
         <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
         {editable ? (
-          <BzButton buttonType="primary" onClick={handleSubmit}>
+          <BzButton
+            buttonType="primary"
+            onClick={handleSubmit}
+          >
             保存
           </BzButton>
         ) : null}
@@ -214,16 +218,28 @@ export function UserManageDrawer({
     if (mode === "edit" && canEditBasic) {
       return (
         <td className="role-info-cell role-info-cell--edit">
-          <BzSelect modelValue={status} onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}>
-            <BzOption label="启用" value="ENABLED" />
-            <BzOption label="停用" value="DISABLED" />
+          <BzSelect
+            modelValue={status}
+            onValueChange={(v) => setStatus((v as UserStatus) || "ENABLED")}
+          >
+            <BzOption
+              label="启用"
+              value="ENABLED"
+            />
+            <BzOption
+              label="停用"
+              value="DISABLED"
+            />
           </BzSelect>
         </td>
       );
     }
     return (
       <td className="role-info-cell">
-        <BzTag className={`role-info-status-tag${status === "ENABLED" ? " is-enabled" : " is-disabled"}`} type={status === "ENABLED" ? "success" : "danger"}>
+        <BzTag
+          className={`role-info-status-tag${status === "ENABLED" ? " is-enabled" : " is-disabled"}`}
+          type={status === "ENABLED" ? "success" : "danger"}
+        >
           {status === "ENABLED" ? "启用" : "停用"}
         </BzTag>
       </td>
@@ -247,7 +263,10 @@ export function UserManageDrawer({
           </div>
 
           <div className="role-info-table-wrap">
-            <table className="role-info-table" aria-label="用户信息">
+            <table
+              className="role-info-table"
+              aria-label="用户信息"
+            >
               <tbody>
                 <tr>
                   <th>
@@ -273,10 +292,15 @@ export function UserManageDrawer({
                     <th>
                       <span className="is-required">初始密码</span>
                     </th>
-                    {renderEditableTextCell(password, "请输入初始密码", setPassword, { password: true })}
+                    {renderEditableTextCell(password, "请输入初始密码", setPassword, {
+                      password: true,
+                    })}
                     <th>状态</th>
                     {renderValueCell(
-                      <BzTag className="role-info-status-tag is-enabled" type="success">
+                      <BzTag
+                        className="role-info-status-tag is-enabled"
+                        type="success"
+                      >
                         启用
                       </BzTag>,
                     )}
@@ -287,7 +311,11 @@ export function UserManageDrawer({
                   <>
                     <tr>
                       <th>
-                        <span className={mode === "edit" && canEditBasic ? "is-required" : undefined}>状态</span>
+                        <span
+                          className={mode === "edit" && canEditBasic ? "is-required" : undefined}
+                        >
+                          状态
+                        </span>
                       </th>
                       {renderStatusValue()}
                       <th>创建人</th>
@@ -309,19 +337,28 @@ export function UserManageDrawer({
             </table>
           </div>
 
-          {err ? <BzAlert title={err} type="error" showIcon className="form-error role-manage-error" /> : null}
+          {err ? (
+            <BzAlert
+              title={err}
+              type="error"
+              showIcon
+              className="form-error role-manage-error"
+            />
+          ) : null}
         </section>
 
         {canShowRoles ? (
           <section className="role-manage-section">
             <div className="role-manage-section__head">
               <div className="role-manage-section__title">角色分配</div>
-              <div className="role-manage-section__stat">已选 {selectedSet.size} / {roleTotal} 项</div>
+              <div className="role-manage-section__stat">
+                已选 {selectedSet.size} / {roleTotal} 项
+              </div>
             </div>
 
-              <div className="role-permission-toolbar">
-                <BzInput
-                  modelValue={keyword}
+            <div className="role-permission-toolbar">
+              <BzInput
+                modelValue={keyword}
                 placeholder="搜索角色编码/名称"
                 clearable
                 className="role-permission-toolbar__search"
@@ -329,45 +366,66 @@ export function UserManageDrawer({
                 onKeyUp={(event) => {
                   if (event.key === "Enter") applyRoleSearch();
                 }}
-                />
-                <div className="role-permission-toolbar__actions">
-                  <BzButton className="permission-toolbar-button" onClick={resetRoleSearch}>
-                    重置
-                  </BzButton>
-                  <BzButton className="permission-toolbar-button" onClick={applyRoleSearch}>
-                    搜索
-                  </BzButton>
-                </div>
+              />
+              <div className="role-permission-toolbar__actions">
+                <BzButton
+                  className="permission-toolbar-button"
+                  onClick={resetRoleSearch}
+                >
+                  重置
+                </BzButton>
+                <BzButton
+                  className="permission-toolbar-button"
+                  onClick={applyRoleSearch}
+                >
+                  搜索
+                </BzButton>
               </div>
+            </div>
 
-              <div className="admin-grid-table">
-                <div className="admin-grid-table__viewport">
-                  <div className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
-                    <div className="admin-grid-table__cell admin-grid-table__cell--check">
-                      {mode === "detail" ? null : (
-                        <input
-                          className="admin-node-checkbox"
-                          type="checkbox"
-                          checked={currentPageAllSelected}
-                          ref={(el) => {
-                            if (el) el.indeterminate = !currentPageAllSelected && currentPageSomeSelected;
-                          }}
-                          disabled={!canEditRoles || roleRows.length === 0}
-                          onChange={(event) => toggleCurrentPageAll(event.target.checked)}
-                        />
-                      )}
-                    </div>
+            <div className="admin-grid-table">
+              <div className="admin-grid-table__viewport">
+                <div
+                  className="admin-grid-table__row admin-grid-table__row--head role-permission-table__head"
+                  style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}
+                >
+                  <div className="admin-grid-table__cell admin-grid-table__cell--check">
+                    {mode === "detail" ? null : (
+                      <input
+                        className="admin-node-checkbox"
+                        type="checkbox"
+                        checked={currentPageAllSelected}
+                        ref={(el) => {
+                          if (el)
+                            el.indeterminate = !currentPageAllSelected && currentPageSomeSelected;
+                        }}
+                        disabled={!canEditRoles || roleRows.length === 0}
+                        onChange={(event) => toggleCurrentPageAll(event.target.checked)}
+                      />
+                    )}
+                  </div>
                   <div className="admin-grid-table__cell">角色编码</div>
                   <div className="admin-grid-table__cell">角色名称</div>
                 </div>
 
-                <BzLoading loading={rolePageLoading && roleRows.length > 0} text="加载中...">
+                <BzLoading
+                  loading={rolePageLoading && roleRows.length > 0}
+                  text="加载中..."
+                >
                   <div className="admin-grid-table__body">
                     {roleRows.length === 0 ? (
-                      <div className="permission-empty">{rolePageLoading ? "加载中..." : "暂无角色"}</div>
+                      <div className="permission-empty">
+                        {rolePageLoading ? "加载中..." : "暂无角色"}
+                      </div>
                     ) : (
                       roleRows.map((role) => (
-                        <div key={role.id} className="admin-grid-table__row" style={{ gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)" }}>
+                        <div
+                          key={role.id}
+                          className="admin-grid-table__row"
+                          style={{
+                            gridTemplateColumns: "44px minmax(240px, 1fr) minmax(240px, 1fr)",
+                          }}
+                        >
                           <div className="admin-grid-table__cell admin-grid-table__cell--check">
                             <input
                               className="admin-node-checkbox"
