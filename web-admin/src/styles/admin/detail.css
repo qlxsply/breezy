@@ -123,6 +123,44 @@
   gap: var(--space-3);
 }
 
+.preferences-page-panel {
+  display: grid;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border);
+}
+
+.preferences-page-toolbar {
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.preferences-page-actions {
+  gap: var(--space-2);
+}
+
+.preferences-detail-table .admin-detail-table__cell-value .bz-select {
+  width: 100%;
+}
+
+.preferences-detail-table .admin-detail-table__cell-value .bz-select,
+.preferences-detail-table .admin-detail-table__cell-value .bz-select__inner {
+  min-height: 30px;
+  height: 30px;
+}
+
+.preferences-detail-table .admin-detail-table__cell-value .bz-select {
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
+.preferences-detail-table .admin-detail-table__cell-value .bz-select:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: none;
+}
+
+.preferences-value {
+  color: var(--color-text-primary);
+}
+
 @media (max-width: 768px) {
   .detail-grid,
   .group-form-grid,

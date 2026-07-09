@@ -131,7 +131,7 @@ export function UserTable({
     {
       key: "username",
       title: "账号",
-      width: 120,
+      width: 200,
       className: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
       headerClassName: `user-manage-col-username is-sticky-left${batchMode ? " has-select-offset" : ""}`,
       render: (row) => (
@@ -143,7 +143,7 @@ export function UserTable({
     {
       key: "nickname",
       title: "昵称",
-      width: 160,
+      minWidth: 160,
       render: (row) => <span className="user-manage-text">{row.nickname || "-"}</span>,
     },
     {
