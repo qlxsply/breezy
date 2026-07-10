@@ -26,6 +26,8 @@ export { BzOption } from "./BzOption";
 export { BzOverflowTooltip } from "./BzOverflowTooltip";
 export { BzPagination } from "./BzPagination";
 export { BzSelect } from "./BzSelect";
+export type { BzSimpleTableColumn } from "./BzSimpleTable";
+export { BzSimpleTable } from "./BzSimpleTable";
 export { BzSwitch } from "./BzSwitch";
 export type { BzTableColumn } from "./BzTable";
 export { BzTable } from "./BzTable";

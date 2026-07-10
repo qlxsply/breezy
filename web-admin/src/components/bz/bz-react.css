@@ -603,6 +603,69 @@
   width: 100%;
 }
 
+.bz-simple-table {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.bz-simple-table__inner {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.bz-simple-table__inner th,
+.bz-simple-table__inner td {
+  padding: 12px 14px;
+  border-right: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.bz-simple-table__inner th:last-child,
+.bz-simple-table__inner td:last-child {
+  border-right: none;
+}
+
+.bz-simple-table__inner tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bz-simple-table__inner th {
+  color: #475569;
+  font-weight: 600;
+  background: #fff;
+  white-space: nowrap;
+}
+
+.bz-simple-table__inner td {
+  color: #0f172a;
+  background: #fff;
+}
+
+.bz-simple-table__inner th.is-center,
+.bz-simple-table__inner td.is-center {
+  text-align: center;
+}
+
+.bz-simple-table__inner th.is-right,
+.bz-simple-table__inner td.is-right {
+  text-align: right;
+}
+
+.bz-simple-table__empty {
+  color: #94a3b8;
+  text-align: center !important;
+}
+
+.bz-simple-table__loading-wrap {
+  width: 100%;
+}
+
 .bz-overflow-tooltip__trigger {
   display: block;
   width: 100%;

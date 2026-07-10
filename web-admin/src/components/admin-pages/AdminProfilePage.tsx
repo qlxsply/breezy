@@ -3,17 +3,16 @@
 import type { AdminProfileEntry, AdminProfileLoginActivityEntry } from "@admin/api/admin-profile";
 import {
   getAdminProfile,
-  pageAdminProfileLoginActivities,
   updateAdminProfile,
 } from "@admin/api/admin-profile";
-import type { BzTableColumn } from "@admin/components/bz";
-import { BzButton, BzCard, BzInput, BzPagination, BzTable, BzTag } from "@admin/components/bz";
+import {
+  type AdminDetailSection,
+  AdminDetailTable,
+} from "@admin/components/admin/AdminDetailTable";
+import { BzButton, BzInput, BzSimpleTable, type BzSimpleTableColumn, BzTag } from "@admin/components/bz";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import type { PageResult } from "@admin/types/page";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-const pageSizeOptions = [10, 20, 30, 50, 100];
 
 function userTypeLabel(userType: string): string {
   if (userType === "SYSTEM") return "系统账号";
@@ -28,28 +27,23 @@ function activityTypeLabel(eventType: string): string {
   return eventType;
 }
 
+function profileStatusLabel(status?: string | null): string {
+  if (status === "ENABLED") return "启用";
+  if (status === "DISABLED") return "停用";
+  return status || "-";
+}
+
 export function AdminProfilePage() {
   const [profile, setProfile] = useState<AdminProfileEntry | null>(null);
   const [basicSaving, setBasicSaving] = useState(false);
   const [editingBasic, setEditingBasic] = useState(false);
   const [nicknameDraft, setNicknameDraft] = useState("");
-
-  const [activityPage, setActivityPage] = useState<PageResult<AdminProfileLoginActivityEntry>>({
-    pageNo: 1,
-    pageSize: 10,
-    numberOfElements: 0,
-    totalPages: 0,
-    totalElements: 0,
-    elements: [],
-  });
-  const [activityPageNo, setActivityPageNo] = useState(1);
-  const [activityPageSize, setActivityPageSize] = useState(10);
   const loadedRef = useRef(false);
 
   useEffect(() => {
     if (loadedRef.current) return;
     loadedRef.current = true;
-    void Promise.all([reloadProfile(), reloadActivities()]);
+    void reloadProfile();
   }, []);
 
   async function reloadProfile() {
@@ -59,20 +53,6 @@ export function AdminProfilePage() {
       setNicknameDraft(data.nickname || "");
     } catch (error) {
       message.error(error instanceof Error ? error.message : "个人中心加载失败");
-    }
-  }
-
-  async function reloadActivities() {
-    try {
-      const page = await pageAdminProfileLoginActivities({
-        pageNo: activityPageNo,
-        pageSize: activityPageSize,
-      });
-      setActivityPage(page);
-      setActivityPageNo(page.pageNo || 1);
-      setActivityPageSize(page.pageSize || activityPageSize);
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : "登录记录加载失败");
     }
   }
 
@@ -108,51 +88,60 @@ export function AdminProfilePage() {
     }
   }
 
-  useEffect(() => {
-    if (loadedRef.current && activityPageNo !== 1) {
-      void reloadActivities();
-    }
-  }, [activityPageNo]);
+  const detailSections = useMemo<AdminDetailSection[]>(
+    () => [
+      {
+        title: "基础信息",
+        fields: [
+          { label: "账号", value: profile?.username || "-" },
+          {
+            label: "昵称",
+            value: editingBasic ? (
+              <BzInput modelValue={nicknameDraft} placeholder="请输入昵称" onValueChange={setNicknameDraft} />
+            ) : (
+              <span>{profile?.nickname || "-"}</span>
+            ),
+          },
+          { label: "类型", value: userTypeLabel(profile?.userType || "") },
+          { label: "状态", value: profileStatusLabel(profile?.status) },
+          { label: "最近一次密码修改", value: formatDateTime(profile?.lastPasswordChangedAt) },
+          { label: "最近更新时间", value: formatDateTime(profile?.updatedAt) },
+        ],
+      },
+    ],
+    [editingBasic, nicknameDraft, profile],
+  );
 
-  useEffect(() => {
-    if (loadedRef.current) {
-      void reloadActivities();
-    }
-  }, [activityPageSize]);
+  const recentActivities = useMemo(
+    () => (profile?.recentActivities || []).slice(0, 10),
+    [profile],
+  );
 
-  const activityColumns = useMemo<Array<BzTableColumn<AdminProfileLoginActivityEntry>>>(
+  const activityColumns = useMemo<Array<BzSimpleTableColumn<AdminProfileLoginActivityEntry>>>(
     () => [
       {
         key: "eventType",
         title: "事件",
         width: 120,
-        render: (row) => <>{activityTypeLabel(row.eventType)}</>,
+        text: (row) => activityTypeLabel(row.eventType),
       },
       {
         key: "success",
         title: "结果",
         width: 100,
-        render: (row) => (
-          <BzTag type={row.success ? "success" : "danger"}>{row.success ? "成功" : "失败"}</BzTag>
-        ),
+        render: (row) => <BzTag type={row.success ? "success" : "danger"}>{row.success ? "成功" : "失败"}</BzTag>,
       },
-      {
-        key: "loginIp",
-        title: "IP",
-        minWidth: 140,
-        render: (row) => <>{row.loginIp || "-"}</>,
-      },
+      { key: "loginIp", title: "IP", minWidth: 140 },
       {
         key: "remark",
         title: "备注",
         minWidth: 220,
-        render: (row) => <>{row.remark || "-"}</>,
       },
       {
         key: "occurredAt",
         title: "发生时间",
         width: 180,
-        render: (row) => <>{formatDateTime(row.occurredAt)}</>,
+        text: (row) => formatDateTime(row.occurredAt),
       },
     ],
     [],
@@ -162,121 +151,29 @@ export function AdminProfilePage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <BzCard
-            className="admin-panel admin-table-card"
-            shadow="never"
-            header={
-              <div className="admin-table-header">
-                <div className="admin-table-title">个人中心</div>
+          <div className="admin-list-template preferences-page-panel">
+            <div className="admin-list-toolbar-row preferences-page-toolbar">
+              <div className="admin-list-business-actions" />
+              <div className="admin-list-query-tools preferences-page-actions">
+                {editingBasic ? <BzButton disabled={basicSaving} onClick={cancelBasicEdit}>取消</BzButton> : null}
+                <BzButton buttonType={editingBasic ? "primary" : undefined} loading={basicSaving} onClick={editingBasic ? saveBasic : startBasicEdit}>
+                  {editingBasic ? "保存" : "编辑"}
+                </BzButton>
               </div>
-            }
-          >
-            <div className="profile-grid">
-              <section className="profile-section">
-                <div className="profile-section__head">
-                  <div className="profile-section__title">基础信息</div>
-                  <div className="profile-section__actions">
-                    {editingBasic ? (
-                      <BzButton
-                        disabled={basicSaving}
-                        onClick={cancelBasicEdit}
-                      >
-                        取消
-                      </BzButton>
-                    ) : null}
-                    <BzButton
-                      buttonType={editingBasic ? "primary" : undefined}
-                      loading={basicSaving}
-                      onClick={editingBasic ? saveBasic : startBasicEdit}
-                    >
-                      {editingBasic ? "确认" : "编辑"}
-                    </BzButton>
-                  </div>
-                </div>
-
-                {profile ? (
-                  <div className="profile-info-grid">
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">账号</span>
-                      <span className="profile-info-item__value">{profile.username}</span>
-                    </div>
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">昵称</span>
-                      {editingBasic ? (
-                        <BzInput
-                          modelValue={nicknameDraft}
-                          placeholder="请输入昵称"
-                          onValueChange={setNicknameDraft}
-                        />
-                      ) : (
-                        <span className="profile-info-item__value">{profile.nickname || "-"}</span>
-                      )}
-                    </div>
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">类型</span>
-                      <span className="profile-info-item__value">
-                        {userTypeLabel(profile.userType)}
-                      </span>
-                    </div>
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">状态</span>
-                      <span className="profile-info-item__value">{profile.status}</span>
-                    </div>
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">最近一次密码修改</span>
-                      <span className="profile-info-item__value">
-                        {formatDateTime(profile.lastPasswordChangedAt)}
-                      </span>
-                    </div>
-                    <div className="profile-info-item">
-                      <span className="profile-info-item__label">最近更新时间</span>
-                      <span className="profile-info-item__value">
-                        {formatDateTime(profile.updatedAt)}
-                      </span>
-                    </div>
-                  </div>
-                ) : null}
-              </section>
-
-              <section className="profile-section profile-section--wide">
-                <div className="profile-section__head">
-                  <div className="profile-section__title">最近登录/退出记录</div>
-                </div>
-
-                <div className="admin-table-surface">
-                  <BzTable
-                    columns={activityColumns}
-                    data={activityPage.elements}
-                    size="small"
-                    emptyText="暂无记录"
-                  />
-                </div>
-
-                {activityPage.totalElements > 0 ? (
-                  <div className="dict-pagination-bar profile-pagination">
-                    <div className="dict-pagination-summary">
-                      共 {activityPage.totalElements} 条记录
-                    </div>
-                    <div className="dict-pagination-right">
-                      <BzPagination
-                        total={activityPage.totalElements}
-                        pageSize={activityPageSize}
-                        currentPage={activityPageNo}
-                        pageSizes={pageSizeOptions}
-                        onCurrentChange={setActivityPageNo}
-                        onSizeChange={(size) => {
-                          if (!Number.isFinite(size) || size <= 0 || size === activityPageSize)
-                            return;
-                          setActivityPageSize(size);
-                          setActivityPageNo(1);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </section>
             </div>
-          </BzCard>
+
+            <div className="preferences-detail-table profile-detail-table">
+              <AdminDetailTable sections={detailSections} variant="plain" />
+            </div>
+
+            <div className="profile-activity-section">
+              <div className="profile-activity-section__head">
+                <div className="profile-activity-section__title">最近登录/退出记录</div>
+                <div className="profile-activity-section__meta">最新 10 条</div>
+              </div>
+              <BzSimpleTable columns={activityColumns} data={recentActivities} rowKey="id" emptyText="暂无记录" />
+            </div>
+          </div>
         </div>
       </div>
     </div>

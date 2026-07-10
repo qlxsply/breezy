@@ -161,10 +161,50 @@
   color: var(--color-text-primary);
 }
 
+.profile-detail-table .admin-detail-table__cell-value .bz-input {
+  width: 100%;
+}
+
+.profile-detail-table .admin-detail-table__cell-value .bz-input__inner {
+  min-height: 30px;
+  height: 30px;
+}
+
+.profile-activity-section {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0 0 16px;
+  border-top: var(--border-width-1) solid var(--color-border);
+}
+
+.profile-activity-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 16px 16px 0;
+}
+
+.profile-activity-section__title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.profile-activity-section__meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
 @media (max-width: 768px) {
   .detail-grid,
   .group-form-grid,
   .preferences-grid.bz-form {
     grid-template-columns: 1fr;
+  }
+
+  .profile-activity-section__head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
