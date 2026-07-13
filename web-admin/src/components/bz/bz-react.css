@@ -498,6 +498,17 @@
   line-height: 1.4;
 }
 
+.bz-form-item__content {
+  width: 100%;
+  min-width: 0;
+}
+
+.bz-form-item__meta {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .bz-table {
   width: 100%;
 }

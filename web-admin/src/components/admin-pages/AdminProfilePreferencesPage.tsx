@@ -6,6 +6,7 @@ import {
   type AdminDetailSection,
   AdminDetailTable,
 } from "@admin/components/admin/AdminDetailTable";
+import { AdminEditableSection } from "@admin/components/admin/AdminEditableSection";
 import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
 import {
   resolveUserDateFormatCode,
@@ -327,34 +328,25 @@ export function AdminProfilePreferencesPage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <div className="admin-list-template preferences-page-panel">
-            <div className="admin-list-toolbar-row preferences-page-toolbar">
-              <div className="admin-list-business-actions" />
-              <div className="admin-list-query-tools preferences-page-actions">
-                {editing ? (
-                  <BzButton
-                    disabled={saving}
-                    onClick={cancelEdit}
-                  >
-                    取消
+          <div className="profile-page-panel">
+            <AdminEditableSection
+              title="显示与格式"
+              actions={
+                <>
+                  {editing ? <BzButton disabled={saving} onClick={cancelEdit}>取消</BzButton> : null}
+                  <BzButton buttonType={editing ? "primary" : undefined} loading={saving} onClick={editing ? submit : startEdit}>
+                    {editing ? "保存" : "编辑"}
                   </BzButton>
-                ) : null}
-                <BzButton
-                  buttonType={editing ? "primary" : undefined}
-                  loading={saving}
-                  onClick={editing ? submit : startEdit}
-                >
-                  {editing ? "保存" : "编辑"}
-                </BzButton>
-              </div>
-            </div>
-
-            <div className="preferences-detail-table">
+                </>
+              }
+            >
+              <div className="preferences-detail-table profile-detail-table">
               <AdminDetailTable
                 sections={detailSections}
                 variant="plain"
               />
-            </div>
+              </div>
+            </AdminEditableSection>
           </div>
         </div>
       </div>

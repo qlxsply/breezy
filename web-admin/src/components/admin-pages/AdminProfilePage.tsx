@@ -1,7 +1,8 @@
 "use client";
 
-import type { AdminProfileEntry, AdminProfileLoginActivityEntry } from "@admin/api/admin-profile";
 import {
+  type AdminProfileEntry,
+  type AdminProfileLoginActivityEntry,
   getAdminProfile,
   updateAdminProfile,
 } from "@admin/api/admin-profile";
@@ -9,7 +10,9 @@ import {
   type AdminDetailSection,
   AdminDetailTable,
 } from "@admin/components/admin/AdminDetailTable";
-import { BzButton, BzInput, BzSimpleTable, type BzSimpleTableColumn, BzTag } from "@admin/components/bz";
+import { AdminEditableSection } from "@admin/components/admin/AdminEditableSection";
+import { AdminReadonlyListSection } from "@admin/components/admin/AdminReadonlyListSection";
+import { BzButton, BzInput, BzSimpleTable, type BzSimpleTableColumn,BzTag } from "@admin/components/bz";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -103,7 +106,14 @@ export function AdminProfilePage() {
             ),
           },
           { label: "类型", value: userTypeLabel(profile?.userType || "") },
-          { label: "状态", value: profileStatusLabel(profile?.status) },
+          {
+            label: "状态",
+            value: (
+              <BzTag type={profile?.status === "ENABLED" ? "success" : "danger"}>
+                {profileStatusLabel(profile?.status)}
+              </BzTag>
+            ),
+          },
           { label: "最近一次密码修改", value: formatDateTime(profile?.lastPasswordChangedAt) },
           { label: "最近更新时间", value: formatDateTime(profile?.updatedAt) },
         ],
@@ -151,28 +161,30 @@ export function AdminProfilePage() {
     <div className="admin-page">
       <div className="content">
         <div className="admin-page-stack">
-          <div className="admin-list-template preferences-page-panel">
-            <div className="admin-list-toolbar-row preferences-page-toolbar">
-              <div className="admin-list-business-actions" />
-              <div className="admin-list-query-tools preferences-page-actions">
-                {editingBasic ? <BzButton disabled={basicSaving} onClick={cancelBasicEdit}>取消</BzButton> : null}
-                <BzButton buttonType={editingBasic ? "primary" : undefined} loading={basicSaving} onClick={editingBasic ? saveBasic : startBasicEdit}>
-                  {editingBasic ? "保存" : "编辑"}
-                </BzButton>
+          <div className="profile-page-panel">
+            <AdminEditableSection
+              title="基础信息"
+              actions={
+                <>
+                  {editingBasic ? <BzButton disabled={basicSaving} onClick={cancelBasicEdit}>取消</BzButton> : null}
+                  <BzButton buttonType={editingBasic ? "primary" : undefined} loading={basicSaving} onClick={editingBasic ? saveBasic : startBasicEdit}>
+                    {editingBasic ? "保存" : "编辑"}
+                  </BzButton>
+                </>
+              }
+            >
+              <div className="profile-detail-table">
+                <AdminDetailTable sections={detailSections} variant="plain" />
               </div>
-            </div>
+            </AdminEditableSection>
 
-            <div className="preferences-detail-table profile-detail-table">
-              <AdminDetailTable sections={detailSections} variant="plain" />
-            </div>
-
-            <div className="profile-activity-section">
-              <div className="profile-activity-section__head">
-                <div className="profile-activity-section__title">最近登录/退出记录</div>
-                <div className="profile-activity-section__meta">最新 10 条</div>
-              </div>
+            <AdminReadonlyListSection
+              title="最近登录/退出记录"
+              className="profile-activity-section"
+              meta={<div className="profile-activity-section__meta">最新 10 条</div>}
+            >
               <BzSimpleTable columns={activityColumns} data={recentActivities} rowKey="id" emptyText="暂无记录" />
-            </div>
+            </AdminReadonlyListSection>
           </div>
         </div>
       </div>

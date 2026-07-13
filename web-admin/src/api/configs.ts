@@ -63,3 +63,18 @@ export function getMyConfigs(): Promise<UserConfigItem[]> {
 export function updateMyConfig(code: string, value: string): Promise<boolean> {
   return put<boolean>(`${BASE}/my/${encodeURIComponent(code)}`, { value });
 }
+
+export interface PasswordPolicyConfig {
+  passwordMinLength: number;
+  passwordRequireDigit: boolean;
+  passwordRequireLetter: boolean;
+  passwordRequireUpper: boolean;
+  passwordRequireLower: boolean;
+  passwordRequireSpecial: boolean;
+  passwordForceChangeOnFirstLogin: boolean;
+  passwordForceChangeOnReset: boolean;
+}
+
+export function getPasswordPolicyConfig(): Promise<PasswordPolicyConfig> {
+  return get<PasswordPolicyConfig>(`${BASE}/password-policy`);
+}
