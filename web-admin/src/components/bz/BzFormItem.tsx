@@ -12,12 +12,16 @@ function resolveCssSize(value?: number | string): string | undefined {
 }
 
 export function BzFormItem({ label, meta, className, contentWidth, children }: BzFormItemProps) {
+  const needsContentWrap = meta !== undefined || contentWidth !== undefined;
+
   return (
     <div className={["bz-form-item", className].filter(Boolean).join(" ")}>
       {label ? <label className="bz-form-item__label">{label}</label> : null}
-      <div className="bz-form-item__content" style={{ width: resolveCssSize(contentWidth) }}>
-        {children}
-      </div>
+      {needsContentWrap ? (
+        <div className="bz-form-item__content" style={{ width: resolveCssSize(contentWidth) }}>
+          {children}
+        </div>
+      ) : children}
       {meta ? <div className="bz-form-item__meta">{meta}</div> : null}
     </div>
   );

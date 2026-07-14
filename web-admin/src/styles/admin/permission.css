@@ -298,14 +298,16 @@
 }
 
 .role-info-table .bz-input,
-.role-info-table .bz-select {
+.role-info-table .bz-select,
+.role-info-table .bz-text-field__control {
   min-height: 30px;
   border: 1px solid transparent;
   box-shadow: none;
 }
 
 .role-info-table .bz-input:focus-within,
-.role-info-table .bz-select:focus-within {
+.role-info-table .bz-select:focus-within,
+.role-info-table .bz-text-field__control:focus-within {
   border-color: var(--primary-color);
   box-shadow: none;
 }
@@ -322,6 +324,20 @@
 
 .role-info-table .bz-select__arrow {
   right: 10px;
+}
+
+.role-info-table .bz-text-field {
+  width: 100%;
+}
+
+.role-info-table .bz-text-field__control.is-textarea {
+  align-items: stretch;
+}
+
+.role-info-table .bz-text-field__textarea {
+  min-height: 60px;
+  padding: 8px 10px;
+  resize: vertical;
 }
 
 .role-info-status-tag {

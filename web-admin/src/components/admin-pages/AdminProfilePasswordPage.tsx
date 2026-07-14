@@ -1,7 +1,7 @@
 "use client";
 
 import { getPasswordPolicyConfig, type PasswordPolicyConfig } from "@admin/api/configs";
-import { AdminFormSection } from "@admin/components/admin/AdminFormSection";
+import { AdminFormSection } from "@admin/components/admin";
 import { BzButton, BzForm, BzFormItem, BzInput } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { changePassword } from "@admin/core/registry/auth-registry";

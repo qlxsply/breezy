@@ -5,8 +5,8 @@ import { batchListDictOptions } from "@admin/api/dicts";
 import {
   type AdminDetailSection,
   AdminDetailTable,
-} from "@admin/components/admin/AdminDetailTable";
-import { AdminEditableSection } from "@admin/components/admin/AdminEditableSection";
+  AdminEditableSection,
+} from "@admin/components/admin";
 import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
 import {
   resolveUserDateFormatCode,

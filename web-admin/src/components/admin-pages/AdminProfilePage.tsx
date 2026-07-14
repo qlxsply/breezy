@@ -9,9 +9,9 @@ import {
 import {
   type AdminDetailSection,
   AdminDetailTable,
-} from "@admin/components/admin/AdminDetailTable";
-import { AdminEditableSection } from "@admin/components/admin/AdminEditableSection";
-import { AdminReadonlyListSection } from "@admin/components/admin/AdminReadonlyListSection";
+  AdminEditableSection,
+  AdminReadonlyListSection,
+} from "@admin/components/admin";
 import { BzButton, BzInput, BzSimpleTable, type BzSimpleTableColumn,BzTag } from "@admin/components/bz";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";

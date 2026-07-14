@@ -15,7 +15,6 @@ import {
   BzSelect,
   BzSwitch,
   BzTable,
-  BzTextField,
 } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
@@ -337,18 +336,18 @@ export function ResourceManageDrawer({
 
   // ---- 单元格渲染辅助函数 ----
 
-  function renderCell(children: ReactNode, { mono }: { mono?: boolean } = {}) {
-    return <td className={`role-info-cell${mono ? " mono" : ""}`}>{children}</td>;
+  function renderCell(children: ReactNode, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
+    return <td colSpan={colSpan} className={`role-info-cell${mono ? " mono" : ""}`}>{children}</td>;
   }
 
-  function renderEditCell(children: ReactNode, { mono }: { mono?: boolean } = {}) {
+  function renderEditCell(children: ReactNode, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
     return (
-      <td className={`role-info-cell role-info-cell--edit${mono ? " mono" : ""}`}>{children}</td>
+      <td colSpan={colSpan} className={`role-info-cell role-info-cell--edit${mono ? " mono" : ""}`}>{children}</td>
     );
   }
 
-  function renderValue(value: string | number, { mono }: { mono?: boolean } = {}) {
-    return renderCell(value || "-", { mono });
+  function renderValue(value: string | number, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
+    return renderCell(value || "-", { mono, colSpan });
   }
 
   function renderInput(
@@ -369,16 +368,15 @@ export function ResourceManageDrawer({
     );
   }
 
-  function renderTextarea(value: string, placeholder: string, onChange: (v: string) => void) {
-    if (!editable) return renderCell(<pre className="admin-log-pre">{value || "-"}</pre>);
+  function renderTextarea(value: string, placeholder: string, onChange: (v: string) => void, colSpan?: number) {
+    if (!editable) return renderCell(<pre className="admin-log-pre">{value || "-"}</pre>, { colSpan });
     return renderEditCell(
-      <BzTextField
+      <BzInput
         modelValue={value}
-        type="textarea"
-        rows={3}
         placeholder={placeholder}
         onValueChange={onChange}
       />,
+      { colSpan },
     );
   }
 
@@ -536,12 +534,8 @@ export function ResourceManageDrawer({
                 <tr>
                   <th>备注</th>
                   {editable
-                    ? renderTextarea(form.remark, "资源说明", (v) => updateForm("remark", v))
-                    : renderValue(form.remark)}
-                  <th></th>
-                  <td></td>
-                  <th></th>
-                  <td></td>
+                    ? renderTextarea(form.remark, "资源说明", (v) => updateForm("remark", v), 5)
+                    : renderValue(form.remark, { colSpan: 5 })}
                 </tr>
               </tbody>
             </table>
