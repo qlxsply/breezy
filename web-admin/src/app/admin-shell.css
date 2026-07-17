@@ -17,7 +17,7 @@
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.06), transparent 24%),
     linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   color: var(--text-color);
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-family-sans);
   overflow: hidden;
 }
 

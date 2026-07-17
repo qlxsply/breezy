@@ -5,9 +5,12 @@ body {
   background: var(--bg-color);
 }
 
+html {
+  font-family: var(--font-family-sans);
+}
+
 body {
   color: var(--text-color);
-  font-family: var(--font-family-sans);
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
   overflow: hidden;

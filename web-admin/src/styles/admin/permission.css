@@ -184,7 +184,7 @@
 }
 
 .role-manage-drawer .mono {
-  font-family: Consolas, "Courier New", monospace;
+  font-family: var(--font-family-mono);
 }
 
 .role-manage-shell {

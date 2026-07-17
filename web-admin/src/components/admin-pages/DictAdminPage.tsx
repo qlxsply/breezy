@@ -17,11 +17,11 @@ import {
 } from "@admin/api/dicts";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
+  BzCard,
   BzDialog,
   BzEmpty,
   BzForm,
@@ -487,6 +487,20 @@ export function DictAdminPage() {
   const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(() => {
     const baseColumns: Array<BzTableColumn<DictTypeItem>> = [
       {
+        key: "select",
+        title: "选择",
+        width: 64,
+        render: (row) =>
+          batchMode ? (
+            <input
+              type="checkbox"
+              checked={selectedTypeIds.includes(row.id)}
+              disabled={row.sourceType === "BUILTIN"}
+              onChange={(event) => toggleTypeSelection(row.id, event.target.checked)}
+            />
+          ) : null,
+      },
+      {
         key: "code",
         title: "编码",
         width: 240,
@@ -531,27 +545,8 @@ export function DictAdminPage() {
         render: (row) => <span className="cell-text">{row.description || "-"}</span>,
       },
     ];
-    const selectColumn: BzTableColumn<DictTypeItem> | null = batchMode
-      ? {
-          key: "select",
-          title: "选择",
-          width: 64,
-          render: (row) => (
-            <input
-              type="checkbox"
-              checked={selectedTypeIds.includes(row.id)}
-              disabled={row.sourceType === "BUILTIN"}
-              onChange={(event) => toggleTypeSelection(row.id, event.target.checked)}
-            />
-          ),
-        }
-      : null;
     const actionsColumn = createAdminActionsColumn({ rows, getActions: getTypeRowActions });
-    return [
-      ...(selectColumn ? [selectColumn] : []),
-      ...baseColumns,
-      ...(actionsColumn ? [actionsColumn] : []),
-    ];
+    return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
   }, [batchMode, canView, canEdit, drawerOpen, selectedTypeIds, rows]);
 
   const itemColumns = useMemo<Array<BzTableColumn<DictItem>>>(() => {
@@ -648,84 +643,178 @@ export function DictAdminPage() {
   }
 
   return (
-    <>
-      <AdminListPageTemplate
-        queryPanelVisible={queryPanelVisible}
-        queryPanel={
-          <div
-            ref={queryCardRef}
-            className={[
-              "admin-query-layout",
-              querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
-            ].join(" ")}
+    <div className="admin-page">
+      <div className="content">
+        <div className="admin-page-stack">
+          <BzCard
+            className="admin-panel admin-table-card admin-list-card"
+            shadow="never"
           >
-            <form
-              ref={queryGridRef}
-              className="bz-form admin-query-grid"
-              onSubmit={(event) => {
-                event.preventDefault();
-                applyFilters();
-              }}
-            >
-              <BzFormItem className="admin-query-field">
-                <div className="admin-query-field__label">编码</div>
-                <div className="admin-query-field__control">
-                  <BzInput modelValue={codeDraft} placeholder="请输入字典编码" clearable onValueChange={setCodeDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} />
+            <div className="admin-list-region">
+              {queryPanelVisible ? (
+                <div className="admin-list-query-panel">
+                  <div
+                    ref={queryCardRef}
+                    className={[
+                      "admin-query-layout",
+                      querySingleRow
+                        ? "is-single-row"
+                        : queryExpanded
+                          ? "is-expanded"
+                          : "is-collapsed",
+                    ].join(" ")}
+                  >
+                    <form
+                      ref={queryGridRef}
+                      className="bz-form admin-query-grid"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        applyFilters();
+                      }}
+                    >
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">编码</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={codeDraft}
+                            placeholder="请输入字典编码"
+                            clearable
+                            onValueChange={setCodeDraft}
+                            onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <BzFormItem className="admin-query-field">
+                        <div className="admin-query-field__label">名称</div>
+                        <div className="admin-query-field__control">
+                          <BzInput
+                            modelValue={nameDraft}
+                            placeholder="请输入字典名称"
+                            clearable
+                            onValueChange={setNameDraft}
+                            onKeyUp={(event) => event.key === "Enter" && applyFilters()}
+                          />
+                        </div>
+                      </BzFormItem>
+                      <div className="admin-query-actions">
+                        <BzButton
+                          className="admin-filter-secondary"
+                          nativeType="button"
+                          onClick={resetFilters}
+                        >
+                          重置
+                        </BzButton>
+                        <BzButton
+                          className="admin-filter-primary"
+                          buttonType="primary"
+                          nativeType="button"
+                          onClick={applyFilters}
+                        >
+                          搜索
+                        </BzButton>
+                        {!querySingleRow ? (
+                          <button
+                            className="admin-filter-toggle"
+                            type="button"
+                            aria-expanded={queryExpanded}
+                            onClick={() => setQueryExpanded((value) => !value)}
+                          >
+                            <span>{queryExpanded ? "收起" : "展开"}</span>
+                            <i
+                              className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        ) : null}
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </BzFormItem>
-              <BzFormItem className="admin-query-field">
-                <div className="admin-query-field__label">名称</div>
-                <div className="admin-query-field__control">
-                  <BzInput modelValue={nameDraft} placeholder="请输入字典名称" clearable onValueChange={setNameDraft} onKeyUp={(event) => event.key === "Enter" && applyFilters()} />
+              ) : null}
+
+              {batchMode ? (
+                <div className="admin-batch-toolbar">
+                  <div className="admin-batch-toolbar__summary">
+                    批量删除中，已选 {selectedTypeIds.length} 项
+                  </div>
+                  <div className="admin-batch-toolbar__actions">
+                    <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
+                    <BzButton
+                      buttonType="primary"
+                      disabled={selectedTypeIds.length === 0}
+                      onClick={() => void handleBatchDelete()}
+                    >
+                      确认删除
+                    </BzButton>
+                    <BzButton
+                      onClick={() => {
+                        setBatchMode(false);
+                        setSelectedTypeIds([]);
+                      }}
+                    >
+                      取消
+                    </BzButton>
+                  </div>
                 </div>
-              </BzFormItem>
-              <div className="admin-query-actions">
-                <BzButton className="admin-filter-secondary" nativeType="button" onClick={resetFilters}>重置</BzButton>
-                <BzButton className="admin-filter-primary" buttonType="primary" nativeType="button" onClick={applyFilters}>搜索</BzButton>
-                {!querySingleRow ? (
-                  <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((value) => !value)}>
-                    <span>{queryExpanded ? "收起" : "展开"}</span>
-                    <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} aria-hidden="true" />
-                  </button>
-                ) : null}
+              ) : (
+                <div className="admin-list-toolbar-row">
+                  <div className="admin-list-business-actions">
+                    {canCreate ? (
+                      <BzButton
+                        className="admin-toolbar-primary"
+                        buttonType="primary"
+                        onClick={openCreateType}
+                      >
+                        新增
+                      </BzButton>
+                    ) : null}
+                    {canEdit ? (
+                      <BzButton onClick={() => setBatchMode(true)}>批量删除</BzButton>
+                    ) : null}
+                  </div>
+                  <div className="admin-list-query-tools">
+                    <AdminTableTools
+                      queryPanelVisible={queryPanelVisible}
+                      onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+                      onRefresh={() => void reload()}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="admin-table-surface admin-list-table-area">
+                <BzTable
+                  columns={columns}
+                  data={rows}
+                  loading={loading}
+                  rowKey="id"
+                  emptyText="暂无字典记录"
+                  size="small"
+                />
               </div>
-            </form>
-          </div>
-        }
-        batchToolbar={batchMode ? (
-          <div className="admin-batch-toolbar">
-            <div className="admin-batch-toolbar__summary">批量删除中，已选 {selectedTypeIds.length} 项</div>
-            <div className="admin-batch-toolbar__actions">
-              <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
-              <BzButton buttonType="primary" disabled={selectedTypeIds.length === 0} onClick={() => void handleBatchDelete()}>确认删除</BzButton>
-              <BzButton onClick={() => {
-                setBatchMode(false);
-                setSelectedTypeIds([]);
-              }}>取消</BzButton>
+              {page.totalElements > 0 ? (
+                <div className="dict-pagination-bar admin-list-table-footer">
+                  <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+                  <div className="dict-pagination-right">
+                    <BzPagination
+                      total={page.totalElements}
+                      pageSize={pageSize}
+                      currentPage={pageNo}
+                      pageSizes={pageSizeOptions}
+                      onCurrentChange={setPageNo}
+                      onSizeChange={(size) => {
+                        if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                        setPageSize(size);
+                        setPageNo(1);
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
-          </div>
-        ) : null}
-        businessActions={!batchMode ? (
-          <>
-            {canCreate ? <BzButton className="admin-toolbar-primary" buttonType="primary" onClick={openCreateType}>新增</BzButton> : null}
-            {canEdit ? <BzButton onClick={() => setBatchMode(true)}>批量删除</BzButton> : null}
-          </>
-        ) : null}
-        queryTools={!batchMode ? <AdminTableTools queryPanelVisible={queryPanelVisible} onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)} onRefresh={() => void reload()} /> : null}
-        table={<BzTable columns={columns} data={rows} loading={loading} rowKey="id" emptyText="暂无字典记录" size="small" />}
-        footer={page.totalElements > 0 ? (
-          <div className="dict-pagination-bar admin-list-table-footer">
-            <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
-            <div className="dict-pagination-right">
-              <BzPagination total={page.totalElements} pageSize={pageSize} currentPage={pageNo} pageSizes={pageSizeOptions} onCurrentChange={setPageNo} onSizeChange={(size) => {
-                if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
-                setPageSize(size);
-                setPageNo(1);
-              }} />
-            </div>
-          </div>
-        ) : null}
-        overlays={<>
+          </BzCard>
+        </div>
+
         <AdminEntityDrawer
           open={drawerOpen}
           title={drawerTitle}
@@ -1020,9 +1109,8 @@ export function DictAdminPage() {
             </div>
           </BzForm>
         </BzDialog>
-        </>}
-      />
-    </>
+      </div>
+    </div>
   );
 
   function getTypeRowActions(row: DictTypeItem): AdminActionItem[] {
