@@ -30,7 +30,7 @@ const authState = {
 
 export const isAuthenticated = computed(() => Boolean(currentUser.value?.id));
 export const currentUserType = computed<AuthUserType>(() => currentUser.value?.userType || "GUEST");
-export const isExternalUser = computed(() => currentUserType.value === "EXTERNAL");
+export const isExternalUser = computed(() => currentUserType.value === "USER");
 export const isNormalUser = isExternalUser;
 
 export function useAuthUser() {
@@ -83,7 +83,7 @@ export async function ensureAuthLoaded(force = false): Promise<void> {
       if (me) {
         if (me.id) {
           currentUser.value = me;
-          if (me.userType !== "INTERNAL") {
+          if (me.userType !== "ADMIN") {
             await ensureUnreadLoaded(true);
             initTodoReminderPermission();
             await ensureWebPushSubscription();
@@ -132,7 +132,7 @@ export async function login(username: string, password: string): Promise<AuthUse
     personalizedConfigs.value = resp.user.configs;
   }
   authState.loaded = true;
-  if (resp.user.userType !== "INTERNAL") {
+  if (resp.user.userType !== "ADMIN") {
     await ensureUnreadLoaded(true);
     initTodoReminderPermission();
     await ensureWebPushSubscription();

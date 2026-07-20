@@ -28,7 +28,7 @@ public class RequestAuthorizationService {
     public void checkAuthorized(UserType userType, String[] permissions, boolean anyPermission) {
         AuthPrincipal principal = securityContextService.current();
         checkUserType(principal, userType);
-        if (principal.admin() && principal.userType() == UserType.INTERNAL) {
+        if (principal.admin() && principal.userType() == UserType.ADMIN) {
             return;
         }
         if (permissions == null || permissions.length == 0) {

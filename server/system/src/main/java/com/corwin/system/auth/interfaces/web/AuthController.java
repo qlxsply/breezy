@@ -62,19 +62,19 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    @Authenticated(userType = UserType.EXTERNAL)
+    @Authenticated(userType = UserType.USER)
     public ApiResponse<AuthUserRes> me() {
         return ApiResponse.ok(toAuthDto(webUserAuthService.currentUser()));
     }
 
     @PostMapping("/logout")
-    @Authenticated(userType = UserType.EXTERNAL)
+    @Authenticated(userType = UserType.USER)
     public ApiResponse<Boolean> logout() {
         return ApiResponse.ok(webUserAuthService.logout());
     }
 
     @PutMapping("/password")
-    @Authenticated(userType = UserType.EXTERNAL)
+    @Authenticated(userType = UserType.USER)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
         return ApiResponse.ok(
                 webUserAuthService.changePassword(new ChangePasswordCommand(req.oldPassword(), req.newPassword())));

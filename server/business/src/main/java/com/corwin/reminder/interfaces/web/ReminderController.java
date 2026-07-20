@@ -23,7 +23,7 @@ import java.time.Instant;
  * @author Corwin 2026/1/12
  */
 @ApiMeta(module = ApiModuleCode.REMINDER)
-@Authorize(userType = UserType.EXTERNAL, permissions = {"tdo.use"})
+@Authorize(userType = UserType.USER, permissions = {"tdo.use"})
 @RestController
 @RequestMapping("/api/reminder")
 @RequiredArgsConstructor

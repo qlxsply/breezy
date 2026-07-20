@@ -141,8 +141,8 @@ export function UsersAdminPage() {
     } catch {
       setUserTypeMetaMap({
         SYSTEM: { label: "系统账号", tagType: "warning" },
-        INTERNAL: { label: "账号", tagType: "info" },
-        EXTERNAL: { label: "用户", tagType: "info" },
+        ADMIN: { label: "账号", tagType: "info" },
+        USER: { label: "用户", tagType: "info" },
         GUEST: { label: "游客", tagType: "danger" },
       });
     }
@@ -178,7 +178,7 @@ export function UsersAdminPage() {
       id: "",
       username: "",
       nickname: "",
-      userType: "INTERNAL",
+      userType: "ADMIN",
       status: "ENABLED",
     });
     setRoleSelected([]);
@@ -212,7 +212,7 @@ export function UsersAdminPage() {
       message.success("新增成功");
     } else if (manageTarget) {
       await updateUser(manageTarget.id, { nickname: payload.nickname, status: payload.status });
-      if (canRoleEdit && manageTarget.userType !== "EXTERNAL") {
+      if (canRoleEdit && manageTarget.userType !== "USER") {
         await updateUserRoles(manageTarget.id, payload.roleIds);
       }
       message.success("保存成功");
@@ -246,7 +246,7 @@ export function UsersAdminPage() {
     setManageTarget(user);
     setManageMode(mode);
     setManageOpen(true);
-    if (user.userType === "EXTERNAL" || !canRoles) {
+    if (user.userType === "USER" || !canRoles) {
       setRoleSelected([]);
       return;
     }
@@ -274,7 +274,7 @@ export function UsersAdminPage() {
 
   function isProtectedUser(user: UserEntry): boolean {
     return (
-      user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin")
+      user.userType === "SYSTEM" || (user.userType === "ADMIN" && user.username === "admin")
     );
   }
 

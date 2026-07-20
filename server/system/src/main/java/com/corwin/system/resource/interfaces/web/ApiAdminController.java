@@ -36,13 +36,13 @@ public class ApiAdminController {
     private final ApiAdminService apiAdminService;
 
     @GetMapping
-    @Authorize(userType = UserType.INTERNAL, permissions = {"api.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<List<ApiRes>> list() {
         return ApiResponse.ok(apiAdminService.listAll().stream().map(this::toDto).toList());
     }
 
     @GetMapping("/page")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"api.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String module,
             @RequestParam(required = false) String pathPattern,
             @RequestParam(required = false) String handlerClass,
@@ -62,14 +62,14 @@ public class ApiAdminController {
     }
 
     @PutMapping("/{id}/publish")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"api.pub"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.pub"})
     @Audit(resource = AuditResource.API, action = AuditAction.PUBLISH, level = AuditLevel.HIGH)
     public ApiResponse<ApiRes> publish(@PathVariable("id") Long id) {
         return ApiResponse.ok(toDto(apiAdminService.publish(id)));
     }
 
     @PutMapping("/{id}/disable")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"api.off"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.off"})
     @Audit(resource = AuditResource.API, action = AuditAction.DISABLE, level = AuditLevel.HIGH)
     public ApiResponse<ApiRes> disable(@PathVariable Long id) {
         return ApiResponse.ok(toDto(apiAdminService.disable(id)));

@@ -41,12 +41,12 @@ public class DefaultSecurityContextService implements SecurityContextService {
 
     @Override
     public boolean isInternalUser() {
-        return currentOptional().map(principal -> principal.userType() == UserType.INTERNAL).orElse(false);
+        return currentOptional().map(principal -> principal.userType() == UserType.ADMIN).orElse(false);
     }
 
     @Override
     public boolean isExternalUser() {
-        return currentOptional().map(principal -> principal.userType() == UserType.EXTERNAL).orElse(false);
+        return currentOptional().map(principal -> principal.userType() == UserType.USER).orElse(false);
     }
 
     @Override

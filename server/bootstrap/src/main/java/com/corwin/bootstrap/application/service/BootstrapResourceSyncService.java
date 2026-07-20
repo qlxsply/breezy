@@ -105,8 +105,8 @@ public class BootstrapResourceSyncService {
             if (permission == null) {
                 throw new IllegalStateException("resource permission missing in sys_permission: " + permissionCode);
             }
-            if (permission.userScope() != UserType.INTERNAL) {
-                throw new IllegalStateException("resource permission must be INTERNAL-only: " + permissionCode);
+            if (permission.userScope() != UserType.ADMIN) {
+                throw new IllegalStateException("resource permission must be ADMIN-only: " + permissionCode);
             }
         }
         for (String permissionCode : externalPermissionCodes) {
@@ -114,8 +114,8 @@ public class BootstrapResourceSyncService {
             if (permission == null) {
                 throw new IllegalStateException("user feature permission missing in sys_permission: " + permissionCode);
             }
-            if (permission.userScope() != UserType.EXTERNAL) {
-                throw new IllegalStateException("user feature permission must be EXTERNAL-only: " + permissionCode);
+            if (permission.userScope() != UserType.USER) {
+                throw new IllegalStateException("user feature permission must be USER-only: " + permissionCode);
             }
         }
     }

@@ -107,8 +107,8 @@ public class WebUserAuthService {
         user.markLoginSuccess(CtxUtil.getClientIp(), operatorName(identity.getIdentityValue()));
         webUserRepository.save(user);
 
-        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.EXTERNAL);
-        AuthPrincipal principal = new AuthPrincipal(user.getId(), identity.getIdentityValue(), UserType.EXTERNAL, false,
+        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+        AuthPrincipal principal = new AuthPrincipal(user.getId(), identity.getIdentityValue(), UserType.USER, false,
                 permissionCodes);
         var accessToken = webUserJwtTokenService.issue(principal,
                 user.getTokenVersion() == null ? 1L : user.getTokenVersion());
@@ -118,7 +118,7 @@ public class WebUserAuthService {
         return new WebUserLoginView(accessToken.token(), refreshToken.rawToken(),
                 String.valueOf(toRefreshTriggerAt(accessToken.expiresAt()).toEpochMilli()),
                 String.valueOf(refreshToken.expiresAt().toEpochMilli()),
-                new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.EXTERNAL, false));
+                new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.USER, false));
     }
 
     @Transactional
@@ -135,20 +135,20 @@ public class WebUserAuthService {
                                                             .findFirst()
                                                             .orElseThrow(() -> new BizException(AuthError.FORBIDDEN));
 
-        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.EXTERNAL);
-        AuthPrincipal principal = new AuthPrincipal(user.getId(), identity.getIdentityValue(), UserType.EXTERNAL, false,
+        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+        AuthPrincipal principal = new AuthPrincipal(user.getId(), identity.getIdentityValue(), UserType.USER, false,
                 permissionCodes);
         var accessToken = webUserJwtTokenService.issue(principal,
                 user.getTokenVersion() == null ? 1L : user.getTokenVersion());
         return new WebUserLoginView(accessToken.token(), rotatedRefreshToken.rawToken(),
                 String.valueOf(toRefreshTriggerAt(accessToken.expiresAt()).toEpochMilli()),
                 String.valueOf(rotatedRefreshToken.expiresAt().toEpochMilli()),
-                new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.EXTERNAL, false));
+                new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.USER, false));
     }
 
     public WebUserAuthView currentUser() {
         AuthPrincipal principal = requireExternalPrincipal();
-        return new WebUserAuthView(principal.userId(), principal.username(), UserType.EXTERNAL, false);
+        return new WebUserAuthView(principal.userId(), principal.username(), UserType.USER, false);
     }
 
     @Transactional
@@ -212,7 +212,7 @@ public class WebUserAuthService {
 
     private AuthPrincipal requireExternalPrincipal() {
         AuthPrincipal principal = securityContextService.current();
-        BizAssert.state(principal.userType() == UserType.EXTERNAL, AuthError.FORBIDDEN);
+        BizAssert.state(principal.userType() == UserType.USER, AuthError.FORBIDDEN);
         return principal;
     }
 

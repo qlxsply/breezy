@@ -64,7 +64,7 @@ public class AuthService {
             User user = userRepository.findByUsername(account)
                     .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
             BizAssert.state(!DefaultUser.isSystemUser(user.getId()), AuthError.FORBIDDEN);
-            BizAssert.state(user.getUserType() == UserType.INTERNAL, AuthError.FORBIDDEN);
+            BizAssert.state(user.getUserType() == UserType.ADMIN, AuthError.FORBIDDEN);
             BizAssert.state(user.getUserStatus() == UserStatus.ENABLED, AuthError.USER_DISABLED);
             if (!BCrypt.checkpw(cmd.password(), user.getPasswordHash())) {
                 BizAssert.fail(AuthError.BAD_CREDENTIALS);
@@ -74,7 +74,7 @@ public class AuthService {
                 kickOutActiveSessions(user);
             }
 
-            Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.INTERNAL);
+            Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.ADMIN);
             String rawToken = opaqueTokenService.generateToken();
             String tokenHash = opaqueTokenService.hash(rawToken);
             Instant now = HighDate.mockInstant();

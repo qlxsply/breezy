@@ -9,8 +9,8 @@ import com.corwin.framework.dict.DictTagType;
  */
 public enum UserType implements DictEnumDefinition {
     SYSTEM("系统账号", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
-    INTERNAL("账号", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
-    EXTERNAL("用户", DictTagColor.SLATE, DictTagType.INFO),
+    ADMIN("账号", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
+    USER("用户", DictTagColor.SLATE, DictTagType.INFO),
     GUEST("游客", DictTagColor.DANGER_RED, DictTagType.DANGER);
 
     private final String label;

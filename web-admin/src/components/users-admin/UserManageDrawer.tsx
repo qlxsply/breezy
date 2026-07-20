@@ -61,8 +61,8 @@ export function UserManageDrawer({
   const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
   const [err, setErr] = useState("");
 
-  const currentUserType = model?.userType || "INTERNAL";
-  const canShowRoles = canViewRoles && currentUserType !== "EXTERNAL";
+  const currentUserType = model?.userType || "ADMIN";
+  const canShowRoles = canViewRoles && currentUserType !== "USER";
   const editable = mode !== "detail" && (canEditBasic || canEditRoles);
   const resolveUserTypeLabel = (userType: string) => userTypeMetaMap[userType]?.label || userType;
 

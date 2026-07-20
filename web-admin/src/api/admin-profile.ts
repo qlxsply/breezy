@@ -14,7 +14,7 @@ export interface AdminProfileEntry {
   id: string;
   username: string;
   nickname: string;
-  userType: "INTERNAL" | "SYSTEM" | "EXTERNAL" | "GUEST";
+  userType: "ADMIN" | "SYSTEM" | "USER" | "GUEST";
   status: string;
   mustChangePassword: boolean;
   lastPasswordChangedAt?: string | null;

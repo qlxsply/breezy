@@ -27,7 +27,7 @@ import java.util.List;
  * @author Corwin 2026/1/11
  */
 @ApiMeta(module = ApiModuleCode.DATASOURCE)
-@Authorize(userType = UserType.EXTERNAL, permissions = {"ds.use"})
+@Authorize(userType = UserType.USER, permissions = {"ds.use"})
 @RestController
 @RequestMapping("/api/database-sources")
 @AllArgsConstructor

@@ -29,7 +29,7 @@ public class LoginLogController {
     private final LoginLogService loginLogService;
 
     @PostMapping("/page")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"log.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"log.view"})
     public ApiResponse<PageResult<LoginLogRes>> page(@RequestBody LoginLogPageReq req) {
         var page = loginLogService.page(req.userAccount(), req.startAt(), req.endAt(),
                 PageSpecFactory.of(req.page(), req.sort()));

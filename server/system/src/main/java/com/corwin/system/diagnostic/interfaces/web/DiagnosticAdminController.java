@@ -43,7 +43,7 @@ public class DiagnosticAdminController {
     }
 
     @PostMapping("/start")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.start"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.start"})
     public ApiResponse<DiagnosticSessionView> start(@RequestBody(required = false) StartDiagnosticReq req) {
         StartDiagnosticReq resolved = req == null ? new StartDiagnosticReq(null, null, null, null, null, null, null, null) : req;
         return ApiResponse.ok(commandAppService.start(new StartDiagnosticCommand(resolved.intervalMs(),
@@ -52,7 +52,7 @@ public class DiagnosticAdminController {
     }
 
     @PostMapping("/config")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.edit"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.edit"})
     public ApiResponse<DiagnosticSessionView> updateConfig(@RequestBody(required = false) UpdateDiagnosticConfigReq req) {
         UpdateDiagnosticConfigReq resolved =
                 req == null ? new UpdateDiagnosticConfigReq(null, null, null, null, null, null, null, null) : req;
@@ -62,38 +62,38 @@ public class DiagnosticAdminController {
     }
 
     @PostMapping("/stop")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.stop"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.stop"})
     public ApiResponse<Boolean> stop() {
         return ApiResponse.ok(commandAppService.stop());
     }
 
     @GetMapping("/status")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
     public ApiResponse<DiagnosticSessionView> status() {
         return ApiResponse.ok(queryAppService.status());
     }
 
     @GetMapping("/snapshots/latest")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
     public ApiResponse<DiagnosticSnapshot> latestSnapshot() {
         return ApiResponse.ok(queryAppService.latestSnapshot().orElse(null));
     }
 
     @GetMapping("/snapshots/history")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
     public ApiResponse<List<DiagnosticSnapshot>> history(@RequestParam(defaultValue = "120") int limit) {
         return ApiResponse.ok(queryAppService.history(limit));
     }
 
     @GetMapping("/events")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
     public ApiResponse<List<DiagnosticEvent>> events(@RequestParam(defaultValue = "100") int limit,
                                                      @RequestParam(required = false) DiagnosticEventType type) {
         return ApiResponse.ok(queryAppService.events(limit, type));
     }
 
     @GetMapping("/capabilities")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"diag.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
     public ApiResponse<DiagnosticCapabilityView> capabilities() {
         return ApiResponse.ok(queryAppService.capabilities());
     }

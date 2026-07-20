@@ -2,7 +2,7 @@
 import type { UserConfigItem } from "./configs";
 import { API_BASE_URL, get, post, put } from "./http";
 
-export type AuthUserType = "INTERNAL" | "EXTERNAL" | "GUEST";
+export type AuthUserType = "ADMIN" | "USER" | "GUEST";
 export type AuthSpace = "external";
 
 export interface AuthUser {

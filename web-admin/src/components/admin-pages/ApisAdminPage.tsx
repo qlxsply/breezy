@@ -147,8 +147,8 @@ export function ApisAdminPage() {
       setAccessTypeLabelMap({});
       setUserTypeLabelMap({
         SYSTEM: "系统账号",
-        INTERNAL: "账号",
-        EXTERNAL: "用户",
+        ADMIN: "账号",
+        USER: "用户",
         GUEST: "游客",
       });
       setStatusLabelMap({ ACTIVE: "启用", DISABLED: "停用" });

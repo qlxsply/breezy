@@ -53,14 +53,14 @@ public class ReminderAppService {
                 outboxRepo.save(outbox);
             }
             if (outbox.getDeliveryId() != null) {
-                messageDeliveryPort.ackDelivery(userId, UserType.EXTERNAL, outbox.getDeliveryId());
+                messageDeliveryPort.ackDelivery(userId, UserType.USER, outbox.getDeliveryId());
             }
         });
     }
 
     @Transactional
     public void ackDelivery(Long userId, Long deliveryId) {
-        messageDeliveryPort.ackDelivery(userId, UserType.EXTERNAL, deliveryId);
+        messageDeliveryPort.ackDelivery(userId, UserType.USER, deliveryId);
         outboxRepo.findByDeliveryId(deliveryId).ifPresent(outbox -> {
             if (outbox.getStatus() != ReminderOutboxStatus.ACKED && outbox.getStatus() != ReminderOutboxStatus.CANCELED) {
                 outbox.markAcked();

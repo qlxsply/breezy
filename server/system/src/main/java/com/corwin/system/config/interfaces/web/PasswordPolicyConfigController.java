@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PasswordPolicyConfigController {
 
     @GetMapping
-    @Authorize(userType = UserType.INTERNAL, permissions = {"sys.use"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<PasswordPolicyConfigRes> get() {
         return ApiResponse.ok(new PasswordPolicyConfigRes(
                 SystemConfigWrapper.passwordMinLength(),

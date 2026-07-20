@@ -93,7 +93,7 @@ public class UserFeatureAccessService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         Map<Long, Permission> permissionById = permissionRepository.findAllById(permissionIds).stream()
-                .filter(permission -> permission.getUserScope() == UserType.EXTERNAL)
+                .filter(permission -> permission.getUserScope() == UserType.USER)
                 .collect(Collectors.toMap(Permission::getId, permission -> permission, (left, right) -> right,
                         LinkedHashMap::new));
 

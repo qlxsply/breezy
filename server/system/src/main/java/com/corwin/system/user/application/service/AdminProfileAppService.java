@@ -76,7 +76,7 @@ public class AdminProfileAppService {
         Long userId = principal == null ? null : principal.userId();
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        BizAssert.state(user.getUserType() == UserType.INTERNAL || DefaultUser.isSystemUser(user.getId()),
+        BizAssert.state(user.getUserType() == UserType.ADMIN || DefaultUser.isSystemUser(user.getId()),
                 BaseError.FORBIDDEN);
         return user;
     }

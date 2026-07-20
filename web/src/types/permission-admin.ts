@@ -1,4 +1,4 @@
-export type PermissionUserScope = "INTERNAL" | "EXTERNAL";
+export type PermissionUserScope = "ADMIN" | "USER";
 
 export interface PermissionEntry {
   id: string;

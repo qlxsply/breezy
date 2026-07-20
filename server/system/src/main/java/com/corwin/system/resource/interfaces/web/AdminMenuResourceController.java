@@ -27,7 +27,7 @@ public class AdminMenuResourceController {
     private final AdminMenuResourceService adminMenuResourceService;
 
     @GetMapping
-    @Authenticated(userType = UserType.INTERNAL)
+    @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AdminMenuResourcesRes> currentAdminMenuResources() {
         return ApiResponse.ok(toRes(adminMenuResourceService.currentAdminMenuResources()));
     }

@@ -31,19 +31,19 @@ public class SystemResourceAdminController {
     private final SystemResourceAdminService systemResourceAdminService;
 
     @GetMapping("/tree")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.view"})
     public ApiResponse<List<SystemResourceTreeItemRes>> tree() {
         return ApiResponse.ok(systemResourceAdminService.tree().stream().map(this::toTreeRes).toList());
     }
 
     @GetMapping("/{id}")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.view"})
     public ApiResponse<SystemResourceDetailRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDetailRes(systemResourceAdminService.get(id)));
     }
 
     @PostMapping
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.add"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.add"})
     public ApiResponse<SystemResourceDetailRes> create(@RequestBody SaveSystemResourceReq req) {
         return ApiResponse.ok(toDetailRes(systemResourceAdminService.create(req.parentId(), req.code(), req.name(),
                 req.resourceType(), req.path(), req.component(), req.icon(), req.sortNo(), req.visible(),
@@ -51,7 +51,7 @@ public class SystemResourceAdminController {
     }
 
     @PutMapping("/{id}")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.edit"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.edit"})
     public ApiResponse<SystemResourceDetailRes> update(@PathVariable Long id, @RequestBody SaveSystemResourceReq req) {
         return ApiResponse.ok(toDetailRes(systemResourceAdminService.update(id, req.parentId(), req.code(), req.name(),
                 req.resourceType(), req.path(), req.component(), req.icon(), req.sortNo(), req.visible(),
@@ -59,19 +59,19 @@ public class SystemResourceAdminController {
     }
 
     @DeleteMapping("/{id}")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.del"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.del"})
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         return ApiResponse.ok(systemResourceAdminService.delete(id));
     }
 
     @GetMapping("/{resourceId}/permissions")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.perm.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.view"})
     public ApiResponse<SystemResourcePermissionSelectionRes> permissions(@PathVariable Long resourceId) {
         return ApiResponse.ok(toPermissionRes(systemResourceAdminService.permissions(resourceId)));
     }
 
     @PutMapping("/{resourceId}/permissions")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.perm.edit"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.edit"})
     public ApiResponse<Boolean> updatePermissions(@PathVariable Long resourceId,
             @RequestBody UpdateSystemResourcePermissionsReq req) {
         return ApiResponse.ok(systemResourceAdminService.updatePermissions(resourceId,

@@ -32,7 +32,7 @@ interface PermissionPayload {
   id: string | number;
   code: string;
   name: string;
-  userScope: "INTERNAL" | "EXTERNAL";
+  userScope: "ADMIN" | "USER";
 }
 
 interface PermissionSelectionPayload {

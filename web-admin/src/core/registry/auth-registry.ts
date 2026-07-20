@@ -19,7 +19,7 @@ import {
 } from "@admin/core/registry/todo-reminder-registry";
 import type { UserConfigItem } from "@admin/core/types";
 
-export type AuthUserType = "INTERNAL" | "EXTERNAL" | "GUEST";
+export type AuthUserType = "ADMIN" | "USER" | "GUEST";
 export type AuthSpace = "internal" | "external";
 
 export interface AuthUser {
@@ -101,7 +101,7 @@ export function getCurrentUserType(): AuthUserType {
 }
 
 export function resolveLandingPathForUser(userType: AuthUserType): string {
-  return userType === "INTERNAL" ? INTERNAL_USER_LANDING_PATH : "/";
+  return userType === "ADMIN" ? INTERNAL_USER_LANDING_PATH : "/";
 }
 
 export function applyPersonalizedConfigs(configs: UserConfigItem[]) {

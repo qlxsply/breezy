@@ -102,7 +102,7 @@ public class AuthPrincipalAuthenticator {
 
     public AuthPrincipal authenticateExternalToken(String rawToken) {
         WebUserJwtTokenService.WebUserJwtPayload payload = webUserJwtTokenService.parse(rawToken);
-        if (payload.userId() == null || payload.userType() != UserType.EXTERNAL) {
+        if (payload.userId() == null || payload.userType() != UserType.USER) {
             throw new BizException(AuthError.INVALID_TOKEN);
         }
         WebUser user = webUserRepository.findById(payload.userId())
@@ -119,8 +119,8 @@ public class AuthPrincipalAuthenticator {
         if (webUserRestrictionService.hasLoginRestriction(user.getId())) {
             throw new BizException(AuthError.FORBIDDEN);
         }
-        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.EXTERNAL);
-        return new AuthPrincipal(user.getId(), payload.account(), UserType.EXTERNAL, false, permissionCodes);
+        Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+        return new AuthPrincipal(user.getId(), payload.account(), UserType.USER, false, permissionCodes);
     }
 
     public AuthPrincipal authenticateSseTicket(TokenPayload payload) {

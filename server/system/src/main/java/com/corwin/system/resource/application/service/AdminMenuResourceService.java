@@ -44,7 +44,7 @@ public class AdminMenuResourceService {
             return new AdminMenuResourcesView(List.of());
         }
         AuthPrincipal principal = principalOptional.get();
-        if (principal.userType() != UserType.INTERNAL) {
+        if (principal.userType() != UserType.ADMIN) {
             return new AdminMenuResourcesView(List.of());
         }
         if (principal.admin()) {

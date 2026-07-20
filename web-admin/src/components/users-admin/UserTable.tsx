@@ -53,7 +53,7 @@ export function UserTable({
 }: UserTableProps) {
   function isProtectedUser(user: UserEntry): boolean {
     return (
-      user.userType === "SYSTEM" || (user.userType === "INTERNAL" && user.username === "admin")
+      user.userType === "SYSTEM" || (user.userType === "ADMIN" && user.username === "admin")
     );
   }
 

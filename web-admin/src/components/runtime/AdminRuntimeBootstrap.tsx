@@ -23,7 +23,7 @@ export function AdminRuntimeBootstrap() {
       await ensureAuthLoaded();
       if (cancelled) return;
 
-      if (getCurrentUserType() === "INTERNAL") {
+      if (getCurrentUserType() === "ADMIN") {
         await ensureRegistryLoaded();
       }
 

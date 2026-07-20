@@ -23,7 +23,7 @@ public class NotificationDispatcherReminderMessagePublisher implements ReminderM
     @Override
     public ReminderDispatchResult publishReminder(Long userId, String title, String content, String route,
             Long outboxId) {
-        MessageDispatchResult dispatchResult = messageDispatchPort.dispatch(userId, UserType.EXTERNAL,
+        MessageDispatchResult dispatchResult = messageDispatchPort.dispatch(userId, UserType.USER,
                 MsgType.TODO_REMINDER, title, content, route, BIZ_TYPE_REMINDER_OUTBOX, String.valueOf(outboxId));
         return new ReminderDispatchResult(dispatchResult.deliveryId(), dispatchResult.delivered());
     }

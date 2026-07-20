@@ -77,7 +77,7 @@ public class WebUserAdminService {
     }
 
     private WebUserAdminView toView(WebUser user) {
-        return new WebUserAdminView(user.getId(), resolveAccount(user), user.getNickname(), UserType.EXTERNAL,
+        return new WebUserAdminView(user.getId(), resolveAccount(user), user.getNickname(), UserType.USER,
                 user.getStatus().name(), user.getLastLoginAt(), user.getCreatedAt(), user.getUpdatedAt());
     }
 

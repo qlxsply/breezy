@@ -33,7 +33,7 @@ public class UserToolPageService {
             return new UserToolsView(List.of(), List.of());
         }
         AuthPrincipal principal = principalOptional.get();
-        if (principal.userType() != UserType.EXTERNAL || principal.userId() == null) {
+        if (principal.userType() != UserType.USER || principal.userId() == null) {
             return new UserToolsView(List.of(), List.of());
         }
         Set<String> permissionCodes = permissionService.permissionCodesForCurrent();

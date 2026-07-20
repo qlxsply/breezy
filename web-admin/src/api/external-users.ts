@@ -8,7 +8,7 @@ interface ExternalUserPayload {
   id: string;
   account: string;
   nickname?: string;
-  userType?: "EXTERNAL";
+  userType?: "USER";
   status: ExternalUserEntry["status"];
   lastLoginAt?: string;
   createdAt?: string;
@@ -21,7 +21,7 @@ function toEntry(payload: ExternalUserPayload): ExternalUserEntry {
     account: payload.account || "",
     username: payload.account || "",
     nickname: payload.nickname || "",
-    userType: "EXTERNAL",
+    userType: "USER",
     status: payload.status,
     lastLoginAt: payload.lastLoginAt,
     createdAt: payload.createdAt,

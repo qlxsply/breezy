@@ -63,7 +63,7 @@ export function AdminRouteViewport() {
       router.replace(`/admin/login?redirect=${redirect}`);
       return;
     }
-    if (getCurrentUserType() !== "INTERNAL") {
+    if (getCurrentUserType() !== "ADMIN") {
       router.replace("/");
     }
   }, [authLoaded, authenticated, pathname, router]);
@@ -88,7 +88,7 @@ export function AdminRouteViewport() {
     );
   }
 
-  if (currentUserType !== "INTERNAL") {
+  if (currentUserType !== "ADMIN") {
     return (
       <AdminPlaceholderCard
         badge="系统 / 无权访问"

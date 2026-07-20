@@ -47,19 +47,19 @@ public class AdminAuthController {
     }
 
     @GetMapping("/me")
-    @Authenticated(userType = UserType.INTERNAL)
+    @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AuthUserRes> me() {
         return ApiResponse.ok(toAuthDto(authService.currentUser()));
     }
 
     @PostMapping("/logout")
-    @Authenticated(userType = UserType.INTERNAL)
+    @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<Boolean> logout() {
         return ApiResponse.ok(authService.logout());
     }
 
     @PutMapping("/password")
-    @Authenticated(userType = UserType.INTERNAL)
+    @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
         return ApiResponse.ok(authService.changePassword(new ChangePasswordCommand(req.oldPassword(), req.newPassword())));
     }

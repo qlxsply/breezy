@@ -41,7 +41,7 @@ function toUserEntry(payload: UserPayload): UserEntry {
     username: payload.username || "",
     account: payload.username || "",
     nickname: payload.nickname || "",
-    userType: payload.userType || "INTERNAL",
+    userType: payload.userType || "ADMIN",
     status: payload.status,
     createdBy: payload.createdBy,
     createdAt: payload.createdAt,

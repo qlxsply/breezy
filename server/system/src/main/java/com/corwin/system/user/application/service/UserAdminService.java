@@ -76,7 +76,7 @@ public class UserAdminService {
         UserStatus status = UserStatus.ENABLED;
         String hash = BCrypt.hashpw(cmd.password(), BCrypt.gensalt());
 
-        User user = new User(UserType.INTERNAL, username, nickname, hash, "bcrypt", status, false,
+        User user = new User(UserType.ADMIN, username, nickname, hash, "bcrypt", status, false,
                 HighDate.mockInstant(), operator());
         User saved = userRepository.save(user);
         createUserRoles(saved.getId(), cmd.roleIds());

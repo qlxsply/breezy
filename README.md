@@ -485,8 +485,8 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 
 - 用户类型分流与路由守卫
     - 用户类型来源：`web/src/registry/auth.registry.ts`
-        - `INTERNAL`：账号
-        - `EXTERNAL`：用户
+        - `ADMIN`：账号
+        - `USER`：用户
         - `GUEST`：游客
     - 路由守卫位置：`web/src/router/index.ts`
     - 当前分流规则：
@@ -732,8 +732,8 @@ cd web; npm run build
 ### 一、拆分目标
 
 - 将当前单仓内的两套前端形态在工程边界上明确拆开：
-    - 用户前端：仅服务 `UserType.EXTERNAL`，只承载用户工具页与用户侧账户页
-    - 账号后台前端：仅服务 `UserType.INTERNAL`，只承载后台菜单页与后台壳体级自助页
+    - 用户前端：仅服务 `UserType.USER`，只承载用户工具页与用户侧账户页
+    - 账号后台前端：仅服务 `UserType.ADMIN`，只承载后台菜单页与后台壳体级自助页
 - `UserType.SYSTEM` 不属于可登录用户，只用于系统内部标记操作来源，不对应独立前端入口。
 - 后续允许两套前端独立构建、独立部署、独立发布，不再共享同一前端应用入口。
 
@@ -806,7 +806,7 @@ cd web; npm run build
     - 前端状态与方法：`menuResources.registry.ts`、`ensureAdminMenuResourcesLoaded()`
 - 用户前端不再复用后台资源模型，后续应增加独立的“用户工具清单接口”。
 - 建议的接口职责：
-    - 只返回当前 `UserType.EXTERNAL` 用户可用的工具页清单
+    - 只返回当前 `UserType.USER` 用户可用的工具页清单
     - 仅包含用户首页搜索和工具页跳转需要的最小字段
     - 不包含后台菜单树、后台按钮、后台权限资源节点
 - 建议的接口与模型方向：

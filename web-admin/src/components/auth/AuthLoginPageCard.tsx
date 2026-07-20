@@ -45,7 +45,7 @@ export function AuthLoginPageCard({
     usernameInputRef.current?.focus();
   }, []);
 
-  function resolveRedirectPath(userType: "INTERNAL" | "EXTERNAL" | "GUEST"): string {
+  function resolveRedirectPath(userType: "ADMIN" | "USER" | "GUEST"): string {
     const redirect =
       typeof window === "undefined"
         ? ""
@@ -53,7 +53,7 @@ export function AuthLoginPageCard({
     if (!redirect) {
       return resolveLandingPathForUser(userType);
     }
-    if (userType === "INTERNAL") {
+    if (userType === "ADMIN") {
       return redirect.startsWith("/") ? redirect : resolveLandingPathForUser(userType);
     }
     return redirect.startsWith("/") ? resolveLandingPathForUser(userType) : redirect;

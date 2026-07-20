@@ -27,7 +27,7 @@ public class SystemPermissionAdminController {
     private final PermissionService permissionService;
 
     @GetMapping
-    @Authorize(userType = UserType.INTERNAL, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
+    @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {
         return ApiResponse.ok(permissionService.assignablePermissionsForInternal().stream()
                 .map(SystemPermissionAdminController::toRes)

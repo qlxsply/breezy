@@ -30,7 +30,7 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @GetMapping
-    @Authorize(userType = UserType.INTERNAL, permissions = {"rol.perm.view", "rol.perm.edit"}, anyPermission = true)
+    @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view", "rol.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {
         return ApiResponse.ok(permissionService.assignablePermissionsForInternal().stream()
                 .map(PermissionController::toRes)
@@ -38,13 +38,13 @@ public class PermissionController {
     }
 
     @GetMapping("/me")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"sys.use"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<MyPermissionsRes> myPermissions() {
         return ApiResponse.ok(new MyPermissionsRes(permissionService.permissionCodesForCurrent().stream().toList()));
     }
 
     @GetMapping("/me/details")
-    @Authorize(userType = UserType.INTERNAL, permissions = {"sys.use"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<MyPermissionsDetailRes> myPermissionsDetails() {
         return ApiResponse.ok(toRes(permissionService.getPermissionDetailForCurrent()));
     }

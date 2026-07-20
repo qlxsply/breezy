@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author Corwin 2026/2/23
  */
 @ApiMeta(module = ApiModuleCode.STORAGE)
-@Authorize(userType = UserType.EXTERNAL, permissions = {"stg.use"})
+@Authorize(userType = UserType.USER, permissions = {"stg.use"})
 @RestController
 @RequestMapping("/api/sys/storage")
 @RequiredArgsConstructor

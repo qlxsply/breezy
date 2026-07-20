@@ -61,7 +61,7 @@ public class Api {
     private ApiAccessType accessType;
 
     /**
-     * JSON 字符串，例如：["INTERNAL","EXTERNAL"]
+     * JSON 字符串，例如：["ADMIN","USER"]
      */
     @Lob
     @Column(name = "user_type", length = 16)

@@ -5,7 +5,7 @@ export interface ExternalUserEntry {
   account: string;
   username: string;
   nickname: string;
-  userType: "EXTERNAL";
+  userType: "USER";
   status: ExternalUserStatus;
   lastLoginAt?: string;
   createdAt?: string;

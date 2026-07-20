@@ -19,8 +19,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 function userTypeLabel(userType: string): string {
   if (userType === "SYSTEM") return "系统账号";
-  if (userType === "INTERNAL") return "账号";
-  if (userType === "EXTERNAL") return "用户";
+  if (userType === "ADMIN") return "账号";
+  if (userType === "USER") return "用户";
   return "游客";
 }
 

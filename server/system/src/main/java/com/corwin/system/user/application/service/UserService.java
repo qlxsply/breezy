@@ -116,7 +116,7 @@ public class UserService {
 
     private AuthPrincipal currentPrincipal() {
         AuthPrincipal principal = securityContextService.current();
-        BizAssert.state(principal.userType() == UserType.EXTERNAL, AuthError.FORBIDDEN);
+        BizAssert.state(principal.userType() == UserType.USER, AuthError.FORBIDDEN);
         return principal;
     }
 
@@ -144,7 +144,7 @@ public class UserService {
     }
 
     private UserProfileView toView(WebUser user, String account) {
-        return new UserProfileView(user.getId(), account, user.getNickname(), UserType.EXTERNAL,
+        return new UserProfileView(user.getId(), account, user.getNickname(), UserType.USER,
                 user.getStatus().name(), false, user.getCreatedAt(), user.getUpdatedAt());
     }
 }

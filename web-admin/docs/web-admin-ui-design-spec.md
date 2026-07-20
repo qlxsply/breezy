@@ -498,7 +498,7 @@ footer
 下列账号视为保护账号：
 
 - `SYSTEM` 用户
-- `INTERNAL` 且账号名为 `admin`
+- `ADMIN` 且账号名为 `admin`
 
 UI 规则：
 

@@ -15,7 +15,7 @@ public enum DefaultUser {
     EVENT(3L, "event", UserType.SYSTEM),
     SERVICE(4L, "service", UserType.SYSTEM),
     MOCK(5L, "mock", UserType.SYSTEM),
-    ADMIN(1000L, "admin", UserType.INTERNAL),
+    ADMIN(1000L, "admin", UserType.ADMIN),
     ;
 
     private final long id;

@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Authorize {
 
-    UserType userType() default UserType.INTERNAL;
+    UserType userType() default UserType.ADMIN;
 
     String[] permissions() default {};
 
