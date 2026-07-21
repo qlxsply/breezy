@@ -2,7 +2,7 @@
 html[data-theme="light"] {
   color-scheme: light;
   --font-family-sans:
-    "Roboto Variable",
+    "Inter Variable",
     "Noto Sans SC",
     "Noto Sans CJK SC",
     "Source Han Sans SC",
@@ -13,7 +13,7 @@ html[data-theme="light"] {
     "Segoe UI",
     sans-serif;
   --font-family-mono:
-    "Roboto Mono Variable",
+    "JetBrains Mono Variable",
     "SFMono-Regular",
     "Cascadia Mono",
     "Segoe UI Mono",
