@@ -1,4 +1,6 @@
 // /src/main.ts
+import "@fontsource-variable/roboto/wght.css";
+import "@fontsource-variable/roboto-mono/wght.css";
 import "./styles/theme.css";
 import "./styles/list-page.css";
 import "./styles/bz-ui.css";

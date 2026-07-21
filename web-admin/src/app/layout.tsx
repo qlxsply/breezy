@@ -1,3 +1,5 @@
+import "@fontsource-variable/roboto/wght.css";
+import "@fontsource-variable/roboto-mono/wght.css";
 import "./globals.css";
 
 import { BzUiRoot } from "@admin/components/bz";

@@ -150,7 +150,7 @@ defineExpose<JsonTreeViewExpose>({ collapseAll, expandAll, expandPaths });
   color: #e2e8f0;
   padding: 12px;
   border-radius: 12px;
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+  font-family: var(--font-family-mono);
   font-size: 12px;
   line-height: 1.6;
   overflow: auto;

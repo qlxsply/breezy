@@ -166,7 +166,7 @@ onMounted(async () => {
 }
 
 .code-item {
-  font-family: monospace;
+  font-family: var(--font-family-mono);
   font-size: 12px;
   padding: 4px 8px;
   background: #f1f5f9;

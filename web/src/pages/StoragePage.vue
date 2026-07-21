@@ -915,9 +915,7 @@ function formatSize(size?: string | number | null): string {
 }
 
 .path {
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+  font-family: var(--font-family-mono);
   color: var(--text-muted);
   font-size: 13px;
   margin-left: 4px;
@@ -970,9 +968,7 @@ function formatSize(size?: string | number | null): string {
   margin-top: 4px;
   color: var(--text-muted);
   font-size: 12px;
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+  font-family: var(--font-family-mono);
   word-break: break-all;
 }
 

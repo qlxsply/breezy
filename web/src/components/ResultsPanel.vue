@@ -214,7 +214,7 @@ function shortcutOf(it: ResultItem) {
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: monospace;
+  font-family: var(--font-family-mono);
 }
 
 .item-action {

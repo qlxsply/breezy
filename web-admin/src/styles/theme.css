@@ -2,7 +2,7 @@
 html[data-theme="light"] {
   color-scheme: light;
   --font-family-sans:
-    "IBM Plex Sans",
+    "Roboto Variable",
     "Noto Sans SC",
     "Noto Sans CJK SC",
     "Source Han Sans SC",
@@ -13,10 +13,7 @@ html[data-theme="light"] {
     "Segoe UI",
     sans-serif;
   --font-family-mono:
-    "IBM Plex Mono",
-    "Sarasa Mono SC",
-    "Noto Sans Mono CJK SC",
-    ui-monospace,
+    "Roboto Mono Variable",
     "SFMono-Regular",
     "Cascadia Mono",
     "Segoe UI Mono",
@@ -24,7 +21,7 @@ html[data-theme="light"] {
     Monaco,
     Consolas,
     "Liberation Mono",
-    "Courier New",
+    ui-monospace,
     monospace;
   --font-size-xs: 12px;
   --font-size-sm: 13px;

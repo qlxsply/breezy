@@ -2,6 +2,28 @@
 
 /* 主题变量：后续可扩展暗黑模式、品牌换肤等 */
 :root {
+  --font-family-sans:
+    "Roboto Variable",
+    "Roboto",
+    "Noto Sans SC",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "PingFang SC",
+    "Microsoft YaHei",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  --font-family-mono:
+    "Roboto Mono Variable",
+    "Roboto Mono",
+    ui-monospace,
+    "SFMono-Regular",
+    "Cascadia Mono",
+    "Segoe UI Mono",
+    Consolas,
+    "Liberation Mono",
+    monospace;
   --primary-color: #3b82f6;
   --success-color: #10b981;
   --status-bar-height: 36px;
@@ -14,7 +36,7 @@
   --el-color-primary-light-8: #dbeafe;
   --el-color-primary-light-9: #eff6ff;
   --el-border-radius-base: 10px;
-  --el-font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --el-font-family: var(--font-family-sans);
 
   --bg-color: #fcfcfc;
   --card-bg: #ffffff;
@@ -33,11 +55,7 @@
 
 body {
   margin: 0;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-family-sans);
   background-color: var(--bg-color);
   color: var(--text-main);
   overflow: hidden; /* 与原实现一致：主滚动在内容区内 */

@@ -762,7 +762,7 @@ const editorTheme = EditorView.theme({
     color: "var(--text-main)",
   },
   ".cm-scroller": {
-    fontFamily: "SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace",
+    fontFamily: "var(--font-family-mono)",
     lineHeight: "1.6",
   },
   ".cm-content": {
