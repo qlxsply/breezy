@@ -3,18 +3,17 @@
 import {
   createResource,
   getResource,
+  getResourcePermissions,
   updateResource,
   updateResourcePermissions,
 } from "@admin/api/resources";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import type { BzTableColumn } from "@admin/components/bz";
 import {
   BzButton,
   BzInput,
   BzOption,
   BzSelect,
   BzSwitch,
-  BzTable,
 } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
@@ -167,19 +166,6 @@ export function ResourceManageDrawer({
     [allResources, form.id],
   );
 
-  const selectedPermissions = useMemo(
-    () => permissions.filter((p) => form.permissionIds.includes(p.id)),
-    [form.permissionIds, permissions],
-  );
-
-  const permissionColumns = useMemo<Array<BzTableColumn<ResourcePermissionOption>>>(
-    () => [
-      { key: "name", title: "名称", minWidth: 160 },
-      { key: "code", title: "编码", minWidth: 200 },
-    ],
-    [],
-  );
-
   useEffect(() => {
     if (mode === "create") {
       const base = { ...EMPTY_FORM };
@@ -202,7 +188,12 @@ export function ResourceManageDrawer({
     if (resourceId) {
       setLoading(true);
       getResource(resourceId)
-        .then((detail) => {
+        .then(async (detail) => {
+          const permissionIds =
+            detail.resourceType === "BUTTON"
+              ? (await getResourcePermissions(resourceId)).permissionIds
+              : detail.permissionIds;
+
           setForm({
             id: detail.id,
             parentId: detail.parentId ?? "",
@@ -218,7 +209,7 @@ export function ResourceManageDrawer({
             defaultEntry: detail.defaultEntry,
             systemBuiltin: detail.systemBuiltin,
             remark: detail.remark ?? "",
-            permissionIds: [...detail.permissionIds],
+            permissionIds: [...permissionIds],
           });
           setFormError("");
         })
@@ -618,21 +609,11 @@ export function ResourceManageDrawer({
           <section className="role-manage-section">
             <div className="role-manage-section__head">
               <div className="role-manage-section__title">权限码绑定</div>
-              <div className="role-manage-section__stat">共 {selectedPermissions.length} 项</div>
+              <div className="role-manage-section__stat">共 {form.permissionIds.length} 项</div>
             </div>
-            {isDetail ? (
-              <div className="admin-table-surface">
-                <BzTable
-                  columns={permissionColumns}
-                  data={selectedPermissions}
-                  rowKey="id"
-                  size="small"
-                  emptyText="暂无权限码绑定"
-                />
-              </div>
-            ) : (
-              <div className="resource-manage-permission-box">
-                {permissions.map((permission) => {
+            <div className="resource-manage-permission-box">
+              {permissions.length ? (
+                permissions.map((permission) => {
                   const checked = form.permissionIds.includes(permission.id);
                   return (
                     <label
@@ -649,9 +630,11 @@ export function ResourceManageDrawer({
                       <span className="resource-manage-permission-code">({permission.code})</span>
                     </label>
                   );
-                })}
-              </div>
-            )}
+                })
+              ) : (
+                <div className="role-info-cell">暂无权限码绑定</div>
+              )}
+            </div>
           </section>
         ) : null}
 
