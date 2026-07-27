@@ -24,6 +24,8 @@
         <bouncycastle.version>1.83</bouncycastle.version>
         <disruptor.version>4.0.0</disruptor.version>
         <caffeine.version>3.2.3</caffeine.version>
+        <mybatis.version>3.5.19</mybatis.version>
+        <mybatis-spring.version>3.0.5</mybatis-spring.version>
     </properties>
 
     <dependencyManagement>
@@ -131,6 +133,34 @@
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>${mybatis-spring.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-autoconfigure</artifactId>
+                <version>${mybatis-spring.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>${mybatis-spring.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>${mybatis.version}</version>
                 <scope>compile</scope>
             </dependency>
         </dependencies>
