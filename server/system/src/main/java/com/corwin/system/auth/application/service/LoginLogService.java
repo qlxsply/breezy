@@ -74,10 +74,8 @@ public class LoginLogService {
         }
         int safeLimit = Math.clamp(limit, 1, 50);
         PageSpec spec = new PageSpec(1, Math.max(safeLimit, 50),
-                List.of(new SortSpec("occurredAt", SortDirection.DESC)));
-        return pageOwnLoginActivities(account, spec).elements().stream()
-                .limit(safeLimit)
-                .toList();
+                List.of(new SortSpec("occurred_at", SortDirection.DESC)));
+        return pageOwnLoginActivities(account, spec).elements().stream().limit(safeLimit).toList();
     }
 
     private void save(LoginEventType event, boolean success, Long userId, String account, String message) {
@@ -112,7 +110,7 @@ public class LoginLogService {
             return resolved;
         }
         return new PageSpec(resolved.pageNo(), resolved.pageSize(),
-                List.of(new SortSpec("occurredAt", SortDirection.DESC)));
+                List.of(new SortSpec("occurred_at", SortDirection.DESC)));
     }
 
     private String buildRemark() {

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.auth.infrastructure.persistence.LoginLogMybatisMapper">
+
+    <resultMap id="LoginEventResultMap" type="com.corwin.system.auth.domain.model.LoginEvent">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="event_type" property="eventType"/>
+        <result column="success" property="success"/>
+        <result column="failure_reason" property="failureReason"/>
+        <result column="session_id" property="sessionId"/>
+        <result column="login_ip" property="loginIp"/>
+        <result column="operator_id" property="operatorId"/>
+        <result column="occurred_at" property="occurredAt"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="pageByQuery" resultMap="LoginEventResultMap">
+        select id, user_id, username, event_type, success, failure_reason, session_id, login_ip, operator_id,
+        occurred_at, remark
+        from sys_login_event
+        <where>
+            <if test="query != null">
+                <if test="query.userAccount != null">
+                    and username = #{query.userAccount}
+                </if>
+                <if test="query.eventTypes != null and !query.eventTypes.isEmpty()">
+                    and event_type in
+                    <foreach collection="query.eventTypes" item="eventType" open="(" separator="," close=")">
+                        #{eventType}
+                    </foreach>
+                </if>
+                <if test="query.startAt != null and query.startInclusive">
+                    and occurred_at &gt;= #{query.startAt}
+                </if>
+                <if test="query.startAt != null and !query.startInclusive">
+                    and occurred_at &gt; #{query.startAt}
+                </if>
+                <if test="query.endAt != null">
+                    and occurred_at &lt; #{query.endAt}
+                </if>
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

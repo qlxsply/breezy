@@ -6,39 +6,14 @@ import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.system.resource.domain.model.Permission;
 import com.corwin.system.resource.domain.repo.PermissionRepository;
-import com.corwin.system.userfeature.domain.model.ApplicationFeatureAccessScope;
-import com.corwin.system.userfeature.domain.model.ProductApplication;
-import com.corwin.system.userfeature.domain.model.ProductFeature;
-import com.corwin.system.userfeature.domain.model.ProductFeaturePermissionBinding;
-import com.corwin.system.userfeature.domain.model.UserAccessOverrideType;
-import com.corwin.system.userfeature.domain.model.UserApplicationOverride;
-import com.corwin.system.userfeature.domain.model.UserApplicationPackage;
-import com.corwin.system.userfeature.domain.model.UserApplicationPackageMember;
-import com.corwin.system.userfeature.domain.model.UserFeatureOverride;
-import com.corwin.system.userfeature.domain.model.UserPackageApplicationAccess;
-import com.corwin.system.userfeature.domain.model.UserPackageFeatureAccess;
-import com.corwin.system.userfeature.domain.repo.ProductApplicationRepository;
-import com.corwin.system.userfeature.domain.repo.ProductFeaturePermissionBindingRepository;
-import com.corwin.system.userfeature.domain.repo.ProductFeatureRepository;
-import com.corwin.system.userfeature.domain.repo.UserApplicationOverrideRepository;
-import com.corwin.system.userfeature.domain.repo.UserApplicationPackageMemberRepository;
-import com.corwin.system.userfeature.domain.repo.UserApplicationPackageRepository;
-import com.corwin.system.userfeature.domain.repo.UserFeatureOverrideRepository;
-import com.corwin.system.userfeature.domain.repo.UserPackageApplicationAccessRepository;
-import com.corwin.system.userfeature.domain.repo.UserPackageFeatureAccessRepository;
+import com.corwin.system.userfeature.domain.model.*;
+import com.corwin.system.userfeature.domain.repo.*;
 import com.corwin.system.webuser.domain.model.WebUser;
 import com.corwin.system.webuser.domain.repo.WebUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,10 +41,8 @@ public class UserFeatureAccessService {
         if (snapshot.accessibleApplicationIds().isEmpty()) {
             return List.of();
         }
-        return snapshot.applicationsInOrder().stream()
-                .filter(application -> application.getId() != null)
-                .filter(application -> snapshot.accessibleApplicationIds().contains(application.getId()))
-                .toList();
+        return snapshot.applicationsInOrder().stream().filter(application -> application.getId() != null)
+                .filter(application -> snapshot.accessibleApplicationIds().contains(application.getId())).toList();
     }
 
     public List<Long> effectiveFeatureIdsForUser(Long userId) {
@@ -83,19 +56,18 @@ public class UserFeatureAccessService {
         if (snapshot.effectiveFeatureIds().isEmpty()) {
             return Set.of();
         }
-        List<ProductFeaturePermissionBinding> bindings = productFeaturePermissionBindingRepository.findByFeatureIdIn(snapshot.effectiveFeatureIds());
+        List<ProductFeaturePermissionBinding> bindings = productFeaturePermissionBindingRepository.findByFeatureIdIn(
+                snapshot.effectiveFeatureIds());
         if (bindings.isEmpty()) {
             return Set.of();
         }
 
-        LinkedHashSet<Long> permissionIds = bindings.stream()
-                .map(ProductFeaturePermissionBinding::getPermissionId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        LinkedHashSet<Long> permissionIds = bindings.stream().map(ProductFeaturePermissionBinding::getPermissionId)
+                .filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
         Map<Long, Permission> permissionById = permissionRepository.findAllById(permissionIds).stream()
-                .filter(permission -> permission.getUserScope() == UserType.USER)
-                .collect(Collectors.toMap(Permission::getId, permission -> permission, (left, right) -> right,
-                        LinkedHashMap::new));
+                .filter(permission -> permission.getUserScope() == UserType.USER).collect(
+                        Collectors.toMap(Permission::getId, permission -> permission, (left, right) -> right,
+                                LinkedHashMap::new));
 
         LinkedHashSet<String> result = new LinkedHashSet<>();
         for (ProductFeaturePermissionBinding binding : bindings) {
@@ -115,15 +87,11 @@ public class UserFeatureAccessService {
             return;
         }
         Set<Long> existingPackageIds = userApplicationPackageMemberRepository.findByUserId(userId).stream()
-                .map(UserApplicationPackageMember::getPackageId)
-                .filter(Objects::nonNull)
+                .map(UserApplicationPackageMember::getPackageId).filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        List<UserApplicationPackageMember> next = defaults.stream()
-                .map(UserApplicationPackage::getId)
-                .filter(Objects::nonNull)
-                .filter(packageId -> !existingPackageIds.contains(packageId))
-                .map(packageId -> new UserApplicationPackageMember(packageId, userId, 0L))
-                .toList();
+        List<UserApplicationPackageMember> next = defaults.stream().map(UserApplicationPackage::getId)
+                .filter(Objects::nonNull).filter(packageId -> !existingPackageIds.contains(packageId))
+                .map(packageId -> new UserApplicationPackageMember(packageId, userId, 0L)).toList();
         if (!next.isEmpty()) {
             userApplicationPackageMemberRepository.saveAll(next);
         }
@@ -132,63 +100,56 @@ public class UserFeatureAccessService {
     private UserFeatureAccessSnapshot buildSnapshot(Long userId) {
         List<ProductApplication> applications = productApplicationRepository.findAll().stream()
                 .filter(application -> Boolean.TRUE.equals(application.getEnabled()))
-                .sorted(Comparator.comparing(ProductApplication::getDisplayOrder, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(ProductApplication::getId, Comparator.nullsLast(Long::compareTo)))
-                .toList();
+                .sorted(Comparator.comparing(ProductApplication::getDisplayOrder,
+                                Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(ProductApplication::getId, Comparator.nullsLast(Long::compareTo))).toList();
         Map<Long, ProductApplication> applicationById = applications.stream()
-                .filter(application -> application.getId() != null)
-                .collect(Collectors.toMap(ProductApplication::getId, application -> application, (left, right) -> left,
-                        LinkedHashMap::new));
+                .filter(application -> application.getId() != null).collect(
+                        Collectors.toMap(ProductApplication::getId, application -> application, (left, right) -> left,
+                                LinkedHashMap::new));
 
         List<ProductFeature> features = productFeatureRepository.findAll().stream()
-                .filter(feature -> feature.getId() != null)
-                .filter(feature -> feature.getApplicationId() != null)
+                .filter(feature -> feature.getId() != null).filter(feature -> feature.getApplicationId() != null)
                 .filter(feature -> Boolean.TRUE.equals(feature.getEnabled()))
                 .filter(feature -> applicationById.containsKey(feature.getApplicationId()))
                 .sorted(Comparator.comparing(ProductFeature::getApplicationId, Comparator.nullsLast(Long::compareTo))
                         .thenComparing(ProductFeature::getDisplayOrder, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(ProductFeature::getId, Comparator.nullsLast(Long::compareTo)))
-                .toList();
+                        .thenComparing(ProductFeature::getId, Comparator.nullsLast(Long::compareTo))).toList();
 
         Set<Long> enabledApplicationIds = applicationById.keySet();
-        Set<Long> enabledFeatureIds = features.stream().map(ProductFeature::getId)
-                .filter(Objects::nonNull)
+        Set<Long> enabledFeatureIds = features.stream().map(ProductFeature::getId).filter(Objects::nonNull)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         List<Long> packageIds = resolveEnabledPackageIds(userId);
-        Map<Long, UserApplicationOverride> applicationOverrideByApplicationId = userApplicationOverrideRepository.findByUserId(userId).stream()
-                .filter(override -> override.getApplicationId() != null)
+        Map<Long, UserApplicationOverride> applicationOverrideByApplicationId = userApplicationOverrideRepository.findByUserId(
+                        userId).stream().filter(override -> override.getApplicationId() != null)
                 .filter(override -> override.getOverrideType() != null)
-                .filter(override -> enabledApplicationIds.contains(override.getApplicationId()))
-                .collect(Collectors.toMap(UserApplicationOverride::getApplicationId, override -> override, (left, right) -> right,
-                        LinkedHashMap::new));
-        Map<Long, Map<Long, UserFeatureOverride>> featureOverridesByApplicationId = userFeatureOverrideRepository.findByUserId(userId).stream()
+                .filter(override -> enabledApplicationIds.contains(override.getApplicationId())).collect(
+                        Collectors.toMap(UserApplicationOverride::getApplicationId, override -> override,
+                                (left, right) -> right, LinkedHashMap::new));
+        Map<Long, Map<Long, UserFeatureOverride>> featureOverridesByApplicationId = userFeatureOverrideRepository.findByUserId(
+                        userId).stream()
                 .filter(override -> override.getApplicationId() != null && override.getFeatureId() != null)
                 .filter(override -> override.getOverrideType() != null)
                 .filter(override -> enabledApplicationIds.contains(override.getApplicationId()))
-                .filter(override -> enabledFeatureIds.contains(override.getFeatureId()))
-                .collect(Collectors.groupingBy(UserFeatureOverride::getApplicationId, LinkedHashMap::new,
-                        Collectors.toMap(UserFeatureOverride::getFeatureId, override -> override, (left, right) -> right,
-                                LinkedHashMap::new)));
+                .filter(override -> enabledFeatureIds.contains(override.getFeatureId())).collect(
+                        Collectors.groupingBy(UserFeatureOverride::getApplicationId, LinkedHashMap::new,
+                                Collectors.toMap(UserFeatureOverride::getFeatureId, override -> override,
+                                        (left, right) -> right, LinkedHashMap::new)));
 
-        List<UserPackageApplicationAccess> packageApplicationAccesses = packageIds.isEmpty()
-                ? List.of()
-                : userPackageApplicationAccessRepository.findByPackageIdIn(packageIds).stream()
-                .filter(access -> access.getApplicationId() != null)
-                .filter(access -> enabledApplicationIds.contains(access.getApplicationId()))
-                .toList();
+        List<UserPackageApplicationAccess> packageApplicationAccesses = packageIds.isEmpty() ? List.of() : userPackageApplicationAccessRepository.findByPackageIdIn(
+                        packageIds).stream().filter(access -> access.getApplicationId() != null)
+                .filter(access -> enabledApplicationIds.contains(access.getApplicationId())).toList();
         Map<Long, List<UserPackageApplicationAccess>> packageAccessByApplicationId = packageApplicationAccesses.stream()
                 .collect(Collectors.groupingBy(UserPackageApplicationAccess::getApplicationId, LinkedHashMap::new,
                         Collectors.toList()));
-        List<UserPackageFeatureAccess> packageFeatureAccesses = packageIds.isEmpty()
-                ? List.of()
-                : userPackageFeatureAccessRepository.findByPackageIdIn(packageIds).stream()
+        List<UserPackageFeatureAccess> packageFeatureAccesses = packageIds.isEmpty() ? List.of() : userPackageFeatureAccessRepository.findByPackageIdIn(
+                        packageIds).stream()
                 .filter(access -> access.getApplicationId() != null && access.getFeatureId() != null)
                 .filter(access -> enabledApplicationIds.contains(access.getApplicationId()))
-                .filter(access -> enabledFeatureIds.contains(access.getFeatureId()))
-                .toList();
-        Map<Long, Set<Long>> packageFeatureIdsByApplicationId = packageFeatureAccesses.stream()
-                .collect(Collectors.groupingBy(UserPackageFeatureAccess::getApplicationId, LinkedHashMap::new,
+                .filter(access -> enabledFeatureIds.contains(access.getFeatureId())).toList();
+        Map<Long, Set<Long>> packageFeatureIdsByApplicationId = packageFeatureAccesses.stream().collect(
+                Collectors.groupingBy(UserPackageFeatureAccess::getApplicationId, LinkedHashMap::new,
                         Collectors.mapping(UserPackageFeatureAccess::getFeatureId,
                                 Collectors.toCollection(LinkedHashSet::new))));
 
@@ -200,7 +161,8 @@ public class UserFeatureAccessService {
                 continue;
             }
             UserApplicationOverride applicationOverride = applicationOverrideByApplicationId.get(applicationId);
-            List<UserPackageApplicationAccess> packageAccesses = packageAccessByApplicationId.getOrDefault(applicationId, List.of());
+            List<UserPackageApplicationAccess> packageAccesses = packageAccessByApplicationId.getOrDefault(
+                    applicationId, List.of());
             boolean applicationAccessible = resolveApplicationAccessible(applicationOverride, packageAccesses);
             if (!applicationAccessible) {
                 continue;
@@ -208,8 +170,8 @@ public class UserFeatureAccessService {
             accessibleApplicationIds.add(applicationId);
 
             Set<Long> packageFeatureIds = packageFeatureIdsByApplicationId.getOrDefault(applicationId, Set.of());
-            Map<Long, UserFeatureOverride> featureOverrideByFeatureId = featureOverridesByApplicationId.getOrDefault(applicationId,
-                    Map.of());
+            Map<Long, UserFeatureOverride> featureOverrideByFeatureId = featureOverridesByApplicationId.getOrDefault(
+                    applicationId, Map.of());
             for (ProductFeature feature : features) {
                 if (!applicationId.equals(feature.getApplicationId()) || feature.getId() == null) {
                     continue;
@@ -220,11 +182,12 @@ public class UserFeatureAccessService {
                 }
             }
         }
-        return new UserFeatureAccessSnapshot(applications, List.copyOf(effectiveFeatureIds), Set.copyOf(accessibleApplicationIds));
+        return new UserFeatureAccessSnapshot(applications, List.copyOf(effectiveFeatureIds),
+                Set.copyOf(accessibleApplicationIds));
     }
 
     private boolean resolveApplicationAccessible(UserApplicationOverride applicationOverride,
-                                                 List<UserPackageApplicationAccess> packageAccesses) {
+            List<UserPackageApplicationAccess> packageAccesses) {
         if (applicationOverride != null) {
             if (applicationOverride.getOverrideType() == UserAccessOverrideType.DISABLE) {
                 return false;
@@ -237,8 +200,8 @@ public class UserFeatureAccessService {
     }
 
     private boolean featureAccessible(Long featureId, UserApplicationOverride applicationOverride,
-                                      List<UserPackageApplicationAccess> packageAccesses, Set<Long> packageFeatureIds,
-                                      UserFeatureOverride featureOverride) {
+            List<UserPackageApplicationAccess> packageAccesses, Set<Long> packageFeatureIds,
+            UserFeatureOverride featureOverride) {
         if (applicationOverride != null && applicationOverride.getOverrideType() == UserAccessOverrideType.DISABLE) {
             return false;
         }
@@ -252,30 +215,24 @@ public class UserFeatureAccessService {
             return featureOverride != null && featureOverride.getOverrideType() == UserAccessOverrideType.ENABLE;
         }
 
-        boolean packageGranted = packageAccesses.stream()
-                .anyMatch(access -> access.getFeatureAccessScope() == ApplicationFeatureAccessScope.FULL)
-                || packageFeatureIds.contains(featureId);
+        boolean packageGranted = packageAccesses.stream().anyMatch(
+                access -> access.getFeatureAccessScope() == ApplicationFeatureAccessScope.FULL) || packageFeatureIds.contains(
+                featureId);
         if (packageGranted) {
             return true;
         }
-        return featureOverride != null && featureOverride.getOverrideType() == UserAccessOverrideType.ENABLE
-                && !packageAccesses.isEmpty();
+        return featureOverride != null && featureOverride.getOverrideType() == UserAccessOverrideType.ENABLE && !packageAccesses.isEmpty();
     }
 
     private List<Long> resolveEnabledPackageIds(Long userId) {
         List<Long> packageIds = userApplicationPackageMemberRepository.findByUserId(userId).stream()
-                .map(UserApplicationPackageMember::getPackageId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+                .map(UserApplicationPackageMember::getPackageId).filter(Objects::nonNull).distinct().toList();
         if (packageIds.isEmpty()) {
             return List.of();
         }
         return userApplicationPackageRepository.findByIdIn(packageIds).stream()
-                .filter(pkg -> Boolean.TRUE.equals(pkg.getEnabled()))
-                .map(UserApplicationPackage::getId)
-                .filter(Objects::nonNull)
-                .toList();
+                .filter(pkg -> Boolean.TRUE.equals(pkg.getEnabled())).map(UserApplicationPackage::getId)
+                .filter(Objects::nonNull).toList();
     }
 
     private void requireExternalUser(Long userId) {

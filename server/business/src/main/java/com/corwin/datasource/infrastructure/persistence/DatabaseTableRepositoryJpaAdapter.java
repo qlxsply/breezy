@@ -5,14 +5,11 @@ import com.corwin.datasource.domain.repo.DatabaseTablePageQuery;
 import com.corwin.datasource.domain.repo.DatabaseTableRepository;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.StrUtil;
-import com.corwin.framework.xsql.XSql;
-import com.corwin.framework.xsql.XTableQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +21,7 @@ import java.util.Optional;
 public class DatabaseTableRepositoryJpaAdapter implements DatabaseTableRepository {
 
     private final DatabaseTableJpaRepository repo;
-    private final XSql xSql;
-    private final DataSource dataSource;
+    private final DatabaseTableMybatisMapper mybatisMapper;
 
     @Override
     public <S extends DatabaseTable> S save(S entity) {
@@ -71,62 +67,16 @@ public class DatabaseTableRepositoryJpaAdapter implements DatabaseTableRepositor
     }
 
     @Override
-    public PageData<DatabaseTable> findByDatabaseId(Long databaseId, PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findByDatabaseId(databaseId, JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
-    public PageData<DatabaseTable> findByDatabaseIdAndTableSchema(Long databaseId, String tableSchema, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByDatabaseIdAndTableSchema(databaseId, tableSchema, JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
-    public PageData<DatabaseTable> findByDatabaseIdAndTableNameContainingIgnoreCase(Long databaseId, String nameLike,
-            PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findByDatabaseIdAndTableNameContainingIgnoreCase(databaseId, nameLike,
-                JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
-    public PageData<DatabaseTable> findByDatabaseIdAndTableSchemaAndTableNameContainingIgnoreCase(Long databaseId,
-            String tableSchema, String nameLike, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByDatabaseIdAndTableSchemaAndTableNameContainingIgnoreCase(databaseId, tableSchema, nameLike,
-                        JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
-    public PageData<DatabaseTable> findByDatabaseIdAndTableType(Long databaseId, String tableType, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByDatabaseIdAndTableType(databaseId, tableType, JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
-    public PageData<DatabaseTable> findByDatabaseIdAndTableSchemaAndTableType(Long databaseId, String tableSchema,
-            String tableType, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByDatabaseIdAndTableSchemaAndTableType(databaseId, tableSchema, tableType,
-                        JpaPageMapper.toPageable(spec)));
-    }
-
-    @Override
     public PageData<DatabaseTable> pageByQuery(DatabaseTablePageQuery query, PageSpec spec) {
         if (query == null || query.databaseId() == null) {
             throw new IllegalArgumentException("databaseId required");
         }
-
-        String schema = StrUtil.trimToNull(query.tableSchema());
-        String nameLike = StrUtil.trimToNull(query.tableNameLike());
-        String tableType = StrUtil.trimToNull(query.tableType());
         PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-
-        XTableQuery<DatabaseTable, DatabaseTable> dynamicQuery = xSql.using(dataSource)
-                .table(DatabaseTable.class, DatabaseTable.class).eq(DatabaseTable::getDatabaseId, query.databaseId())
-                .eqIf(StrUtil.isNotBlank(schema), DatabaseTable::getTableSchema, schema)
-                .likeIf(StrUtil.isNotBlank(nameLike), DatabaseTable::getTableName, "%" + nameLike + "%")
-                .eqIf(StrUtil.isNotBlank(tableType), DatabaseTable::getTableType, tableType).applySort(resolvedSpec);
-        return dynamicQuery.page(resolvedSpec.pageNo(), resolvedSpec.pageSize());
+        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
     }
 
+    private DatabaseTablePageQuery normalizeQuery(DatabaseTablePageQuery query) {
+        return new DatabaseTablePageQuery(query.databaseId(), StrUtil.trimToNull(query.tableSchema()),
+                LikePatternUtils.toContainsPattern(query.tableNameLike()), StrUtil.trimToNull(query.tableType()));
+    }
 }

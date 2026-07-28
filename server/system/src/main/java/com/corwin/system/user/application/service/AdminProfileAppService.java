@@ -1,16 +1,12 @@
 package com.corwin.system.user.application.service;
 
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.service.LoginLogService;
 import com.corwin.system.auth.domain.model.LoginEvent;
-import com.corwin.system.auth.domain.model.LoginEventType;
 import com.corwin.system.user.application.command.UpdateAdminProfileCommand;
 import com.corwin.system.user.application.view.AdminProfileLoginActivityView;
 import com.corwin.system.user.application.view.AdminProfileView;
@@ -55,12 +51,8 @@ public class AdminProfileAppService {
     }
 
     private AdminProfileView toView(User user) {
-        List<AdminProfileLoginActivityView> recentActivities = loginLogService
-                .listRecentLoginActivities(user.getUsername(), 20).stream()
-                .filter(event -> event.getEventType() == LoginEventType.LOGIN_SUCCESS
-                        || event.getEventType() == LoginEventType.LOGOUT)
-                .map(AdminProfileAppService::toActivityView)
-                .toList();
+        List<AdminProfileLoginActivityView> recentActivities = loginLogService.listRecentLoginActivities(
+                user.getUsername(), 20).stream().map(AdminProfileAppService::toActivityView).toList();
         return new AdminProfileView(user.getId(), user.getUsername(), user.getNickname(), user.getUserType(),
                 user.getUserStatus().name(), user.isMustChangePassword(), user.getLastPasswordChangedAt(),
                 user.getCreatedAt(), user.getUpdatedAt(), recentActivities);

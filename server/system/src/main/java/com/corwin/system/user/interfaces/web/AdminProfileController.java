@@ -4,9 +4,9 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
-import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.auth.application.service.LoginLogService;
 import com.corwin.system.auth.domain.model.LoginEvent;
+import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
 import com.corwin.system.user.application.command.UpdateAdminProfileCommand;
@@ -17,12 +17,7 @@ import com.corwin.system.user.interfaces.web.req.UpdateAdminProfileReq;
 import com.corwin.system.user.interfaces.web.res.AdminProfileLoginActivityRes;
 import com.corwin.system.user.interfaces.web.res.AdminProfileRes;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -47,8 +42,7 @@ public class AdminProfileController {
     @GetMapping("/login-activities")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<PageResult<AdminProfileLoginActivityRes>> pageLoginActivities(
-            @RequestParam(defaultValue = "1") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "10") int pageSize) {
         String username = adminProfileAppService.currentUsername();
         var page = loginLogService.pageOwnLoginActivities(username, new PageSpec(pageNo, pageSize, List.of()));
         return ApiResponse.ok(PageResult.of(page, AdminProfileController::toActivityRes));
@@ -57,7 +51,8 @@ public class AdminProfileController {
     @PutMapping
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AdminProfileRes> updateMyProfile(@RequestBody UpdateAdminProfileReq req) {
-        return ApiResponse.ok(toRes(adminProfileAppService.updateMyProfile(new UpdateAdminProfileCommand(req.nickname()))));
+        return ApiResponse.ok(
+                toRes(adminProfileAppService.updateMyProfile(new UpdateAdminProfileCommand(req.nickname()))));
     }
 
     private static AdminProfileRes toRes(AdminProfileView view) {

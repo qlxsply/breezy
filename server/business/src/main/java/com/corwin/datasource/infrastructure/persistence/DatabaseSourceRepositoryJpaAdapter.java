@@ -6,18 +6,11 @@ import com.corwin.datasource.domain.repo.DatabaseSourcePageQuery;
 import com.corwin.datasource.domain.repo.DatabaseSourceRepository;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
-import com.corwin.framework.util.StrUtil;
-import com.corwin.framework.xsql.XSortDirection;
-import com.corwin.framework.xsql.XSql;
-import com.corwin.framework.xsql.XTableQuery;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -28,8 +21,7 @@ import java.util.Optional;
 public class DatabaseSourceRepositoryJpaAdapter implements DatabaseSourceRepository {
 
     private final DatabaseSourceJpaRepository repo;
-    private final XSql xSql;
-    private final DataSource dataSource;
+    private final DatabaseSourceMybatisMapper mybatisMapper;
 
     @Override
     public <S extends DatabaseSource> S save(S entity) {
@@ -87,53 +79,13 @@ public class DatabaseSourceRepositoryJpaAdapter implements DatabaseSourceReposit
     @Override
     public PageData<DatabaseSource> pageByQuery(DatabaseSourcePageQuery query, PageSpec spec) {
         PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        DatabaseType dbType = query == null ? null : query.dbType();
-        String nameLike = query == null ? null : StrUtil.trimToNull(query.nameLike());
-
-        XTableQuery<DatabaseSource, DatabaseSource> dynamicQuery = xSql.using(dataSource)
-                .table(DatabaseSource.class, DatabaseSource.class)
-                .eqIf(dbType != null, DatabaseSource::getDbType, dbType)
-                .likeIf(StrUtil.isNotBlank(nameLike), DatabaseSource::getName, "%" + nameLike + "%");
-        applySort(dynamicQuery, resolvedSpec);
-        return dynamicQuery.page(resolvedSpec.pageNo(), resolvedSpec.pageSize());
+        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
     }
 
-    private void applySort(XTableQuery<DatabaseSource, DatabaseSource> query, PageSpec spec) {
-        if (spec == null || spec.sorts().isEmpty()) {
-            return;
-        }
-        for (SortSpec sort : spec.sorts()) {
-            if (sort == null) {
-                continue;
-            }
-            String field = normalizeSortField(sort.field());
-            if (field == null) {
-                continue;
-            }
-            query.orderBy(field, toXSortDirection(sort.direction()));
-        }
-    }
-
-    private String normalizeSortField(String field) {
-        String normalized = StrUtil.trimToNull(field);
-        if (normalized == null) {
+    private DatabaseSourcePageQuery normalizeQuery(DatabaseSourcePageQuery query) {
+        if (query == null) {
             return null;
         }
-        return switch (normalized.toUpperCase(Locale.ROOT)) {
-            case "NAME" -> "name";
-            case "DB_TYPE", "DBTYPE" -> "dbType";
-            case "STATUS", "DS_STATUS" -> "status";
-            case "SOURCE_TYPE", "SOURCETYPE" -> "sourceType";
-            case "LAST_TEST_TIME", "LASTTESTTIME" -> "lastTestTime";
-            case "LAST_OK_TIME", "LASTOKTIME" -> "lastOkTime";
-            default -> normalized;
-        };
-    }
-
-    private XSortDirection toXSortDirection(SortDirection direction) {
-        if (direction == SortDirection.DESC) {
-            return XSortDirection.DESC;
-        }
-        return XSortDirection.ASC;
+        return new DatabaseSourcePageQuery(query.dbType(), LikePatternUtils.toContainsPattern(query.nameLike()));
     }
 }

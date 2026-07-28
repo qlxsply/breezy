@@ -50,7 +50,7 @@ public class Notification {
     private String route;
 
     @Column(nullable = false)
-    private boolean isRead;
+    private Boolean isRead;
 
     @Column(nullable = false)
     private Instant createdAt;

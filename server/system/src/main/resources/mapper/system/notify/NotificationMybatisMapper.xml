@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.notify.infrastructure.persistence.NotificationMybatisMapper">
+
+    <resultMap id="NotificationResultMap" type="com.corwin.system.notify.domain.model.Notification">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="user_type" property="userType"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="msg_type" property="msgType"/>
+        <result column="priority" property="priority"/>
+        <result column="route" property="route"/>
+        <result column="is_read" property="isRead"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="read_at" property="readAt"/>
+    </resultMap>
+
+    <select id="pageByQuery" resultMap="NotificationResultMap">
+        select id, user_id, user_type, title, content, msg_type, priority, route, is_read, created_at, read_at
+        from sys_notification
+        <where>
+            user_id = #{query.userId}
+            and user_type = #{query.userType}
+            <if test="query.unreadOnly">
+                and is_read = false
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

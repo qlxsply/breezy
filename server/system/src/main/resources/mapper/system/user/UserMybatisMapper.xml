@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.user.infrastructure.persistence.UserMybatisMapper">
+
+    <resultMap id="UserResultMap" type="com.corwin.system.user.domain.model.User">
+        <id column="id" property="id"/>
+        <result column="user_type" property="userType"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="password_algo" property="passwordAlgo"/>
+        <result column="user_status" property="userStatus"/>
+        <result column="deleted_flag" property="deletedFlag"/>
+        <result column="last_password_changed_at" property="lastPasswordChangedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="updated_by" property="updatedBy"/>
+    </resultMap>
+
+    <select id="page" resultMap="UserResultMap">
+        select id, user_type, username, nickname, password_hash, password_algo, user_status, deleted_flag,
+        last_password_changed_at, created_at, created_by, updated_at, updated_by
+        from sys_user
+        <where>
+            <if test="status != null">and user_status = #{status}</if>
+            <if test="username != null">and username like #{username}</if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

@@ -8,29 +8,29 @@ import com.corwin.datasource.domain.repo.DatabaseSchemaRepository;
 import com.corwin.datasource.domain.repo.DatabaseSourceRepository;
 import com.corwin.datasource.domain.repo.DatabaseTableRepository;
 import com.corwin.datasource.infrastructure.jdbc.JdbcConnectionFactory;
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.SignUtil;
 import com.corwin.framework.util.StrUtil;
+import com.corwin.framework.web.response.PageResult;
 import com.corwin.schemaforge.application.command.CreateSchemaSnapshotCommand;
 import com.corwin.schemaforge.application.command.UpdateSchemaSnapshotInfoCommand;
 import com.corwin.schemaforge.application.model.SnapshotObjectSelection;
-import com.corwin.schemaforge.application.view.SchemaSnapshotView;
 import com.corwin.schemaforge.application.view.SnapshotSelectableObjectView;
 import com.corwin.schemaforge.domain.model.DatabaseSnapshot;
 import com.corwin.schemaforge.domain.repo.DatabaseSnapshotRepository;
 import com.corwin.schemaforge.infrastructure.liquibase.LiquibaseEngine;
+import com.corwin.schemaforge.infrastructure.persistence.SchemaSnapshotMybatisMapper;
+import com.corwin.schemaforge.interfaces.web.res.SchemaSnapshotRes;
 import com.corwin.system.file.application.port.FileCommandPort;
 import com.corwin.system.file.published.FilePurpose;
 import com.corwin.system.file.published.InternalFileType;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +38,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -57,6 +63,7 @@ public class SchemaSnapshotAppService {
     private final JdbcConnectionFactory jdbcConnectionFactory;
     private final LiquibaseEngine liquibaseEngine;
     private final FileCommandPort fileService;
+    private final SchemaSnapshotMybatisMapper schemaSnapshotMybatisMapper;
 
     @Transactional
     public String createSnapshot(CreateSchemaSnapshotCommand command) {
@@ -126,28 +133,15 @@ public class SchemaSnapshotAppService {
                         item.getTableType(), item.getAlias())).toList();
     }
 
-    public Page<SchemaSnapshotView> pageQuery(Long managedDatabaseId, String nameLike, Pageable pageable) {
-        String normalizedNameLike = StrUtil.trimToNull(nameLike);
-        Specification<DatabaseSnapshot> specification = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (managedDatabaseId != null) {
-                predicates.add(cb.equal(root.get("managedDatabaseId"), managedDatabaseId));
-            }
-            if (normalizedNameLike != null) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + normalizedNameLike.toLowerCase() + "%"));
-            }
-            if (predicates.isEmpty()) {
-                return cb.conjunction();
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-        return databaseSnapshotRepository.findAll(specification, pageable).map(this::toView);
+    public PageResult<SchemaSnapshotRes> pageQuery(Long managedDatabaseId, String nameLike, PageSpec spec) {
+        PageSpec spec0 = PageSpec.withDefaultSort(spec);
+        String nameLike0 = LikePatternUtils.toContainsPattern(nameLike);
+        PageData<SchemaSnapshotRes> page = schemaSnapshotMybatisMapper.pageQuery(managedDatabaseId, nameLike0, spec0);
+        return PageResult.of(page);
     }
 
-    public List<SchemaSnapshotView> listAll() {
-        return databaseSnapshotRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream().map(this::toView)
-                .toList();
+    public List<SchemaSnapshotRes> listAll() {
+        return schemaSnapshotMybatisMapper.listAll();
     }
 
     @Transactional
@@ -270,13 +264,6 @@ public class SchemaSnapshotAppService {
         } catch (IOException e) {
             throw new BizException("Calculate snapshot hash failed", BaseError.SERVICE_ERROR);
         }
-    }
-
-    private SchemaSnapshotView toView(DatabaseSnapshot snapshot) {
-        return new SchemaSnapshotView(snapshot.getId(), snapshot.getManagedDatabaseId(), snapshot.getName(),
-                snapshot.getRemark(), snapshot.getDbType(), snapshot.getDbVersion(), snapshot.getSchemaName(),
-                snapshot.getLogicalFileId(), snapshot.getSqlLogicalFileId(), snapshot.getContentHash(),
-                snapshot.getCreatedAt());
     }
 
     private SnapshotObjectSelection resolveSnapshotObjectSelection(List<Long> selectedObjectIds,

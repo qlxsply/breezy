@@ -50,25 +50,25 @@
         <where>
             <if test="query != null">
                 <if test="query.traceId != null">
-                    and trace_id like concat('%', #{query.traceId}, '%')
+                    and trace_id like #{query.traceId}
                 </if>
                 <if test="query.operatorUserId != null">
                     and operator_user_id = #{query.operatorUserId}
                 </if>
                 <if test="query.operatorUsername != null">
-                    and operator_username like concat('%', #{query.operatorUsername}, '%')
+                    and operator_username like #{query.operatorUsername}
                 </if>
                 <if test="query.applicationCode != null">
                     and application_code = #{query.applicationCode}
                 </if>
                 <if test="query.requestUri != null">
-                    and request_uri like concat('%', #{query.requestUri}, '%')
+                    and request_uri like #{query.requestUri}
                 </if>
                 <if test="query.auditResource != null">
-                    and audit_resource like concat('%', #{query.auditResource}, '%')
+                    and audit_resource like #{query.auditResource}
                 </if>
                 <if test="query.auditAction != null">
-                    and audit_action like concat('%', #{query.auditAction}, '%')
+                    and audit_action like #{query.auditAction}
                 </if>
                 <if test="query.auditLevel != null">
                     and audit_level = #{query.auditLevel}
@@ -84,12 +84,7 @@
                 </if>
             </if>
         </where>
-        <if test="spec != null and spec.sorts != null and !spec.sorts.isEmpty()">
-            order by
-            <foreach collection="spec.sorts" item="sort" separator=",">
-                ${sort.field} ${sort.direction.name()}
-            </foreach>
-        </if>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
     </select>
 
 </mapper>

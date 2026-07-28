@@ -6,7 +6,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 
 - 后端
     - Java 21 / Spring Boot 3.5.10
-    - Spring MVC / JPA / JOOQ
+    - Spring MVC / JPA / MyBatis / JOOQ
     - JWT 鉴权 / AOP 权限控制
     - Log4j2 + JSON Template 日志
     - HikariCP、p6spy（SQL 监听）
@@ -24,6 +24,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `application.command` / `application.view`：命令对象与输出视图
     - `domain.model` / `domain.repo`：领域模型与仓储接口
     - `infrastructure.*`：持久化、调度、安全等基础设施实现
+    - ORM 约定：基础单表增删改查使用 JPA；分页查询、动态条件查询统一使用 MyBatis Mapper XML 实现
 - 前端资源驱动的菜单与权限
     - `/registry` 返回资源树，驱动动态路由与菜单
     - 资源类型/范围/打开方式统一约定（MENU/BUTTON，SETTING/TOOL 等）

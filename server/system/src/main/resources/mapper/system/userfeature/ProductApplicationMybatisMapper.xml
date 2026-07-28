@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.userfeature.infrastructure.persistence.ProductApplicationMybatisMapper">
+
+    <resultMap id="ProductApplicationResultMap" type="com.corwin.system.userfeature.domain.model.ProductApplication">
+        <id column="id" property="id"/>
+        <result column="application_code" property="applicationCode"/>
+        <result column="application_name" property="applicationName"/>
+        <result column="description" property="description"/>
+        <result column="icon" property="icon"/>
+        <result column="route_path" property="routePath"/>
+        <result column="component_path" property="componentPath"/>
+        <result column="enabled" property="enabled"/>
+        <result column="system_built_in" property="systemBuiltIn"/>
+        <result column="display_order" property="displayOrder"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_by" property="updatedBy"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Columns">
+        id, application_code, application_name, description, icon, route_path, component_path, enabled,
+        system_built_in, display_order, created_by, created_at, updated_by, updated_at
+    </sql>
+
+    <select id="page" resultMap="ProductApplicationResultMap">
+        select
+        <include refid="Columns"/>
+        from sys_product_application
+        <where>
+            <if test="enabled != null">and enabled = #{enabled}</if>
+            <if test="keyword != null">
+                and concat(coalesce(application_code, ''), ' ', coalesce(application_name, '')) like #{keyword}
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

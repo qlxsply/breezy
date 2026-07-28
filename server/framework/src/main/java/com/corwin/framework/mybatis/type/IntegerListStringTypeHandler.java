@@ -1,0 +1,42 @@
+package com.corwin.framework.mybatis.type;
+
+import com.corwin.framework.jpa.IntegerListStringConverter;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * List<Integer> 逗号分隔字符串 TypeHandler。
+ *
+ * @author Corwin 2026/7/28
+ */
+public class IntegerListStringTypeHandler extends BaseTypeHandler<List<Integer>> {
+
+    private final IntegerListStringConverter converter = new IntegerListStringConverter();
+
+    @Override
+    public void setNonNullParameter(PreparedStatement ps, int i, List<Integer> parameter, JdbcType jdbcType)
+            throws SQLException {
+        ps.setString(i, converter.convertToDatabaseColumn(parameter));
+    }
+
+    @Override
+    public List<Integer> getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        return converter.convertToEntityAttribute(rs.getString(columnName));
+    }
+
+    @Override
+    public List<Integer> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        return converter.convertToEntityAttribute(rs.getString(columnIndex));
+    }
+
+    @Override
+    public List<Integer> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        return converter.convertToEntityAttribute(cs.getString(columnIndex));
+    }
+}

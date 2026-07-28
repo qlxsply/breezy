@@ -2,7 +2,7 @@ package com.corwin.system.dict.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.system.dict.domain.model.DictType;
 import com.corwin.system.dict.domain.repo.DictTypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +19,7 @@ import java.util.Optional;
 public class DictTypeRepositoryJpaAdapter implements DictTypeRepository {
 
     private final DictTypeJpaRepository repo;
+    private final DictTypeMybatisMapper mybatisMapper;
 
     @Override
     public <S extends DictType> S save(S entity) {
@@ -64,24 +65,8 @@ public class DictTypeRepositoryJpaAdapter implements DictTypeRepository {
 
     @Override
     public PageData<DictType> page(String code, String name, PageSpec spec) {
-        String trimmedCode = code == null ? null : code.trim();
-        String trimmedName = name == null ? null : name.trim();
-        boolean hasCode = trimmedCode != null && !trimmedCode.isEmpty();
-        boolean hasName = trimmedName != null && !trimmedName.isEmpty();
-        if (!hasCode && !hasName) {
-            return JpaPageMapper.toPageData(repo.findAll(JpaPageMapper.toPageable(spec)));
-        }
-        if (hasCode && hasName) {
-            return JpaPageMapper.toPageData(
-                    repo.findByCodeContainingIgnoreCaseOrNameContainingIgnoreCase(trimmedCode, trimmedName,
-                            JpaPageMapper.toPageable(spec)));
-        }
-        if (hasCode) {
-            return JpaPageMapper.toPageData(repo.findByCodeContainingIgnoreCase(trimmedCode,
-                    JpaPageMapper.toPageable(spec)));
-        }
-        return JpaPageMapper.toPageData(repo.findByNameContainingIgnoreCase(trimmedName,
-                JpaPageMapper.toPageable(spec)));
+        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
+        return mybatisMapper.page(LikePatternUtils.toContainsPattern(code), LikePatternUtils.toContainsPattern(name), resolvedSpec);
     }
 
     @Override

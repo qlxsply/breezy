@@ -2,13 +2,7 @@ package com.corwin.reminder.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
-import com.corwin.framework.util.StrUtil;
-import com.corwin.framework.xsql.XSortDirection;
-import com.corwin.framework.xsql.XSql;
-import com.corwin.framework.xsql.XTableQuery;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.reminder.domain.model.TodoTask;
 import com.corwin.reminder.domain.model.TodoTaskStatus;
 import com.corwin.reminder.domain.repo.TodoTaskPageQuery;
@@ -16,10 +10,9 @@ import com.corwin.reminder.domain.repo.TodoTaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -30,8 +23,7 @@ import java.util.Optional;
 public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
 
     private final TodoTaskJpaRepository repo;
-    private final XSql xSql;
-    private final DataSource dataSource;
+    private final TodoTaskMybatisMapper mybatisMapper;
 
     @Override
     public <S extends TodoTask> S save(S entity) {
@@ -68,22 +60,15 @@ public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
     @Override
     public PageData<TodoTask> pageByQuery(TodoTaskPageQuery query, PageSpec spec) {
         PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        List<TodoTaskStatus> statuses = query == null ? null : query.statuses();
-        String contentLike = query == null ? null : StrUtil.trimToNull(query.contentLike());
-
-        XTableQuery<TodoTask, TodoTask> dynamicQuery = xSql.using(dataSource)
-                .table(TodoTask.class, TodoTask.class)
-                .inIf(statuses != null && !statuses.isEmpty(), TodoTask::getStatus, statuses)
-                .likeIf(StrUtil.isNotBlank(contentLike), TodoTask::getContent, "%" + contentLike + "%");
-        applySort(dynamicQuery, resolvedSpec);
-        return dynamicQuery.page(resolvedSpec.pageNo(), resolvedSpec.pageSize());
+        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
     }
 
     @Override
     public PageData<TodoTask> findByStatusInAndRemindAtLessThanEqual(List<TodoTaskStatus> statuses, Instant now,
             PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByStatusInAndRemindAtLessThanEqual(statuses, now, JpaPageMapper.toPageable(spec)));
+        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
+        return mybatisMapper.findByStatusInAndRemindAtLessThanEqual(statuses == null ? List.of() : statuses.stream()
+                .filter(Objects::nonNull).toList(), now, resolvedSpec);
     }
 
     @Override
@@ -106,45 +91,12 @@ public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
         return repo.findByCompletedAtGreaterThanEqualAndCompletedAtLessThan(startInclusive, endExclusive);
     }
 
-    private void applySort(XTableQuery<TodoTask, TodoTask> query, PageSpec spec) {
-        if (spec == null || spec.sorts().isEmpty()) {
-            return;
-        }
-        for (SortSpec sort : spec.sorts()) {
-            if (sort == null) {
-                continue;
-            }
-            String field = normalizeSortField(sort.field());
-            if (field == null) {
-                continue;
-            }
-            query.orderBy(field, toXSortDirection(sort.direction()));
-        }
-    }
-
-    private String normalizeSortField(String field) {
-        String normalized = StrUtil.trimToNull(field);
-        if (normalized == null) {
+    private TodoTaskPageQuery normalizeQuery(TodoTaskPageQuery query) {
+        if (query == null) {
             return null;
         }
-        return switch (normalized.toUpperCase(Locale.ROOT)) {
-            case "CONTENT" -> "content";
-            case "DUE_TIME", "DUETIME" -> "dueTime";
-            case "REMIND_AT", "REMINDAT" -> "remindAt";
-            case "STATUS", "TASK_STATUS" -> "status";
-            case "SORT_NO", "SORTNO" -> "sortNo";
-            case "OWNER_ID", "OWNERID" -> "ownerId";
-            case "COMPLETED_AT", "COMPLETEDAT" -> "completedAt";
-            case "CREATED_AT", "CREATEDAT" -> "createdAt";
-            case "UPDATED_AT", "UPDATEDAT" -> "updatedAt";
-            default -> normalized;
-        };
-    }
-
-    private XSortDirection toXSortDirection(SortDirection direction) {
-        if (direction == SortDirection.DESC) {
-            return XSortDirection.DESC;
-        }
-        return XSortDirection.ASC;
+        List<TodoTaskStatus> statuses = query.statuses() == null ? List.of()
+                : query.statuses().stream().filter(it -> it != null).toList();
+        return new TodoTaskPageQuery(statuses, LikePatternUtils.toContainsPattern(query.contentLike()));
     }
 }

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.webuser.infrastructure.persistence.WebUserMybatisMapper">
+
+    <resultMap id="WebUserResultMap" type="com.corwin.system.webuser.domain.model.WebUser">
+        <id column="id" property="id"/>
+        <result column="display_name" property="displayName"/>
+        <result column="nickname" property="nickname"/>
+        <result column="status" property="status"/>
+        <result column="register_method" property="registerMethod"/>
+        <result column="register_channel" property="registerChannel"/>
+        <result column="register_source" property="registerSource"/>
+        <result column="register_ip" property="registerIp"/>
+        <result column="register_user_agent" property="registerUserAgent"/>
+        <result column="primary_identity_id" property="primaryIdentityId"/>
+        <result column="token_version" property="tokenVersion"/>
+        <result column="token_not_before" property="tokenNotBefore"/>
+        <result column="last_login_at" property="lastLoginAt"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="disabled_at" property="disabledAt"/>
+        <result column="disabled_by" property="disabledBy"/>
+        <result column="disabled_reason" property="disabledReason"/>
+        <result column="cancelled_at" property="cancelledAt"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="updated_by" property="updatedBy"/>
+    </resultMap>
+
+    <sql id="UserColumns">
+        id, display_name, nickname, status, register_method, register_channel, register_source, register_ip,
+        register_user_agent, primary_identity_id, token_version, token_not_before, last_login_at, last_login_ip,
+        disabled_at, disabled_by, disabled_reason, cancelled_at, cancel_reason, created_at, created_by,
+        updated_at, updated_by
+    </sql>
+
+    <select id="page" resultMap="WebUserResultMap">
+        select
+        <include refid="UserColumns"/>
+        from tb_user
+        <where>
+            <if test="status != null">and status = #{status}</if>
+            <if test="keyword != null">
+                and concat(coalesce(display_name, ''), ' ', coalesce(nickname, '')) like #{keyword}
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.reminder.infrastructure.persistence.TodoTaskMybatisMapper">
+
+    <resultMap id="TodoTaskResultMap" type="com.corwin.reminder.domain.model.TodoTask">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="due_time" property="dueTime"/>
+        <result column="remind_at" property="remindAt"/>
+        <result column="task_status" property="status"/>
+        <result column="sort_no" property="sortNo"/>
+        <result column="owner_id" property="ownerId"/>
+        <result column="note" property="note"/>
+        <result column="completion_note" property="completionNote"/>
+        <result column="completed_at" property="completedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="Columns">
+        id, content, due_time, remind_at, task_status, sort_no, owner_id, note, completion_note, completed_at,
+        created_at, updated_at
+    </sql>
+
+    <select id="pageByQuery" resultMap="TodoTaskResultMap">
+        select
+        <include refid="Columns"/>
+        from todo_task
+        <where>
+            <if test="query != null">
+                <if test="query.statuses != null and !query.statuses.isEmpty()">
+                    and task_status in
+                    <foreach collection="query.statuses" item="status" open="(" separator="," close=")">
+                        #{status}
+                    </foreach>
+                </if>
+                <if test="query.contentLike != null">
+                    and content like #{query.contentLike}
+                </if>
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+
+    <select id="findByStatusInAndRemindAtLessThanEqual" resultMap="TodoTaskResultMap">
+        select
+        <include refid="Columns"/>
+        from todo_task
+        <where>
+            <if test="statuses != null and !statuses.isEmpty()">
+                task_status in
+                <foreach collection="statuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="now != null">
+                and remind_at &lt;= #{now}
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

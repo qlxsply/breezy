@@ -2,14 +2,12 @@ package com.corwin.system.user.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
 import com.corwin.framework.constant.UserType;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.system.user.domain.model.User;
 import com.corwin.system.user.domain.model.UserStatus;
 import com.corwin.system.user.domain.repo.UserRepository;
-import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Sort;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,9 +20,11 @@ import java.util.Optional;
 public class UserRepositoryJpaAdapter implements UserRepository {
 
     private final UserJpaRepository repo;
+    private final UserMybatisMapper mybatisMapper;
 
-    public UserRepositoryJpaAdapter(UserJpaRepository repo, JdbcTemplate jdbcTemplate, EntityManager em) {
+    public UserRepositoryJpaAdapter(UserJpaRepository repo, UserMybatisMapper mybatisMapper) {
         this.repo = repo;
+        this.mybatisMapper = mybatisMapper;
     }
 
     @Override
@@ -81,25 +81,25 @@ public class UserRepositoryJpaAdapter implements UserRepository {
 
     @Override
     public PageData<User> findAll(PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findAll(JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(null, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
     @Override
     public PageData<User> findByStatus(UserStatus status, PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findByUserStatus(status, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(status, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
     @Override
     public PageData<User> findByUsernameContainingIgnoreCase(String username, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByUsernameContainingIgnoreCase(username, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(null, LikePatternUtils.toContainsPattern(username),
+                spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
     @Override
     public PageData<User> findByStatusAndUsernameContainingIgnoreCase(UserStatus status, String username,
             PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByUserStatusAndUsernameContainingIgnoreCase(status, username, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(username),
+                spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
 }

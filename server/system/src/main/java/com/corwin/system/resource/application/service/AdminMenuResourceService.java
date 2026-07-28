@@ -15,15 +15,7 @@ import com.corwin.system.user.domain.repo.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -54,42 +46,29 @@ public class AdminMenuResourceService {
     }
 
     private List<AdminMenuResourceView> buildAdminResources() {
-        return resourceRepository.findAll().stream()
-                .filter(this::resourceVisibleAndEnabled)
-                .filter(resource -> resource.getId() != null)
-                .sorted(resourceComparator())
-                .map(this::toResourceView)
+        return resourceRepository.findAll().stream().filter(this::resourceVisibleAndEnabled)
+                .filter(resource -> resource.getId() != null).sorted(resourceComparator()).map(this::toResourceView)
                 .toList();
     }
 
     private List<AdminMenuResourceView> buildInternalResources(Long userId) {
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
-                .map(UserRole::getRoleId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId)
+                .filter(Objects::nonNull).distinct().toList();
         if (roleIds.isEmpty()) {
             return List.of();
         }
 
-        Map<Long, Resource> resourceById = resourceRepository.findAll().stream()
-                .filter(this::resourceVisibleAndEnabled)
+        Map<Long, Resource> resourceById = resourceRepository.findAll().stream().filter(this::resourceVisibleAndEnabled)
                 .filter(resource -> resource.getId() != null)
                 .collect(Collectors.toMap(Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
 
         LinkedHashSet<Long> includedIds = roleResourceRepository.findByRoleIdIn(roleIds).stream()
-                .map(RoleResource::getResourceId)
-                .filter(Objects::nonNull)
-                .filter(resourceById::containsKey)
+                .map(RoleResource::getResourceId).filter(Objects::nonNull).filter(resourceById::containsKey)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         includeAncestors(includedIds, resourceById);
 
-        return includedIds.stream()
-                .map(resourceById::get)
-                .filter(Objects::nonNull)
-                .sorted(resourceComparator())
-                .map(this::toResourceView)
-                .toList();
+        return includedIds.stream().map(resourceById::get).filter(Objects::nonNull).sorted(resourceComparator())
+                .map(this::toResourceView).toList();
     }
 
     private List<AdminMenuResourceView> buildTree(List<AdminMenuResourceView> flatResources) {
@@ -104,15 +83,13 @@ public class AdminMenuResourceService {
         }
         return flatResources.stream()
                 .filter(resource -> resource.parentId() == null || !resourceById.containsKey(resource.parentId()))
-                .map(resource -> buildTreeNode(resource, childrenByParentId))
-                .toList();
+                .map(resource -> buildTreeNode(resource, childrenByParentId)).toList();
     }
 
     private AdminMenuResourceView buildTreeNode(AdminMenuResourceView resource,
             Map<String, List<AdminMenuResourceView>> childrenByParentId) {
         List<AdminMenuResourceView> children = childrenByParentId.getOrDefault(resource.id(), List.of()).stream()
-                .map(child -> buildTreeNode(child, childrenByParentId))
-                .toList();
+                .map(child -> buildTreeNode(child, childrenByParentId)).toList();
         return new AdminMenuResourceView(resource.id(), resource.parentId(), resource.name(), resource.icon(),
                 resource.code(), resource.type(), resource.url(), resource.loadTarget(), resource.orderNo(), children);
     }
@@ -133,17 +110,10 @@ public class AdminMenuResourceService {
     }
 
     private AdminMenuResourceView toResourceView(Resource resource) {
-        return new AdminMenuResourceView(
-                "resource:" + resource.getId(),
-                resource.getParentId() == null ? null : "resource:" + resource.getParentId(),
-                resource.getName(),
-                resource.getIcon(),
-                resource.getCode(),
-                resource.getResourceType().name(),
-                resolveUrl(resource),
-                resolveLoadTarget(resource),
-                resource.getSortNo() == null ? 0 : resource.getSortNo(),
-                List.of());
+        return new AdminMenuResourceView("resource:" + resource.getId(),
+                resource.getParentId() == null ? null : "resource:" + resource.getParentId(), resource.getName(),
+                resource.getIcon(), resource.getCode(), resource.getResourceType().name(), resolveUrl(resource),
+                resolveLoadTarget(resource), resource.getSortNo() == null ? 0 : resource.getSortNo(), List.of());
     }
 
     private boolean resourceVisibleAndEnabled(Resource resource) {

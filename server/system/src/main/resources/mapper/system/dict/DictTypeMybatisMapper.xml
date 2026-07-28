@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.dict.infrastructure.persistence.DictTypeMybatisMapper">
+
+    <resultMap id="DictTypeResultMap" type="com.corwin.system.dict.domain.model.DictType">
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="enum_class" property="enumClass"/>
+        <result column="value_type" property="valueType"/>
+        <result column="structure_type" property="structureType"/>
+        <result column="source_type" property="sourceType"/>
+        <result column="enabled" property="enabled"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="created_by" property="createdBy"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="updated_by" property="updatedBy"/>
+    </resultMap>
+
+    <select id="page" resultMap="DictTypeResultMap">
+        select id, code, name, description, enum_class, value_type, structure_type, source_type, enabled, created_at,
+        created_by, updated_at, updated_by
+        from sys_dict_type
+        <where>
+            <if test="code != null">and code like #{code}</if>
+            <if test="name != null">and name like #{name}</if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

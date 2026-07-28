@@ -1,33 +1,32 @@
 package com.corwin.schemaforge.application.service;
 
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.SignUtil;
 import com.corwin.framework.util.StrUtil;
+import com.corwin.framework.web.response.PageResult;
 import com.corwin.schemaforge.application.command.CreateSchemaDdlCommand;
 import com.corwin.schemaforge.application.command.UpdateSchemaDdlInfoCommand;
-import com.corwin.schemaforge.application.view.SchemaDdlView;
 import com.corwin.schemaforge.domain.model.DatabaseDdl;
 import com.corwin.schemaforge.domain.model.DatabaseSnapshot;
 import com.corwin.schemaforge.domain.repo.DatabaseDdlRepository;
 import com.corwin.schemaforge.domain.repo.DatabaseSnapshotRepository;
 import com.corwin.schemaforge.infrastructure.liquibase.LiquibaseEngine;
+import com.corwin.schemaforge.infrastructure.persistence.SchemaDdlMybatisMapper;
+import com.corwin.schemaforge.interfaces.web.res.SchemaDdlRes;
 import com.corwin.system.file.application.port.FileCommandPort;
 import com.corwin.system.file.published.FilePurpose;
 import com.corwin.system.file.published.InternalFileType;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -42,6 +41,7 @@ public class SchemaDdlAppService {
     private final DatabaseSnapshotRepository databaseSnapshotRepository;
     private final LiquibaseEngine liquibaseEngine;
     private final FileCommandPort fileService;
+    private final SchemaDdlMybatisMapper schemaDdlMybatisMapper;
 
     @Transactional
     public String createDdl(CreateSchemaDdlCommand command) {
@@ -106,26 +106,10 @@ public class SchemaDdlAppService {
         return ddl.getId();
     }
 
-    public Page<SchemaDdlView> pageQuery(Long managedDatabaseId, String nameLike, Pageable pageable) {
-        String normalizedNameLike = StrUtil.trimToNull(nameLike);
-        Specification<DatabaseDdl> specification = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (managedDatabaseId != null) {
-                predicates.add(cb.equal(root.get("managedDatabaseId"), managedDatabaseId));
-            }
-            if (normalizedNameLike != null) {
-                predicates.add(cb.like(
-                        cb.lower(root.get("name")),
-                        "%" + normalizedNameLike.toLowerCase() + "%"
-                ));
-            }
-            if (predicates.isEmpty()) {
-                return cb.conjunction();
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-        return databaseDdlRepository.findAll(specification, pageable).map(this::toView);
+    public PageResult<SchemaDdlRes> pageQuery(Long managedDatabaseId, String nameLike, PageSpec spec) {
+        PageData<SchemaDdlRes> page = schemaDdlMybatisMapper.pageQuery(managedDatabaseId,
+                LikePatternUtils.toContainsPattern(nameLike), PageSpec.withDefaultSort(spec));
+        return PageResult.of(page);
     }
 
     @Transactional
@@ -201,20 +185,4 @@ public class SchemaDdlAppService {
         }
     }
 
-    private SchemaDdlView toView(DatabaseDdl ddl) {
-        return new SchemaDdlView(
-                ddl.getId(),
-                ddl.getManagedDatabaseId(),
-                ddl.getSourceSnapshotId(),
-                ddl.getTargetSnapshotId(),
-                ddl.getName(),
-                ddl.getRemark(),
-                ddl.getDbType(),
-                ddl.getDbVersion(),
-                ddl.getSchemaName(),
-                ddl.getLogicalFileId(),
-                ddl.getContentHash(),
-                ddl.getCreatedAt()
-        );
-    }
 }

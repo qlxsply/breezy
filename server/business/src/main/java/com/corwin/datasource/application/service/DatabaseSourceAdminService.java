@@ -11,12 +11,7 @@ import com.corwin.datasource.application.view.DatabaseSourceSimpleView;
 import com.corwin.datasource.application.view.TestConnectionView;
 import com.corwin.datasource.domain.error.DatabaseSourceError;
 import com.corwin.datasource.domain.model.*;
-import com.corwin.datasource.domain.repo.DatabaseColumnRepository;
-import com.corwin.datasource.domain.repo.DatabaseSourcePageQuery;
-import com.corwin.datasource.domain.repo.DatabaseSchemaRepository;
-import com.corwin.datasource.domain.repo.DatabaseSourceRepository;
-import com.corwin.datasource.domain.repo.DatabaseTablePageQuery;
-import com.corwin.datasource.domain.repo.DatabaseTableRepository;
+import com.corwin.datasource.domain.repo.*;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
@@ -315,10 +310,6 @@ public class DatabaseSourceAdminService {
 
     @Transactional
     public void deleteDatabaseSchema(Long id) {
-        deleteDatabaseSchemaInternal(id);
-    }
-
-    private void deleteDatabaseSchemaInternal(Long id) {
         columnRepo.deleteByDatabaseId(id);
         tableRepo.deleteByDatabaseId(id);
         databaseSchemaRepo.deleteById(id);
@@ -632,10 +623,7 @@ public class DatabaseSourceAdminService {
     }
 
     public PageData<DatabaseColumn> pageColumns(Long tableId, String nameLike, PageSpec spec) {
-        if (nameLike != null && !nameLike.isBlank()) {
-            return columnRepo.findByTableIdAndColumnNameContainingIgnoreCase(tableId, nameLike.trim(), spec);
-        }
-        return columnRepo.findByTableId(tableId, spec);
+        return columnRepo.findByTableIdAndColumnNameContainingIgnoreCase(tableId, nameLike.trim(), spec);
     }
 
 }

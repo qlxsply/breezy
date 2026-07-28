@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.schemaforge.infrastructure.persistence.SchemaDdlMybatisMapper">
+
+    <resultMap id="SchemaDdlResMap" type="com.corwin.schemaforge.interfaces.web.res.SchemaDdlRes">
+        <constructor>
+            <idArg column="id" javaType="java.lang.String"/>
+            <arg column="managed_database_id" javaType="java.lang.Long"/>
+            <arg column="source_snapshot_id" javaType="java.lang.String"/>
+            <arg column="target_snapshot_id" javaType="java.lang.String"/>
+            <arg column="name" javaType="java.lang.String"/>
+            <arg column="remark" javaType="java.lang.String"/>
+            <arg column="db_type" javaType="java.lang.String"/>
+            <arg column="db_version" javaType="java.lang.String"/>
+            <arg column="schema_name" javaType="java.lang.String"/>
+            <arg column="logical_file_id" javaType="java.lang.String"/>
+            <arg column="content_hash" javaType="java.lang.String"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <select id="pageQuery" resultMap="SchemaDdlResMap">
+        select id, managed_database_id, source_snapshot_id, target_snapshot_id, name, remark, db_type, db_version,
+        schema_name, logical_file_id, content_hash, created_at
+        from sf_database_ddl
+        <where>
+            <if test="managedDatabaseId != null">and managed_database_id = #{managedDatabaseId}</if>
+            <if test="nameLike != null">and name like #{nameLike}</if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

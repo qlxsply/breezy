@@ -1,11 +1,7 @@
 package com.corwin.schemaforge.interfaces.web;
 
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
-import com.corwin.framework.web.request.PageRuleRequest;
 import com.corwin.framework.web.request.PageSpecFactory;
-import com.corwin.framework.web.request.SortRuleRequest;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
 import com.corwin.schemaforge.application.command.CreateSchemaDdlCommand;
@@ -16,8 +12,6 @@ import com.corwin.schemaforge.application.service.SchemaDdlAppService;
 import com.corwin.schemaforge.application.service.SchemaDiffAppService;
 import com.corwin.schemaforge.application.service.SchemaSnapshotAppService;
 import com.corwin.schemaforge.application.view.DiffResultView;
-import com.corwin.schemaforge.application.view.SchemaDdlView;
-import com.corwin.schemaforge.application.view.SchemaSnapshotView;
 import com.corwin.schemaforge.application.view.SnapshotSelectableObjectView;
 import com.corwin.schemaforge.interfaces.web.req.*;
 import com.corwin.schemaforge.interfaces.web.res.DiffResultRes;
@@ -28,9 +22,6 @@ import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -66,15 +57,13 @@ public class SchemaForgeController {
 
     @PostMapping("/snapshots/page")
     public ApiResponse<PageResult<SchemaSnapshotRes>> pageSnapshots(@RequestBody SchemaSnapshotPageReq req) {
-        var page = schemaSnapshotAppService.pageQuery(req.managedDatabaseId(), req.nameLike(),
-                toPageable(req.page(), req.sort()));
-        return ApiResponse.ok(PageResult.of(JpaPageMapper.toPageData(page, SchemaForgeController::toSnapshotRes)));
+        return ApiResponse.ok(schemaSnapshotAppService.pageQuery(req.managedDatabaseId(), req.nameLike(),
+                PageSpecFactory.of(req.page(), req.sort())));
     }
 
     @GetMapping("/snapshots/options")
     public ApiResponse<List<SchemaSnapshotRes>> listSnapshotOptions() {
-        return ApiResponse.ok(
-                schemaSnapshotAppService.listAll().stream().map(SchemaForgeController::toSnapshotRes).toList());
+        return ApiResponse.ok(schemaSnapshotAppService.listAll());
     }
 
     @PutMapping("/snapshots/{id}")
@@ -98,9 +87,8 @@ public class SchemaForgeController {
 
     @PostMapping("/ddls/page")
     public ApiResponse<PageResult<SchemaDdlRes>> pageDdls(@RequestBody SchemaDdlPageReq req) {
-        var page = schemaDdlAppService.pageQuery(req.managedDatabaseId(), req.nameLike(),
-                toPageable(req.page(), req.sort()));
-        return ApiResponse.ok(PageResult.of(JpaPageMapper.toPageData(page, SchemaForgeController::toDdlRes)));
+        return ApiResponse.ok(schemaDdlAppService.pageQuery(req.managedDatabaseId(), req.nameLike(),
+                PageSpecFactory.of(req.page(), req.sort())));
     }
 
     @PutMapping("/ddls/{id}")
@@ -121,28 +109,6 @@ public class SchemaForgeController {
         return ApiResponse.ok(
                 new DiffResultRes(view.addedCount(), view.removedCount(), view.changedCount(), view.changeLogXml(),
                         view.changeSql()));
-    }
-
-    private Pageable toPageable(PageRuleRequest page, SortRuleRequest sort) {
-        PageSpec pageSpec = PageSpecFactory.of(page, sort);
-        Pageable pageable = JpaPageMapper.toPageable(pageSpec);
-        if (pageable.getSort().isUnsorted()) {
-            return PageRequest.of(pageSpec.pageNo() - 1, pageSpec.pageSize(),
-                    Sort.by(Sort.Direction.DESC, "createdAt"));
-        }
-        return pageable;
-    }
-
-    private static SchemaSnapshotRes toSnapshotRes(SchemaSnapshotView view) {
-        return new SchemaSnapshotRes(view.id(), view.managedDatabaseId(), view.name(), view.remark(), view.dbType(),
-                view.dbVersion(), view.schemaName(), view.logicalFileId(), view.sqlLogicalFileId(), view.contentHash(),
-                view.createdAt());
-    }
-
-    private static SchemaDdlRes toDdlRes(SchemaDdlView view) {
-        return new SchemaDdlRes(view.id(), view.managedDatabaseId(), view.sourceSnapshotId(), view.targetSnapshotId(),
-                view.name(), view.remark(), view.dbType(), view.dbVersion(), view.schemaName(), view.logicalFileId(),
-                view.contentHash(), view.createdAt());
     }
 
     private static SnapshotSelectableObjectRes toSnapshotSelectableObjectRes(SnapshotSelectableObjectView view) {

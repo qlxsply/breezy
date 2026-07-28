@@ -47,7 +47,7 @@ public class ScheduleEvent {
     /**
      * 提醒提前秒数列表
      */
-    @Convert(converter = IntegerListStringConverter.class)
+    @Convert(converter = com.corwin.framework.jpa.IntegerListStringConverter.class)
     @Column(name = "advance_seconds_json", nullable = false, length = 1000)
     private List<Integer> advanceSecondsList = new ArrayList<>();
 
@@ -65,7 +65,7 @@ public class ScheduleEvent {
     }
 
     public static ScheduleEvent create(String title, Instant startTime, Instant endTime, String eventTimeZoneId,
-                                       RecurrenceRule rule, List<Integer> advanceSecondsList, String note) {
+            RecurrenceRule rule, List<Integer> advanceSecondsList, String note) {
         ScheduleEvent e = new ScheduleEvent();
         e.title = Objects.requireNonNull(title, "title required").trim();
         e.startTime = Objects.requireNonNull(startTime, "startTime required");
@@ -83,7 +83,7 @@ public class ScheduleEvent {
     }
 
     public void update(String title, Instant startTime, Instant endTime, String eventTimeZoneId, RecurrenceRule rule,
-                       List<Integer> advanceSecondsList, String note) {
+            List<Integer> advanceSecondsList, String note) {
         this.title = Objects.requireNonNull(title, "title required").trim();
         this.startTime = Objects.requireNonNull(startTime, "startTime required");
         this.endTime = endTime;

@@ -4,7 +4,7 @@ import com.corwin.datasource.domain.model.DatabaseColumn;
 import com.corwin.datasource.domain.repo.DatabaseColumnRepository;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +19,7 @@ import java.util.Optional;
 public class DatabaseColumnRepositoryJpaAdapter implements DatabaseColumnRepository {
 
     private final DatabaseColumnJpaRepository repo;
-
+    private final DatabaseColumnMybatisMapper mybatisMapper;
 
     @Override
     public <S extends DatabaseColumn> S save(S entity) {
@@ -60,14 +60,13 @@ public class DatabaseColumnRepositoryJpaAdapter implements DatabaseColumnReposit
 
     @Override
     public PageData<DatabaseColumn> findByTableId(Long tableId, PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findByTableId(tableId, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(tableId, null, spec);
     }
 
     @Override
     public PageData<DatabaseColumn> findByTableIdAndColumnNameContainingIgnoreCase(Long tableId, String nameLike,
             PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByTableIdAndColumnNameContainingIgnoreCase(tableId, nameLike, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(tableId, LikePatternUtils.toContainsPattern(nameLike), spec);
     }
 
     @Override

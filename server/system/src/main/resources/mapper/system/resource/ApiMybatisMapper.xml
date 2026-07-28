@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.system.resource.infrastructure.persistence.ApiMybatisMapper">
+
+    <resultMap id="ApiResultMap" type="com.corwin.system.resource.domain.model.Api">
+        <id column="id" property="id"/>
+        <result column="module" property="module"/>
+        <result column="protocol" property="protocol"/>
+        <result column="http_method" property="httpMethod"/>
+        <result column="path_pattern" property="pathPattern"/>
+        <result column="handler_class" property="handlerClass"/>
+        <result column="handler_method" property="handlerMethod"/>
+        <result column="permission_declared" property="permissionDeclared"/>
+        <result column="access_type" property="accessType"/>
+        <result column="user_type" property="userType"/>
+        <result column="audit_declared" property="auditDeclared"/>
+        <result column="audit_resource" property="auditResource"/>
+        <result column="audit_action" property="auditAction"/>
+        <result column="audit_description" property="auditDescription"/>
+        <result column="enabled" property="enabled"/>
+        <result column="system_builtin" property="systemBuiltin"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <sql id="ApiColumns">
+        id, module, protocol, http_method, path_pattern, handler_class, handler_method, permission_declared,
+        access_type, user_type, audit_declared, audit_resource, audit_action, audit_description, enabled,
+        system_builtin, created_at, updated_at
+    </sql>
+
+    <select id="page" resultMap="ApiResultMap">
+        select
+        <include refid="ApiColumns"/>
+        from sys_api
+        <where>
+            <if test="query != null">
+                <if test="query.module != null">and module = #{query.module}</if>
+                <if test="query.pathPattern != null">and path_pattern like #{query.pathPattern}</if>
+                <if test="query.handlerClass != null">and handler_class like #{query.handlerClass}</if>
+                <if test="query.handlerMethod != null">and handler_method like #{query.handlerMethod}</if>
+                <if test="query.permissionDeclared != null">and permission_declared = #{query.permissionDeclared}</if>
+                <if test="query.accessType != null">and access_type = #{query.accessType}</if>
+                <if test="query.userType != null">and user_type = #{query.userType}</if>
+                <if test="query.auditDeclared != null">and audit_declared = #{query.auditDeclared}</if>
+                <if test="query.enabled != null">and enabled = #{query.enabled}</if>
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

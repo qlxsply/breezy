@@ -5,7 +5,6 @@ import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.system.scheduler.domain.model.SchedulerJobExecution;
 import com.corwin.system.scheduler.domain.repo.SchedulerJobExecutionRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,6 +18,7 @@ import java.util.Optional;
 public class SchedulerJobExecutionRepositoryJpaAdapter implements SchedulerJobExecutionRepository {
 
     private final SchedulerJobExecutionJpaRepository jpaRepository;
+    private final SchedulerJobExecutionMybatisMapper mybatisMapper;
 
     @Override
     public <S extends SchedulerJobExecution> S save(S entity) {
@@ -55,8 +55,6 @@ public class SchedulerJobExecutionRepositoryJpaAdapter implements SchedulerJobEx
     @Override
     public PageData<SchedulerJobExecution> pageByJobId(String jobId, PageSpec spec) {
         PageSpec finalSpec = spec == null ? PageSpec.of(1, 20, List.of()) : spec;
-        var page = jpaRepository.findByJobIdOrderByStartTimeDesc(jobId,
-                PageRequest.of(Math.max(0, finalSpec.pageNo() - 1), finalSpec.pageSize()));
-        return PageData.of(finalSpec.pageNo(), finalSpec.pageSize(), page.getTotalElements(), page.getContent());
+        return mybatisMapper.pageByJobId(jobId, finalSpec);
     }
 }

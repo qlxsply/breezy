@@ -2,7 +2,7 @@ package com.corwin.reminder.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.persistence.jpa.JpaPageMapper;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.reminder.domain.model.ScheduleEvent;
 import com.corwin.reminder.domain.model.ScheduleEventStatus;
 import com.corwin.reminder.domain.repo.ScheduleEventRepository;
@@ -20,6 +20,7 @@ import java.util.Optional;
 public class ScheduleEventRepositoryJpaAdapter implements ScheduleEventRepository {
 
     private final ScheduleEventJpaRepository repo;
+    private final ScheduleEventMybatisMapper mybatisMapper;
 
     @Override
     public <S extends ScheduleEvent> S save(S entity) {
@@ -55,18 +56,18 @@ public class ScheduleEventRepositoryJpaAdapter implements ScheduleEventRepositor
 
     @Override
     public PageData<ScheduleEvent> findAll(PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findAll(JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(null, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
     @Override
     public PageData<ScheduleEvent> findByStatus(ScheduleEventStatus status, PageSpec spec) {
-        return JpaPageMapper.toPageData(repo.findByStatus(status, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(status, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 
     @Override
     public PageData<ScheduleEvent> findByStatusAndTitleContainingIgnoreCase(ScheduleEventStatus status,
             String titleLike, PageSpec spec) {
-        return JpaPageMapper.toPageData(
-                repo.findByStatusAndTitleContainingIgnoreCase(status, titleLike, JpaPageMapper.toPageable(spec)));
+        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(titleLike),
+                spec == null ? PageSpec.of(null, null, List.of()) : spec);
     }
 }

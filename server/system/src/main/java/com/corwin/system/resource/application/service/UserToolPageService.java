@@ -1,7 +1,7 @@
 package com.corwin.system.resource.application.service;
 
-import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.constant.UserType;
+import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.system.auth.published.SecurityContextService;
 import com.corwin.system.resource.application.view.UserToolPageView;
 import com.corwin.system.resource.application.view.UserToolsView;
@@ -10,11 +10,7 @@ import com.corwin.system.userfeature.domain.model.ProductApplication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Corwin 2026/6/6
@@ -49,18 +45,18 @@ public class UserToolPageService {
         return userFeatureAccessService.accessibleApplicationsForUser(principal.userId()).stream()
                 .filter(application -> application.getId() != null)
                 .filter(application -> application.getRoutePath() != null && !application.getRoutePath().isBlank())
-                .filter(application -> application.getComponentPath() != null && !application.getComponentPath().isBlank())
-                .map(this::toExternalToolPage)
-                .filter(Objects::nonNull)
+                .filter(application -> application.getComponentPath() != null && !application.getComponentPath()
+                        .isBlank()).map(this::toExternalToolPage).filter(Objects::nonNull)
                 .sorted(Comparator.comparing(UserToolPageView::sortNo)
                         .thenComparing(UserToolPageView::code, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .toList();
     }
 
     private UserToolPageView toExternalToolPage(ProductApplication application) {
-        return new UserToolPageView("app:" + application.getId(), application.getApplicationName(), application.getIcon(),
-                application.getDescription(), application.getApplicationCode(), application.getRoutePath(),
-                application.getComponentPath(), application.getDisplayOrder() == null ? 0 : application.getDisplayOrder(),
+        return new UserToolPageView("app:" + application.getId(), application.getApplicationName(),
+                application.getIcon(), application.getDescription(), application.getApplicationCode(),
+                application.getRoutePath(), application.getComponentPath(),
+                application.getDisplayOrder() == null ? 0 : application.getDisplayOrder(),
                 Boolean.TRUE.equals(application.getSystemBuiltIn()) ? "SYSTEM" : "CUSTOM", true, false);
     }
 }

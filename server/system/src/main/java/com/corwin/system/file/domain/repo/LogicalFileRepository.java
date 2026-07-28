@@ -18,8 +18,6 @@ public interface LogicalFileRepository extends JpaRepository<LogicalFile, String
 
     List<LogicalFile> findByOwnerTypeAndOwnerIdAndParentId(OwnerType ownerType, String ownerId, String parentId);
 
-    List<LogicalFile> findByParentIdAndNodeType(String parentId, LogicalNodeType nodeType);
-
     List<LogicalFile> findByParentId(String parentId);
 
     Optional<LogicalFile> findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(OwnerType ownerType,

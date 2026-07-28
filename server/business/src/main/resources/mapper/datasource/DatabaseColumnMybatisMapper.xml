@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.datasource.infrastructure.persistence.DatabaseColumnMybatisMapper">
+
+    <resultMap id="DatabaseColumnResultMap" type="com.corwin.datasource.domain.model.DatabaseColumn">
+        <id column="id" property="id"/>
+        <result column="database_id" property="databaseId"/>
+        <result column="data_source_id" property="dataSourceId"/>
+        <result column="table_id" property="tableId"/>
+        <result column="column_name" property="columnName"/>
+        <result column="alias" property="alias"/>
+        <result column="type_name" property="typeName"/>
+        <result column="jdbc_type" property="jdbcType"/>
+        <result column="column_size" property="columnSize"/>
+        <result column="decimal_digits" property="decimalDigits"/>
+        <result column="nullable_flag" property="nullable"/>
+        <result column="ordinal_position" property="ordinalPosition"/>
+        <result column="default_value" property="defaultValue"/>
+        <result column="remark_db" property="remarkDb"/>
+        <result column="remark_custom" property="remarkCustom"/>
+    </resultMap>
+
+    <select id="page" resultMap="DatabaseColumnResultMap">
+        select id, database_id, data_source_id, table_id, column_name, alias, type_name, jdbc_type, column_size,
+        decimal_digits, nullable_flag, ordinal_position, default_value, remark_db, remark_custom
+        from db_column
+        <where>
+            table_id = #{tableId}
+            <if test="nameLike != null">and column_name like #{nameLike}</if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

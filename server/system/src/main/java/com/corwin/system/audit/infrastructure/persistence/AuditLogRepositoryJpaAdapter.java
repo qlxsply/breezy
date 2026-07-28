@@ -2,6 +2,7 @@ package com.corwin.system.audit.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.system.audit.domain.model.AuditLog;
 import com.corwin.system.audit.domain.repo.AuditLogPageQuery;
 import com.corwin.system.audit.domain.repo.AuditLogRepository;
@@ -55,7 +56,19 @@ public class AuditLogRepositoryJpaAdapter implements AuditLogRepository {
 
     @Override
     public PageData<AuditLog> pageByQuery(AuditLogPageQuery query, PageSpec spec) {
-        return mybatisMapper.pageByQuery(query, spec);
+        return mybatisMapper.pageByQuery(normalizeQuery(query), spec);
+    }
+
+    private AuditLogPageQuery normalizeQuery(AuditLogPageQuery query) {
+        if (query == null) {
+            return null;
+        }
+        return new AuditLogPageQuery(LikePatternUtils.toContainsPattern(query.traceId()), query.operatorUserId(),
+                LikePatternUtils.toContainsPattern(query.operatorUsername()), query.applicationCode(),
+                LikePatternUtils.toContainsPattern(query.requestUri()),
+                LikePatternUtils.toContainsPattern(query.auditResource()),
+                LikePatternUtils.toContainsPattern(query.auditAction()), query.auditLevel(), query.success(),
+                query.startAt(), query.endAt());
     }
 
 }

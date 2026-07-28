@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.datasource.infrastructure.persistence.DatabaseSourceMybatisMapper">
+
+    <resultMap id="DatabaseSourceResultMap" type="com.corwin.datasource.domain.model.DatabaseSource">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="db_type" property="dbType"/>
+        <result column="auth_mode" property="authMode"/>
+        <result column="connect_mode" property="connectMode"/>
+        <result column="host" property="host"/>
+        <result column="port" property="port"/>
+        <result column="database_name" property="databaseName"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="sid" property="sid"/>
+        <result column="driver_class" property="driverClassName"/>
+        <result column="jdbc_url" property="jdbcUrl"/>
+        <result column="username" property="username"/>
+        <result column="password_enc" property="passwordEnc"/>
+        <result column="source_type" property="sourceType"/>
+        <result column="app_ds_key" property="appDsKey"/>
+        <result column="remark_custom" property="remarkCustom"/>
+        <result column="extra_params" property="extraParams"/>
+        <result column="ds_status" property="status"/>
+        <result column="last_test_time" property="lastTestTime"/>
+        <result column="last_ok_time" property="lastOkTime"/>
+        <result column="last_error" property="lastError"/>
+    </resultMap>
+
+    <sql id="Columns">
+        id, name, db_type, auth_mode, connect_mode, host, port, database_name, service_name, sid, driver_class,
+        jdbc_url, username, password_enc, source_type, app_ds_key, remark_custom, extra_params, ds_status,
+        last_test_time, last_ok_time, last_error
+    </sql>
+
+    <select id="pageByQuery" resultMap="DatabaseSourceResultMap">
+        select
+        <include refid="Columns"/>
+        from db_source
+        <where>
+            <if test="query != null">
+                <if test="query.dbType != null">and db_type = #{query.dbType}</if>
+                <if test="query.nameLike != null">and name like #{query.nameLike}</if>
+            </if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

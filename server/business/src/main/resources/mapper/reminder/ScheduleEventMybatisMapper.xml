@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.corwin.reminder.infrastructure.persistence.ScheduleEventMybatisMapper">
+
+    <resultMap id="ScheduleEventResultMap" type="com.corwin.reminder.domain.model.ScheduleEvent">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="event_tz" property="eventTimeZoneId"/>
+        <result column="advance_seconds_json" property="advanceSecondsList"
+                typeHandler="com.corwin.framework.mybatis.type.IntegerListStringTypeHandler"/>
+        <result column="event_status" property="status"/>
+        <result column="note" property="note"/>
+        <result column="owner_id" property="ownerId"/>
+        <association property="rule" javaType="com.corwin.reminder.domain.model.RecurrenceRule">
+            <result column="freq" property="frequency"/>
+            <result column="freq_interval" property="interval"/>
+            <result column="week_days_mask" property="weekDaysMask"/>
+            <result column="day_of_month" property="dayOfMonth"/>
+            <result column="month_of_year" property="monthOfYear"/>
+            <result column="until_time" property="until"/>
+            <result column="count_limit" property="countLimit"/>
+        </association>
+    </resultMap>
+
+    <select id="page" resultMap="ScheduleEventResultMap">
+        select id, title, start_time, end_time, event_tz, freq, freq_interval, week_days_mask, day_of_month,
+        month_of_year, until_time, count_limit, advance_seconds_json, event_status, note, owner_id
+        from schedule_event
+        <where>
+            <if test="status != null">and event_status = #{status}</if>
+            <if test="titleLike != null">and title like #{titleLike}</if>
+        </where>
+        <include refid="com.corwin.framework.mybatis.SqlFragments.OrderBy"/>
+    </select>
+</mapper>

@@ -91,7 +91,7 @@ public class NotificationAppService {
 
     private NotificationView toRes(Notification n) {
         return new NotificationView(String.valueOf(n.getId()), n.getTitle(), n.getContent(), n.getMsgType(),
-                n.getPriority(), n.getRoute(), n.getCreatedAt(), n.isRead());
+                n.getPriority(), n.getRoute(), n.getCreatedAt(), n.getIsRead());
     }
 
     private boolean isUnreadStatus(String status) {

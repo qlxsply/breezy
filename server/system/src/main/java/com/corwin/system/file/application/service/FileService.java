@@ -6,17 +6,17 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.util.SignUtil;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.system.file.application.command.UploadFileCommand;
-import com.corwin.system.file.published.FilePurpose;
-import com.corwin.system.file.published.InternalFileType;
-import com.corwin.system.file.published.OwnerType;
 import com.corwin.system.file.application.port.FileCommandPort;
-import com.corwin.system.user.domain.model.DefaultUser;
 import com.corwin.system.file.domain.model.LogicalFile;
 import com.corwin.system.file.domain.model.LogicalNodeType;
 import com.corwin.system.file.domain.model.PhysicalFile;
 import com.corwin.system.file.domain.repo.LogicalFileRepository;
 import com.corwin.system.file.domain.repo.PhysicalFileRepository;
 import com.corwin.system.file.infrastructure.storage.LocalStorageProvider;
+import com.corwin.system.file.published.FilePurpose;
+import com.corwin.system.file.published.InternalFileType;
+import com.corwin.system.file.published.OwnerType;
+import com.corwin.system.user.domain.model.DefaultUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,8 +73,7 @@ public class FileService implements FileCommandPort {
             OwnerType domainOwnerType = toDomainOwnerType(cmd.ownerType());
             String finalFileName = cmd.fileName();
             if (cmd.ownerType() == OwnerType.USER) {
-                finalFileName = resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(),
-                        cmd.fileName());
+                finalFileName = resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(), cmd.fileName());
             }
 
             PhysicalFile physicalFile = handlePhysicalFile(hash, tempFile, size, cmd.contentType());
@@ -103,8 +102,8 @@ public class FileService implements FileCommandPort {
 
         String systemOwnerId = DefaultUser.SYSTEM.account();
         String parentId = resolveApplicationPurposeFolderId(purpose, systemOwnerId);
-        String finalFileName = resolveFileNameConflict(OwnerType.APPLICATION,
-                systemOwnerId, parentId, normalizeInternalFileName(fileName, fileType));
+        String finalFileName = resolveFileNameConflict(OwnerType.APPLICATION, systemOwnerId, parentId,
+                normalizeInternalFileName(fileName, fileType));
 
         String hash;
         try (InputStream hashStream = new ByteArrayInputStream(content)) {
@@ -120,8 +119,8 @@ public class FileService implements FileCommandPort {
                     }
                 });
 
-        LogicalFile logicalFile = LogicalFile.file(OwnerType.APPLICATION,
-                systemOwnerId, parentId, finalFileName, physicalFile.getId(), purpose.name());
+        LogicalFile logicalFile = LogicalFile.file(OwnerType.APPLICATION, systemOwnerId, parentId, finalFileName,
+                physicalFile.getId(), purpose.name());
         logicalFileRepository.save(logicalFile);
         return logicalFile.getId();
     }
@@ -136,15 +135,15 @@ public class FileService implements FileCommandPort {
         PhysicalFile physicalFile = physicalFileRepository.findById(logicalFile.getPhysicalFileId())
                 .orElseThrow(() -> new BizException("Physical file not found", BaseError.NOT_FOUND));
 
-        try (InputStream inputStream = storageProvider.read(physicalFile.getRelativePath(), physicalFile.getFileName())) {
+        try (InputStream inputStream = storageProvider.read(physicalFile.getRelativePath(),
+                physicalFile.getFileName())) {
             return inputStream.readAllBytes();
         } catch (IOException e) {
             throw new BizException("Read file content failed", BaseError.SERVICE_ERROR);
         }
     }
 
-    private String resolveFileNameConflict(OwnerType ownerType, String ownerId,
-            String parentId, String originalName) {
+    private String resolveFileNameConflict(OwnerType ownerType, String ownerId, String parentId, String originalName) {
         Optional<LogicalFile> existing = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
                 ownerType, ownerId, parentId, LogicalNodeType.FILE, originalName);
         if (existing.isEmpty()) {
@@ -181,9 +180,8 @@ public class FileService implements FileCommandPort {
     }
 
     private String resolveApplicationPurposeFolderId(FilePurpose purpose, String systemOwnerId) {
-        Optional<LogicalFile> existingFolder = logicalFileRepository
-                .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-                        OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name());
+        Optional<LogicalFile> existingFolder = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+                OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name());
         if (existingFolder.isPresent()) {
             return existingFolder.get().getId();
         }
@@ -192,8 +190,7 @@ public class FileService implements FileCommandPort {
             return createFolder(OwnerType.APPLICATION, systemOwnerId, null, purpose.name());
         } catch (BizException | DataIntegrityViolationException e) {
             return logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-                            OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER,
-                            purpose.name())
+                            OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name())
                     .map(LogicalFile::getId)
                     .orElseThrow(() -> new BizException("系统用途目录创建失败", BaseError.SERVICE_ERROR));
         }
@@ -268,26 +265,6 @@ public class FileService implements FileCommandPort {
         });
     }
 
-    @Transactional
-    public String copyFile(String fileId, String targetParentId) {
-        LogicalFile source = logicalFileRepository.findById(fileId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-
-        String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
-        validateTargetFolder(source.getOwnerType(), source.getOwnerId(), normalizedTargetParentId);
-
-        String finalName = resolveFileNameConflict(source.getOwnerType(), source.getOwnerId(), normalizedTargetParentId,
-                source.getFileName());
-
-        assertFileNode(source);
-        LogicalFile copy = LogicalFile.file(source.getOwnerType(), source.getOwnerId(), normalizedTargetParentId,
-                finalName, source.getPhysicalFileId(), source.getPurpose());
-        logicalFileRepository.save(copy);
-        physicalFileRepository.incrementRefCount(source.getPhysicalFileId());
-
-        return copy.getId();
-    }
-
     @Override
     @Transactional
     public String createFolder(OwnerType ownerType, String ownerId, String parentId, String name) {
@@ -307,11 +284,6 @@ public class FileService implements FileCommandPort {
         return logicalFileRepository.save(folder).getId();
     }
 
-    @Transactional
-    public void renameFolder(String folderId, String newName) {
-        renameFolder(folderId, newName, null, null);
-    }
-
     @Override
     @Transactional
     public void renameFolder(String folderId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -327,17 +299,13 @@ public class FileService implements FileCommandPort {
         }
 
         logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(folder.getOwnerType(),
-                folder.getOwnerId(), folder.getParentId(), LogicalNodeType.FOLDER, normalizedNewName).ifPresent(existing -> {
-            throw new BizException("同名目录已存在", BaseError.CONFLICT);
-        });
+                        folder.getOwnerId(), folder.getParentId(), LogicalNodeType.FOLDER, normalizedNewName)
+                .ifPresent(existing -> {
+                    throw new BizException("同名目录已存在", BaseError.CONFLICT);
+                });
 
         folder.rename(normalizedNewName);
         logicalFileRepository.save(folder);
-    }
-
-    @Transactional
-    public void renameFile(String fileId, String newName) {
-        renameFile(fileId, newName, null, null);
     }
 
     @Override
@@ -362,11 +330,6 @@ public class FileService implements FileCommandPort {
 
         file.rename(finalName);
         logicalFileRepository.save(file);
-    }
-
-    @Transactional
-    public void deleteFolder(String folderId, boolean recursive) {
-        deleteFolder(folderId, recursive, null, null);
     }
 
     @Override
@@ -452,11 +415,12 @@ public class FileService implements FileCommandPort {
         }
 
         logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(folder.getOwnerType(),
-                folder.getOwnerId(), normalizedTargetParentId, LogicalNodeType.FOLDER, folder.getFileName()).ifPresent(existing -> {
-            if (!existing.getId().equals(folderId)) {
-                throw new BizException("目标目录存在同名文件夹", BaseError.CONFLICT);
-            }
-        });
+                        folder.getOwnerId(), normalizedTargetParentId, LogicalNodeType.FOLDER, folder.getFileName())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(folderId)) {
+                        throw new BizException("目标目录存在同名文件夹", BaseError.CONFLICT);
+                    }
+                });
 
         folder.move(normalizedTargetParentId);
         logicalFileRepository.save(folder);
@@ -500,8 +464,7 @@ public class FileService implements FileCommandPort {
         return false;
     }
 
-    private LogicalFile validateTargetFolder(OwnerType ownerType, String ownerId,
-            String targetParentId) {
+    private LogicalFile validateTargetFolder(OwnerType ownerType, String ownerId, String targetParentId) {
         if (targetParentId == null) {
             return null;
         }
@@ -516,8 +479,7 @@ public class FileService implements FileCommandPort {
         return targetFolder;
     }
 
-    private void assertFileOwner(LogicalFile file, OwnerType expectedOwnerType,
-            String expectedOwnerId) {
+    private void assertFileOwner(LogicalFile file, OwnerType expectedOwnerType, String expectedOwnerId) {
         assertFileNode(file);
         if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
             return;
@@ -529,8 +491,7 @@ public class FileService implements FileCommandPort {
         }
     }
 
-    private void assertFolderOwner(LogicalFile folder, OwnerType expectedOwnerType,
-            String expectedOwnerId) {
+    private void assertFolderOwner(LogicalFile folder, OwnerType expectedOwnerType, String expectedOwnerId) {
         assertFolderNode(folder);
         if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
             return;
