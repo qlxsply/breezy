@@ -3,8 +3,6 @@ package com.corwin.system.audit.application.service;
 import com.corwin.framework.config.ConfigRegistry;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.util.HighDate;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.Executor;
 
 /**
@@ -83,7 +80,7 @@ public class AuditLogService {
                 StrUtil.trimToNull(operatorUsername), StrUtil.trimToNull(applicationCode),
                 StrUtil.trimToNull(requestUri), StrUtil.trimToNull(auditResource), StrUtil.trimToNull(auditAction),
                 auditLevel, success, startAt, endAt);
-        return auditLogRepository.pageByQuery(query, withDefaultSort(spec));
+        return auditLogRepository.pageByQuery(query, PageSpec.withDefaultSort(spec));
     }
 
     private void saveSafely(AuditLog auditLog) {
@@ -94,12 +91,4 @@ public class AuditLogService {
         }
     }
 
-    private PageSpec withDefaultSort(PageSpec spec) {
-        PageSpec resolved = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        if (!resolved.sorts().isEmpty()) {
-            return resolved;
-        }
-        return new PageSpec(resolved.pageNo(), resolved.pageSize(),
-                List.of(new SortSpec("createdAt", SortDirection.DESC)));
-    }
 }

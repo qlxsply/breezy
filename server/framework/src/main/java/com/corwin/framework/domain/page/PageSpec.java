@@ -28,4 +28,17 @@ public record PageSpec(
         int resolvedPageSize = (pageSize == null) ? DEFAULT_PAGE_SIZE : pageSize;
         return new PageSpec(resolvedPageNo, resolvedPageSize, sorts);
     }
+
+    public static PageSpec withDefaultSort(PageSpec spec) {
+        if (spec == null) {
+            return PageSpec.of(null, null, List.of(new SortSpec("created_at", SortDirection.DESC)));
+        }
+        if (spec.sorts().isEmpty()) {
+            int pageNo0 = spec.pageNo();
+            int pageSize0 = spec.pageSize();
+            return new PageSpec(pageNo0, pageSize0, List.of(new SortSpec("created_at", SortDirection.DESC)));
+        }
+        return spec;
+    }
+
 }

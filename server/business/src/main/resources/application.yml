@@ -16,6 +16,9 @@ spring:
   liquibase:
     enabled: false
 
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+
 decorator:
   datasource:
     p6spy:

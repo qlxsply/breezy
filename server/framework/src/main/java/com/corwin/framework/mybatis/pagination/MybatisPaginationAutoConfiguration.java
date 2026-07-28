@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
@@ -25,7 +26,8 @@ import java.util.Locale;
  *
  * @author Corwin 2026/7/28
  */
-@AutoConfiguration(beforeName = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
+@AutoConfiguration(after = DataSourceAutoConfiguration.class,
+        beforeName = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
 @ConditionalOnClass({SqlSessionFactory.class, Interceptor.class, CCJSqlParserUtil.class})
 @ConditionalOnSingleCandidate(DataSource.class)
 @ConditionalOnProperty(prefix = "corwin.mybatis.pagination", name = "enabled", havingValue = "true",
