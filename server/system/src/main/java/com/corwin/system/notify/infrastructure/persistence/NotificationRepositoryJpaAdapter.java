@@ -76,8 +76,7 @@ public class NotificationRepositoryJpaAdapter implements NotificationRepository 
 
     @Override
     public PageData<Notification> pageByQuery(NotificationPageQuery query, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.pageByQuery(query, resolvedSpec);
+        return mybatisMapper.pageByQuery(query, spec);
     }
 
     @Override

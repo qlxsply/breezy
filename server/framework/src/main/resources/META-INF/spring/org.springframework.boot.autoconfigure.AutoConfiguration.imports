@@ -1,1 +1,2 @@
 com.corwin.framework.mybatis.pagination.MybatisPaginationAutoConfiguration
+com.corwin.framework.web.sort.SortRuleAutoConfiguration

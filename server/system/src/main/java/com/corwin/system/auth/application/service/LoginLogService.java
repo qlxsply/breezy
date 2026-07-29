@@ -6,6 +6,7 @@ import com.corwin.framework.domain.page.SortDirection;
 import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.auth.domain.model.LoginEvent;
 import com.corwin.system.auth.domain.model.LoginEventType;
 import com.corwin.system.auth.domain.repo.LoginLogPageQuery;
@@ -52,7 +53,7 @@ public class LoginLogService {
 
     public PageData<LoginEvent> page(String userAccount, Instant startAt, Instant endAt, PageSpec spec) {
         String account = StrUtil.trimToNull(userAccount);
-        PageSpec resolved = withDefaultSort(spec);
+        PageSpec resolved = PageSpecSorts.apply(spec);
         boolean hasStart = startAt != null;
         boolean hasEnd = endAt != null;
         LoginLogPageQuery query = new LoginLogPageQuery(account, startAt, hasStart && hasEnd, endAt, List.of());

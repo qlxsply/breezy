@@ -8,6 +8,7 @@ import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.webuser.application.command.UpdateWebUserCommand;
 import com.corwin.system.webuser.application.view.WebUserAdminView;
 import com.corwin.system.webuser.domain.model.*;
@@ -29,7 +30,7 @@ public class WebUserAdminService {
     private final WebUserLifecycleService webUserLifecycleService;
 
     public WebUserAdminService(WebUserRepository webUserRepository, WebUserIdentityRepository webUserIdentityRepository,
-                               WebUserLifecycleService webUserLifecycleService) {
+            WebUserLifecycleService webUserLifecycleService) {
         this.webUserRepository = webUserRepository;
         this.webUserIdentityRepository = webUserIdentityRepository;
         this.webUserLifecycleService = webUserLifecycleService;
@@ -37,7 +38,7 @@ public class WebUserAdminService {
 
     public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
         WebUserStatus normalizedStatus = parseStatus(status);
-        PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, spec);
+        PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(this::toView).toList());
     }
@@ -90,7 +91,7 @@ public class WebUserAdminService {
             }
         }
         return webUserIdentityRepository.findFirstByUserIdAndIdentityType(user.getId(), WebUserIdentityType.USERNAME)
-                                        .map(WebUserIdentity::getIdentityValue).orElse(String.valueOf(user.getId()));
+                .map(WebUserIdentity::getIdentityValue).orElse(String.valueOf(user.getId()));
     }
 
     private String operator() {

@@ -3,14 +3,13 @@ package com.corwin.reminder.application.service;
 import com.corwin.framework.config.DefaultConfigWrapper;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.reminder.application.command.TodoCompleteCommand;
 import com.corwin.reminder.application.command.TodoReorderCommand;
 import com.corwin.reminder.application.command.TodoSaveCommand;
@@ -90,7 +89,7 @@ public class TodoAppService {
     }
 
     public PageData<TodoView> page(TodoTaskStatus status, String contentLike, PageSpec spec) {
-        PageSpec effectiveSpec = resolvePageSpec(spec);
+        PageSpec effectiveSpec = PageSpecSorts.apply(spec);
         List<TodoTaskStatus> statuses = expandStatus(status);
         TodoTaskPageQuery query = new TodoTaskPageQuery(statuses, StrUtil.trimToNull(contentLike));
         PageData<TodoTask> page = withAttachments(repo.pageByQuery(query, effectiveSpec));
@@ -307,14 +306,6 @@ public class TodoAppService {
         return new TodoView(task.getId(), task.getContent(), task.getDueTime(), task.getStatus(), task.getNote(),
                 task.contentAttachmentFileIds(), task.completionAttachmentFileIds(), task.getSortNo(),
                 task.getCompletionNote(), task.getCompletedAt(), task.getCreatedAt());
-    }
-
-    private PageSpec resolvePageSpec(PageSpec spec) {
-        if (spec == null || spec.sorts().isEmpty()) {
-            return PageSpec.of(spec == null ? null : spec.pageNo(), spec == null ? null : spec.pageSize(),
-                    List.of(new SortSpec("sortNo", SortDirection.ASC), new SortSpec("createdAt", SortDirection.DESC)));
-        }
-        return spec;
     }
 
     private void applyStatus(TodoTask task, TodoTaskStatus targetStatus) {

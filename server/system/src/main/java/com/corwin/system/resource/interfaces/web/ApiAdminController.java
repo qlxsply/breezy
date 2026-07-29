@@ -10,12 +10,9 @@ import com.corwin.system.audit.domain.model.AuditResource;
 import com.corwin.system.audit.published.Audit;
 import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.application.service.ApiAdminService;
-import com.corwin.system.resource.domain.model.Api;
-import com.corwin.system.resource.domain.model.ApiAccessType;
-import com.corwin.system.resource.domain.model.ApiAuditDeclaredStatus;
-import com.corwin.system.resource.domain.model.ApiPermissionDeclaredStatus;
-import com.corwin.system.resource.domain.model.ApiStatus;
+import com.corwin.system.resource.domain.model.*;
 import com.corwin.system.resource.domain.repo.ApiPageQuery;
+import com.corwin.system.resource.interfaces.web.req.UpdateApiSortOptionsReq;
 import com.corwin.system.resource.interfaces.web.res.ApiRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
@@ -44,16 +41,12 @@ public class ApiAdminController {
     @GetMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String module,
-            @RequestParam(required = false) String pathPattern,
-            @RequestParam(required = false) String handlerClass,
+            @RequestParam(required = false) String pathPattern, @RequestParam(required = false) String handlerClass,
             @RequestParam(required = false) String handlerMethod,
             @RequestParam(required = false) String permissionDeclared,
-            @RequestParam(required = false) String accessType,
-            @RequestParam(required = false) String userType,
-            @RequestParam(required = false) String auditDeclared,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "1") Integer pageNo,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(required = false) String accessType, @RequestParam(required = false) String userType,
+            @RequestParam(required = false) String auditDeclared, @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "1") Integer pageNo, @RequestParam(defaultValue = "10") Integer pageSize) {
         PageSpec pageSpec = PageSpec.of(pageNo, pageSize, List.of());
         ApiPageQuery query = new ApiPageQuery(module, pathPattern, handlerClass, handlerMethod,
                 resolvePermissionDeclared(permissionDeclared), resolveAccessType(accessType), resolveUserType(userType),
@@ -75,11 +68,18 @@ public class ApiAdminController {
         return ApiResponse.ok(toDto(apiAdminService.disable(id)));
     }
 
+    @PutMapping("/{id}/sort-options")
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.edit"})
+    @Audit(resource = AuditResource.API, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
+    public ApiResponse<ApiRes> updateSortOptions(@PathVariable Long id, @RequestBody UpdateApiSortOptionsReq req) {
+        return ApiResponse.ok(toDto(apiAdminService.updateSortOptions(id, req.sortOptionsJson())));
+    }
+
     private ApiRes toDto(Api api) {
         return new ApiRes(api.getId(), api.getModule(), api.getProtocol(), api.getHttpMethod(), api.getPathPattern(),
                 api.getHandlerClass(), api.getHandlerMethod(), Boolean.TRUE.equals(api.getPermissionDeclared()),
                 api.getAccessType(), api.getUserType(), Boolean.TRUE.equals(api.getAuditDeclared()),
-                api.getAuditResource(), api.getAuditAction(), api.getAuditDescription(),
+                api.getAuditResource(), api.getAuditAction(), api.getAuditDescription(), api.getSortOptionsJson(),
                 Boolean.TRUE.equals(api.getEnabled()), 0, false);
     }
 

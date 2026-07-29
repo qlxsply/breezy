@@ -2,8 +2,8 @@ package com.corwin.reminder.domain.repo;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.repo.DynamicPageQueryRepository;
 import com.corwin.framework.domain.repo.DomainRepository;
+import com.corwin.framework.domain.repo.DynamicPageQueryRepository;
 import com.corwin.reminder.domain.model.TodoTask;
 import com.corwin.reminder.domain.model.TodoTaskStatus;
 
@@ -14,8 +14,7 @@ import java.util.List;
  *
  * @author Corwin 2026/1/12
  */
-public interface TodoTaskRepository extends DomainRepository<TodoTask, Long>,
-        DynamicPageQueryRepository<TodoTask, TodoTaskPageQuery> {
+public interface TodoTaskRepository extends DomainRepository<TodoTask, Long>, DynamicPageQueryRepository<TodoTask, TodoTaskPageQuery> {
 
     PageData<TodoTask> findByStatusInAndRemindAtLessThanEqual(List<TodoTaskStatus> statuses, Instant now,
             PageSpec spec);

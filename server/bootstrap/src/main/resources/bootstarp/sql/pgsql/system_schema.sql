@@ -81,6 +81,7 @@ create table sys_api
     audit_resource      varchar(128),
     audit_action        varchar(128),
     audit_description   varchar(512),
+    sort_options_json   text,
     enabled             boolean                                 not null,
     system_builtin      boolean                                 not null,
     created_at          timestamp(6)                            not null,
@@ -924,4 +925,3 @@ create index idx_sys_user_feature_override_user_id on sys_user_feature_override 
 create index idx_sys_user_feature_override_application_id on sys_user_feature_override (application_id);
 create index idx_sys_user_feature_override_feature_id on sys_user_feature_override (feature_id);
 create index idx_sys_user_feature_override_type on sys_user_feature_override (override_type);
-

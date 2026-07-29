@@ -5,6 +5,8 @@ import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.system.resource.domain.model.Api;
+import com.corwin.system.resource.domain.model.ApiMethod;
+import com.corwin.system.resource.domain.model.ApiProtocol;
 import com.corwin.system.resource.domain.repo.ApiPageQuery;
 import com.corwin.system.resource.domain.repo.ApiRepository;
 import lombok.RequiredArgsConstructor;
@@ -67,17 +69,23 @@ public class ApiRepositoryJpaAdapter implements ApiRepository {
 
     @Override
     public PageData<Api> page(ApiPageQuery query, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.page(normalizeQuery(query), resolvedSpec);
+        return mybatisMapper.page(normalizeQuery(query), spec);
+    }
+
+    @Override
+    public Optional<Api> findFirstByProtocolAndHttpMethodAndPathPattern(ApiProtocol protocol, ApiMethod httpMethod,
+            String pathPattern) {
+        return repo.findFirstByProtocolAndHttpMethodAndPathPattern(protocol, httpMethod, pathPattern);
     }
 
     private ApiPageQuery normalizeQuery(ApiPageQuery query) {
         if (query == null) {
             return null;
         }
-        return new ApiPageQuery(StrUtil.trimToNull(query.module()), LikePatternUtils.toContainsPattern(query.pathPattern()),
-                LikePatternUtils.toContainsPattern(query.handlerClass()), LikePatternUtils.toContainsPattern(query.handlerMethod()),
-                query.permissionDeclared(), query.accessType(), query.userType(), query.auditDeclared(),
-                query.enabled());
+        return new ApiPageQuery(StrUtil.trimToNull(query.module()),
+                LikePatternUtils.toContainsPattern(query.pathPattern()),
+                LikePatternUtils.toContainsPattern(query.handlerClass()),
+                LikePatternUtils.toContainsPattern(query.handlerMethod()), query.permissionDeclared(),
+                query.accessType(), query.userType(), query.auditDeclared(), query.enabled());
     }
 }

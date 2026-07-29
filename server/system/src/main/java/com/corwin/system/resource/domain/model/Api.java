@@ -79,6 +79,10 @@ public class Api {
     @Column(name = "audit_description", length = 512)
     private String auditDescription;
 
+    @Lob
+    @Column(name = "sort_options_json")
+    private String sortOptionsJson;
+
     @Column(name = "enabled", nullable = false)
     private Boolean enabled;
 
@@ -112,6 +116,7 @@ public class Api {
         this.auditResource = auditResource;
         this.auditAction = auditAction;
         this.auditDescription = auditDescription;
+        this.sortOptionsJson = null;
         this.enabled = true;
         this.systemBuiltin = systemBuiltin;
         this.createdAt = now;
@@ -137,6 +142,11 @@ public class Api {
         this.auditDescription = auditDescription;
         this.systemBuiltin = systemBuiltin;
         this.enabled = enabled;
+        touch();
+    }
+
+    public void updateSortOptions(String sortOptionsJson) {
+        this.sortOptionsJson = sortOptionsJson;
         touch();
     }
 

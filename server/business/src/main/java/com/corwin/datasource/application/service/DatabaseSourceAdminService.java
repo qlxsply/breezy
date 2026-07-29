@@ -18,6 +18,7 @@ import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.util.HighDate;
 import com.corwin.framework.util.StrUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -158,7 +159,7 @@ public class DatabaseSourceAdminService {
 
     public PageData<DatabaseSource> pageDatabaseSources(DatabaseType dbType, String nameLike, PageSpec spec) {
         DatabaseSourcePageQuery query = new DatabaseSourcePageQuery(dbType, StrUtil.trimToNull(nameLike));
-        return databaseSourceRepo.pageByQuery(query, spec);
+        return databaseSourceRepo.pageByQuery(query, PageSpecSorts.apply(spec));
     }
 
     public DatabaseSource getDatabaseSource(Long id) {
@@ -611,7 +612,7 @@ public class DatabaseSourceAdminService {
         }
         DatabaseTablePageQuery query = new DatabaseTablePageQuery(managedDbId, StrUtil.trimToNull(schema),
                 StrUtil.trimToNull(nameLike), StrUtil.trimToNull(tableType));
-        return tableRepo.pageByQuery(query, spec);
+        return tableRepo.pageByQuery(query, PageSpecSorts.apply(spec));
     }
 
     public List<DatabaseTable> listAllTables(Long managedDbId) {
@@ -623,7 +624,8 @@ public class DatabaseSourceAdminService {
     }
 
     public PageData<DatabaseColumn> pageColumns(Long tableId, String nameLike, PageSpec spec) {
-        return columnRepo.findByTableIdAndColumnNameContainingIgnoreCase(tableId, nameLike.trim(), spec);
+        return columnRepo.findByTableIdAndColumnNameContainingIgnoreCase(tableId, StrUtil.trimToNull(nameLike),
+                PageSpecSorts.apply(spec));
     }
 
 }

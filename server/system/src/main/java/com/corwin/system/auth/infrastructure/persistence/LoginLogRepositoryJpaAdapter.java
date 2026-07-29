@@ -58,8 +58,7 @@ public class LoginLogRepositoryJpaAdapter implements LoginLogRepository {
 
     @Override
     public PageData<LoginEvent> pageByQuery(LoginLogPageQuery query, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
+        return mybatisMapper.pageByQuery(normalizeQuery(query), spec);
     }
 
     private LoginLogPageQuery normalizeQuery(LoginLogPageQuery query) {

@@ -2,7 +2,6 @@ package com.corwin.system.user.infrastructure.persistence;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.constant.UserType;
 import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.system.user.domain.model.User;
 import com.corwin.system.user.domain.model.UserStatus;
@@ -65,11 +64,6 @@ public class UserRepositoryJpaAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findFirstByUserType(UserType userType) {
-        return repo.findFirstByUserType(userType);
-    }
-
-    @Override
     public boolean existsByUsername(String userAccount) {
         return repo.existsByUsername(userAccount);
     }
@@ -80,26 +74,8 @@ public class UserRepositoryJpaAdapter implements UserRepository {
     }
 
     @Override
-    public PageData<User> findAll(PageSpec spec) {
-        return mybatisMapper.page(null, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
-    public PageData<User> findByStatus(UserStatus status, PageSpec spec) {
-        return mybatisMapper.page(status, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
-    public PageData<User> findByUsernameContainingIgnoreCase(String username, PageSpec spec) {
-        return mybatisMapper.page(null, LikePatternUtils.toContainsPattern(username),
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
-    public PageData<User> findByStatusAndUsernameContainingIgnoreCase(UserStatus status, String username,
-            PageSpec spec) {
-        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(username),
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
+    public PageData<User> page(UserStatus status, String usernameLike, PageSpec spec) {
+        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(usernameLike), spec);
     }
 
 }

@@ -2,12 +2,11 @@ package com.corwin.system.dict.application.service;
 
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.dict.application.command.CreateDictItemCommand;
 import com.corwin.system.dict.application.command.SaveDictTypeItemCommand;
 import com.corwin.system.dict.application.command.CreateDictTypeCommand;
@@ -64,7 +63,7 @@ public class DictAdminService {
     }
 
     public PageData<DictTypeView> pageTypes(String code, String name, PageSpec spec) {
-        PageData<DictType> page = dictTypeRepository.page(code, name, withDefaultTypeSort(spec));
+        PageData<DictType> page = dictTypeRepository.page(code, name, PageSpecSorts.apply(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(this::toTypeView).toList());
     }
@@ -497,14 +496,6 @@ public class DictAdminService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private PageSpec withDefaultTypeSort(PageSpec spec) {
-        PageSpec resolved = (spec == null) ? PageSpec.of(null, null, List.of()) : spec;
-        if (!resolved.sorts().isEmpty()) {
-            return resolved;
-        }
-        return new PageSpec(resolved.pageNo(), resolved.pageSize(), List.of(new SortSpec("name", SortDirection.ASC)));
     }
 
     private DictTypeView toTypeView(DictType item) {

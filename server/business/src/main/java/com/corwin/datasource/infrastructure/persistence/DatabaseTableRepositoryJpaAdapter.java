@@ -71,8 +71,7 @@ public class DatabaseTableRepositoryJpaAdapter implements DatabaseTableRepositor
         if (query == null || query.databaseId() == null) {
             throw new IllegalArgumentException("databaseId required");
         }
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
+        return mybatisMapper.pageByQuery(normalizeQuery(query), spec);
     }
 
     private DatabaseTablePageQuery normalizeQuery(DatabaseTablePageQuery query) {

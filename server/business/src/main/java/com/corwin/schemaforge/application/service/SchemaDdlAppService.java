@@ -9,6 +9,7 @@ import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.SignUtil;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.web.response.PageResult;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.schemaforge.application.command.CreateSchemaDdlCommand;
 import com.corwin.schemaforge.application.command.UpdateSchemaDdlInfoCommand;
 import com.corwin.schemaforge.domain.model.DatabaseDdl;
@@ -108,7 +109,7 @@ public class SchemaDdlAppService {
 
     public PageResult<SchemaDdlRes> pageQuery(Long managedDatabaseId, String nameLike, PageSpec spec) {
         PageData<SchemaDdlRes> page = schemaDdlMybatisMapper.pageQuery(managedDatabaseId,
-                LikePatternUtils.toContainsPattern(nameLike), PageSpec.withDefaultSort(spec));
+                LikePatternUtils.toContainsPattern(nameLike), PageSpecSorts.apply(spec));
         return PageResult.of(page);
     }
 

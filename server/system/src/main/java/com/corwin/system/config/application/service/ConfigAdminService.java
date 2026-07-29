@@ -42,20 +42,17 @@ public class ConfigAdminService {
         String loweredCodeLike = normalizedCodeLike.toLowerCase();
         String loweredDescriptionLike = normalizedDescriptionLike.toLowerCase();
         return configStore.findAllActive().stream()
-                .filter(item -> normalizedCodeLike.isEmpty()
-                        || item.code().toLowerCase().contains(loweredCodeLike))
-                .filter(item -> normalizedDescriptionLike.isEmpty()
-                        || item.description().toLowerCase().contains(loweredDescriptionLike))
-                .toList();
+                .filter(item -> normalizedCodeLike.isEmpty() || item.code().toLowerCase().contains(loweredCodeLike))
+                .filter(item -> normalizedDescriptionLike.isEmpty() || item.description().toLowerCase()
+                        .contains(loweredDescriptionLike)).toList();
     }
 
     public PageData<StoredConfig> page(String codeLike, String descriptionLike, PageSpec spec) {
-        PageSpec safeSpec = spec == null ? PageSpec.of(1, 20, List.of()) : spec;
         List<StoredConfig> matched = query(codeLike, descriptionLike);
         int total = matched.size();
-        int fromIndex = Math.min(Math.max(0, (safeSpec.pageNo() - 1) * safeSpec.pageSize()), total);
-        int toIndex = Math.min(fromIndex + safeSpec.pageSize(), total);
-        return PageData.of(safeSpec.pageNo(), safeSpec.pageSize(), total, matched.subList(fromIndex, toIndex));
+        int fromIndex = Math.min(Math.max(0, (spec.pageNo() - 1) * spec.pageSize()), total);
+        int toIndex = Math.min(fromIndex + spec.pageSize(), total);
+        return PageData.of(spec.pageNo(), spec.pageSize(), total, matched.subList(fromIndex, toIndex));
     }
 
     @Transactional

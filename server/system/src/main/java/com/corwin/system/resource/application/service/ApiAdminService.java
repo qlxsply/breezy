@@ -4,9 +4,11 @@ import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.resource.domain.model.Api;
 import com.corwin.system.resource.domain.repo.ApiPageQuery;
 import com.corwin.system.resource.domain.repo.ApiRepository;
+import com.corwin.system.resource.infrastructure.sort.ApiSortOptionsParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +24,14 @@ public class ApiAdminService {
 
     private final ApiRepository apiRepository;
     private final ApiPermissionCache apiPermissionCache;
+    private final ApiSortOptionsParser sortOptionsParser;
 
     public List<Api> listAll() {
         return apiRepository.findAll();
     }
 
     public PageData<Api> page(ApiPageQuery query, PageSpec spec) {
-        return apiRepository.page(query, spec);
+        return apiRepository.page(query, PageSpecSorts.apply(spec));
     }
 
     public Api get(Long id) {
@@ -51,5 +54,13 @@ public class ApiAdminService {
         Api saved = apiRepository.save(api);
         apiPermissionCache.clearAll();
         return saved;
+    }
+
+    @Transactional
+    public Api updateSortOptions(Long id, String sortOptionsJson) {
+        Api api = get(id);
+        String normalized = sortOptionsParser.normalize(sortOptionsJson);
+        api.updateSortOptions(normalized);
+        return apiRepository.save(api);
     }
 }

@@ -7,6 +7,7 @@ import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.auth.application.service.InternalPermissionSessionService;
 import com.corwin.system.resource.application.service.ApiPermissionCache;
 import com.corwin.system.role.application.command.CreateRoleCommand;
@@ -41,7 +42,7 @@ public class RoleAdminService {
     }
 
     public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
-        return roleRepository.page(keyword, enabled, spec);
+        return roleRepository.page(keyword, enabled, PageSpecSorts.apply(spec));
     }
 
     public Role get(Long id) {

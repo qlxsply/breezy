@@ -76,7 +76,6 @@ public class RoleRepositoryJpaAdapter implements RoleRepository {
 
     @Override
     public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), enabled, resolvedSpec);
+        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), enabled, spec);
     }
 }

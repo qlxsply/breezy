@@ -56,29 +56,12 @@ public class WebUserRepositoryJpaAdapter implements WebUserRepository {
 
     @Override
     public PageData<WebUser> findAll(PageSpec spec) {
-        return mybatisMapper.page(null, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
+        return mybatisMapper.page(null, null, spec);
     }
 
     @Override
     public PageData<WebUser> page(String keyword, WebUserStatus status, PageSpec spec) {
-        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), status,
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
+        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), status, spec);
     }
 
-    @Override
-    public PageData<WebUser> findByStatus(WebUserStatus status, PageSpec spec) {
-        return mybatisMapper.page(null, status, spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
-    public PageData<WebUser> findByKeyword(String keyword, PageSpec spec) {
-        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), null,
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
-    public PageData<WebUser> findByStatusAndKeyword(WebUserStatus status, String keyword, PageSpec spec) {
-        return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), status,
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
 }

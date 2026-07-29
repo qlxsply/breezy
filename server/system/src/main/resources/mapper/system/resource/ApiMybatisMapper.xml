@@ -17,6 +17,7 @@
         <result column="audit_resource" property="auditResource"/>
         <result column="audit_action" property="auditAction"/>
         <result column="audit_description" property="auditDescription"/>
+        <result column="sort_options_json" property="sortOptionsJson"/>
         <result column="enabled" property="enabled"/>
         <result column="system_builtin" property="systemBuiltin"/>
         <result column="created_at" property="createdAt"/>
@@ -25,7 +26,7 @@
 
     <sql id="ApiColumns">
         id, module, protocol, http_method, path_pattern, handler_class, handler_method, permission_declared,
-        access_type, user_type, audit_declared, audit_resource, audit_action, audit_description, enabled,
+        access_type, user_type, audit_declared, audit_resource, audit_action, audit_description, sort_options_json, enabled,
         system_builtin, created_at, updated_at
     </sql>
 

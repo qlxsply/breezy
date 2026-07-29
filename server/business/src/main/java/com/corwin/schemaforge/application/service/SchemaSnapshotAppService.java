@@ -17,6 +17,7 @@ import com.corwin.framework.mybatis.LikePatternUtils;
 import com.corwin.framework.util.SignUtil;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.web.response.PageResult;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.schemaforge.application.command.CreateSchemaSnapshotCommand;
 import com.corwin.schemaforge.application.command.UpdateSchemaSnapshotInfoCommand;
 import com.corwin.schemaforge.application.model.SnapshotObjectSelection;
@@ -134,7 +135,7 @@ public class SchemaSnapshotAppService {
     }
 
     public PageResult<SchemaSnapshotRes> pageQuery(Long managedDatabaseId, String nameLike, PageSpec spec) {
-        PageSpec spec0 = PageSpec.withDefaultSort(spec);
+        PageSpec spec0 = PageSpecSorts.apply(spec);
         String nameLike0 = LikePatternUtils.toContainsPattern(nameLike);
         PageData<SchemaSnapshotRes> page = schemaSnapshotMybatisMapper.pageQuery(managedDatabaseId, nameLike0, spec0);
         return PageResult.of(page);

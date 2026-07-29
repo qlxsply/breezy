@@ -12,10 +12,7 @@ import com.corwin.reminder.domain.model.ScheduleEventStatus;
  */
 public interface ScheduleEventRepository extends DomainRepository<ScheduleEvent, Long> {
 
-    PageData<ScheduleEvent> findAll(PageSpec spec);
-
     PageData<ScheduleEvent> findByStatus(ScheduleEventStatus status, PageSpec spec);
 
-    PageData<ScheduleEvent> findByStatusAndTitleContainingIgnoreCase(ScheduleEventStatus status, String titleLike,
-            PageSpec spec);
+    PageData<ScheduleEvent> page(ScheduleEventStatus status, String titleLike, PageSpec spec);
 }

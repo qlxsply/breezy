@@ -54,7 +54,6 @@ public class SchedulerJobExecutionRepositoryJpaAdapter implements SchedulerJobEx
 
     @Override
     public PageData<SchedulerJobExecution> pageByJobId(String jobId, PageSpec spec) {
-        PageSpec finalSpec = spec == null ? PageSpec.of(1, 20, List.of()) : spec;
-        return mybatisMapper.pageByJobId(jobId, finalSpec);
+        return mybatisMapper.pageByJobId(jobId, spec);
     }
 }

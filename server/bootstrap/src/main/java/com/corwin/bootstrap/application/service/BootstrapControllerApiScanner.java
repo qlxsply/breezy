@@ -119,12 +119,11 @@ public class BootstrapControllerApiScanner {
                 for (String methodPath : requestMeta.paths()) {
                     String fullPath = combinePath(typePath, methodPath);
                     for (ApiMethod httpMethod : requestMeta.httpMethods()) {
-                        result.add(
-                                new ApiSeed(module, ApiProtocol.HTTP, httpMethod, fullPath, controllerClass.getName(),
-                                        method.getName(), securityMeta.permissionDeclared(), securityMeta.accessType(),
-                                        securityMeta.userType(), securityMeta.permissionCodes(),
-                                        auditMeta.declared(), auditMeta.resource(), auditMeta.action(),
-                                        auditMeta.description()));
+                        result.add(new ApiSeed(module, ApiProtocol.HTTP, httpMethod, fullPath,
+                                controllerClass.getName(), method.getName(), securityMeta.permissionDeclared(),
+                                securityMeta.accessType(), securityMeta.userType(), securityMeta.permissionCodes(),
+                                auditMeta.declared(), auditMeta.resource(), auditMeta.action(), auditMeta.description(),
+                                initialSortOptions(httpMethod, fullPath)));
                     }
                 }
             }
@@ -311,6 +310,71 @@ public class BootstrapControllerApiScanner {
         return combined;
     }
 
+    private String initialSortOptions(ApiMethod httpMethod, String pathPattern) {
+        if (httpMethod == ApiMethod.GET && "/api/notifications".equals(pathPattern)) {
+            return sortOptions("createdAt", "DESC", "createdAt", "created_at", "created_at", "created_at");
+        }
+        if (httpMethod != ApiMethod.POST) {
+            return null;
+        }
+        return switch (pathPattern) {
+            case "/api/apis/page" -> sortOptions(null, null,
+                    "module", "module", "pathPattern", "path_pattern", "handlerClass", "handler_class",
+                    "handlerMethod", "handler_method", "createdAt", "created_at", "created_at", "created_at");
+            case "/api/sys/audit-logs/page" -> sortOptions("createdAt", "DESC",
+                    "createdAt", "created_at", "created_at", "created_at", "startedAt", "started_at",
+                    "endedAt", "ended_at", "durationMs", "duration_ms");
+            case "/api/sys/login-logs/page" -> sortOptions("occurredAt", "DESC",
+                    "occurredAt", "occurred_at", "occurred_at", "occurred_at");
+            case "/api/sys/dicts/types/page" -> sortOptions("name", "ASC",
+                    "name", "name", "code", "code", "createdAt", "created_at");
+            case "/api/users/page" -> sortOptions(null, null,
+                    "username", "username", "createdAt", "created_at", "created_at", "created_at");
+            case "/api/external-users/page" -> sortOptions(null, null,
+                    "createdAt", "created_at", "created_at", "created_at", "displayName", "display_name",
+                    "nickname", "nickname");
+            case "/api/roles/page" -> sortOptions(null, null,
+                    "id", "id", "code", "code", "name", "name", "createdAt", "created_at");
+            case "/api/user-features/applications/page" -> sortOptions(null, null,
+                    "displayOrder", "display_order", "applicationCode", "application_code",
+                    "applicationName", "application_name", "createdAt", "created_at");
+            case "/api/user-features/packages/page" -> sortOptions(null, null,
+                    "displayOrder", "display_order", "packageCode", "package_code", "packageName", "package_name",
+                    "createdAt", "created_at");
+            case "/api/database-sources/page" -> sortOptions(null, null,
+                    "name", "name", "createdAt", "created_at", "created_at", "created_at");
+            case "/api/database-sources/tables/page" -> sortOptions(null, null,
+                    "tableName", "table_name", "table_name", "table_name", "tableSchema", "table_schema");
+            case "/api/database-sources/columns/page" -> sortOptions(null, null,
+                    "columnName", "column_name", "column_name", "column_name", "ordinalPosition", "ordinal_position");
+            case "/api/todo/page" -> sortOptions("sortNo", "ASC",
+                    "sortNo", "sort_no", "createdAt", "created_at", "created_at", "created_at");
+            case "/api/schedule/page" -> sortOptions("startTime", "DESC",
+                    "startTime", "start_time", "endTime", "end_time");
+            case "/api/sf/snapshots/page", "/api/sf/ddls/page" -> sortOptions("createdAt", "DESC",
+                    "createdAt", "created_at", "created_at", "created_at", "name", "name");
+            default -> null;
+        };
+    }
+
+    private String sortOptions(String defaultField, String defaultDirection, String... allowedPairs) {
+        StringBuilder json = new StringBuilder("{\"enabled\":true,\"allowed\":[");
+        for (int i = 0; i < allowedPairs.length; i += 2) {
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append("{\"field\":\"").append(allowedPairs[i]).append("\",\"column\":\"")
+                    .append(allowedPairs[i + 1]).append("\"}");
+        }
+        json.append("],\"defaults\":[");
+        if (defaultField != null && defaultDirection != null) {
+            json.append("{\"field\":\"").append(defaultField).append("\",\"direction\":\"")
+                    .append(defaultDirection).append("\"}");
+        }
+        json.append("]}");
+        return json.toString();
+    }
+
     public record ScanResult(
             List<ApiSeed> apis,
             List<PermissionSeed> permissions
@@ -331,7 +395,8 @@ public class BootstrapControllerApiScanner {
             boolean auditDeclared,
             String auditResource,
             String auditAction,
-            String auditDescription
+            String auditDescription,
+            String sortOptionsJson
     ) {
     }
 

@@ -9,6 +9,7 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.util.HighDate;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
 import com.corwin.system.role.domain.repo.RoleRepository;
 import com.corwin.system.user.application.command.BatchUpdateUserStatusCommand;
@@ -50,19 +51,7 @@ public class UserAdminService {
     }
 
     public PageData<User> page(UserStatus status, String usernameLike, PageSpec spec) {
-        boolean hasAccount = usernameLike != null && !usernameLike.isBlank();
-        String account = hasAccount ? usernameLike.trim() : null;
-
-        if (status != null && hasAccount) {
-            return userRepository.findByStatusAndUsernameContainingIgnoreCase(status, account, spec);
-        }
-        if (status != null) {
-            return userRepository.findByStatus(status, spec);
-        }
-        if (hasAccount) {
-            return userRepository.findByUsernameContainingIgnoreCase(account, spec);
-        }
-        return userRepository.findAll(spec);
+        return userRepository.page(status, usernameLike, PageSpecSorts.apply(spec));
     }
 
     @Transactional
@@ -76,8 +65,8 @@ public class UserAdminService {
         UserStatus status = UserStatus.ENABLED;
         String hash = BCrypt.hashpw(cmd.password(), BCrypt.gensalt());
 
-        User user = new User(UserType.ADMIN, username, nickname, hash, "bcrypt", status, false,
-                HighDate.mockInstant(), operator());
+        User user = new User(UserType.ADMIN, username, nickname, hash, "bcrypt", status, false, HighDate.mockInstant(),
+                operator());
         User saved = userRepository.save(user);
         createUserRoles(saved.getId(), cmd.roleIds());
         return saved;

@@ -59,16 +59,13 @@ public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
 
     @Override
     public PageData<TodoTask> pageByQuery(TodoTaskPageQuery query, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
+        return mybatisMapper.pageByQuery(normalizeQuery(query), spec);
     }
 
     @Override
     public PageData<TodoTask> findByStatusInAndRemindAtLessThanEqual(List<TodoTaskStatus> statuses, Instant now,
             PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.findByStatusInAndRemindAtLessThanEqual(statuses == null ? List.of() : statuses.stream()
-                .filter(Objects::nonNull).toList(), now, resolvedSpec);
+        return mybatisMapper.findByStatusInAndRemindAtLessThanEqual(statuses, now, spec);
     }
 
     @Override
@@ -95,8 +92,8 @@ public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
         if (query == null) {
             return null;
         }
-        List<TodoTaskStatus> statuses = query.statuses() == null ? List.of()
-                : query.statuses().stream().filter(it -> it != null).toList();
+        List<TodoTaskStatus> statuses = query.statuses() == null ? List.of() : query.statuses().stream()
+                .filter(Objects::nonNull).toList();
         return new TodoTaskPageQuery(statuses, LikePatternUtils.toContainsPattern(query.contentLike()));
     }
 }

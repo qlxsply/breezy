@@ -72,6 +72,11 @@
                             <permission code="api.off"/>
                         </permissions>
                     </button>
+                    <button code="api-manage-edit" name="编辑接口" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="api.edit"/>
+                        </permissions>
+                    </button>
                 </buttons>
             </menu>
 

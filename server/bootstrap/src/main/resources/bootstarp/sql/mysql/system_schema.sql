@@ -81,6 +81,7 @@ create table sys_api
     audit_resource      varchar(128),
     audit_action        varchar(128),
     audit_description   varchar(512),
+    sort_options_json   longtext,
     enabled             bit          not null,
     system_builtin      bit          not null,
     created_at          datetime     not null,

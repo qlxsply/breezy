@@ -3,8 +3,7 @@ package com.corwin.system.notify.application.service;
 import com.corwin.framework.constant.UserType;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.framework.domain.page.SortDirection;
-import com.corwin.framework.domain.page.SortSpec;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.notify.application.view.NotificationPullView;
 import com.corwin.system.notify.application.view.NotificationView;
 import com.corwin.system.notify.domain.model.MessageDelivery;
@@ -37,7 +36,7 @@ public class NotificationAppService {
 
     public PageData<NotificationView> page(Long userId, UserType userType, String status, PageSpec spec) {
         NotificationPageQuery query = new NotificationPageQuery(userId, userType, isUnreadStatus(status));
-        PageData<Notification> page = notificationRepository.pageByQuery(query, withDefaultSort(spec));
+        PageData<Notification> page = notificationRepository.pageByQuery(query, PageSpecSorts.apply(spec));
         List<NotificationView> items = page.elements().stream().map(this::toRes).toList();
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), items);
@@ -50,9 +49,8 @@ public class NotificationAppService {
     public NotificationPullView pullUnread(Long userId, UserType userType, long afterMillis, int limit) {
         int safeLimit = Math.clamp(limit, 1, 200);
         Instant after = afterMillis > 0 ? Instant.ofEpochMilli(afterMillis) : Instant.EPOCH;
-        List<Notification> list = notificationRepository
-                .findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(userId, userType, after)
-                .stream().limit(safeLimit).toList();
+        List<Notification> list = notificationRepository.findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+                userId, userType, after).stream().limit(safeLimit).toList();
         long lastPullAt = resolveLastPullAt(afterMillis, list);
         List<NotificationView> items = list.stream().map(this::toRes).toList();
         return new NotificationPullView(items, lastPullAt);
@@ -96,15 +94,6 @@ public class NotificationAppService {
 
     private boolean isUnreadStatus(String status) {
         return status != null && status.equalsIgnoreCase("unread");
-    }
-
-    private PageSpec withDefaultSort(PageSpec spec) {
-        PageSpec resolved = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        if (!resolved.sorts().isEmpty()) {
-            return resolved;
-        }
-        return new PageSpec(resolved.pageNo(), resolved.pageSize(),
-                List.of(new SortSpec("createdAt", SortDirection.DESC)));
     }
 
     private long resolveLastPullAt(long afterMillis, List<Notification> list) {

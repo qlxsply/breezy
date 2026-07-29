@@ -65,8 +65,8 @@ public class DictTypeRepositoryJpaAdapter implements DictTypeRepository {
 
     @Override
     public PageData<DictType> page(String code, String name, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.page(LikePatternUtils.toContainsPattern(code), LikePatternUtils.toContainsPattern(name), resolvedSpec);
+        return mybatisMapper.page(LikePatternUtils.toContainsPattern(code), LikePatternUtils.toContainsPattern(name),
+                spec);
     }
 
     @Override

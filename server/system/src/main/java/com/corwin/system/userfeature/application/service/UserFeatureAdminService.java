@@ -6,6 +6,7 @@ import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.resource.application.service.ApiPermissionCache;
 import com.corwin.system.resource.domain.model.Permission;
 import com.corwin.system.resource.domain.repo.PermissionRepository;
@@ -63,7 +64,8 @@ public class UserFeatureAdminService {
     }
 
     public PageData<UserFeatureApplicationView> pageApplications(String keyword, Boolean enabled, PageSpec spec) {
-        PageData<ProductApplication> page = productApplicationRepository.page(keyword, enabled, spec);
+        PageData<ProductApplication> page = productApplicationRepository.page(keyword, enabled,
+                PageSpecSorts.apply(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(item -> getApplication(item.getId())).toList());
     }
@@ -109,7 +111,8 @@ public class UserFeatureAdminService {
     }
 
     public PageData<UserFeaturePackageView> pagePackages(String keyword, Boolean enabled, PageSpec spec) {
-        PageData<UserApplicationPackage> page = userApplicationPackageRepository.page(keyword, enabled, spec);
+        PageData<UserApplicationPackage> page = userApplicationPackageRepository.page(keyword, enabled,
+                PageSpecSorts.apply(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(item -> getPackage(item.getId())).toList());
     }

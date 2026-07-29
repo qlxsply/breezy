@@ -7,6 +7,7 @@ import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.util.HighDate;
 import com.corwin.framework.util.StrUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.system.audit.application.command.AuditRecordCommand;
 import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditLog;
@@ -80,7 +81,7 @@ public class AuditLogService {
                 StrUtil.trimToNull(operatorUsername), StrUtil.trimToNull(applicationCode),
                 StrUtil.trimToNull(requestUri), StrUtil.trimToNull(auditResource), StrUtil.trimToNull(auditAction),
                 auditLevel, success, startAt, endAt);
-        return auditLogRepository.pageByQuery(query, PageSpec.withDefaultSort(spec));
+        return auditLogRepository.pageByQuery(query, PageSpecSorts.apply(spec));
     }
 
     private void saveSafely(AuditLog auditLog) {

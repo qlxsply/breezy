@@ -7,6 +7,7 @@ import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.sort.PageSpecSorts;
 import com.corwin.reminder.application.command.UpsertScheduleCommand;
 import com.corwin.reminder.application.event.ScheduleReminderChangedEvent;
 import com.corwin.reminder.domain.model.RecurrenceRule;
@@ -63,13 +64,7 @@ public class ScheduleAppService {
     }
 
     public PageData<ScheduleEvent> page(ScheduleEventStatus status, String titleLike, PageSpec spec) {
-        if (status != null && titleLike != null && !titleLike.isBlank()) {
-            return repo.findByStatusAndTitleContainingIgnoreCase(status, titleLike.trim(), spec);
-        }
-        if (status != null) {
-            return repo.findByStatus(status, spec);
-        }
-        return repo.findAll(spec);
+        return repo.page(status, titleLike, PageSpecSorts.apply(spec));
     }
 
     @Transactional

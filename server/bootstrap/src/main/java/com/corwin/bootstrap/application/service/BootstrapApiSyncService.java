@@ -10,8 +10,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,6 +36,9 @@ public class BootstrapApiSyncService {
         Set<String> existingPermissionCodes = BootstrapJdbcTransactionSupport.execute(dataSource,
                 connection -> loadExistingPermissionCodes(connection,
                         sqlTemplateService.load("api_select_permission_codes.sql")));
+        Map<String, String> existingSortOptions = BootstrapJdbcTransactionSupport.execute(dataSource,
+                connection -> loadExistingSortOptions(connection,
+                        sqlTemplateService.load("api_select_sort_options.sql")));
         List<String> createdPermissionCodes = permissions.stream()
                 .map(BootstrapControllerApiScanner.PermissionSeed::code)
                 .filter(code -> !existingPermissionCodes.contains(code)).toList();
@@ -45,7 +50,7 @@ public class BootstrapApiSyncService {
                 executeUpdate(connection, sqlTemplateService.load("api_delete_api_permissions.sql"));
                 executeUpdate(connection, sqlTemplateService.load("api_delete_apis.sql"));
                 batchUpsertPermissions(connection, permissions);
-                batchInsertApis(connection, apis);
+                batchInsertApis(connection, apis, existingSortOptions);
                 batchInsertApiPermissions(connection, apis);
             });
         }
@@ -61,6 +66,17 @@ public class BootstrapApiSyncService {
         try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 result.add(rs.getString(1));
+            }
+        }
+        return result;
+    }
+
+    private Map<String, String> loadExistingSortOptions(Connection connection, String sql) throws SQLException {
+        Map<String, String> result = new HashMap<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String key = apiKey(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
+                result.put(key, rs.getString(5));
             }
         }
         return result;
@@ -83,8 +99,8 @@ public class BootstrapApiSyncService {
         }
     }
 
-    private void batchInsertApis(Connection connection, List<BootstrapControllerApiScanner.ApiSeed> apis) throws
-            SQLException {
+    private void batchInsertApis(Connection connection, List<BootstrapControllerApiScanner.ApiSeed> apis,
+            Map<String, String> existingSortOptions) throws SQLException {
         if (apis.isEmpty()) {
             return;
         }
@@ -104,6 +120,8 @@ public class BootstrapApiSyncService {
                 ps.setString(11, api.auditResource());
                 ps.setString(12, api.auditAction());
                 ps.setString(13, api.auditDescription());
+                ps.setString(14, existingSortOptions.getOrDefault(apiKey(api.module(), api.protocol().name(),
+                        api.httpMethod().name(), api.pathPattern()), api.sortOptionsJson()));
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -132,5 +150,9 @@ public class BootstrapApiSyncService {
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.executeUpdate();
         }
+    }
+
+    private String apiKey(String module, String protocol, String httpMethod, String pathPattern) {
+        return module + "|" + protocol + "|" + httpMethod + "|" + pathPattern;
     }
 }

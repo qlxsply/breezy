@@ -78,8 +78,7 @@ public class DatabaseSourceRepositoryJpaAdapter implements DatabaseSourceReposit
 
     @Override
     public PageData<DatabaseSource> pageByQuery(DatabaseSourcePageQuery query, PageSpec spec) {
-        PageSpec resolvedSpec = spec == null ? PageSpec.of(null, null, List.of()) : spec;
-        return mybatisMapper.pageByQuery(normalizeQuery(query), resolvedSpec);
+        return mybatisMapper.pageByQuery(normalizeQuery(query), spec);
     }
 
     private DatabaseSourcePageQuery normalizeQuery(DatabaseSourcePageQuery query) {

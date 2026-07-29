@@ -24,6 +24,7 @@ public record ApiRes(
         String auditResource,
         String auditAction,
         String auditDescription,
+        String sortOptionsJson,
         boolean enabled,
         int referenceCount,
         boolean referenced

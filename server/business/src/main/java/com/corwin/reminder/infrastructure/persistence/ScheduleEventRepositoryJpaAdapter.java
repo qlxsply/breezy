@@ -55,19 +55,12 @@ public class ScheduleEventRepositoryJpaAdapter implements ScheduleEventRepositor
     }
 
     @Override
-    public PageData<ScheduleEvent> findAll(PageSpec spec) {
-        return mybatisMapper.page(null, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
-    }
-
-    @Override
     public PageData<ScheduleEvent> findByStatus(ScheduleEventStatus status, PageSpec spec) {
-        return mybatisMapper.page(status, null, spec == null ? PageSpec.of(null, null, List.of()) : spec);
+        return mybatisMapper.page(status, null, spec);
     }
 
     @Override
-    public PageData<ScheduleEvent> findByStatusAndTitleContainingIgnoreCase(ScheduleEventStatus status,
-            String titleLike, PageSpec spec) {
-        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(titleLike),
-                spec == null ? PageSpec.of(null, null, List.of()) : spec);
+    public PageData<ScheduleEvent> page(ScheduleEventStatus status, String titleLike, PageSpec spec) {
+        return mybatisMapper.page(status, LikePatternUtils.toContainsPattern(titleLike), spec);
     }
 }

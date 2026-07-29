@@ -29,16 +29,16 @@ public record PageSpec(
         return new PageSpec(resolvedPageNo, resolvedPageSize, sorts);
     }
 
-    public static PageSpec withDefaultSort(PageSpec spec) {
-        if (spec == null) {
-            return PageSpec.of(null, null, List.of(new SortSpec("created_at", SortDirection.DESC)));
-        }
-        if (spec.sorts().isEmpty()) {
-            int pageNo0 = spec.pageNo();
-            int pageSize0 = spec.pageSize();
-            return new PageSpec(pageNo0, pageSize0, List.of(new SortSpec("created_at", SortDirection.DESC)));
-        }
-        return spec;
+    public static PageSpec ensure(PageSpec spec) {
+        return spec == null ? PageSpec.of(null, null, List.of()) : spec;
+    }
+
+    public PageSpec withSorts(List<SortSpec> sorts) {
+        return new PageSpec(pageNo, pageSize, sorts);
+    }
+
+    public PageSpec clearSorts() {
+        return withSorts(List.of());
     }
 
 }
