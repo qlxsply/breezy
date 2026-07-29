@@ -103,8 +103,8 @@ public class SchemaForgeController {
         return ApiResponse.ok();
     }
 
-    @GetMapping("/diff")
-    public ApiResponse<DiffResultRes> diff(@ModelAttribute SchemaDiffQueryReq req) {
+    @PostMapping("/diff")
+    public ApiResponse<DiffResultRes> diff(@RequestBody SchemaDiffQueryReq req) {
         DiffResultView view = schemaDiffAppService.compare(req.getRefDbId(), req.getTargetDbId());
         return ApiResponse.ok(
                 new DiffResultRes(view.addedCount(), view.removedCount(), view.changedCount(), view.changeLogXml(),

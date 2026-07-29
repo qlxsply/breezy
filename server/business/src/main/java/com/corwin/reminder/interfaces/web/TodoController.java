@@ -71,11 +71,11 @@ public class TodoController {
         return ApiResponse.ok();
     }
 
-    @GetMapping("/stats/daily")
-    public ApiResponse<List<TodoDailyStatsRes>> dailyStats(@RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+    @PostMapping("/stats/daily")
+    public ApiResponse<List<TodoDailyStatsRes>> dailyStats(@RequestBody TodoDailyStatsReq req) {
         return ApiResponse.ok(
-                service.dailyStats(startDate, endDate).stream().map(TodoController::toDailyStatsRes).toList());
+                service.dailyStats(req.startDate(), req.endDate()).stream().map(TodoController::toDailyStatsRes)
+                        .toList());
     }
 
     @GetMapping("/stats/daily/{date}")

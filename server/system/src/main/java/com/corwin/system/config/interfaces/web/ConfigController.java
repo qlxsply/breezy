@@ -2,11 +2,11 @@ package com.corwin.system.config.interfaces.web;
 
 import com.corwin.framework.config.StoredConfig;
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.audit.domain.model.AuditAction;
@@ -19,6 +19,7 @@ import com.corwin.system.config.application.service.ConfigAdminService;
 import com.corwin.system.config.application.view.ConfigClientIpPreviewView;
 import com.corwin.system.config.application.view.ConfigTimeOffsetPreviewView;
 import com.corwin.system.config.interfaces.web.req.ConfigClientIpPreviewReq;
+import com.corwin.system.config.interfaces.web.req.ConfigPageReq;
 import com.corwin.system.config.interfaces.web.req.ConfigTimeOffsetPreviewReq;
 import com.corwin.system.config.interfaces.web.req.UpdateConfigReq;
 import com.corwin.system.config.interfaces.web.res.ConfigClientIpPreviewRes;
@@ -33,8 +34,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * @author Corwin 2026/5/5
  */
@@ -47,13 +46,10 @@ public class ConfigController {
     private final ConfigAdminService appService;
     private final NotificationDispatcher notificationDispatcher;
 
-    @GetMapping
+    @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
-    public ApiResponse<PageResult<ConfigRes>> list(@RequestParam(required = false) String codeLike,
-            @RequestParam(required = false) String descriptionLike,
-            @RequestParam(defaultValue = "1") Integer pageNo,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        var page = appService.page(codeLike, descriptionLike, PageSpec.of(pageNo, pageSize, List.of()));
+    public ApiResponse<PageResult<ConfigRes>> list(@RequestBody ConfigPageReq req) {
+        var page = appService.page(req.codeLike(), req.descriptionLike(), PageSpecFactory.of(req.page(), null));
         return ApiResponse.ok(PageResult.of(page, this::toRes));
     }
 
@@ -103,8 +99,8 @@ public class ConfigController {
     }
 
     private ConfigRes toRes(StoredConfig config) {
-        return new ConfigRes(config.code(), config.scope(), config.description(), config.valueType(),
-                config.value(), config.level(), config.personalized());
+        return new ConfigRes(config.code(), config.scope(), config.description(), config.valueType(), config.value(),
+                config.level(), config.personalized());
     }
 
     private ConfigClientIpPreviewRes toClientIpPreviewRes(ConfigClientIpPreviewView view) {

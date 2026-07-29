@@ -1,7 +1,7 @@
 package com.corwin.system.user.interfaces.web;
 
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.auth.application.service.LoginLogService;
@@ -13,13 +13,12 @@ import com.corwin.system.user.application.command.UpdateAdminProfileCommand;
 import com.corwin.system.user.application.service.AdminProfileAppService;
 import com.corwin.system.user.application.view.AdminProfileLoginActivityView;
 import com.corwin.system.user.application.view.AdminProfileView;
+import com.corwin.system.user.interfaces.web.req.AdminProfileLoginActivityPageReq;
 import com.corwin.system.user.interfaces.web.req.UpdateAdminProfileReq;
 import com.corwin.system.user.interfaces.web.res.AdminProfileLoginActivityRes;
 import com.corwin.system.user.interfaces.web.res.AdminProfileRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * @author Corwin 2026/6/4
@@ -39,12 +38,12 @@ public class AdminProfileController {
         return ApiResponse.ok(toRes(adminProfileAppService.currentProfile()));
     }
 
-    @GetMapping("/login-activities")
+    @PostMapping("/login-activities")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<PageResult<AdminProfileLoginActivityRes>> pageLoginActivities(
-            @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestBody AdminProfileLoginActivityPageReq req) {
         String username = adminProfileAppService.currentUsername();
-        var page = loginLogService.pageOwnLoginActivities(username, new PageSpec(pageNo, pageSize, List.of()));
+        var page = loginLogService.pageOwnLoginActivities(username, PageSpecFactory.of(req.page(), null));
         return ApiResponse.ok(PageResult.of(page, AdminProfileController::toActivityRes));
     }
 

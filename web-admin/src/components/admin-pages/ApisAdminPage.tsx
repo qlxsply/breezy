@@ -1,6 +1,6 @@
 "use client";
 
-import { disableApi, pageApis, publishApi } from "@admin/api/apis";
+import { disableApi, getApi, pageApis, publishApi, updateApiSortOptions } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
@@ -10,16 +10,20 @@ import { ApiTable } from "@admin/components/apis-admin/ApiTable";
 import {
   BzButton,
   BzFormItem,
+  BzIconActionButton,
   BzInput,
   BzOption,
   BzPagination,
   BzSelect,
+  BzSwitch,
+  BzTag,
 } from "@admin/components/bz";
+import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type DragEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 
 const API_DICT_CODES = [
   "API_METHOD",
@@ -30,6 +34,34 @@ const API_DICT_CODES = [
   "API_PERMISSION_DECLARED",
   "API_AUDIT_DECLARED",
 ] as const;
+
+interface ApiSortAllowedField {
+  field: string;
+  column: string;
+}
+
+interface ApiDefaultSort {
+  field: string;
+  direction: "ASC" | "DESC";
+}
+
+interface ApiSortOptions {
+  enabled: boolean;
+  allowed: ApiSortAllowedField[];
+  defaults: ApiDefaultSort[];
+}
+
+interface ApiSortAllowedDraft extends ApiSortAllowedField {
+  uid: string;
+}
+
+interface ApiDefaultSortDraft extends ApiDefaultSort {
+  uid: string;
+}
+
+type SortDraftType = "allowed" | "defaults";
+
+let sortUidSeed = 0;
 
 export function ApisAdminPage() {
   const [loading, setLoading] = useState(false);
@@ -73,9 +105,23 @@ export function ApisAdminPage() {
   const [auditDeclaredLabelMap, setAuditDeclaredLabelMap] = useState<Record<string, string>>({});
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<ApiEntry | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [maintainOpen, setMaintainOpen] = useState(false);
+  const [maintainItem, setMaintainItem] = useState<ApiEntry | null>(null);
+  const [maintainLoading, setMaintainLoading] = useState(false);
+  const [sortSaving, setSortSaving] = useState(false);
+  const [sortEnabled, setSortEnabled] = useState(false);
+  const [allowedSortDrafts, setAllowedSortDrafts] = useState<ApiSortAllowedDraft[]>([]);
+  const [defaultSortDrafts, setDefaultSortDrafts] = useState<ApiDefaultSortDraft[]>([]);
+  const [disabledSortCache, setDisabledSortCache] = useState<{
+    allowed: ApiSortAllowedDraft[];
+    defaults: ApiDefaultSortDraft[];
+  } | null>(null);
+  const [dragState, setDragState] = useState<{ type: SortDraftType; index: number } | null>(null);
 
   const canPublish = hasResourceCodeAccess("api-manage-publish");
   const canDisable = hasResourceCodeAccess("api-manage-disable");
+  const canMaintain = hasResourceCodeAccess("api-manage-edit");
   const pageSizeOptions = [10, 20, 30, 50, 100, 200];
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
@@ -129,6 +175,11 @@ export function ApisAdminPage() {
         (item) => item.value === "ACTIVE" || item.value === "DISABLED",
       ),
     [statusLabelMap],
+  );
+
+  const detailSortOptions = useMemo(
+    () => parseSortOptions(detailItem?.sortOptionsJson),
+    [detailItem?.sortOptionsJson],
   );
 
   async function loadDictionaries() {
@@ -212,6 +263,332 @@ export function ApisAdminPage() {
     setAppliedAuditDeclared("");
     setAppliedStatus("");
     setPageNo(1);
+  }
+
+  function renderBasicSection(api: ApiEntry, ariaLabel: string) {
+    return (
+      <section className="role-manage-section">
+        <div className="role-manage-section__head">
+          <div className="role-manage-section__title">基础信息</div>
+        </div>
+        <div className="role-info-table-wrap">
+          <table
+            className="role-info-table"
+            aria-label={ariaLabel}
+          >
+            <tbody>
+              <tr>
+                <th>模块</th>
+                <td>{api.module || "-"}</td>
+                <th>协议</th>
+                <td>{api.protocolLabel || api.protocol || "-"}</td>
+                <th>方法</th>
+                <td>{api.httpMethodLabel || api.httpMethod || "-"}</td>
+              </tr>
+              <tr>
+                <th>访问类型</th>
+                <td>{api.accessTypeLabel || api.accessType || "-"}</td>
+                <th>用户类型</th>
+                <td>{api.userTypeLabel || api.userType || "-"}</td>
+                <th>接口状态</th>
+                <td>{api.enabled ? "启用" : "停用"}</td>
+              </tr>
+              <tr>
+                <th>路径</th>
+                <td colSpan={5}>{api.pathPattern || "-"}</td>
+              </tr>
+              <tr>
+                <th>处理类</th>
+                <td colSpan={5}>{api.handlerClass || "-"}</td>
+              </tr>
+              <tr>
+                <th>处理方法</th>
+                <td colSpan={5}>{api.handlerMethod || "-"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    );
+  }
+
+  function renderAuditSection(api: ApiEntry, ariaLabel: string) {
+    return (
+      <section className="role-manage-section">
+        <div className="role-manage-section__head">
+          <div className="role-manage-section__title">权限与审计</div>
+        </div>
+        <div className="role-info-table-wrap">
+          <table
+            className="role-info-table"
+            aria-label={ariaLabel}
+          >
+            <tbody>
+              <tr>
+                <th>权限声明</th>
+                <td>{api.permissionDeclared ? "已声明" : "未声明"}</td>
+                <th>审计状态</th>
+                <td>{api.auditDeclared ? "已开启" : "未开启"}</td>
+                <th>审计资源</th>
+                <td>{api.auditResource || "-"}</td>
+              </tr>
+              <tr>
+                <th>审计动作</th>
+                <td colSpan={5}>{api.auditAction || "-"}</td>
+              </tr>
+              <tr>
+                <th>审计说明</th>
+                <td colSpan={5}>{api.auditDescription || "-"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    );
+  }
+
+  function renderSortDetailSection(options: ApiSortOptions) {
+    return (
+      <section className="role-manage-section">
+        <div className="role-manage-section__head">
+          <div className="role-manage-section__title">排序规则</div>
+          <BzTag
+            size="small"
+            type={options.enabled ? "success" : "info"}
+          >
+            {options.enabled ? "已开启" : "未开启"}
+          </BzTag>
+        </div>
+        {options.enabled ? (
+          <>
+            {renderAllowedSortTable(options.allowed)}
+            {renderDefaultSortTable(options.defaults)}
+          </>
+        ) : null}
+      </section>
+    );
+  }
+
+  function renderSortEditorSection() {
+    return (
+      <section className="role-manage-section">
+        <div className="role-manage-section__head">
+          <div className="role-manage-section__title">排序规则</div>
+          <div className="api-sort-switch-line">
+            <BzSwitch
+              modelValue={sortEnabled}
+              onValueChange={toggleSortEnabled}
+            />
+            <span className="api-sort-switch-label">{sortEnabled ? "已开启" : "未开启"}</span>
+          </div>
+        </div>
+        {sortEnabled ? (
+          <>
+            {renderAllowedEditor()}
+            {renderDefaultEditor()}
+          </>
+        ) : null}
+      </section>
+    );
+  }
+
+  function renderAllowedEditor() {
+    return (
+      <SortRuleEditTable
+        title="候选排序字段"
+        addTitle="添加字段"
+        emptyText="暂无候选字段"
+        rowCount={allowedSortDrafts.length}
+        dragType="allowed"
+        headers={["请求字段 field", "数据库列 column"]}
+        getRowKey={(index) => allowedSortDrafts[index].uid}
+        onAdd={addAllowedSortField}
+        onRemove={removeAllowedSortField}
+        onDragStart={(index) => setDragState({ type: "allowed", index })}
+        onDragEnd={() => setDragState(null)}
+        onDragOver={handleSortDragOver}
+        renderRow={(index) => {
+          const item = allowedSortDrafts[index];
+          return [
+            <input
+              className="api-sort-input"
+              key="field"
+              value={item.field}
+              placeholder="createdAt"
+              onChange={(event) => updateAllowedField(index, event.target.value)}
+            />,
+            <input
+              className="api-sort-input is-code"
+              key="column"
+              value={item.column}
+              placeholder="created_at"
+              onChange={(event) => updateAllowedColumn(index, event.target.value)}
+            />,
+          ];
+        }}
+      />
+    );
+  }
+
+  function renderDefaultEditor() {
+    return (
+      <SortRuleEditTable
+        title="默认排序规则"
+        addTitle="添加规则"
+        emptyText="暂无默认排序规则"
+        rowCount={defaultSortDrafts.length}
+        dragType="defaults"
+        headers={["请求字段 field", "排序方向"]}
+        getRowKey={(index) => defaultSortDrafts[index].uid}
+        addDisabled={!canAddDefaultSort()}
+        onAdd={addDefaultSortRule}
+        onRemove={removeDefaultSortRule}
+        onDragStart={(index) => setDragState({ type: "defaults", index })}
+        onDragEnd={() => setDragState(null)}
+        onDragOver={handleSortDragOver}
+        renderRow={(index) => {
+          const item = defaultSortDrafts[index];
+          return [
+            <select
+              className="api-sort-input is-code"
+              key="field"
+              value={item.field}
+              onChange={(event) => updateDefaultSortField(index, event.target.value)}
+            >
+              {allowedSortDrafts
+                .filter((field) => field.field.trim())
+                .map((field) => (
+                  <option
+                    key={field.uid}
+                    value={field.field}
+                  >
+                    {field.field}
+                  </option>
+                ))}
+            </select>,
+            <div
+              className="api-sort-direction-group"
+              key="direction"
+            >
+              <button
+                className={`api-sort-direction-btn${item.direction === "ASC" ? " is-active" : ""}`}
+                type="button"
+                aria-pressed={item.direction === "ASC"}
+                onClick={() => updateDefaultSortDirection(index, "ASC")}
+              >
+                ↑
+              </button>
+              <button
+                className={`api-sort-direction-btn${item.direction === "DESC" ? " is-active" : ""}`}
+                type="button"
+                aria-pressed={item.direction === "DESC"}
+                onClick={() => updateDefaultSortDirection(index, "DESC")}
+              >
+                ↓
+              </button>
+            </div>,
+          ];
+        }}
+      />
+    );
+  }
+
+  function toggleSortEnabled(nextEnabled: boolean) {
+    setSortEnabled(nextEnabled);
+    if (!nextEnabled) {
+      setDisabledSortCache({
+        allowed: allowedSortDrafts,
+        defaults: defaultSortDrafts,
+      });
+      setAllowedSortDrafts([]);
+      setDefaultSortDrafts([]);
+      return;
+    }
+    if (disabledSortCache) {
+      setAllowedSortDrafts(disabledSortCache.allowed);
+      setDefaultSortDrafts(disabledSortCache.defaults);
+      setDisabledSortCache(null);
+    }
+  }
+
+  function addAllowedSortField() {
+    setAllowedSortDrafts((items) => [...items, { uid: nextSortUid(), field: "", column: "" }]);
+  }
+
+  function updateAllowedField(index: number, value: string) {
+    setAllowedSortDrafts((items) => {
+      const oldField = items[index]?.field;
+      const nextField = value.trim();
+      const next = items.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, field: nextField } : item,
+      );
+      if (oldField !== undefined) {
+        setDefaultSortDrafts((rules) =>
+          rules.map((rule) => (rule.field === oldField ? { ...rule, field: nextField } : rule)),
+        );
+      }
+      return next;
+    });
+  }
+
+  function updateAllowedColumn(index: number, value: string) {
+    setAllowedSortDrafts((items) =>
+      items.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, column: value.trim() } : item,
+      ),
+    );
+  }
+
+  function removeAllowedSortField(index: number) {
+    const removedField = allowedSortDrafts[index]?.field;
+    setAllowedSortDrafts((items) => items.filter((_, itemIndex) => itemIndex !== index));
+    setDefaultSortDrafts((items) => items.filter((item) => item.field !== removedField));
+  }
+
+  function canAddDefaultSort() {
+    const used = new Set(defaultSortDrafts.map((item) => item.field));
+    return allowedSortDrafts.some((item) => item.field.trim() && !used.has(item.field));
+  }
+
+  function addDefaultSortRule() {
+    const used = new Set(defaultSortDrafts.map((item) => item.field));
+    const candidate = allowedSortDrafts.find((item) => item.field.trim() && !used.has(item.field));
+    if (!candidate) return;
+    setDefaultSortDrafts((items) => [
+      ...items,
+      { uid: nextSortUid(), field: candidate.field, direction: "ASC" },
+    ]);
+  }
+
+  function updateDefaultSortField(index: number, field: string) {
+    setDefaultSortDrafts((items) =>
+      items.map((item, itemIndex) => (itemIndex === index ? { ...item, field } : item)),
+    );
+  }
+
+  function updateDefaultSortDirection(index: number, direction: "ASC" | "DESC") {
+    setDefaultSortDrafts((items) =>
+      items.map((item, itemIndex) => (itemIndex === index ? { ...item, direction } : item)),
+    );
+  }
+
+  function removeDefaultSortRule(index: number) {
+    setDefaultSortDrafts((items) => items.filter((_, itemIndex) => itemIndex !== index));
+  }
+
+  function handleSortDragOver(
+    event: DragEvent<HTMLDivElement>,
+    type: SortDraftType,
+    targetIndex: number,
+  ) {
+    if (!dragState || dragState.type !== type || dragState.index === targetIndex) return;
+    event.preventDefault();
+    if (type === "allowed") {
+      setAllowedSortDrafts((items) => moveSortItem(items, dragState.index, targetIndex));
+    } else {
+      setDefaultSortDrafts((items) => moveSortItem(items, dragState.index, targetIndex));
+    }
+    setDragState({ type, index: targetIndex });
   }
 
   return (
@@ -423,12 +800,11 @@ export function ApisAdminPage() {
             rows={enrichedRows}
             loading={loading}
             canDetail
+            canMaintain={canMaintain}
             canPublish={canPublish}
             canDisable={canDisable}
-            onDetail={(api) => {
-              setDetailItem(api);
-              setDetailOpen(true);
-            }}
+            onDetail={(api) => void openDetail(api)}
+            onMaintain={(api) => void openMaintain(api)}
             onPublish={(api) => void onPublish(api)}
             onDisable={(api) => void onDisable(api)}
           />
@@ -455,10 +831,12 @@ export function ApisAdminPage() {
           ) : null
         }
         overlays={
-          <AdminEntityDrawer
+          <>
+            <AdminEntityDrawer
             open={detailOpen}
             title="接口详情"
             width="1180px"
+            loading={detailLoading}
             className="role-manage-drawer"
             onClose={() => {
               setDetailOpen(false);
@@ -477,82 +855,49 @@ export function ApisAdminPage() {
           >
             {detailItem ? (
               <div className="role-manage-shell">
-                <section className="role-manage-section">
-                  <div className="role-manage-section__head">
-                    <div className="role-manage-section__title">基础信息</div>
-                  </div>
-                  <div className="role-info-table-wrap">
-                    <table
-                      className="role-info-table"
-                      aria-label="接口基础信息"
-                    >
-                      <tbody>
-                        <tr>
-                          <th>模块</th>
-                          <td>{detailItem.module || "-"}</td>
-                          <th>协议</th>
-                          <td>{detailItem.protocolLabel || detailItem.protocol || "-"}</td>
-                          <th>方法</th>
-                          <td>{detailItem.httpMethodLabel || detailItem.httpMethod || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>访问类型</th>
-                          <td>{detailItem.accessTypeLabel || detailItem.accessType || "-"}</td>
-                          <th>用户类型</th>
-                          <td>{detailItem.userTypeLabel || detailItem.userType || "-"}</td>
-                          <th>接口状态</th>
-                          <td>{detailItem.enabled ? "启用" : "停用"}</td>
-                        </tr>
-                        <tr>
-                          <th>路径</th>
-                          <td colSpan={5}>{detailItem.pathPattern || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>处理类</th>
-                          <td colSpan={5}>{detailItem.handlerClass || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>处理方法</th>
-                          <td colSpan={5}>{detailItem.handlerMethod || "-"}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-
-                <section className="role-manage-section">
-                  <div className="role-manage-section__head">
-                    <div className="role-manage-section__title">权限与审计</div>
-                  </div>
-                  <div className="role-info-table-wrap">
-                    <table
-                      className="role-info-table"
-                      aria-label="接口权限与审计"
-                    >
-                      <tbody>
-                        <tr>
-                          <th>权限声明</th>
-                          <td>{detailItem.permissionDeclared ? "已声明" : "未声明"}</td>
-                          <th>审计状态</th>
-                          <td>{detailItem.auditDeclared ? "已开启" : "未开启"}</td>
-                          <th>审计资源</th>
-                          <td>{detailItem.auditResource || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>审计动作</th>
-                          <td colSpan={5}>{detailItem.auditAction || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>审计说明</th>
-                          <td colSpan={5}>{detailItem.auditDescription || "-"}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
+                {renderBasicSection(detailItem, "接口基础信息")}
+                {renderAuditSection(detailItem, "接口权限与审计")}
+                {renderSortDetailSection(detailSortOptions)}
               </div>
             ) : null}
-          </AdminEntityDrawer>
+            </AdminEntityDrawer>
+            <AdminEntityDrawer
+            open={maintainOpen}
+            title="接口维护"
+            width="980px"
+            loading={maintainLoading}
+            className="role-manage-drawer"
+            onClose={() => {
+              if (sortSaving) return;
+              closeMaintain();
+            }}
+            footer={
+              <>
+                <BzButton
+                  disabled={sortSaving}
+                  onClick={closeMaintain}
+                >
+                  取消
+                </BzButton>
+                <BzButton
+                  buttonType="primary"
+                  loading={sortSaving}
+                  onClick={() => void saveSortOptions()}
+                >
+                  保存
+                </BzButton>
+              </>
+            }
+          >
+            {maintainItem ? (
+              <div className="role-manage-shell">
+                {renderBasicSection(maintainItem, "维护排序规则基础信息")}
+                {renderAuditSection(maintainItem, "维护排序规则权限与审计")}
+                {renderSortEditorSection()}
+              </div>
+            ) : null}
+            </AdminEntityDrawer>
+          </>
         }
       />
     </>
@@ -569,6 +914,262 @@ export function ApisAdminPage() {
     await disableApi(api.id);
     await reload();
   }
+
+  function enrichApi(api: ApiEntry): ApiEntry {
+    return {
+      ...api,
+      protocolLabel: protocolLabelMap[api.protocol] || api.protocol,
+      httpMethodLabel: methodLabelMap[api.httpMethod] || api.httpMethod,
+      accessTypeLabel: accessTypeLabelMap[api.accessType] || api.accessType,
+      userTypeLabel: resolveUserTypeLabel(api.userType, userTypeLabelMap),
+      auditTooltip: buildAuditTooltip(api),
+    };
+  }
+
+  async function openDetail(api: ApiEntry) {
+    setDetailOpen(true);
+    setDetailItem(api);
+    setDetailLoading(true);
+    try {
+      setDetailItem(enrichApi(await getApi(api.id)));
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function openMaintain(api: ApiEntry) {
+    if (!canMaintain) return;
+    setMaintainOpen(true);
+    setMaintainItem(api);
+    setMaintainLoading(true);
+    try {
+      const detail = enrichApi(await getApi(api.id));
+      setMaintainItem(detail);
+      fillSortForm(detail.sortOptionsJson);
+    } finally {
+      setMaintainLoading(false);
+    }
+  }
+
+  function fillSortForm(sortOptionsJson?: string) {
+    const options = parseSortOptions(sortOptionsJson);
+    setSortEnabled(options.enabled);
+    setAllowedSortDrafts(toAllowedDrafts(options.allowed));
+    setDefaultSortDrafts(toDefaultDrafts(options.defaults));
+    setDisabledSortCache(null);
+  }
+
+  function closeMaintain() {
+    setMaintainOpen(false);
+    setMaintainItem(null);
+    setMaintainLoading(false);
+    setSortEnabled(false);
+    setAllowedSortDrafts([]);
+    setDefaultSortDrafts([]);
+    setDisabledSortCache(null);
+    setDragState(null);
+  }
+
+  async function saveSortOptions() {
+    if (!maintainItem) return;
+    let sortOptionsJson: string;
+    try {
+      sortOptionsJson = buildSortOptionsJson(sortEnabled, allowedSortDrafts, defaultSortDrafts);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "排序规则格式错误");
+      return;
+    }
+
+    setSortSaving(true);
+    try {
+      const updated = enrichApi(await updateApiSortOptions(maintainItem.id, sortOptionsJson));
+      setMaintainItem(updated);
+      setDetailItem((current) => (current?.id === updated.id ? updated : current));
+      message.success("保存成功");
+      closeMaintain();
+      await reload();
+    } finally {
+      setSortSaving(false);
+    }
+  }
+}
+
+interface SortRuleEditTableProps {
+  title: string;
+  addTitle: string;
+  emptyText: string;
+  rowCount: number;
+  dragType: SortDraftType;
+  headers: string[];
+  columnWidths?: Array<number | string>;
+  addDisabled?: boolean;
+  getRowKey: (index: number) => string;
+  renderRow: (index: number) => ReactNode[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onDragStart: (index: number) => void;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent<HTMLDivElement>, type: SortDraftType, targetIndex: number) => void;
+}
+
+interface SortRuleViewTableProps {
+  title: string;
+  headers: string[];
+  emptyText: string;
+  rows: Array<{
+    key: string;
+    cells: ReactNode[];
+  }>;
+}
+
+function SortRuleViewTable({ title, headers, emptyText, rows }: SortRuleViewTableProps) {
+  return (
+    <div className="api-sort-table-panel">
+      <div className="api-sort-table-panel__title-row">
+        <div className="api-sort-table-panel__title">{title}</div>
+      </div>
+      <table className="api-sort-data-table">
+        <thead>
+          <tr>
+            {headers.map((header) => (
+              <th key={header}>{header}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td
+                className="api-sort-empty-row"
+                colSpan={headers.length}
+              >
+                {emptyText}
+              </td>
+            </tr>
+          ) : (
+            rows.map((row) => (
+              <tr key={row.key}>
+                {row.cells.map((cell, index) => (
+                  <td
+                    className={typeof cell === "string" ? "is-code" : undefined}
+                    key={index}
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function SortRuleEditTable({
+  title,
+  addTitle,
+  emptyText,
+  rowCount,
+  dragType,
+  headers,
+  columnWidths,
+  addDisabled = false,
+  getRowKey,
+  renderRow,
+  onAdd,
+  onRemove,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+}: SortRuleEditTableProps) {
+  const contentColumns = resolveSortTableColumns(headers.length, columnWidths);
+  const rowStyle = {
+    "--api-sort-columns": contentColumns,
+  } as CSSProperties;
+
+  return (
+    <div className="api-sort-table-panel api-sort-edit-table">
+      <div className="api-sort-table-panel__title-row">
+        <div className="api-sort-table-panel__title">{title}</div>
+      </div>
+      <div className="api-sort-edit-table__grid">
+        <div
+          className="api-sort-edit-table__head"
+          style={rowStyle}
+        >
+          <div />
+          {headers.map((header) => (
+            <div key={header}>{header}</div>
+          ))}
+          <div className="api-sort-table-panel__add-action">
+            <BzIconActionButton
+              icon="plus"
+              tone="primary"
+              size={28}
+              disabled={addDisabled}
+              title={addTitle}
+              ariaLabel={addTitle}
+              onClick={onAdd}
+            />
+          </div>
+        </div>
+        {rowCount === 0 ? (
+          <div className="api-sort-empty-row">{emptyText}</div>
+        ) : (
+          Array.from({ length: rowCount }).map((_, index) => (
+            <div
+              className="api-sort-edit-table__row"
+              key={getRowKey(index)}
+              style={rowStyle}
+              onDragOver={(event) => onDragOver(event, dragType, index)}
+              onDrop={(event) => event.preventDefault()}
+            >
+              <div className="api-sort-drag-cell">
+                <button
+                  className="api-sort-drag-handle"
+                  type="button"
+                  draggable
+                  aria-label="拖动排序"
+                  onDragStart={() => onDragStart(index)}
+                  onDragEnd={onDragEnd}
+                >
+                  ⋮⋮
+                </button>
+              </div>
+              {renderRow(index).map((cell, cellIndex) => (
+                <div
+                  className="api-sort-edit-table__cell"
+                  key={cellIndex}
+                >
+                  {cell}
+                </div>
+              ))}
+              <div className="api-sort-row-actions">
+                <BzIconActionButton
+                  icon="minus"
+                  tone="danger"
+                  size={28}
+                  title="删除"
+                  ariaLabel="删除"
+                  onClick={() => onRemove(index)}
+                />
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function resolveSortTableColumns(count: number, widths?: Array<number | string>): string {
+  if (!widths || widths.length !== count) {
+    return `repeat(${count}, minmax(0, 1fr))`;
+  }
+  return widths
+    .map((width) => (typeof width === "number" ? `${width}px` : width.trim() || "minmax(0, 1fr)"))
+    .join(" ");
 }
 
 function toLabelMap(items?: DictItem[]): Record<string, string> {
@@ -598,4 +1199,158 @@ function buildAuditTooltip(api: ApiEntry): string {
     api.auditDescription ? `审计描述：${api.auditDescription}` : "",
   ].filter(Boolean);
   return lines.join("\n");
+}
+
+function parseSortOptions(json?: string): ApiSortOptions {
+  const fallback: ApiSortOptions = { enabled: false, allowed: [], defaults: [] };
+  const normalized = json?.trim();
+  if (!normalized) return fallback;
+
+  try {
+    const payload = JSON.parse(normalized) as Partial<ApiSortOptions>;
+    return {
+      enabled: payload.enabled !== false,
+      allowed: normalizeAllowedFields(payload.allowed),
+      defaults: normalizeDefaultSorts(payload.defaults),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+function normalizeAllowedFields(value: unknown): ApiSortAllowedField[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!isRecord(item)) return null;
+      const field = String(item.field ?? "").trim();
+      const column = String(item.column ?? "").trim();
+      return field && column ? { field, column } : null;
+    })
+    .filter((item): item is ApiSortAllowedField => Boolean(item));
+}
+
+function normalizeDefaultSorts(value: unknown): ApiDefaultSort[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!isRecord(item)) return null;
+      const field = String(item.field ?? "").trim();
+      const direction = String(item.direction ?? "ASC").trim().toUpperCase();
+      if (!field || (direction !== "ASC" && direction !== "DESC")) return null;
+      return { field, direction };
+    })
+    .filter((item): item is ApiDefaultSort => Boolean(item));
+}
+
+function nextSortUid(): string {
+  sortUidSeed += 1;
+  return `sort-${Date.now()}-${sortUidSeed}`;
+}
+
+function toAllowedDrafts(fields: ApiSortAllowedField[]): ApiSortAllowedDraft[] {
+  return fields.map((item) => ({ ...item, uid: nextSortUid() }));
+}
+
+function toDefaultDrafts(sorts: ApiDefaultSort[]): ApiDefaultSortDraft[] {
+  return sorts.map((item) => ({ ...item, uid: nextSortUid() }));
+}
+
+function renderAllowedSortTable(fields: ApiSortAllowedField[]) {
+  return (
+    <SortRuleViewTable
+      title="候选排序字段"
+      headers={["请求字段 field", "数据库列 column"]}
+      emptyText="暂无候选字段"
+      rows={fields.map((item) => ({
+        key: `${item.field}:${item.column}`,
+        cells: [item.field, item.column],
+      }))}
+    />
+  );
+}
+
+function renderDefaultSortTable(sorts: ApiDefaultSort[]) {
+  return (
+    <SortRuleViewTable
+      title="默认排序规则"
+      headers={["请求字段 field", "排序方向"]}
+      emptyText="暂无默认排序规则"
+      rows={sorts.map((item, index) => ({
+        key: `${item.field}:${item.direction}:${index}`,
+        cells: [
+          item.field,
+          <span
+            className="api-sort-direction-value"
+            key="direction"
+          >
+            <span>{item.direction === "ASC" ? "↑" : "↓"}</span>
+            <span className="is-code">{item.direction}</span>
+          </span>,
+        ],
+      }))}
+    />
+  );
+}
+
+function buildSortOptionsJson(
+  enabled: boolean,
+  allowedDrafts: ApiSortAllowedDraft[],
+  defaultDrafts: ApiDefaultSortDraft[],
+): string {
+  if (!enabled) {
+    return JSON.stringify({ enabled: false, allowed: [], defaults: [] });
+  }
+
+  const allowed = allowedDrafts.map(({ field, column }) => ({
+    field: field.trim(),
+    column: column.trim(),
+  }));
+  const defaults = defaultDrafts.map(({ field, direction }) => ({ field: field.trim(), direction }));
+  if (allowed.length === 0) {
+    throw new Error("开启排序规则时必须配置候选排序字段");
+  }
+
+  const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  const columnPattern = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/;
+  const allowedFieldSet = new Set<string>();
+  for (const item of allowed) {
+    if (!item.field || !identifierPattern.test(item.field)) {
+      throw new Error(`候选排序字段无效：${item.field || "空"}`);
+    }
+    if (!item.column || !columnPattern.test(item.column)) {
+      throw new Error(`候选排序列无效：${item.column || "空"}`);
+    }
+    if (allowedFieldSet.has(item.field)) {
+      throw new Error(`候选排序字段重复：${item.field}`);
+    }
+    allowedFieldSet.add(item.field);
+  }
+
+  const defaultFieldSet = new Set<string>();
+  for (const item of defaults) {
+    if (!allowedFieldSet.has(item.field)) {
+      throw new Error(`默认排序字段未包含在候选排序字段中：${item.field || "空"}`);
+    }
+    if (defaultFieldSet.has(item.field)) {
+      throw new Error(`默认排序字段重复：${item.field}`);
+    }
+    defaultFieldSet.add(item.field);
+  }
+
+  return JSON.stringify({ enabled: true, allowed, defaults });
+}
+
+function moveSortItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
+  if (fromIndex < 0 || toIndex < 0 || fromIndex >= items.length || toIndex >= items.length) {
+    return items;
+  }
+  const next = [...items];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return next;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

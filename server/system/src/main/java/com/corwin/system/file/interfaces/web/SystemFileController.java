@@ -18,6 +18,7 @@ import com.corwin.system.file.application.view.StorageNodeView;
 import com.corwin.system.file.domain.model.LogicalFile;
 import com.corwin.system.file.domain.model.PhysicalFile;
 import com.corwin.system.file.infrastructure.storage.LocalStorageProvider;
+import com.corwin.system.file.interfaces.web.req.StorageListReq;
 import com.corwin.system.file.interfaces.web.res.PhysicalFileDetailRes;
 import com.corwin.system.file.published.FilePurpose;
 import com.corwin.system.file.published.OwnerType;
@@ -147,14 +148,16 @@ public class SystemFileController {
     /**
      * 管理端按节点、关键字和排序条件查询文件树内容。
      */
-    @GetMapping("/admin/nodes")
+    @PostMapping("/admin/nodes")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.view"})
-    public ApiResponse<List<StorageNodeView>> adminNodes(@RequestParam(required = false) String parentId,
-            @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "false") boolean recursive,
-            @RequestParam(defaultValue = "NAME") StorageSortBy sortBy,
-            @RequestParam(defaultValue = "ASC") StorageSortOrder sortOrder) {
+    public ApiResponse<List<StorageNodeView>> adminNodes(@RequestBody StorageListReq req) {
+        String keyword = req.keyword();
+        boolean recursive = Boolean.TRUE.equals(req.recursive());
+        StorageSortBy sortBy = req.sortBy() == null ? StorageSortBy.NAME : req.sortBy();
+        StorageSortOrder sortOrder = req.sortOrder() == null ? StorageSortOrder.ASC : req.sortOrder();
         boolean effectiveRecursive = recursive || (keyword != null && !keyword.isBlank());
-        StorageQueryCommand query = new StorageQueryCommand(parentId, keyword, effectiveRecursive, sortBy, sortOrder);
+        StorageQueryCommand query = new StorageQueryCommand(req.parentId(), keyword, effectiveRecursive, sortBy,
+                sortOrder);
         return ApiResponse.ok(fileQueryService.listAdminContent(query));
     }
 
@@ -182,11 +185,12 @@ public class SystemFileController {
     /**
      * 查询物理文件关联的逻辑文件引用列表。
      */
-    @GetMapping("/admin/physical/{physicalFileId}/logical-refs")
+    @PostMapping("/admin/physical/{physicalFileId}/logical-refs")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.ref.view"})
     public ApiResponse<List<StorageNodeView>> logicalRefs(@PathVariable String physicalFileId,
-            @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "NAME") StorageSortBy sortBy,
-            @RequestParam(defaultValue = "ASC") StorageSortOrder sortOrder) {
-        return ApiResponse.ok(fileQueryService.listLogicalFileRefs(physicalFileId, keyword, sortBy, sortOrder));
+            @RequestBody StorageListReq req) {
+        StorageSortBy sortBy = req.sortBy() == null ? StorageSortBy.NAME : req.sortBy();
+        StorageSortOrder sortOrder = req.sortOrder() == null ? StorageSortOrder.ASC : req.sortOrder();
+        return ApiResponse.ok(fileQueryService.listLogicalFileRefs(physicalFileId, req.keyword(), sortBy, sortOrder));
     }
 }

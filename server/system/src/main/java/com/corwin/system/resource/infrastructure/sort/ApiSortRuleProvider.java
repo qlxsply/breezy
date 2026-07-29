@@ -22,7 +22,6 @@ import org.springframework.web.servlet.HandlerMapping;
 public class ApiSortRuleProvider implements SortRuleProvider {
 
     private final ApiRepository apiRepository;
-    private final ApiSortOptionsParser parser;
 
     @Override
     public SortRule getRule(HttpServletRequest request, HandlerMethod handlerMethod) {
@@ -33,7 +32,7 @@ public class ApiSortRuleProvider implements SortRuleProvider {
         }
         return apiRepository.findFirstByProtocolAndHttpMethodAndPathPattern(ApiProtocol.HTTP, method, pathPattern)
                 .map(Api::getSortOptionsJson)
-                .map(parser::parse)
+                .map(ApiSortOptionsParser::parse)
                 .orElseGet(SortRule::disabled);
     }
 

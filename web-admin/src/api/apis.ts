@@ -1,6 +1,6 @@
 import type { ApiEntry } from "../types/api-admin";
 import type { PageResult } from "../types/page";
-import { get, put } from "./http";
+import { get, post, put } from "./http";
 
 const BASE = "/apis";
 
@@ -19,6 +19,7 @@ interface ApiPayload {
   auditResource?: string;
   auditAction?: string;
   auditDescription?: string;
+  sortOptionsJson?: string;
   enabled: boolean;
 }
 
@@ -52,6 +53,7 @@ function toApiEntry(payload: ApiPayload): ApiEntry {
     auditResource: payload.auditResource,
     auditAction: payload.auditAction,
     auditDescription: payload.auditDescription,
+    sortOptionsJson: payload.sortOptionsJson,
     enabled: Boolean(payload.enabled),
   };
 }
@@ -62,24 +64,37 @@ export async function listApis(): Promise<ApiEntry[]> {
 }
 
 export async function pageApis(query: ApiPageQueryParams): Promise<PageResult<ApiEntry>> {
-  const params = new URLSearchParams();
-  appendQueryParam(params, "module", query.module);
-  appendQueryParam(params, "pathPattern", query.pathPattern);
-  appendQueryParam(params, "handlerClass", query.handlerClass);
-  appendQueryParam(params, "handlerMethod", query.handlerMethod);
-  appendQueryParam(params, "permissionDeclared", query.permissionDeclared);
-  appendQueryParam(params, "accessType", query.accessType);
-  appendQueryParam(params, "userType", query.userType);
-  appendQueryParam(params, "auditDeclared", query.auditDeclared);
-  appendQueryParam(params, "status", query.status);
-  params.set("pageNo", String(query.pageNo));
-  params.set("pageSize", String(query.pageSize));
-
-  const page = await get<PageResult<ApiPayload>>(`${BASE}/page?${params.toString()}`);
+  const page = await post<PageResult<ApiPayload>>(`${BASE}/page`, {
+    module: normalizeQueryValue(query.module),
+    pathPattern: normalizeQueryValue(query.pathPattern),
+    handlerClass: normalizeQueryValue(query.handlerClass),
+    handlerMethod: normalizeQueryValue(query.handlerMethod),
+    permissionDeclared: normalizeQueryValue(query.permissionDeclared),
+    accessType: normalizeQueryValue(query.accessType),
+    userType: normalizeQueryValue(query.userType),
+    auditDeclared: normalizeQueryValue(query.auditDeclared),
+    status: normalizeQueryValue(query.status),
+    page: {
+      pageNo: query.pageNo,
+      pageSize: query.pageSize,
+    },
+  });
   return {
     ...page,
     elements: page.elements.map(toApiEntry),
   };
+}
+
+export async function getApi(id: string): Promise<ApiEntry> {
+  const row = await get<ApiPayload>(`${BASE}/${encodeURIComponent(id)}`);
+  return toApiEntry(row);
+}
+
+export async function updateApiSortOptions(id: string, sortOptionsJson: string): Promise<ApiEntry> {
+  const row = await put<ApiPayload>(`${BASE}/${encodeURIComponent(id)}/sort-options`, {
+    sortOptionsJson,
+  });
+  return toApiEntry(row);
 }
 
 export async function publishApi(id: string): Promise<ApiEntry> {
@@ -92,9 +107,7 @@ export async function disableApi(id: string): Promise<ApiEntry> {
   return toApiEntry(row);
 }
 
-function appendQueryParam(params: URLSearchParams, key: string, value?: string) {
+function normalizeQueryValue(value?: string): string | undefined {
   const normalized = value?.trim();
-  if (normalized) {
-    params.set(key, normalized);
-  }
+  return normalized || undefined;
 }

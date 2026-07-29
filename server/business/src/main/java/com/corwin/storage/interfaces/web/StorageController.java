@@ -9,6 +9,7 @@ import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.storage.interfaces.web.req.StorageFolderCreateReq;
 import com.corwin.storage.interfaces.web.req.StorageFolderRenameReq;
+import com.corwin.storage.interfaces.web.req.StorageListReq;
 import com.corwin.storage.interfaces.web.req.StorageMoveReq;
 import com.corwin.storage.interfaces.web.res.StorageItemRes;
 import com.corwin.system.file.application.command.StorageQueryCommand;
@@ -23,7 +24,6 @@ import com.corwin.system.file.application.port.FileCommandPort;
 import com.corwin.system.file.application.port.FileQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -50,14 +50,17 @@ public class StorageController {
     private final FileCommandPort fileService;
     private final FileQueryPort fileQueryService;
 
-    @GetMapping("/list")
-    public ApiResponse<List<StorageItemRes>> list(@RequestParam(required = false) String parentId,
-            @RequestParam(required = false) String keyword, @RequestParam(defaultValue = "false") boolean recursive,
-            @RequestParam(defaultValue = "NAME") StorageSortBy sortBy,
-            @RequestParam(defaultValue = "ASC") StorageSortOrder sortOrder) {
+    @PostMapping("/list")
+    public ApiResponse<List<StorageItemRes>> list(@RequestBody(required = false) StorageListReq req) {
+        StorageListReq resolved = req == null ? new StorageListReq(null, null, null, null, null) : req;
         String ownerId = currentUserId().toString();
+        String keyword = resolved.keyword();
+        boolean recursive = Boolean.TRUE.equals(resolved.recursive());
+        StorageSortBy sortBy = resolved.sortBy() == null ? StorageSortBy.NAME : resolved.sortBy();
+        StorageSortOrder sortOrder = resolved.sortOrder() == null ? StorageSortOrder.ASC : resolved.sortOrder();
         boolean effectiveRecursive = recursive || (keyword != null && !keyword.isBlank());
-        StorageQueryCommand query = new StorageQueryCommand(parentId, keyword, effectiveRecursive, sortBy, sortOrder);
+        StorageQueryCommand query = new StorageQueryCommand(resolved.parentId(), keyword, effectiveRecursive, sortBy,
+                sortOrder);
         List<StorageItemRes> items = fileQueryService.listContent(OwnerType.USER, ownerId, query).stream()
                 .map(v -> new StorageItemRes(v.id(), v.type(), v.name(), v.parentId(), v.size(), v.contentType(),
                         v.createdAt(), v.updatedAt()))

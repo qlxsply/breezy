@@ -11,12 +11,7 @@ import { del, get, post, put } from "./http";
 const BASE = "/jsonfmt/records";
 
 export function listJsonFmtRecords(keyword?: string): Promise<JsonFmtRecordListItem[]> {
-  const params = new URLSearchParams();
-  if (keyword && keyword.trim()) {
-    params.set("keyword", keyword.trim());
-  }
-  const query = params.toString();
-  return get<JsonFmtRecordListItem[]>(query ? `${BASE}?${query}` : BASE);
+  return post<JsonFmtRecordListItem[]>(`${BASE}/list`, { keyword });
 }
 
 export function getJsonFmtRecord(recordId: string): Promise<JsonFmtRecordDetail> {

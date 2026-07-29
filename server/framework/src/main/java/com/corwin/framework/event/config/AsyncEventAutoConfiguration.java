@@ -33,7 +33,6 @@ import com.corwin.framework.event.transport.kafka.DefaultEventTopicResolver;
 import com.corwin.framework.event.transport.kafka.EventTopicResolver;
 import com.corwin.framework.event.transport.kafka.KafkaAsyncEventTransport;
 import com.corwin.framework.event.transport.rabbitmq.RabbitMqAsyncEventTransport;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -114,8 +113,8 @@ public class AsyncEventAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean
-    public EventSerializer eventSerializer(ObjectMapper objectMapper) {
-        return new JacksonEventSerializer(objectMapper);
+    public EventSerializer eventSerializer() {
+        return new JacksonEventSerializer();
     }
 
     /**

@@ -5,7 +5,7 @@ import type {
   NotificationPullResult,
 } from "../types/notification";
 import type { PageResult } from "../types/page";
-import { get, put } from "./http";
+import { get, post, put } from "./http";
 
 const BASE = "/notifications";
 
@@ -22,14 +22,13 @@ export function listNotifications(params: {
   page: number;
   size: number;
 }): Promise<PageResult<NotificationItem> | NotificationPage | NotificationItem[]> {
-  const query = new URLSearchParams({
+  return post<PageResult<NotificationItem> | NotificationPage | NotificationItem[]>(`${BASE}/page`, {
     status: params.status,
-    page: String(params.page),
-    size: String(params.size),
+    page: {
+      pageNo: params.page,
+      pageSize: params.size,
+    },
   });
-  return get<PageResult<NotificationItem> | NotificationPage | NotificationItem[]>(
-    `${BASE}?${query.toString()}`,
-  );
 }
 
 export function markRead(id: string): Promise<boolean> {

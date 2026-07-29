@@ -14,6 +14,7 @@ import com.corwin.jsonfmt.application.service.JsonFmtRecordAppService;
 import com.corwin.jsonfmt.application.view.JsonFmtRecordDetailView;
 import com.corwin.jsonfmt.application.view.JsonFmtRecordListItemView;
 import com.corwin.jsonfmt.interfaces.web.req.JsonFmtRecordBatchDeleteReq;
+import com.corwin.jsonfmt.interfaces.web.req.JsonFmtRecordListReq;
 import com.corwin.jsonfmt.interfaces.web.req.JsonFmtRecordRenameReq;
 import com.corwin.jsonfmt.interfaces.web.req.JsonFmtRecordReorderReq;
 import com.corwin.jsonfmt.interfaces.web.req.JsonFmtRecordSaveReq;
@@ -39,9 +40,10 @@ public class JsonFmtRecordController {
 
     private final JsonFmtRecordAppService recordAppService;
 
-    @GetMapping
-    public ApiResponse<List<JsonFmtRecordListItemRes>> list(@RequestParam(required = false) String keyword) {
+    @PostMapping("/list")
+    public ApiResponse<List<JsonFmtRecordListItemRes>> list(@RequestBody(required = false) JsonFmtRecordListReq req) {
         Long userId = currentUserId();
+        String keyword = req == null ? null : req.keyword();
         List<JsonFmtRecordListItemRes> records = recordAppService.list(userId, keyword).stream()
                 .map(JsonFmtRecordController::toListItemRes).toList();
         return ApiResponse.ok(records);

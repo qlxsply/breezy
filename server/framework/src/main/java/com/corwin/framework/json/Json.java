@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 /**
  *
  * @author Corwin 2026/1/7
@@ -81,6 +83,14 @@ public class Json implements ApplicationContextAware {
         try {
             return mapper().readValue(json, valueTypeRef);
         } catch (JsonProcessingException e) {
+            throw new SysException(e, BaseError.SERVICE_ERROR);
+        }
+    }
+
+    public static <T> T parse(byte[] json, Class<T> valueType) {
+        try {
+            return mapper().readValue(json, valueType);
+        } catch (IOException e) {
             throw new SysException(e, BaseError.SERVICE_ERROR);
         }
     }

@@ -16,18 +16,15 @@ export function listConfigs(params?: {
   pageNo?: number;
   pageSize?: number;
 }): Promise<PageResult<ConfigItem>> {
-  const searchParams = new URLSearchParams();
-  if (params?.keyword?.trim()) {
-    searchParams.set("keyword", params.keyword.trim());
-  }
-  if (params?.pageNo) {
-    searchParams.set("pageNo", String(params.pageNo));
-  }
-  if (params?.pageSize) {
-    searchParams.set("pageSize", String(params.pageSize));
-  }
-  const query = searchParams.toString();
-  return get<PageResult<ConfigItem>>(query ? `${BASE}?${query}` : BASE);
+  const keyword = params?.keyword?.trim();
+  return post<PageResult<ConfigItem>>(`${BASE}/page`, {
+    codeLike: keyword || undefined,
+    descriptionLike: keyword || undefined,
+    page: {
+      pageNo: params?.pageNo,
+      pageSize: params?.pageSize,
+    },
+  });
 }
 
 export function updateConfigValue(code: string, value: string): Promise<boolean> {

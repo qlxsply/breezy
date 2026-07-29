@@ -81,24 +81,12 @@ export function listDatabaseSchemas(
     sortDirection?: "ASC" | "DESC";
   },
 ): Promise<DatabaseSchema[]> {
-  const params = new URLSearchParams();
-  if (dataSourceId) {
-    params.set("dataSourceId", dataSourceId);
-  }
-  if (options?.unboundOnly === true) {
-    params.set("unboundOnly", "true");
-  }
-  if (options?.sortBy) {
-    params.set("sortBy", options.sortBy);
-  }
-  if (options?.sortDirection) {
-    params.set("sortDirection", options.sortDirection);
-  }
-
-  const query = params.toString();
-  return get<DatabaseSchema[]>(
-    query ? `${BASE}/database-schemas?${query}` : `${BASE}/database-schemas`,
-  );
+  return post<DatabaseSchema[]>(`${BASE}/database-schemas/list`, {
+    dataSourceId,
+    unboundOnly: options?.unboundOnly,
+    sortBy: options?.sortBy,
+    sortDirection: options?.sortDirection,
+  });
 }
 
 export function updateDatabaseSchemaInfo(

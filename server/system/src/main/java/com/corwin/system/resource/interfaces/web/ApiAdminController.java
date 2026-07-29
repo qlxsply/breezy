@@ -2,6 +2,7 @@ package com.corwin.system.resource.interfaces.web;
 
 import com.corwin.framework.constant.UserType;
 import com.corwin.framework.domain.page.PageSpec;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.audit.domain.model.AuditAction;
@@ -12,6 +13,7 @@ import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.application.service.ApiAdminService;
 import com.corwin.system.resource.domain.model.*;
 import com.corwin.system.resource.domain.repo.ApiPageQuery;
+import com.corwin.system.resource.interfaces.web.req.ApiPageReq;
 import com.corwin.system.resource.interfaces.web.req.UpdateApiSortOptionsReq;
 import com.corwin.system.resource.interfaces.web.res.ApiRes;
 import com.corwin.system.resource.published.ApiMeta;
@@ -38,20 +40,21 @@ public class ApiAdminController {
         return ApiResponse.ok(apiAdminService.listAll().stream().map(this::toDto).toList());
     }
 
-    @GetMapping("/page")
+    @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
-    public ApiResponse<PageResult<ApiRes>> page(@RequestParam(required = false) String module,
-            @RequestParam(required = false) String pathPattern, @RequestParam(required = false) String handlerClass,
-            @RequestParam(required = false) String handlerMethod,
-            @RequestParam(required = false) String permissionDeclared,
-            @RequestParam(required = false) String accessType, @RequestParam(required = false) String userType,
-            @RequestParam(required = false) String auditDeclared, @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "1") Integer pageNo, @RequestParam(defaultValue = "10") Integer pageSize) {
-        PageSpec pageSpec = PageSpec.of(pageNo, pageSize, List.of());
-        ApiPageQuery query = new ApiPageQuery(module, pathPattern, handlerClass, handlerMethod,
-                resolvePermissionDeclared(permissionDeclared), resolveAccessType(accessType), resolveUserType(userType),
-                resolveAuditDeclared(auditDeclared), resolveEnabled(status));
+    public ApiResponse<PageResult<ApiRes>> page(@RequestBody ApiPageReq req) {
+        PageSpec pageSpec = PageSpecFactory.of(req.page(), null);
+        ApiPageQuery query = new ApiPageQuery(req.module(), req.pathPattern(), req.handlerClass(), req.handlerMethod(),
+                resolvePermissionDeclared(req.permissionDeclared()), resolveAccessType(req.accessType()),
+                resolveUserType(req.userType()), resolveAuditDeclared(req.auditDeclared()),
+                resolveEnabled(req.status()));
         return ApiResponse.ok(PageResult.of(apiAdminService.page(query, pageSpec), this::toDto));
+    }
+
+    @GetMapping("/{id}")
+    @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
+    public ApiResponse<ApiRes> detail(@PathVariable Long id) {
+        return ApiResponse.ok(toDto(apiAdminService.get(id)));
     }
 
     @PutMapping("/{id}/publish")

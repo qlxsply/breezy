@@ -4,12 +4,14 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
 import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.notify.application.service.NotificationAppService;
 import com.corwin.system.notify.application.view.NotificationPullView;
 import com.corwin.system.notify.application.view.NotificationView;
+import com.corwin.system.notify.interfaces.web.req.NotificationPageReq;
 import com.corwin.system.notify.interfaces.web.res.NotificationPullRes;
 import com.corwin.system.notify.interfaces.web.res.NotificationRes;
 import com.corwin.system.resource.published.ApiMeta;
@@ -35,13 +37,13 @@ public class NotificationController {
     /**
      * 分页查询通知消息
      */
-    @GetMapping
+    @PostMapping("/page")
     @Authenticated
-    public ApiResponse<PageResult<NotificationRes>> page(@RequestParam(defaultValue = "all") String status,
-            @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size) {
+    public ApiResponse<PageResult<NotificationRes>> page(@RequestBody NotificationPageReq req) {
         Long userId = CtxUtil.getPrincipal().userId();
         UserType userType = CtxUtil.getPrincipal().userType();
-        PageSpec spec = PageSpec.of(page, size, List.of());
+        String status = req.status() == null || req.status().isBlank() ? "all" : req.status();
+        PageSpec spec = PageSpecFactory.of(req.page(), null);
         PageData<NotificationView> pageData = notificationAppService.page(userId, userType, status, spec);
         PageResult<NotificationRes> pageResult = PageResult.of(pageData, NotificationController::toRes);
         return ApiResponse.ok(pageResult);

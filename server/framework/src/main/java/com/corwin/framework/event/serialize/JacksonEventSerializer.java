@@ -3,11 +3,8 @@ package com.corwin.framework.event.serialize;
 import com.corwin.framework.event.model.AsyncEvent;
 import com.corwin.framework.event.model.AsyncEventEnvelope;
 import com.corwin.framework.event.model.EventCtxSnapshot;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.corwin.framework.json.Json;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,7 +12,7 @@ import java.util.Objects;
  * 基于 Jackson 的事件序列化实现。
  * <p>
  * 该实现采用“两段式反序列化”：
- * 先读取通用外壳字段与 payload 的 {@code JsonNode}，
+ * 先读取通用外壳字段与 payload 的通用对象结构，
  * 再依据 {@code eventType} 动态解析具体事件类并还原 payload。
  * <p>
  * 该策略既保持了事件模型的类型信息，又避免为每个事件类型手工维护绑定配置。
@@ -24,12 +21,6 @@ import java.util.Objects;
  */
 public class JacksonEventSerializer implements EventSerializer {
 
-    private final ObjectMapper objectMapper;
-
-    public JacksonEventSerializer(ObjectMapper objectMapper) {
-        this.objectMapper = Objects.requireNonNull(objectMapper, "objectMapper required");
-    }
-
     /**
      * 将事件信封编码为 JSON 字节数组。
      */
@@ -37,12 +28,11 @@ public class JacksonEventSerializer implements EventSerializer {
     public byte[] serialize(AsyncEventEnvelope<?> envelope) {
         Objects.requireNonNull(envelope, "envelope required");
         SerializedEnvelope serialized = new SerializedEnvelope(envelope.eventId(), envelope.eventType(),
-                envelope.occurredAtMillis(), envelope.deliverAtMillis(), envelope.ctxSnapshot(),
-                objectMapper.valueToTree(envelope.payload()), envelope.source(), envelope.producerService(),
-                envelope.partitionKey(), envelope.headers());
+                envelope.occurredAtMillis(), envelope.deliverAtMillis(), envelope.ctxSnapshot(), envelope.payload(),
+                envelope.source(), envelope.producerService(), envelope.partitionKey(), envelope.headers());
         try {
-            return objectMapper.writeValueAsBytes(serialized);
-        } catch (JsonProcessingException ex) {
+            return Json.toBytes(serialized);
+        } catch (RuntimeException ex) {
             throw new IllegalStateException("Serialize async event failed. eventType=" + envelope.eventType(), ex);
         }
     }
@@ -53,22 +43,17 @@ public class JacksonEventSerializer implements EventSerializer {
     @Override
     public AsyncEventEnvelope<?> deserialize(byte[] bytes) {
         Objects.requireNonNull(bytes, "bytes required");
-        SerializedEnvelope serialized;
-        try {
-            serialized = objectMapper.readValue(bytes, SerializedEnvelope.class);
-        } catch (IOException ex) {
-            throw new IllegalStateException("Deserialize async event bytes failed", ex);
-        }
+        SerializedEnvelope serialized = Json.parse(bytes, SerializedEnvelope.class);
         Class<?> payloadClass = resolvePayloadClass(serialized.eventType());
         if (!AsyncEvent.class.isAssignableFrom(payloadClass)) {
             throw new IllegalStateException("Event payload class is not AsyncEvent: " + payloadClass.getName());
         }
         Object payload;
         try {
-            payload = objectMapper.treeToValue(serialized.payload(), payloadClass);
-        } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Deserialize async event payload failed. eventType=" + serialized.eventType(),
-                    ex);
+            payload = Json.convert(serialized.payload(), payloadClass);
+        } catch (RuntimeException ex) {
+            throw new IllegalStateException(
+                    "Deserialize async event payload failed. eventType=" + serialized.eventType(), ex);
         }
         long deliverAtMillis = serialized.deliverAtMillis();
         if (deliverAtMillis <= 0L) {
@@ -100,7 +85,7 @@ public class JacksonEventSerializer implements EventSerializer {
             long occurredAtMillis,
             long deliverAtMillis,
             EventCtxSnapshot ctxSnapshot,
-            JsonNode payload,
+            Object payload,
             String source,
             String producerService,
             String partitionKey,
@@ -108,4 +93,3 @@ public class JacksonEventSerializer implements EventSerializer {
     ) {
     }
 }
-

@@ -68,8 +68,5 @@ export function deleteSchemaDdl(id: string): Promise<void> {
 }
 
 export function compareSchemaDiff(req: SchemaDiffRequest): Promise<SchemaDiffResult> {
-  const params = new URLSearchParams();
-  params.set("refDbId", String(req.refDbId));
-  params.set("targetDbId", String(req.targetDbId));
-  return get<SchemaDiffResult>(`${BASE}/diff?${params.toString()}`);
+  return post<SchemaDiffResult>(`${BASE}/diff`, req);
 }

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 閺佺増宓佸┃鎰瑢閺佺増宓佹惔鎾额吀閻? *
+ * 数据源管理接口。
  *
  * @author Corwin 2026/1/11
  */
@@ -101,14 +101,16 @@ public class DatabaseSourceAdminController {
                 service.listDatabaseSourcesSimple().stream().map(DatabaseSourceAdminController::toDto).toList());
     }
 
-    @GetMapping("/database-schemas")
-    public ApiResponse<List<CatalogRes>> listDatabaseSchemas(
-            @RequestParam(value = "dataSourceId", required = false) Long dataSourceId,
-            @RequestParam(value = "unboundOnly", required = false, defaultValue = "false") boolean unboundOnly,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "DATA_SOURCE") String sortBy,
-            @RequestParam(value = "sortDirection", required = false, defaultValue = "ASC") String sortDirection) {
-        return ApiResponse.ok(service.listDatabaseSchemas(dataSourceId, unboundOnly, sortBy, sortDirection).stream()
-                .map(DatabaseSourceAdminController::toDto).toList());
+    @PostMapping("/database-schemas/list")
+    public ApiResponse<List<CatalogRes>> listDatabaseSchemas(@RequestBody DatabaseSchemaListReq req) {
+        DatabaseSchemaListReq resolved = req == null ? new DatabaseSchemaListReq(null, null, null, null) : req;
+        boolean unboundOnly = Boolean.TRUE.equals(resolved.unboundOnly());
+        String sortBy = resolved.sortBy() == null || resolved.sortBy().isBlank() ? "DATA_SOURCE" : resolved.sortBy();
+        String sortDirection = resolved.sortDirection() == null || resolved.sortDirection()
+                .isBlank() ? "ASC" : resolved.sortDirection();
+        return ApiResponse.ok(
+                service.listDatabaseSchemas(resolved.dataSourceId(), unboundOnly, sortBy, sortDirection).stream()
+                        .map(DatabaseSourceAdminController::toDto).toList());
     }
 
     @GetMapping("/{id}/available-databases")

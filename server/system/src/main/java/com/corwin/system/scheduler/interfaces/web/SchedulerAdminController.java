@@ -1,17 +1,18 @@
 package com.corwin.system.scheduler.interfaces.web;
 
-import com.corwin.framework.domain.page.PageData;
-import com.corwin.framework.domain.page.PageSpec;
-import com.corwin.system.auth.published.Authorize;
 import com.corwin.framework.constant.UserType;
+import com.corwin.framework.domain.page.PageData;
+import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.system.auth.published.Authorize;
+import com.corwin.system.resource.published.ApiMeta;
+import com.corwin.system.resource.published.ApiModuleCode;
 import com.corwin.system.scheduler.application.service.SchedulerCommandAppService;
 import com.corwin.system.scheduler.application.service.SchedulerQueryAppService;
 import com.corwin.system.scheduler.application.view.SchedulerJobDetailView;
 import com.corwin.system.scheduler.application.view.SchedulerJobExecutionView;
 import com.corwin.system.scheduler.application.view.SchedulerJobView;
-import com.corwin.system.resource.published.ApiMeta;
-import com.corwin.system.resource.published.ApiModuleCode;
+import com.corwin.system.scheduler.interfaces.web.req.SchedulerJobExecutionPageReq;
 import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobDetailRes;
 import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobExecutionRes;
 import com.corwin.system.scheduler.interfaces.web.res.SchedulerJobRes;
@@ -22,6 +23,7 @@ import java.util.List;
 
 /**
  * 閸斻劍鈧椒鎹㈤崝锛勵吀閻炲棙甯堕崚璺烘珤閵? *
+ *
  * @author Corwin 2026/4/15
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -45,12 +47,12 @@ public class SchedulerAdminController {
         return ApiResponse.ok(toDetailRes(queryAppService.getJob(jobId)));
     }
 
-    @GetMapping("/{jobId}/executions")
+    @PostMapping("/{jobId}/executions")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.view"})
     public ApiResponse<PageData<SchedulerJobExecutionRes>> executions(@PathVariable String jobId,
-            @RequestParam(defaultValue = "1") int pageNo, @RequestParam(defaultValue = "20") int pageSize) {
+            @RequestBody SchedulerJobExecutionPageReq req) {
         PageData<SchedulerJobExecutionView> page = queryAppService.pageExecutions(jobId,
-                PageSpec.of(pageNo, pageSize, List.of()));
+                PageSpecFactory.of(req.page(), null));
         return ApiResponse.ok(PageData.of(page.pageNo(), page.pageSize(), page.totalElements(),
                 page.elements().stream().map(SchedulerAdminController::toExecutionRes).toList()));
     }

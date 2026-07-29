@@ -60,8 +60,7 @@ export function reorderTodos(req: TodoReorderReq): Promise<void> {
 }
 
 export function getTodoDailyStats(startDate: string, endDate: string): Promise<TodoDailyStats[]> {
-  const query = new URLSearchParams({ startDate, endDate });
-  return get<TodoDailyStats[]>(`${TODO_BASE}/stats/daily?${query.toString()}`);
+  return post<TodoDailyStats[]>(`${TODO_BASE}/stats/daily`, { startDate, endDate });
 }
 
 export function getTodoDailyDetail(date: string): Promise<TodoDailyDetail> {

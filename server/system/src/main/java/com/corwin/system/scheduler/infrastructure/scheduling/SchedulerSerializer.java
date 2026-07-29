@@ -1,9 +1,8 @@
 package com.corwin.system.scheduler.infrastructure.scheduling;
 
+import com.corwin.framework.json.Json;
 import com.corwin.system.scheduler.domain.model.JobPayload;
 import com.corwin.system.scheduler.domain.model.ScheduleRule;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,10 +11,7 @@ import org.springframework.stereotype.Component;
  * @author Corwin 2026/4/15
  */
 @Component
-@RequiredArgsConstructor
 public class SchedulerSerializer {
-
-    private final ObjectMapper objectMapper;
 
     public byte[] serializeScheduleRule(ScheduleRule scheduleRule) {
         return serialize(scheduleRule);
@@ -41,7 +37,7 @@ public class SchedulerSerializer {
 
     private byte[] serialize(Object value) {
         try {
-            return objectMapper.writeValueAsBytes(value);
+            return Json.toBytes(value);
         } catch (Exception ex) {
             throw new IllegalStateException("scheduler serialize failed", ex);
         }
@@ -54,7 +50,7 @@ public class SchedulerSerializer {
             if (!expectedType.isAssignableFrom(rawType)) {
                 throw new IllegalStateException("scheduler deserialize type mismatch: " + className);
             }
-            return (T) objectMapper.readValue(bytes, rawType);
+            return (T) Json.parse(bytes, rawType);
         } catch (Exception ex) {
             throw new IllegalStateException("scheduler deserialize failed: " + className, ex);
         }

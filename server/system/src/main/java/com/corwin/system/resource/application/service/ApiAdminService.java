@@ -24,7 +24,6 @@ public class ApiAdminService {
 
     private final ApiRepository apiRepository;
     private final ApiPermissionCache apiPermissionCache;
-    private final ApiSortOptionsParser sortOptionsParser;
 
     public List<Api> listAll() {
         return apiRepository.findAll();
@@ -59,7 +58,7 @@ public class ApiAdminService {
     @Transactional
     public Api updateSortOptions(Long id, String sortOptionsJson) {
         Api api = get(id);
-        String normalized = sortOptionsParser.normalize(sortOptionsJson);
+        String normalized = ApiSortOptionsParser.normalize(sortOptionsJson);
         api.updateSortOptions(normalized);
         return apiRepository.save(api);
     }

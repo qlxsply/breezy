@@ -4,13 +4,10 @@ import com.corwin.framework.domain.page.SortDirection;
 import com.corwin.framework.domain.page.SortSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
+import com.corwin.framework.json.Json;
 import com.corwin.framework.util.StrUtil;
 import com.corwin.framework.web.sort.SortRule;
 import com.corwin.framework.web.sort.SortableField;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,16 +19,15 @@ import java.util.Map;
  *
  * @author Corwin 2026/7/29
  */
-@Component
-@RequiredArgsConstructor
-public class ApiSortOptionsParser {
+public final class ApiSortOptionsParser {
 
     private static final String IDENTIFIER_PATTERN = "[A-Za-z_][A-Za-z0-9_]*";
     private static final String COLUMN_PATTERN = "[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?";
 
-    private final ObjectMapper objectMapper;
+    private ApiSortOptionsParser() {
+    }
 
-    public String normalize(String json) {
+    public static String normalize(String json) {
         String normalized = StrUtil.trimToNull(json);
         if (normalized == null) {
             return null;
@@ -40,17 +36,12 @@ public class ApiSortOptionsParser {
         return normalized;
     }
 
-    public SortRule parse(String json) {
+    public static SortRule parse(String json) {
         String normalized = StrUtil.trimToNull(json);
         if (normalized == null) {
             return SortRule.disabled();
         }
-        ApiSortOptionsPayload payload;
-        try {
-            payload = objectMapper.readValue(normalized, ApiSortOptionsPayload.class);
-        } catch (JsonProcessingException e) {
-            throw new BizException("Invalid sort options JSON", BaseError.INVALID_PARAMETER);
-        }
+        ApiSortOptionsPayload payload = Json.parse(normalized, ApiSortOptionsPayload.class);
 
         boolean enabled = payload.enabled() == null || payload.enabled();
         if (!enabled) {
@@ -66,7 +57,7 @@ public class ApiSortOptionsParser {
         return new SortRule(true, allowedFields, defaults);
     }
 
-    private Map<String, String> parseAllowed(List<ApiSortableFieldPayload> allowed) {
+    private static Map<String, String> parseAllowed(List<ApiSortableFieldPayload> allowed) {
         Map<String, String> result = new LinkedHashMap<>();
         if (allowed == null) {
             return result;
@@ -86,7 +77,7 @@ public class ApiSortOptionsParser {
         return result;
     }
 
-    private List<SortSpec> parseDefaults(List<ApiDefaultSortPayload> defaults, Map<String, String> allowed) {
+    private static List<SortSpec> parseDefaults(List<ApiDefaultSortPayload> defaults, Map<String, String> allowed) {
         List<SortSpec> result = new ArrayList<>();
         if (defaults == null) {
             return result;
@@ -105,7 +96,7 @@ public class ApiSortOptionsParser {
         return result;
     }
 
-    private SortDirection parseDirection(String direction) {
+    private static SortDirection parseDirection(String direction) {
         String normalized = StrUtil.trimToNull(direction);
         if (normalized == null) {
             return SortDirection.ASC;
@@ -117,13 +108,13 @@ public class ApiSortOptionsParser {
         }
     }
 
-    private void validateIdentifier(String value, String prefix) {
+    private static void validateIdentifier(String value, String prefix) {
         if (value == null || !value.matches(IDENTIFIER_PATTERN)) {
             throw new BizException(prefix + value, BaseError.INVALID_PARAMETER);
         }
     }
 
-    private void validateColumn(String value) {
+    private static void validateColumn(String value) {
         if (value == null || !value.matches(COLUMN_PATTERN)) {
             throw new BizException("Invalid sort column: " + value, BaseError.INVALID_PARAMETER);
         }

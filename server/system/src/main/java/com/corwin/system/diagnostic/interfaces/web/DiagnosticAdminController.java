@@ -1,8 +1,8 @@
 package com.corwin.system.diagnostic.interfaces.web;
 
-import com.corwin.system.auth.published.Authorize;
 import com.corwin.framework.constant.UserType;
 import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.diagnostic.application.command.StartDiagnosticCommand;
 import com.corwin.system.diagnostic.application.command.UpdateDiagnosticConfigCommand;
 import com.corwin.system.diagnostic.application.service.DiagnosticCommandAppService;
@@ -12,16 +12,13 @@ import com.corwin.system.diagnostic.application.view.DiagnosticSessionView;
 import com.corwin.system.diagnostic.domain.model.DiagnosticEvent;
 import com.corwin.system.diagnostic.domain.model.DiagnosticEventType;
 import com.corwin.system.diagnostic.domain.model.DiagnosticSnapshot;
+import com.corwin.system.diagnostic.interfaces.web.req.DiagnosticEventListReq;
+import com.corwin.system.diagnostic.interfaces.web.req.DiagnosticHistoryReq;
 import com.corwin.system.diagnostic.interfaces.web.req.StartDiagnosticReq;
 import com.corwin.system.diagnostic.interfaces.web.req.UpdateDiagnosticConfigReq;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -37,28 +34,26 @@ public class DiagnosticAdminController {
     private final DiagnosticQueryAppService queryAppService;
 
     public DiagnosticAdminController(DiagnosticCommandAppService commandAppService,
-                                     DiagnosticQueryAppService queryAppService) {
+            DiagnosticQueryAppService queryAppService) {
         this.commandAppService = commandAppService;
         this.queryAppService = queryAppService;
     }
 
     @PostMapping("/start")
     @Authorize(userType = UserType.ADMIN, permissions = {"diag.start"})
-    public ApiResponse<DiagnosticSessionView> start(@RequestBody(required = false) StartDiagnosticReq req) {
-        StartDiagnosticReq resolved = req == null ? new StartDiagnosticReq(null, null, null, null, null, null, null, null) : req;
-        return ApiResponse.ok(commandAppService.start(new StartDiagnosticCommand(resolved.intervalMs(),
-                resolved.historyCapacity(), resolved.eventCapacity(), resolved.items(), resolved.deepMode(),
-                resolved.slowRequestThresholdMs(), resolved.slowSqlThresholdMs(), resolved.ttlSeconds())));
+    public ApiResponse<DiagnosticSessionView> start(@RequestBody StartDiagnosticReq req) {
+        return ApiResponse.ok(commandAppService.start(
+                new StartDiagnosticCommand(req.intervalMs(), req.historyCapacity(), req.eventCapacity(), req.items(),
+                        req.deepMode(), req.slowRequestThresholdMs(), req.slowSqlThresholdMs(), req.ttlSeconds())));
     }
 
     @PostMapping("/config")
     @Authorize(userType = UserType.ADMIN, permissions = {"diag.edit"})
-    public ApiResponse<DiagnosticSessionView> updateConfig(@RequestBody(required = false) UpdateDiagnosticConfigReq req) {
-        UpdateDiagnosticConfigReq resolved =
-                req == null ? new UpdateDiagnosticConfigReq(null, null, null, null, null, null, null, null) : req;
-        return ApiResponse.ok(commandAppService.updateConfig(new UpdateDiagnosticConfigCommand(resolved.intervalMs(),
-                resolved.historyCapacity(), resolved.eventCapacity(), resolved.items(), resolved.deepMode(),
-                resolved.slowRequestThresholdMs(), resolved.slowSqlThresholdMs(), resolved.ttlSeconds())));
+    public ApiResponse<DiagnosticSessionView> updateConfig(@RequestBody UpdateDiagnosticConfigReq req) {
+        return ApiResponse.ok(commandAppService.updateConfig(
+                new UpdateDiagnosticConfigCommand(req.intervalMs(), req.historyCapacity(), req.eventCapacity(),
+                        req.items(), req.deepMode(), req.slowRequestThresholdMs(), req.slowSqlThresholdMs(),
+                        req.ttlSeconds())));
     }
 
     @PostMapping("/stop")
@@ -79,16 +74,18 @@ public class DiagnosticAdminController {
         return ApiResponse.ok(queryAppService.latestSnapshot().orElse(null));
     }
 
-    @GetMapping("/snapshots/history")
+    @PostMapping("/snapshots/history")
     @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
-    public ApiResponse<List<DiagnosticSnapshot>> history(@RequestParam(defaultValue = "120") int limit) {
+    public ApiResponse<List<DiagnosticSnapshot>> history(@RequestBody DiagnosticHistoryReq req) {
+        int limit = req == null || req.limit() == null ? 120 : req.limit();
         return ApiResponse.ok(queryAppService.history(limit));
     }
 
-    @GetMapping("/events")
+    @PostMapping("/events")
     @Authorize(userType = UserType.ADMIN, permissions = {"diag.view"})
-    public ApiResponse<List<DiagnosticEvent>> events(@RequestParam(defaultValue = "100") int limit,
-                                                     @RequestParam(required = false) DiagnosticEventType type) {
+    public ApiResponse<List<DiagnosticEvent>> events(@RequestBody DiagnosticEventListReq req) {
+        int limit = req == null || req.limit() == null ? 100 : req.limit();
+        DiagnosticEventType type = req == null ? null : req.type();
         return ApiResponse.ok(queryAppService.events(limit, type));
     }
 

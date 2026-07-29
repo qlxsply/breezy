@@ -5,7 +5,7 @@ import type {
   StorageItem,
   StorageListQuery,
 } from "../types/file-storage";
-import { API_BASE_URL, del, get, post, put } from "./http";
+import { API_BASE_URL, del, post, put } from "./http";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -16,32 +16,8 @@ interface ApiResponse<T> {
 
 const BASE = "/sys/storage";
 
-function buildListUrl(query?: StorageListQuery): string {
-  if (!query) {
-    return `${BASE}/list`;
-  }
-  const params = new URLSearchParams();
-  if (query.parentId) {
-    params.set("parentId", query.parentId);
-  }
-  if (query.keyword && query.keyword.trim()) {
-    params.set("keyword", query.keyword.trim());
-  }
-  if (typeof query.recursive === "boolean") {
-    params.set("recursive", String(query.recursive));
-  }
-  if (query.sortBy) {
-    params.set("sortBy", query.sortBy);
-  }
-  if (query.sortOrder) {
-    params.set("sortOrder", query.sortOrder);
-  }
-  const queryString = params.toString();
-  return queryString ? `${BASE}/list?${queryString}` : `${BASE}/list`;
-}
-
 export function listStorageItems(query?: StorageListQuery): Promise<StorageItem[]> {
-  return get<StorageItem[]>(buildListUrl(query));
+  return post<StorageItem[]>(`${BASE}/list`, query ?? {});
 }
 
 export function createStorageFolder(req: StorageFolderCreateReq): Promise<string> {

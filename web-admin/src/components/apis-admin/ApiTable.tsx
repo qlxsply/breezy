@@ -13,18 +13,22 @@ export function ApiTable({
   rows,
   loading,
   canDetail,
+  canMaintain,
   canPublish,
   canDisable,
   onDetail,
+  onMaintain,
   onPublish,
   onDisable,
 }: {
   rows: ApiEntry[];
   loading: boolean;
   canDetail?: boolean;
+  canMaintain?: boolean;
   canPublish?: boolean;
   canDisable?: boolean;
   onDetail: (api: ApiEntry) => void;
+  onMaintain: (api: ApiEntry) => void;
   onPublish: (api: ApiEntry) => void;
   onDisable: (api: ApiEntry) => void;
 }) {
@@ -169,7 +173,17 @@ export function ApiTable({
   const actionsColumn = createAdminActionsColumn({
     rows,
     getActions: (row) =>
-      getRowActions(row, canDetail, canPublish, canDisable, onDetail, onPublish, onDisable),
+      getRowActions(
+        row,
+        canDetail,
+        canMaintain,
+        canPublish,
+        canDisable,
+        onDetail,
+        onMaintain,
+        onPublish,
+        onDisable,
+      ),
     stickyClassName: "api-table__actions-cell is-fixed-right",
     stickyHeaderClassName: "api-table__actions-cell is-fixed-right",
   });
@@ -246,15 +260,19 @@ function accessTagType(accessType?: string): "info" | "success" | "warning" | "d
 function getRowActions(
   row: ApiEntry,
   canDetail: boolean | undefined,
+  canMaintain: boolean | undefined,
   canPublish: boolean | undefined,
   canDisable: boolean | undefined,
   onDetail: (api: ApiEntry) => void,
+  onMaintain: (api: ApiEntry) => void,
   onPublish: (api: ApiEntry) => void,
   onDisable: (api: ApiEntry) => void,
 ): AdminActionItem[] {
   const actions: AdminActionItem[] = [];
   if (canDetail)
     actions.push({ key: "detail", label: "详情", tone: "detail", handler: () => onDetail(row) });
+  if (canMaintain)
+    actions.push({ key: "maintain", label: "维护", tone: "edit", handler: () => onMaintain(row) });
   if (canPublish && !row.enabled)
     actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
   if (canDisable && row.enabled)

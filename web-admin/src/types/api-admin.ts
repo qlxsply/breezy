@@ -17,6 +17,7 @@ export interface ApiEntry {
   auditResource?: string;
   auditAction?: string;
   auditDescription?: string;
+  sortOptionsJson?: string;
   enabled: boolean;
   protocolLabel?: string;
   httpMethodLabel?: string;
