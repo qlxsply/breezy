@@ -37,17 +37,12 @@ export function getLatestDiagnosticSnapshot(): Promise<DiagnosticSnapshot | null
 }
 
 export function getDiagnosticHistory(limit = 120): Promise<DiagnosticSnapshot[]> {
-  const params = new URLSearchParams({ limit: String(limit) });
-  return get<DiagnosticSnapshot[]>(`${BASE}/snapshots/history?${params.toString()}`);
+  return post<DiagnosticSnapshot[]>(`${BASE}/snapshots/history`, { limit });
 }
 
 export function getDiagnosticEvents(
   limit = 100,
   type?: DiagnosticEventType,
 ): Promise<DiagnosticEvent[]> {
-  const params = new URLSearchParams({ limit: String(limit) });
-  if (type) {
-    params.set("type", type);
-  }
-  return get<DiagnosticEvent[]>(`${BASE}/events?${params.toString()}`);
+  return post<DiagnosticEvent[]>(`${BASE}/events`, { limit, type });
 }
