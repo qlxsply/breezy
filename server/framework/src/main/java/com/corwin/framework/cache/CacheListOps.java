@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * List 类型缓存操作。
+ * List-type cache operations.
  *
  * @author Corwin 2026/4/19
  */

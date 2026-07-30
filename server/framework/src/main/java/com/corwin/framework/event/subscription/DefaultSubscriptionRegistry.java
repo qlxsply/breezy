@@ -9,13 +9,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * 默认内存订阅注册表实现。
+ * In-memory {@link SubscriptionRegistry} implementation.
  * <p>
- * 设计要点：
+ * Design:
  * <ul>
- *     <li>写入阶段加写锁，确保冲突检测与注册动作原子化。</li>
- *     <li>读取阶段使用并发容器 + 不可变拷贝，兼顾并发读取与结果安全。</li>
- *     <li>按配置执行 group 冲突 fail-fast，避免运行期出现隐式订阅覆盖。</li>
+ *   <li>Write lock for atomic conflict detection and registration.</li>
+ *   <li>Concurrent containers + immutable copies for safe reads.</li>
+ *   <li>Configurable fail-fast on group conflicts to prevent implicit subscription override at runtime.</li>
  * </ul>
  *
  * @author Corwin 2026/4/9

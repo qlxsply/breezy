@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.Instant;
 
 /**
+ * Jackson serializer for {@link java.time.Instant} that outputs epoch-millisecond values as strings.
  *
  * @author Corwin 2026/1/7
  */

@@ -3,6 +3,10 @@ package com.corwin.framework.config;
 import java.util.*;
 
 /**
+ * Catalog that discovers all {@link ConfigDefinitionProvider} implementations
+ * via {@link java.util.ServiceLoader} and exposes a consolidated,
+ * cached list of {@link ConfigDefinitionDescriptor} instances.
+ *
  * @author Corwin 2026/5/5
  */
 public final class ConfigDefinitionCatalog {

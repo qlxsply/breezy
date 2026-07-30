@@ -16,16 +16,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Trace 过滤器（请求入口）。
+ * Trace filter — entry point for distributed tracing.
  *
- * <p>职责：
+ * <p>Responsibilities:
  * <ul>
- *     <li>生成 / 透传 traceId</li>
- *     <li>生成 spanId</li>
- *     <li>初始化 Ctx</li>
- *     <li>绑定 MDC</li>
- *     <li>在响应头中写回 traceId</li>
- *     <li>请求结束后清理上下文</li>
+ *   <li>Generate or propagate traceId from upstream headers</li>
+ *   <li>Generate spanId for the current node</li>
+ *   <li>Initialise the request context ({@link com.corwin.framework.web.ctx.Ctx})</li>
+ *   <li>Bind context data to MDC for log correlation</li>
+ *   <li>Write traceId back in the response header</li>
+ *   <li>Clean up the context after request completion</li>
  * </ul>
  *
  * @author Corwin 2026/3/30
@@ -41,36 +41,36 @@ public class TraceFilter extends OncePerRequestFilter implements Ordered {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // ===== 1. traceId：优先透传 =====
+        // ===== 1. traceId: prefer propagation from upstream =====
         String traceId = resolveTraceId(request.getHeader(HttpHeaderNames.TRACE_ID));
 
-        // ===== 2. spanId：当前节点 =====
+        // ===== 2. spanId: generate for the current node =====
         String spanId = TraceGenerator.newSpanId();
 
-        // ===== 3. parentSpanId：来自上游（可选）=====
+        // ===== 3. parentSpanId: optional, from upstream =====
         String parentSpanId = resolveParentSpanId(request.getHeader(HttpHeaderNames.SPAN_ID));
 
         try {
-            // ===== 4. 初始化上下文 =====
+            // ===== 4. initialize request context =====
             CtxUtil.initTrace(request, traceId);
             CtxUtil.setSpanInfo(spanId, parentSpanId);
 
-            // ===== 5. 绑定 MDC（统一入口）=====
+            // ===== 5. bind to MDC for logging =====
             CtxUtil.bindMdc();
 
-            // ===== 6. 回写响应头（用于链路透传）=====
+            // ===== 6. write trace ID back to response header =====
             response.setHeader(HttpHeaderNames.TRACE_ID, traceId);
 
-            // ===== 7. 继续执行 =====
+            // ===== 7. proceed with the filter chain =====
             filterChain.doFilter(request, response);
 
         } finally {
-            // ===== 8. 防止部分容器未写 header（极端情况）=====
+            // ===== 8. guard: some containers may skip header writing =====
             if (!response.isCommitted()) {
                 response.setHeader(HttpHeaderNames.TRACE_ID, traceId);
             }
 
-            // ===== 9. 清理上下文（必须）=====
+            // ===== 9. mandatory context cleanup =====
             CtxUtil.reset();
         }
     }

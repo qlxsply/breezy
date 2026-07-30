@@ -4,13 +4,14 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.Ctx;
 
 /**
- * 事件消费上下文快照。
+ * Frozen snapshot of the request context captured at publish time.
  * <p>
- * 发布事件时会将当前请求上下文中的关键字段冻结到该对象中，消费阶段再由
- * {@code ConsumeContextBinder} 恢复到线程上下文，从而保证日志追踪、用户身份、
- * 客户端信息等在异步链路中的可追溯性。
+ * Key fields (trace ID, user principal, client info) are stored so that
+ * {@code ConsumeContextBinder} can restore them in the consumer thread,
+ * enabling cross-async-boundary traceability.
  * <p>
- * 首版快照采用固定字段白名单策略，不透传任意动态扩展属性，以控制序列化体积与演进风险。
+ * Uses a fixed-field whitelist strategy — no dynamic properties are propagated
+ * — to control serialisation size and evolution risk.
  *
  * @author Corwin 2026/3/31
  */

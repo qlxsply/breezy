@@ -8,7 +8,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 
 /**
- * 将 String 解析为 Long 类型，支持处理引号包裹的数字和原生数字
+ * Jackson deserializer that parses string-wrapped or raw numeric JSON values into {@link Long}.
  *
  * @author Corwin 2026/2/10
  */

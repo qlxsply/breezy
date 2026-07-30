@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 本地 list 结构。
+ * Thread-safe local list structure backed by an {@link java.util.ArrayDeque}.
  *
  * @author Corwin 2026/4/19
  */

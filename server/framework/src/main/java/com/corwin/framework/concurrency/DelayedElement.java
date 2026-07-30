@@ -9,8 +9,14 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 通用的延迟元素包装类
+ * A generic delayed element wrapping a payload and an expiration timestamp.
+ * <p>
+ * Equality is based solely on the payload (via {@link Objects#hash(Object...)}),
+ * which enables duplicate removal in {@link DelayQueueProcessor#submit(DelayedElement)}.
  *
+ * @param <T>        the payload type
+ * @param payload    the task payload (non-null)
+ * @param expireTime the instant at which this element becomes eligible for processing (non-null)
  * @author Corwin 2026/3/16
  */
 public record DelayedElement<T>(

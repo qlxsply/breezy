@@ -13,10 +13,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 基于 Disruptor 的内存分发执行器。
+ * Disruptor-based in-memory dispatch executor.
  * <p>
- * 该实现将消费任务封装为 RingBuffer 事件，适用于高吞吐低延迟场景。
- * 当前版本为简化语义仅支持单消费线程，若配置大于 1 会降级并记录告警。
+ * Wraps consumption tasks as RingBuffer events for high-throughput, low-latency
+ * scenarios. Currently supports only a single consumer thread per config; values
+ * above 1 are degraded with a warning.
  *
  * @author Corwin 2026/4/9
  */

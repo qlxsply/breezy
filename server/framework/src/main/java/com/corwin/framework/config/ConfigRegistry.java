@@ -13,19 +13,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * 配置值容器。
+ * In-memory container for system configuration values.
  * <p>
- * 用于在内存中存放系统配置项，支持多种类型（字符串、数值、布尔、小数等）。
- * 通过静态方法读取或更新配置，线程安全。
- * </p>
+ * Stores parsed config values of various types (int, long, boolean, decimal, string,
+ * string list, string set, custom) in separate typed caches. Thread-safe.
  *
  * @author Corwin 2025/10/14
  */
 @Slf4j
 public class ConfigRegistry {
-    // 全量配置记录
+    // All config items by key
     private static final Map<String, ConfigItem> ALL = new ConcurrentHashMap<>();
-    // 各种类型的配置缓存，按类型分开存储
+    // Typed caches, one map per value type
     private static final Map<String, Integer> KV_INT = new ConcurrentHashMap<>();
     private static final Map<String, Long> KV_LONG = new ConcurrentHashMap<>();
     private static final Map<String, Boolean> KV_BOOL = new ConcurrentHashMap<>();
@@ -36,8 +35,7 @@ public class ConfigRegistry {
     private static final Map<String, Object> KV_CUSTOM = new ConcurrentHashMap<>();
 
     /**
-     * 初始化配置项。
-     * 清空旧的缓存，然后根据传入的配置列表填充对应类型的映射。
+     * Initialize (or re-initialize) all config items, clearing previous caches.
      */
     public static void initialize(List<ConfigItem> items) {
         ALL.clear();
@@ -52,7 +50,7 @@ public class ConfigRegistry {
         KV_CUSTOM.clear();
 
         if (items == null || items.isEmpty()) {
-            log.info("已加载 0 条配置项");
+            log.info("Loaded 0 config items");
             return;
         }
 
@@ -75,18 +73,19 @@ public class ConfigRegistry {
                 case STR -> KV_STR.put(key, raw);
                 case STR_LIST -> KV_STR_LIST.put(key, ConfigValueParser.parseStrList(key, raw));
                 case STR_SET -> KV_STR_SET.put(key, ConfigValueParser.parseStrSet(key, raw));
-                default -> throw new RuntimeException(String.format("未知的配置类型 %s (键: %s)", type, key));
+                default -> throw new RuntimeException(String.format("Unknown config type %s (key: %s)", type, key));
             }
         }
-        log.info("已加载 {} 条配置项", items.size());
+        log.info("Loaded {} config items", items.size());
     }
 
     /**
-     * 动态刷新单个配置项：更新全量记录，并清除该 key 的各类型缓存与自定义缓存。
+     * Dynamically refresh a single config item: update the full record and clear
+     * all per-key typed caches, then parse and re-cache according to its type.
      */
     public static void refresh(ConfigItem item) {
         if (item == null || item.key == null || item.key.isBlank()) {
-            throw new SysException("刷新配置失败：key 不能为空", BaseError.SERVICE_ERROR);
+            throw new SysException("Refresh config failed: key must not be empty", BaseError.SERVICE_ERROR);
         }
 
         String key = item.key.trim();
@@ -113,12 +112,12 @@ public class ConfigRegistry {
             case STR_LIST -> KV_STR_LIST.put(key, ConfigValueParser.parseStrList(key, value));
             case STR_SET -> KV_STR_SET.put(key, ConfigValueParser.parseStrSet(key, value));
             default -> {
-                String msg = String.format("未知的配置类型 %s (键: %s)", type, key);
+                String msg = String.format("Unknown config type %s (key: %s)", type, key);
                 throw new SysException(msg, BaseError.SERVICE_ERROR);
             }
         }
 
-        log.info("已刷新配置 {}={}({})", key, type, value);
+        log.info("Refreshed config {}={}({})", key, type, value);
     }
 
     public static int intV(ConfigDefinition def) {
@@ -156,14 +155,14 @@ public class ConfigRegistry {
     private static ConfigItem getRequiredItem(String key) {
         ConfigItem si = ALL.get(key);
         if (si == null) {
-            throw new SysException("缺少配置项: " + key, BaseError.SERVICE_ERROR);
+            throw new SysException("Missing config item: " + key, BaseError.SERVICE_ERROR);
         }
         return si;
     }
 
     private static void assertTypeMatch(String key, ConfigValueType expected, ConfigItem si) {
         if (si.type != expected) {
-            String msg = String.format("配置项类型不一致: key=%s, expected=%s, actual=%s", key, expected, si.type);
+            String msg = String.format("Config type mismatch: key=%s, expected=%s, actual=%s", key, expected, si.type);
             throw new SysException(msg, BaseError.SERVICE_ERROR);
         }
     }
@@ -171,18 +170,17 @@ public class ConfigRegistry {
     private static <R> R getRequiredType(ConfigDefinition def, Map<String, R> typedCache, Function<String, R> parser) {
         String k = def.name();
 
-        // 1) 类型缓存命中直接返回
+        // 1) Type-cache hit
         R cached = typedCache.get(k);
         if (cached != null) {
             return cached;
         }
 
-        // 2) 全量记录校验存在性与类型
+        // 2) Validate existence and type against the full record
         ConfigItem si = getRequiredItem(k);
         assertTypeMatch(k, def.valueType(), si);
 
-        // 3) 解析并回填缓存
-        // 这里使用 computeIfAbsent 防止并发重复解析
+        // 3) Parse and populate cache (computeIfAbsent prevents duplicate concurrent parsing)
         return typedCache.computeIfAbsent(k, __ -> parser.apply(si.value));
     }
 
@@ -192,7 +190,7 @@ public class ConfigRegistry {
         Object cached = KV_CUSTOM.computeIfAbsent(k, __ -> {
             String raw = stringV(def);
             T obj = mapper.apply(raw);
-            log.info("已缓存自定义配置 {}={}", k, raw);
+            log.info("Cached custom config {}={}", k, raw);
             return obj;
         });
         return (T) cached;

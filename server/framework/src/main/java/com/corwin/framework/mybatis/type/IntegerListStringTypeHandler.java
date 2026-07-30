@@ -11,7 +11,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * List<Integer> 逗号分隔字符串 TypeHandler。
+ * MyBatis {@link org.apache.ibatis.type.TypeHandler} that maps {@code List<Integer>}
+ * to/from a comma-separated string column.
  *
  * @author Corwin 2026/7/28
  */

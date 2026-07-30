@@ -1,7 +1,7 @@
 package com.corwin.framework.event.durable.store;
 
 /**
- * 清理执行结果。
+ * Result of a durable store cleanup operation.
  *
  * @author Corwin 2026/4/12
  */

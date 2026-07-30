@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * BoundSql 构造工具。
+ * Factory for creating count and page {@link org.apache.ibatis.mapping.BoundSql} instances
+ * by cloning the original query's parameter mappings and additional parameters.
  *
  * @author Corwin 2026/7/28
  */

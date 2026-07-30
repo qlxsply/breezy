@@ -14,14 +14,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 默认事件信封工厂实现。
+ * Default {@link AsyncEventEnvelopeFactory} implementation following the V2 unified model.
  * <p>
- * 该实现遵循 V2 统一模型，构建信封时会：
+ * When building an envelope, this implementation:
  * <ul>
- *     <li>采集当前线程上下文快照，保证异步消费链路可恢复追踪信息。</li>
- *     <li>使用 mock 时间生成发生时间戳，保持与项目时间规范一致。</li>
- *     <li>按“显式 source -> 配置默认 source -> null”策略确定来源。</li>
- *     <li>按“配置 producerService -> spring.application.name”策略确定生产者标识。</li>
+ *     <li>Captures the current thread context snapshot for traceability.</li>
+ *     <li>Uses mock time for the event timestamp (consistent with project conventions).</li>
+ *     <li>Resolves source via "explicit source → default source → null".</li>
+ *     <li>Resolves producer via "configured producerService → spring.application.name".</li>
  * </ul>
  *
  * @author Corwin 2026/4/9

@@ -4,7 +4,7 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.error.CacheError;
 
 /**
- * 缓存值类型转换工具。
+ * Type-safe value casting utility for cache values.
  *
  * @author Corwin 2026/4/19
  */

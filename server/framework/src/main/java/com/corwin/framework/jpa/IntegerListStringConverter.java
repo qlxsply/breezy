@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 使用逗号分隔字符串存储 List<Integer>
+ * JPA {@link AttributeConverter} that persists {@code List<Integer>} as a comma-separated string.
  * <p>
- * 示例：
- * [1,2,3] <-> "1,2,3"
+ * Example: {@code [1,2,3]} is stored as {@code "1,2,3"}.
  */
 @Converter
 public class IntegerListStringConverter implements AttributeConverter<List<Integer>, String> {

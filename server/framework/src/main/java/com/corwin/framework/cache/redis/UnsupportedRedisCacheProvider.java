@@ -11,7 +11,7 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.error.CacheError;
 
 /**
- * Redis 缓存扩展位。
+ * Placeholder {@link com.corwin.framework.cache.core.CacheProvider} for the Redis mode (not yet implemented).
  *
  * @author Corwin 2026/4/19
  */

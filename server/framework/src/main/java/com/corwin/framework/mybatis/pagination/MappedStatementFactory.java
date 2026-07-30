@@ -7,7 +7,8 @@ import org.apache.ibatis.mapping.SqlSource;
 import java.util.List;
 
 /**
- * MappedStatement 复制工具。
+ * Factory for creating copies of {@link org.apache.ibatis.mapping.MappedStatement}
+ * with a different ID, {@link org.apache.ibatis.mapping.SqlSource}, and result maps.
  *
  * @author Corwin 2026/7/28
  */

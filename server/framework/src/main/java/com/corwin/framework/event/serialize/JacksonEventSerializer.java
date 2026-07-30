@@ -9,13 +9,12 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 基于 Jackson 的事件序列化实现。
+ * Jackson-based {@link EventSerializer} implementation.
  * <p>
- * 该实现采用“两段式反序列化”：
- * 先读取通用外壳字段与 payload 的通用对象结构，
- * 再依据 {@code eventType} 动态解析具体事件类并还原 payload。
- * <p>
- * 该策略既保持了事件模型的类型信息，又避免为每个事件类型手工维护绑定配置。
+ * Uses a two-phase deserialisation strategy: first reads the envelope shell
+ * and the generic payload structure, then resolves the concrete event class
+ * via {@code eventType} and restores the typed payload. This preserves type
+ * information without requiring manual per-type binding configuration.
  *
  * @author Corwin 2026/4/10
  */

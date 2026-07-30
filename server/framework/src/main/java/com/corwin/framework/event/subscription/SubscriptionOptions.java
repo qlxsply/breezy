@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 订阅可选配置。
+ * Optional subscription configuration.
  *
  * @author Corwin 2026/4/9
  */

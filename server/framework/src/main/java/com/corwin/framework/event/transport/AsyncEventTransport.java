@@ -4,10 +4,11 @@ import com.corwin.framework.event.model.AsyncEventEnvelope;
 import com.corwin.framework.event.subscription.SubscriptionRegistry;
 
 /**
- * 异步事件传输抽象。
+ * Abstraction for async event transport.
  * <p>
- * 定义统一生命周期：启动绑定订阅、发布事件、优雅关闭。
- * 不同实现可对应内存分发或外部消息中间件。
+ * Defines a unified lifecycle: bind subscriptions on start, publish events,
+ * and gracefully shut down. Implementations span in-memory dispatch and
+ * external message brokers.
  *
  * @author Corwin 2026/3/31
  */

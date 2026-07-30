@@ -20,11 +20,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 内存版异步事件 transport。
+ * In-memory async event transport using a per-subscriber dispatch model.
  * <p>
- * 语义模型为“按订阅者分发”：
- * 发布时先按 eventType 查询全部订阅，再对每个订阅独立投递任务。
- * 该实现用于单进程异步解耦，同时保持与 MQ 模式一致的订阅语义。
+ * On publish, queries all subscriptions by event type and dispatches to each
+ * subscriber independently. Used for intra-process async decoupling while
+ * keeping subscription semantics consistent with MQ-based transports.
  *
  * @author Corwin 2026/4/9
  */

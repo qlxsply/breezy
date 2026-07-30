@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 本地 sorted set 缓存操作。
+ * Local cache sorted-set operations backed by {@link LocalSortedSetValue}.
  *
  * @author Corwin 2026/4/19
  */

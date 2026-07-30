@@ -17,11 +17,11 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * RabbitMQ transport（当前为本地分发语义实现）。
+ * Local-dispatch RabbitMQ transport (simulation mode).
  * <p>
- * 当前实现会解析 exchange/routingKey/queue 命名并执行序列化往返，
- * 再通过本地执行器模拟消费链路，用于在无外部 broker 依赖时验证
- * 订阅语义与上下文恢复逻辑。
+ * Parses exchange/routingKey/queue naming and performs serialisation round-trips,
+ * then simulates the consumption path via a local executor — all without an
+ * external broker. This validates subscription semantics and context restoration.
  *
  * @author Corwin 2026/4/9
  */

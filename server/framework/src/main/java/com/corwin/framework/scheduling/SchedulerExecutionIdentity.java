@@ -5,8 +5,14 @@ import com.corwin.framework.constant.UserType;
 import java.util.Objects;
 
 /**
- * 定时任务执行身份。
+ * Identity used for scheduled task execution.
+ * <p>
+ * Represents the system-level principal under which scheduled tasks run.
+ * All fields are non-null.
  *
+ * @param userId   the scheduler system user ID
+ * @param username the scheduler system username
+ * @param userType the user type (typically {@link com.corwin.framework.constant.UserType#SCHEDULER})
  * @author Corwin 2026/3/23
  */
 public record SchedulerExecutionIdentity(

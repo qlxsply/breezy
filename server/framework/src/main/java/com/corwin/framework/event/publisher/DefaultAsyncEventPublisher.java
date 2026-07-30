@@ -9,12 +9,10 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * 默认事件发布器。
- * <p>
- * 该实现将发布流程拆成两步：
- * 先通过 {@link AsyncEventEnvelopeFactory} 构建统一信封，
- * 再交由 {@link AsyncEventTransport} 执行实际投递。
- * 这样业务层不需要感知上下文快照、事件元数据与底层传输细节。
+ * Default {@link AsyncEventPublisher} that splits publishing into two steps:
+ * envelope creation via {@link AsyncEventEnvelopeFactory} and delivery via
+ * {@link AsyncEventTransport}. Business code is isolated from context management
+ * and transport details.
  *
  * @author Corwin 2026/3/31
  */

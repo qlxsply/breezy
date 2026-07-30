@@ -1,7 +1,7 @@
 package com.corwin.framework.mybatis.pagination;
 
 /**
- * MyBatis PageData 分页异常。
+ * Exception thrown by the MyBatis {@link PageData} pagination component.
  *
  * @author Corwin 2026/7/28
  */

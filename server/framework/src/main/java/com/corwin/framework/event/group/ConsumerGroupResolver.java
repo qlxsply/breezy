@@ -1,10 +1,9 @@
 package com.corwin.framework.event.group;
 
 /**
- * 消费组解析器。
- * <p>
- * 将监听方法对应的原始组标识（可读但未必可用）转换为可落地到 MQ 的稳定组名，
- * 保证多实例部署时同一监听逻辑映射到同一消费组。
+ * Resolves a human-readable raw consumer group identifier into a stable,
+ * MQ-compatible group name, ensuring the same listener maps to the same group
+ * across all instances in a deployment.
  *
  * @author Corwin 2026/4/9
  */

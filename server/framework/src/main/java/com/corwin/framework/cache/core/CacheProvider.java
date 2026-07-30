@@ -3,7 +3,7 @@ package com.corwin.framework.cache.core;
 import com.corwin.framework.cache.*;
 
 /**
- * 缓存模式 provider。
+ * SPI for a concrete cache mode provider (local, Redis, or tiered).
  *
  * @author Corwin 2026/4/19
  */

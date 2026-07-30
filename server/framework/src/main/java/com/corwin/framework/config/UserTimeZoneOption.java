@@ -3,6 +3,8 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * User-selectable time zone options.
+ *
  * @author Corwin 2026/5/5
  */
 public enum UserTimeZoneOption implements DictEnumDefinition {

@@ -13,6 +13,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Matches request paths against the configured authentication whitelist.
+ * <p>
+ * Whitelist rules are loaded from configuration
+ * ({@link com.corwin.framework.config.DefaultConfigKeys#AUTH_WHITELIST})
+ * and compiled into {@link CompiledWhitelistRule} instances on first access.
+ *
  * @author Corwin 2026/3/23
  */
 @Slf4j

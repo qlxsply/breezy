@@ -1,22 +1,25 @@
 package com.corwin.framework.config;
 
 /**
- * 默认配置枚举定义。
+ * Built-in config key definitions with descriptions and value types.
+ * <p>
+ * Values are segregated by level: {@link ConfigLevel#SYSTEM} items apply globally;
+ * {@link ConfigLevel#USER} items are personalizable per user.
  *
  * @author Corwin 2026/1/31
  */
 public enum DefaultConfigKeys implements ConfigDefinition {
-    // 系统配置
-    TIME_OFFSET("系统时间偏移量（秒）", ConfigValueType.LONG),
-    CLIENT_IP_MODE("请求客户端 IP 获取方式", ConfigValueType.STR),
-    AUTH_WHITELIST("认证白名单", ConfigValueType.STR),
-    LOGGING_FILTER_EXCLUDE_PREFIXES("日志过滤器排除路径前缀", ConfigValueType.STR_LIST),
-    LOGGING_FILTER_STREAM_PREFIXES("日志过滤器流式响应路径前缀", ConfigValueType.STR_LIST),
-    // 用户配置
-    USER_TIME_ZONE("用户时区", ConfigValueType.STR, ConfigLevel.USER),
-    USER_DATE_TIME_FORMAT("用户日期时间格式", ConfigValueType.STR, ConfigLevel.USER),
-    USER_DATE_FORMAT("用户日期格式", ConfigValueType.STR, ConfigLevel.USER),
-    USER_DECIMAL_FORMAT("用户小数格式", ConfigValueType.STR, ConfigLevel.USER),
+    // System-level configs
+    TIME_OFFSET("System time offset (seconds)", ConfigValueType.LONG),
+    CLIENT_IP_MODE("Client IP resolution mode", ConfigValueType.STR),
+    AUTH_WHITELIST("Authentication whitelist", ConfigValueType.STR),
+    LOGGING_FILTER_EXCLUDE_PREFIXES("Logging filter exclude path prefixes", ConfigValueType.STR_LIST),
+    LOGGING_FILTER_STREAM_PREFIXES("Logging filter streaming response path prefixes", ConfigValueType.STR_LIST),
+    // User-level (personalizable) configs
+    USER_TIME_ZONE("User time zone", ConfigValueType.STR, ConfigLevel.USER),
+    USER_DATE_TIME_FORMAT("User date-time format", ConfigValueType.STR, ConfigLevel.USER),
+    USER_DATE_FORMAT("User date format", ConfigValueType.STR, ConfigLevel.USER),
+    USER_DECIMAL_FORMAT("User decimal format", ConfigValueType.STR, ConfigLevel.USER),
     ;
 
     private final String desc;

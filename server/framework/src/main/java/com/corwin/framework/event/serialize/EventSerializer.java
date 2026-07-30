@@ -3,11 +3,10 @@ package com.corwin.framework.event.serialize;
 import com.corwin.framework.event.model.AsyncEventEnvelope;
 
 /**
- * 事件序列化抽象。
+ * Abstraction for event serialisation between {@link AsyncEventEnvelope} and byte arrays.
  * <p>
- * 用于在需要跨进程传输的 transport（如 Kafka/RabbitMQ）中，完成
- * {@link AsyncEventEnvelope} 与字节数组之间的转换。
- * 该接口只定义最小能力，不绑定具体协议格式。
+ * Used by cross-process transports (Kafka, RabbitMQ). Defines only the minimal
+ * contract and does not prescribe a specific protocol format.
  *
  * @author Corwin 2026/4/10
  */

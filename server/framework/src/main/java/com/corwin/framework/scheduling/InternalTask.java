@@ -3,7 +3,10 @@ package com.corwin.framework.scheduling;
 import java.lang.annotation.*;
 
 /**
- * 内部定时任务标记注解
+ * Marker annotation for internal scheduled task methods.
+ * <p>
+ * When combined with {@link org.springframework.scheduling.annotation.Scheduled @Scheduled},
+ * provides metadata (code, name, description) for monitoring and management.
  *
  * @author Corwin 2026/3/30
  */
@@ -13,17 +16,17 @@ import java.lang.annotation.*;
 public @interface InternalTask {
 
     /**
-     * 任务唯一编码
+     * Unique task code identifier.
      */
     String code();
 
     /**
-     * 任务名称
+     * Human-readable task name.
      */
     String name();
 
     /**
-     * 任务描述
+     * Optional task description.
      */
     String description() default "";
 }

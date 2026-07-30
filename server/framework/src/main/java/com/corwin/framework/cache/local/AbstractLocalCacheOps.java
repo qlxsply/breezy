@@ -8,7 +8,7 @@ import com.corwin.framework.cache.core.CacheKeyValidator;
 import java.time.Duration;
 
 /**
- * 本地缓存公共 key 操作基类。
+ * Base class for local cache key operations (exists, delete, expire, ttl).
  *
  * @author Corwin 2026/4/19
  */

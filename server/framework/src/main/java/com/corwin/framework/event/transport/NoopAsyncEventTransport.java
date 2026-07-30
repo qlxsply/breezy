@@ -4,11 +4,11 @@ import com.corwin.framework.event.model.AsyncEventEnvelope;
 import com.corwin.framework.event.subscription.SubscriptionRegistry;
 
 /**
- * 空操作 transport。
+ * No-op transport used when the event bus is disabled.
  * <p>
- * 在事件组件禁用时作为占位实现，所有方法均无副作用。
+ * All operations are side-effect-free, acting as a Null Object replacement.
  *
- * @author Corwin 2026/4/9
+ * @author Corwin 2026/3/31
  */
 public class NoopAsyncEventTransport implements AsyncEventTransport {
 

@@ -3,6 +3,8 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * User-selectable date format options.
+ *
  * @author Corwin 2026/5/5
  */
 public enum UserDateFormatOption implements DictEnumDefinition {

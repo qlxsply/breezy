@@ -17,6 +17,11 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 
 /**
+ * Global exception handler for REST controllers.
+ * <p>
+ * Catches and translates business ({@link BizException}),
+ * system ({@link SysException}), validation, serialization, and
+ * unexpected exceptions into consistent {@link ApiResponse} error responses.
  *
  * @author Corwin 2025/10/13
  */

@@ -3,6 +3,8 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * Config level — whether a setting applies system-wide or can be personalized per user.
+ *
  * @author Corwin 2026/3/30
  */
 public enum ConfigLevel implements DictEnumDefinition {

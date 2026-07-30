@@ -1,7 +1,7 @@
 package com.corwin.framework.event.transport.inmemory.durable;
 
 /**
- * durable 内存队列中的投递任务引用。
+ * Reference to a delivery task in the durable in-memory queue.
  *
  * @author Corwin 2026/4/12
  */

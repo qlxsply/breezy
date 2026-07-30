@@ -3,7 +3,10 @@ package com.corwin.framework.constant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 日期时间格式常量。
+ * Date-time format pattern constants and pre-built {@link java.time.format.DateTimeFormatter} instances.
+ * <p>
+ * Provides ISO-like defaults (yyyy-MM-dd HH:mm:ss, yyyy-MM-dd, HH:mm:ss)
+ * that are used consistently across serialization, parsing, and display.
  *
  * @author Corwin 2026/3/23
  */

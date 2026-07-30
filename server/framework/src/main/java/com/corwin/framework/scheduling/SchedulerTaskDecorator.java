@@ -11,22 +11,13 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 定时任务上下文装饰器。
- *
- * <p>用途：</p>
- * <ul>
- *     <li>为 {@code @Scheduled} 任务创建独立的线程上下文</li>
- *     <li>不复制 HTTP 请求上下文</li>
- *     <li>通过 {@link SchedulerExecutionIdentityProvider} 解析调度执行用户</li>
- *     <li>自动绑定 MDC，保证日志格式统一</li>
- * </ul>
- *
- * <p>设计原则：</p>
- * <ul>
- *     <li>定时任务不属于任何外部请求，因此不应继承请求线程中的 Ctx</li>
- *     <li>每次任务触发都视为一个新的“系统内部执行入口”</li>
- *     <li>执行完成后必须清理上下文，避免线程复用污染</li>
- * </ul>
+ * {@link TaskDecorator} that initializes a fresh system context for {@code @Scheduled} tasks.
+ * <p>
+ * Unlike {@link com.corwin.framework.concurrency.ContextCopyingTaskDecorator}, this decorator
+ * does <b>not</b> copy the HTTP request context. Instead it creates a new trace,
+ * resolves the scheduler execution identity, and binds MDC
+ * — treating every scheduled execution as its own system-level entry point.
+ * Context is cleaned up after execution to prevent thread-pool pollution.
  *
  * @author Corwin 2026/3/30
  * @since 2026/3/23
@@ -46,7 +37,7 @@ public class SchedulerTaskDecorator implements TaskDecorator {
             String spanId = TraceGenerator.newSpanId();
 
             try {
-                // 1. 初始化调度任务上下文
+                // 1. Initialize the scheduled-task context
                 CtxUtil.schedulerInitTrace(traceId);
                 CtxUtil.setSpanInfo(spanId, null);
                 SchedulerExecutionIdentity identity = Objects.requireNonNull(identityProvider.identity(),
@@ -56,13 +47,13 @@ public class SchedulerTaskDecorator implements TaskDecorator {
                 UserType userType = identity.userType();
                 CtxUtil.setPrincipal(new AuthPrincipal(userId, username, userType, false, Set.of()));
 
-                // 2. 绑定 MDC
+                // 2. Bind MDC
                 CtxUtil.bindMdc();
 
-                // 3. 执行任务
+                // 3. Execute the task
                 runnable.run();
             } finally {
-                // 4. 清理上下文，防止线程复用污染
+                // 4. Clear context to prevent thread-reuse pollution
                 CtxUtil.reset();
             }
         };

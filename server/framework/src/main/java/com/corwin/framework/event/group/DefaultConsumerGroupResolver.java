@@ -7,15 +7,11 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * 默认消费组解析器。
+ * Default {@link ConsumerGroupResolver} that produces a stable group name.
  * <p>
- * 实现策略：
- * <ul>
- *     <li>对应用名执行字符归一化，确保可用于 Kafka group.id / RabbitMQ queue 命名。</li>
- *     <li>对原始组标识计算短哈希，避免因方法签名过长导致命名超限。</li>
- *     <li>最终格式固定为 {@code app.ae.hash}，并限制最大长度。</li>
- * </ul>
- * 该策略重点保障“稳定且可跨实例复现”，而不是可读性。
+ * Strategy: normalizes the application name, appends a short hash of the raw group
+ * identifier, and clips the result to a maximum length. The format is
+ * {@code app.ae.shortHash}, prioritizing stability and reproducibility over readability.
  *
  * @author Corwin 2026/4/9
  */

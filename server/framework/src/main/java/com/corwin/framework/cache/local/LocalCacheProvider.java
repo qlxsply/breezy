@@ -5,7 +5,7 @@ import com.corwin.framework.cache.core.CacheKeyValidator;
 import com.corwin.framework.cache.core.CacheProvider;
 
 /**
- * 本地缓存 provider。
+ * {@link com.corwin.framework.cache.core.CacheProvider} implementation for local (Caffeine-backed) caching.
  *
  * @author Corwin 2026/4/19
  */

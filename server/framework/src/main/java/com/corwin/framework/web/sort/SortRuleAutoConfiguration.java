@@ -7,7 +7,12 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * 排序规则自动配置。
+ * Auto-configuration for the sort-rule infrastructure.
+ * <p>
+ * Registers a default {@link SortRuleProvider}, the
+ * {@link SortRuleInterceptor}, and its corresponding
+ * {@link org.springframework.web.servlet.config.annotation.WebMvcConfigurer}
+ * to plug the interceptor into the MVC lifecycle.
  *
  * @author Corwin 2026/7/29
  */

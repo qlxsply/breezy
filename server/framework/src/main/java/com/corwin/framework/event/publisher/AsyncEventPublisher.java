@@ -6,10 +6,11 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * 异步事件发布入口。
+ * Entry point for publishing async events.
  * <p>
- * 业务代码应仅依赖该接口发布事件，不直接依赖底层 transport 或消息中间件客户端。
- * 组件会在实现中完成事件封装、上下文快照采集与传输分发。
+ * Business code should depend on this interface only, not on the underlying
+ * transport or message-queue client. The implementation handles envelope
+ * creation, context snapshotting, and delivery.
  *
  * @author Corwin 2026/3/31
  */

@@ -3,7 +3,9 @@ package com.corwin.framework.mybatis.pagination.dialect;
 import java.util.List;
 
 /**
- * MySQL/MariaDB 分页方言。
+ * {@link PaginationDialect} for MySQL and MariaDB.
+ * <p>
+ * Appends {@code LIMIT ? OFFSET ?} to the original SQL statement.
  *
  * @author Corwin 2026/7/28
  */

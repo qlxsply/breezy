@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Set 类型缓存操作。
+ * Set-type cache operations.
  *
  * @author Corwin 2026/4/19
  */

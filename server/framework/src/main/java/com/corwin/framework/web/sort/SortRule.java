@@ -5,8 +5,11 @@ import com.corwin.framework.domain.page.SortSpec;
 import java.util.List;
 
 /**
- * 当前接口排序规则。
+ * Sort rules for the current endpoint.
  *
+ * @param enabled  whether sorting is enabled for this endpoint
+ * @param allowed  list of sortable fields (frontend field -> SQL column mapping)
+ * @param defaults default sort specifications applied when the request has no sort
  * @author Corwin 2026/7/29
  */
 public record SortRule(

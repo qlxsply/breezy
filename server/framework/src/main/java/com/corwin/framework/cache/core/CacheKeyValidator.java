@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * 缓存参数校验器。
+ * Validates cache operation parameters (key length, field presence, TTL, value type).
  *
  * @author Corwin 2026/4/19
  */

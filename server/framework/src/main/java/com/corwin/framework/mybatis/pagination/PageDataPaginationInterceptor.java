@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 将返回 PageData 且包含 PageSpec 参数的 MyBatis 查询自动改写为分页查询。
+ * MyBatis {@link org.apache.ibatis.plugin.Interceptor} that automatically rewrites
+ * SELECT queries returning {@link PageData} and accepting {@link com.corwin.framework.domain.page.PageSpec PageSpec}
+ * into paginated queries (count + limit/offset).
  *
  * @author Corwin 2026/7/28
  */
@@ -76,7 +78,7 @@ public final class PageDataPaginationInterceptor implements Interceptor {
         }
 
         /*
-         * 自定义 ResultHandler 不属于 PageData 自动分页场景。
+         * Queries with a custom ResultHandler are not eligible for automatic pagination.
          */
         if (resultHandler != null) {
             return invocation.proceed();
@@ -110,7 +112,7 @@ public final class PageDataPaginationInterceptor implements Interceptor {
                 configuration);
 
         /*
-         * 提前结束，不再访问数据查询 SQL。
+         * Short-circuit: no data to fetch, return an empty page immediately.
          */
         if (total == 0L || offset >= total) {
             PageData<Object> emptyPage = PageData.of(pageSpec, total, List.of());
@@ -126,7 +128,7 @@ public final class PageDataPaginationInterceptor implements Interceptor {
                 mappedStatement.getResultMaps());
 
         /*
-         * 把当前查询调用替换为真正的分页数据查询。
+         * Replace the current invocation arguments with the paginated query equivalents.
          */
         args[0] = pageMappedStatement;
         args[2] = RowBounds.DEFAULT;
@@ -140,15 +142,14 @@ public final class PageDataPaginationInterceptor implements Interceptor {
         }
 
         /*
-         * MyBatis 按 XML 的 resultMap/resultType 映射为 List<Order>。
+         * MyBatis maps the result to List&lt;T&gt; per the XML resultMap/resultType.
          */
         @SuppressWarnings("unchecked") List<Object> elements = (List<Object>) invocation.proceed();
 
         PageData<Object> pageData = PageData.of(pageSpec, total, elements);
 
         /*
-         * MapperMethod 最终走 selectOne()。
-         * selectOne() 要求底层结果列表只能有一个元素。
+         * The MapperMethod ultimately calls selectOne(), which requires exactly one result.
          */
         return List.of(pageData);
     }
@@ -170,9 +171,9 @@ public final class PageDataPaginationInterceptor implements Interceptor {
                 countBoundSql);
 
         /*
-         * invocation.getTarget() 是当前插件代理内部的 Executor。
-         * 直接调用它不会再次进入当前分页拦截器，
-         * 因而不需要 ThreadLocal 防递归。
+         * invocation.getTarget() is the Executor inside the plugin proxy.
+         * Calling it directly does not re-enter this interceptor,
+         * so no ThreadLocal recursion guard is needed.
          */
         List<?> countResult = executor.query(countStatement, parameterObject, RowBounds.DEFAULT,
                 Executor.NO_RESULT_HANDLER, countCacheKey, countBoundSql);
@@ -207,9 +208,9 @@ public final class PageDataPaginationInterceptor implements Interceptor {
         }
 
         /*
-         * 多参数 Mapper 方法会被 MyBatis 包装成 ParamMap。
-         * 相同参数可能同时以 page 和 param1 两个 key 存在，
-         * 找到第一个 PageSpec 即可。
+         * Multi-parameter mapper methods are wrapped in a ParamMap by MyBatis.
+         * The same PageSpec may appear under multiple keys (e.g. "page" and "param1").
+         * Pick the first one found.
          */
         if (parameterObject instanceof Map<?, ?> map) {
             for (Object value : map.values()) {
@@ -220,8 +221,8 @@ public final class PageDataPaginationInterceptor implements Interceptor {
         }
 
         /*
-         * 方法签名已经确认存在 PageSpec，
-         * 运行时没有找到对象时视为传入 null，使用默认分页值。
+         * The method signature confirmed a PageSpec parameter exists.
+         * If the runtime value is missing, fall back to defaults.
          */
         return PageSpec.of(null, null, null);
     }

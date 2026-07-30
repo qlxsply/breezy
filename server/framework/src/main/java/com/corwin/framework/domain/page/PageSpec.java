@@ -3,6 +3,14 @@ package com.corwin.framework.domain.page;
 import java.util.List;
 
 /**
+ * Pagination specification with page number, page size, and sort criteria.
+ * <p>
+ * Provides factory methods and defaults ({@value #DEFAULT_PAGE_NO}, {@value #DEFAULT_PAGE_SIZE}).
+ * Page numbers are 1-based; values less than 1 are normalized to the default.
+ *
+ * @param pageNo   the requested page number (1-based)
+ * @param pageSize the requested page size
+ * @param sorts    the sort specifications (immutable copy stored)
  * @author Corwin 2026/3/30
  */
 public record PageSpec(

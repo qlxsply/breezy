@@ -21,13 +21,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 异步事件监听器扫描注册器。
+ * Scans Spring beans for methods annotated with {@link AsyncEventListener} and
+ * registers them in the {@link com.corwin.framework.event.subscription.SubscriptionRegistry}.
  * <p>
- * 该后处理器在 Bean 初始化后扫描 {@link AsyncEventListener} 方法，完成以下工作：
+ * Responsibilities:
  * <ul>
- *     <li>校验方法签名是否合法（仅支持 AsyncEvent 或 AsyncEventEnvelope&lt;T&gt; 单参数）。</li>
- *     <li>推导监听事件类型并生成订阅元数据。</li>
- *     <li>解析消费组与订阅 ID。</li>
+ *     <li>Validate the method signature (single parameter of type AsyncEvent or AsyncEventEnvelope&lt;T&gt;).</li>
+ *     <li>Derive the event type and generate subscription metadata.</li>
+ *     <li>Resolve the consumer group and subscription ID.</li>
  *     <li>构建 {@link SubscriberInvoker} 并注册到 {@link SubscriptionRegistry}。</li>
  * </ul>
  * 该类是 V2 注解监听模型的核心入口，负责把 Spring 方法模型转换成统一订阅模型。

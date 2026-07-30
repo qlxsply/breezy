@@ -3,7 +3,7 @@ package com.corwin.framework.cache.local;
 import com.corwin.framework.cache.core.CacheEntry;
 
 /**
- * 本地缓存写入结果。
+ * Result of a local cache write operation with the entry, result value, and removal flag.
  *
  * @author Corwin 2026/4/19
  */

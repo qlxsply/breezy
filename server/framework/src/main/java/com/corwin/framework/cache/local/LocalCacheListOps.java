@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 本地 list 缓存操作。
+ * Local cache list operations backed by {@link LocalListValue}.
  *
  * @author Corwin 2026/4/19
  */

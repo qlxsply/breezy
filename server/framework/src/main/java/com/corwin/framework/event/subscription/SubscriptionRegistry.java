@@ -3,9 +3,9 @@ package com.corwin.framework.event.subscription;
 import java.util.List;
 
 /**
- * 订阅注册表。
+ * Registry maintaining the mapping from event type to subscriber collection.
  * <p>
- * 统一维护“事件类型 -> 订阅者集合”的映射，供 transport 在启动和发布阶段查询。
+ * Queried by transports during startup and publish phases.
  *
  * @author Corwin 2026/4/9
  */

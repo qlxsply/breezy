@@ -1,7 +1,7 @@
 package com.corwin.framework.event.durable.store;
 
 /**
- * durable 事件持久化模型。
+ * Persisted event record for durable event store.
  *
  * @author Corwin 2026/4/12
  */

@@ -1,6 +1,11 @@
 package com.corwin.framework.dict;
 
 /**
+ * Predefined tag type categories for UI badges and indicators.
+ * <p>
+ * Each constant represents a semantic category (info, success, warning, danger)
+ * used to style tags, alerts, and status markers consistently.
+ *
  * @author Corwin 2026/3/15
  */
 public enum DictTagType implements DictEnumDefinition {

@@ -5,6 +5,11 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Built-in user type enumeration.
+ * <p>
+ * Defines the hierarchy of system identities with corresponding
+ * tag colors and tag types for UI display.
+ *
  * @author Corwin 2026/4/19
  */
 public enum UserType implements DictEnumDefinition {

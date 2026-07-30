@@ -4,21 +4,21 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 异步事件统一信封模型。
+ * Unified envelope model for async event publish and transport.
  * <p>
- * 该对象用于在发布与传输阶段携带完整事件信息，统一承载：
- * 事件标识、事件类型、发生时间、上下文快照、事件负载以及传输扩展元数据。
- * 无论底层是内存分发、Kafka 还是 RabbitMQ，都以该模型作为中立载体。
+ * Carries the event ID, type, occurrence time, context snapshot, payload,
+ * partition key, and transport extension headers. This model is the neutral
+ * carrier regardless of the underlying transport (in-memory, Kafka, RabbitMQ).
  * <p>
- * 该记录类型在构造时会执行标准化处理：
+ * Construction normalisation:
  * <ul>
- *     <li>当 {@code eventType} 为空时自动回退为 payload 的全限定类名。</li>
- *     <li>当 {@code ctxSnapshot} 为空时自动补全为空快照，避免消费链路空指针分支。</li>
- *     <li>当 {@code partitionKey} 供 Kafka / Rabbit 扩展使用。</li>
- *     <li>当 {@code headers} 为空时归一为不可变空 Map，非空时复制为不可变副本。in-memory 可以忽略，Kafka / RabbitMQ 可根据需要使用。</li>
+ *   <li>{@code eventType} defaults to the payload's fully-qualified class name.</li>
+ *   <li>{@code ctxSnapshot} defaults to an empty snapshot to avoid NPE.</li>
+ *   <li>{@code headers} is normalised to an immutable empty map when null.</li>
+ *   <li>{@code partitionKey} is reserved for Kafka / RabbitMQ partitioning.</li>
  * </ul>
  *
- * @author Corwin 2026/3/31
+ * @author Corwin 2026/4/9
  */
 public record AsyncEventEnvelope<T extends AsyncEvent>(
         String eventId,

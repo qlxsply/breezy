@@ -1,7 +1,7 @@
 package com.corwin.framework.cache.local;
 
 /**
- * Redis 风格范围索引归一化工具。
+ * Utility for normalizing Redis-style range indices (supporting negative offsets).
  *
  * @author Corwin 2026/4/19
  */

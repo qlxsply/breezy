@@ -7,20 +7,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
- * Spring 定时任务线程池配置。
- *
- * <p>职责：</p>
- * <ul>
- *     <li>提供 {@code @Scheduled} 使用的专用调度线程池</li>
- *     <li>为定时任务绑定统一的调度上下文</li>
- * </ul>
- *
- * <p>说明：</p>
- * <ul>
- *     <li>定时任务线程池与异步线程池分离，避免相互影响</li>
- *     <li>定时任务不复制 HTTP 请求上下文</li>
- *     <li>定时任务上下文由 {@link SchedulerTaskDecorator} 统一初始化</li>
- * </ul>
+ * Configuration for the dedicated scheduled-task thread pool.
+ * <p>
+ * Separates scheduling infrastructure from the async task pool to avoid interference.
+ * Context is managed by {@link SchedulerTaskDecorator} — HTTP request context
+ * is <b>not</b> propagated.
  *
  * @author Corwin 2026/3/30
  * @since 2026/3/23
@@ -30,12 +21,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class SchedulerThreadPoolConfig {
 
     /**
-     * 定时任务上下文装饰器。
-     *
-     * <p>为每次调度执行创建新的系统上下文，
-     * 固定使用 scheduler 系统账号，不复制请求线程上下文。</p>
-     *
-     * @return TaskDecorator
+     * Task decorator that initializes a fresh system identity for each scheduled execution.
      */
     @Bean
     public TaskDecorator schedulerTaskDecorator(SchedulerExecutionIdentityProvider identityProvider) {
@@ -43,16 +29,12 @@ public class SchedulerThreadPoolConfig {
     }
 
     /**
-     * 定时任务专用线程池。
+     * The dedicated thread-pool-task-scheduler bean named {@code "taskScheduler"}.
+     * <p>
+     * Pool size = 4, with graceful shutdown waiting up to 10 seconds.
      *
-     * <p>参数说明：</p>
-     * <ul>
-     *     <li>poolSize = 4：调度线程数</li>
-     *     <li>threadNamePrefix = scheduled-：线程名前缀</li>
-     * </ul>
-     *
-     * @param schedulerTaskDecorator 定时任务上下文装饰器
-     * @return ThreadPoolTaskScheduler
+     * @param schedulerTaskDecorator the scheduler context decorator
+     * @return the configured scheduler
      */
     @Bean(name = "taskScheduler")
     public ThreadPoolTaskScheduler taskScheduler(TaskDecorator schedulerTaskDecorator) {

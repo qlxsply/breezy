@@ -1,7 +1,7 @@
 package com.corwin.framework.cache;
 
 /**
- * 缓存模板入口。
+ * Entry point for typed cache operations by mode.
  *
  * @author Corwin 2026/4/19
  */

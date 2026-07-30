@@ -10,7 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * 本地缓存存储抽象。
+ * Abstraction for the local cache storage engine.
  *
  * @author Corwin 2026/4/19
  */

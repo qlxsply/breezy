@@ -1,8 +1,10 @@
 package com.corwin.framework.mybatis.pagination;
 
 /**
- * PageData 自动分页方法描述。
+ * Describes whether a MyBatis mapper method requires automatic {@link PageData} pagination
+ * based on its parameter and return types.
  *
+ * @param automaticPagination whether the method qualifies for automatic pagination
  * @author Corwin 2026/7/28
  */
 record PageMethodDescriptor(boolean automaticPagination) {

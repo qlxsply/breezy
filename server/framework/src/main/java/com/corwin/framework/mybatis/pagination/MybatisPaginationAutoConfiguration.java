@@ -22,7 +22,11 @@ import java.sql.SQLException;
 import java.util.Locale;
 
 /**
- * MyBatis PageData 分页插件自动配置。
+ * Auto-configuration for the MyBatis {@link PageData} pagination plugin.
+ * <p>
+ * Registers the {@link PageDataPaginationInterceptor}, resolves the
+ * database-specific {@link com.corwin.framework.mybatis.pagination.dialect.PaginationDialect},
+ * and provides the {@link JSqlParserCountSqlOptimizer}.
  *
  * @author Corwin 2026/7/28
  */

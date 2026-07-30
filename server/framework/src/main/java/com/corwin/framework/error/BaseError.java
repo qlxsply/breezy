@@ -1,15 +1,14 @@
 package com.corwin.framework.error;
 
 /**
- * 基础错误码定义。
+ * Framework-level / common error codes.
  * <p>
- * 约定：
- * - code：业务错误码
- * - msg ：对外提示信息，统一使用英文
- * <p>
- * 说明：
- * - 该枚举仅包含“框架级 / 通用级”错误
- * - 各业务系统可自行定义 enum 实现 ErrorCode
+ * Conventions:
+ * <ul>
+ *   <li>{@code code} — six-digit numeric business error code</li>
+ *   <li>{@code msg} — English message exposed to API consumers</li>
+ * </ul>
+ * Business modules may define their own enums implementing {@link ErrorCode}.
  *
  * @author Corwin 2026/3/30
  */

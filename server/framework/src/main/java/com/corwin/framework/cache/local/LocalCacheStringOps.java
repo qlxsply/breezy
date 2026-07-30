@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 本地 string 缓存操作。
+ * Local cache string operations backed by the store.
  *
  * @author Corwin 2026/4/19
  */

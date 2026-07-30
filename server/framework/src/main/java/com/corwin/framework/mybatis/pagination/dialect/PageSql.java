@@ -3,8 +3,10 @@ package com.corwin.framework.mybatis.pagination.dialect;
 import java.util.List;
 
 /**
- * 分页 SQL 及其追加参数。
+ * A paginated SQL string together with its appended parameters (e.g. limit, offset).
  *
+ * @param sql        the paginated SQL
+ * @param parameters the appended pagination parameters
  * @author Corwin 2026/7/28
  */
 public record PageSql(

@@ -3,7 +3,7 @@ package com.corwin.framework.mybatis;
 import com.corwin.framework.util.StrUtil;
 
 /**
- * SQL LIKE 查询参数构造工具。
+ * Utility for constructing SQL LIKE pattern arguments.
  *
  * @author wl0180
  * @since 2026/07/28
@@ -17,10 +17,10 @@ public final class LikePatternUtils {
     }
 
     /**
-     * 构造包含匹配参数，例如："abc" -> "%abc%"。
+     * Builds a contains-like pattern, e.g. {@code "abc" -> "%abc%"}.
      *
-     * @param value 原始查询条件
-     * @return LIKE 查询参数；当参数为空或仅包含空白字符时返回 null
+     * @param value the raw search term
+     * @return the LIKE pattern, or {@code null} if the value is blank
      */
     public static String toContainsPattern(String value) {
         String normalized = StrUtil.trimToNull(value);
@@ -28,10 +28,10 @@ public final class LikePatternUtils {
     }
 
     /**
-     * 构造前缀匹配参数，例如："abc" -> "abc%"。
+     * Builds a prefix-like pattern, e.g. {@code "abc" -> "abc%"}.
      *
-     * @param value 原始查询条件
-     * @return LIKE 查询参数；当参数为空或仅包含空白字符时返回 null
+     * @param value the raw search term
+     * @return the LIKE pattern, or {@code null} if the value is blank
      */
     public static String toPrefixPattern(String value) {
         String normalized = StrUtil.trimToNull(value);

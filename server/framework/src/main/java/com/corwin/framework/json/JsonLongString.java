@@ -10,8 +10,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 组合注解：将 Long/long 字段序列化为 String，反序列化时将 String 解析为 Long。
- * 主要用于解决前端 JavaScript 处理长整型精度丢失的问题。
+ * Composite annotation that serializes {@code Long} / {@code long} as String and deserializes String back to Long.
+ * <p>
+ * This addresses the precision loss issue that occurs when JavaScript consumes large
+ * numeric values that exceed Number.MAX_SAFE_INTEGER.
  *
  * @author Corwin 2026/2/10
  */

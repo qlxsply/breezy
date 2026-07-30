@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 本地 hash 缓存操作。
+ * Local cache hash operations backed by {@link java.util.concurrent.ConcurrentHashMap}.
  *
  * @author Corwin 2026/4/19
  */

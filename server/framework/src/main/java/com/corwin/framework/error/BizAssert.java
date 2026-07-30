@@ -3,7 +3,7 @@ package com.corwin.framework.error;
 import java.util.Collection;
 
 /**
- * 业务断言工具：用于快速校验业务前置条件，不满足则抛 BizException。
+ * Assertion utility that throws {@link BizException} when a business precondition is not met.
  *
  * @author Corwin 2026/3/30
  */
@@ -13,7 +13,7 @@ public abstract class BizAssert {
     }
 
     /**
-     * 条件必须为 true，否则抛业务异常
+     * Asserts that the expression is {@code true}.
      */
     public static void state(boolean expression, ErrorCode errorCode) {
         if (!expression) {
@@ -22,7 +22,7 @@ public abstract class BizAssert {
     }
 
     /**
-     * 对象必须非 null，否则抛业务异常
+     * Asserts that the object is not {@code null}.
      */
     public static void notNull(Object obj, ErrorCode errorCode) {
         if (obj == null) {
@@ -31,7 +31,7 @@ public abstract class BizAssert {
     }
 
     /**
-     * 字符串必须非空白，否则抛业务异常
+     * Asserts that the string is not blank.
      */
     public static void notBlank(String s, ErrorCode errorCode) {
         if (s == null || s.trim().isEmpty()) {
@@ -40,7 +40,7 @@ public abstract class BizAssert {
     }
 
     /**
-     * 集合必须非空，否则抛业务异常
+     * Asserts that the collection is not empty.
      */
     public static <T> void notEmpty(Collection<T> collection, ErrorCode errorCode) {
         if (collection == null || collection.isEmpty()) {
@@ -49,14 +49,14 @@ public abstract class BizAssert {
     }
 
     /**
-     * 直接抛业务异常
+     * Throws a {@link BizException} immediately.
      */
     public static void fail(ErrorCode errorCode) {
         throw new BizException(errorCode);
     }
 
     /**
-     * 直接抛业务异常（自定义消息覆盖默认 msg）
+     * Throws a {@link BizException} with a custom message (overrides the default {@code msg}).
      */
     public static void fail(ErrorCode errorCode, String message) {
         throw new BizException(message, errorCode);

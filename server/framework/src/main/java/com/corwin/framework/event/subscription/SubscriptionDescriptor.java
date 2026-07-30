@@ -5,10 +5,10 @@ import com.corwin.framework.event.model.AsyncEvent;
 import java.util.Objects;
 
 /**
- * 逻辑订阅者描述。
+ * Describes a logical subscriber — the core unit of the V2 event model.
  * <p>
- * 该对象是 V2 模型中的核心单元，transport 会围绕它进行消费拓扑构建。
- * 一个监听方法通常对应一个 SubscriptionDescriptor。
+ * Each annotated listener method typically maps to one {@code SubscriptionDescriptor},
+ * and transports build their consumption topology around it.
  *
  * @author Corwin 2026/4/9
  */

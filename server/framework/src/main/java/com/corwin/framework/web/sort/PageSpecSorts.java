@@ -12,7 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PageSpec 排序规则校验与字段映射工具。
+ * Validates and resolves sort specifications against the current endpoint's
+ * {@link SortRule}, mapping frontend field names to SQL column names.
+ * <p>
+ * If sorting is disabled for the endpoint, all sort criteria are stripped.
+ * If the request does not provide any sort, the endpoint's default sort is applied.
  *
  * @author Corwin 2026/7/29
  */

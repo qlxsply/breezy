@@ -9,34 +9,39 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 返回结果
+ * Unified API response envelope.
+ * <p>
+ * All REST endpoints return this structure, providing a consistent
+ * contract with success flag, business code, message, timestamp,
+ * trace ID, and optional data payload.
  *
+ * @param <T> the data type
  * @author Corwin 2025/10/12
  */
 @Getter
 public class ApiResponse<T> {
     /**
-     * 是否成功
+     * Whether the request was processed successfully
      */
     private boolean success;
     /**
-     * 业务编码：成功/失败/具体错误码（与HTTP状态码区分）
+     * Business code (distinct from HTTP status code)
      */
     private String code;
     /**
-     * 提示信息
+     * Human-readable message
      */
     private String msg;
     /**
-     * 响应时间
+     * Response timestamp
      */
     private Instant timestamp;
     /**
-     * 链路追踪ID
+     * Trace ID for distributed tracing
      */
     private String traceId;
     /**
-     * 返回数据
+     * Response data payload
      */
     private T data;
 

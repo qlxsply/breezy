@@ -1,7 +1,7 @@
 package com.corwin.framework.cache;
 
 /**
- * 缓存数据结构类型。
+ * Cache data structure types supported by the framework.
  *
  * @author Corwin 2026/4/19
  */

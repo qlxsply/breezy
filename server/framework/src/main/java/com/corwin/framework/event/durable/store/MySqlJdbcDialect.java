@@ -3,7 +3,7 @@ package com.corwin.framework.event.durable.store;
 import java.util.List;
 
 /**
- * MySQL durable JDBC 方言实现。
+ * {@link JdbcDialect} implementation for MySQL.
  *
  * @author Corwin 2026/4/12
  */

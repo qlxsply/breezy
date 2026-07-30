@@ -3,7 +3,7 @@ package com.corwin.framework.cache;
 import java.time.Duration;
 
 /**
- * 缓存 key 级操作。
+ * Cache key-level operations (exists, delete, expire, ttl).
  *
  * @author Corwin 2026/4/19
  */

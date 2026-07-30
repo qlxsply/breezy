@@ -7,41 +7,39 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * 请求上下文工具类。
- *
+ * Request context utility for managing the current thread-bound {@link Ctx}.
  * <p>
- * 该工具类基于 {@link ThreadLocal} 管理当前线程绑定的 {@link Ctx}，
- * 用于在一次请求处理过程中保存和访问请求级上下文数据。
- * </p>
+ * Based on {@link ThreadLocal}, it stores and provides access to request-scoped
+ * data throughout a single request processing lifecycle.
  *
- * <h2>核心职责</h2>
+ * <h2>Core responsibilities</h2>
  * <ul>
- *     <li>初始化请求上下文（trace、客户端、起始时间等）</li>
- *     <li>提供上下文数据的统一读写入口</li>
- *     <li>支持上下文快照与恢复，用于异步线程传播</li>
- *     <li>支持将上下文绑定到 MDC，便于日志链路追踪</li>
+ *   <li>Initialise request context (trace, client, start time, etc.)</li>
+ *   <li>Provide a central read/write entry point for contextual data</li>
+ *   <li>Support context snapshot and restore for async thread propagation</li>
+ *   <li>Bind context to MDC for distributed log tracing</li>
  * </ul>
  *
- * <h2>线程模型</h2>
+ * <h2>Thread model</h2>
  * <ul>
- *     <li>每个线程拥有独立的 {@link Ctx} 实例</li>
- *     <li>上下文默认不跨线程传播</li>
- *     <li>异步执行时应先调用 {@link #snapshot()}，再在目标线程调用 {@link #restore(Ctx)}</li>
+ *   <li>Each thread holds its own {@link Ctx} instance</li>
+ *   <li>Context does not propagate across threads by default</li>
+ *   <li>For async execution, call {@link #snapshot()} first, then {@link #restore(Ctx)} in the target thread</li>
  * </ul>
  *
- * <h2>生命周期建议</h2>
+ * <h2>Lifecycle recommendation</h2>
  * <ol>
- *     <li>请求进入时调用 {@link #initTrace(HttpServletRequest, String)}</li>
- *     <li>认证完成后调用 {@link #setPrincipal(AuthPrincipal)}</li>
- *     <li>日志输出前调用 {@link #bindMdc()}</li>
- *     <li>请求结束时必须调用 {@link #reset()}</li>
+ *   <li>Call {@link #initTrace(HttpServletRequest, String)} at request entry</li>
+ *   <li>Call {@link #setPrincipal(AuthPrincipal)} after authentication</li>
+ *   <li>Call {@link #bindMdc()} before logging</li>
+ *   <li>Call {@link #reset()} at request completion — mandatory</li>
  * </ol>
  *
- * <h2>注意事项</h2>
+ * <h2>Important notes</h2>
  * <ul>
- *     <li>该类依赖 ThreadLocal，线程池复用场景下必须正确 reset，防止上下文污染</li>
- *     <li>不要将当前线程中的 Ctx 实例直接传给其他线程，应使用快照副本</li>
- *     <li>该类是静态工具类，不应被实例化</li>
+ *   <li>This class relies on ThreadLocal; correct reset is essential in thread-pool scenarios</li>
+ *   <li>Do not pass the current thread's Ctx directly to another thread; use a snapshot copy</li>
+ *   <li>This is a static utility class and must not be instantiated</li>
  * </ul>
  *
  * @author Corwin
@@ -50,61 +48,53 @@ import jakarta.servlet.http.HttpServletRequest;
 public final class CtxUtil {
 
     /**
-     * 当前线程绑定的请求上下文缓存。
+     * Current thread-bound request context cache.
      *
-     * <p>
-     * 采用 {@link ThreadLocal#withInitial(java.util.function.Supplier)} 方式懒初始化，
-     * 保证调用方在首次访问时即可获得一个可用的 {@link Ctx} 实例。
-     * </p>
+     * <p>Lazily initialised via {@link ThreadLocal#withInitial(java.util.function.Supplier)},
+     * ensuring a usable {@link Ctx} instance is available on first access.</p>
      */
     private static final ThreadLocal<Ctx> CTX_CACHE = ThreadLocal.withInitial(Ctx::new);
 
     /**
-     * 工具类不允许实例化
+     * Utility class — no instantiation allowed.
      */
     private CtxUtil() {
     }
 
     /**
-     * 获取当前线程绑定的上下文对象。
+     * Returns the context bound to the current thread.
      *
-     * <p>
-     * 若当前线程尚未初始化，则会自动创建一个空的 {@link Ctx} 实例。
-     * </p>
+     * <p>If the current thread has not been initialised yet, a new empty
+     * {@link Ctx} instance is created automatically.</p>
      *
-     * @return 当前线程上下文
+     * @return the current thread's context
      */
     public static Ctx get() {
         return CTX_CACHE.get();
     }
 
     /**
-     * 获取当前上下文的快照副本。
+     * Returns a snapshot copy of the current context.
      *
-     * <p>
-     * 主要用于异步任务、线程池、并发执行等场景下的上下文传播。
-     * 返回的是副本而非原对象，避免多个线程共享同一个上下文实例。
-     * </p>
+     * <p>Primarily used for context propagation in async tasks, thread pools,
+     * and concurrent execution. Returns a copy rather than the original to
+     * avoid sharing the same instance across threads.</p>
      *
-     * @return 当前上下文副本
+     * @return a copy of the current context
      */
     public static Ctx snapshot() {
         return CTX_CACHE.get().copy();
     }
 
     /**
-     * 将指定上下文恢复到当前线程。
+     * Restores the given context to the current thread.
      *
-     * <p>
-     * 常用于异步线程执行前恢复父线程的上下文信息。
-     * 为避免调用方传入的实例在外部继续被修改，这里会保存其副本。
-     * </p>
+     * <p>Typically used before executing an async task to restore the parent
+     * thread's context. A copy is saved internally to prevent external mutation.</p>
      *
-     * <p>
-     * 若传入 null，则会执行 {@link #reset()}，等价于清空当前线程上下文。
-     * </p>
+     * <p>If {@code ctx} is null, this is equivalent to calling {@link #reset()}.</p>
      *
-     * @param ctx 要恢复的上下文
+     * @param ctx the context to restore
      */
     public static void restore(Ctx ctx) {
         if (ctx == null) {
@@ -115,23 +105,21 @@ public final class CtxUtil {
     }
 
     /**
-     * 初始化一次 HTTP 请求的基础上下文信息。
+     * Initialises the basic context for an HTTP request.
      *
-     * <p>初始化内容包括：</p>
+     * <p>Initialisation includes:</p>
      * <ul>
-     *     <li>请求开始时间（毫秒）</li>
-     *     <li>请求开始时间（纳秒）</li>
-     *     <li>traceId</li>
-     *     <li>客户端标识（来自请求头）</li>
-     *     <li>客户端 IP</li>
+     *   <li>Request start time (epoch millis)</li>
+     *   <li>Request start time (nanos)</li>
+     *   <li>traceId</li>
+     *   <li>Client identifier (from request header)</li>
+     *   <li>Client IP</li>
      * </ul>
      *
-     * <p>
-     * 通常在 Filter、Interceptor 或网关入口调用。
-     * </p>
+     * <p>Typically invoked in a Filter, Interceptor, or gateway entry point.</p>
      *
-     * @param request 当前 HTTP 请求
-     * @param traceId 当前请求分配的 traceId
+     * @param request the current HTTP request
+     * @param traceId the trace ID assigned to this request
      */
     public static void initTrace(HttpServletRequest request, String traceId) {
         Ctx ctx = CTX_CACHE.get();
@@ -143,22 +131,18 @@ public final class CtxUtil {
     }
 
     /**
-     * 初始化调度任务场景下的上下文信息。
+     * Initialises context for scheduled / background tasks (non-HTTP threads).
      *
-     * <p>
-     * 用于非 HTTP 请求线程，例如：
-     * </p>
+     * <p>Intended for:</p>
      * <ul>
-     *     <li>定时任务</li>
-     *     <li>后台任务</li>
-     *     <li>消息消费任务</li>
+     *   <li>Scheduled tasks</li>
+     *   <li>Background jobs</li>
+     *   <li>Message consumers</li>
      * </ul>
      *
-     * <p>
-     * 这类场景没有请求对象，因此 client 和 clientIp 置空。
-     * </p>
+     * <p>Since there is no HTTP request, client and clientIp are left null.</p>
      *
-     * @param traceId 当前任务使用的 traceId
+     * @param traceId the trace ID for the current task
      */
     public static void schedulerInitTrace(String traceId) {
         Ctx ctx = CTX_CACHE.get();
@@ -170,10 +154,10 @@ public final class CtxUtil {
     }
 
     /**
-     * 设置当前线程的 span 信息。
+     * Sets the span information for the current thread.
      *
-     * @param spanId       当前 spanId
-     * @param parentSpanId 父级 spanId
+     * @param spanId       the current span ID
+     * @param parentSpanId the parent span ID
      */
     public static void setSpanInfo(String spanId, String parentSpanId) {
         Ctx ctx = CTX_CACHE.get();
@@ -182,151 +166,142 @@ public final class CtxUtil {
     }
 
     /**
-     * 设置 traceId
+     * Sets the trace ID.
      *
-     * @param traceId 链路追踪 ID
+     * @param traceId the distributed tracing ID
      */
     public static void setTraceId(String traceId) {
         CTX_CACHE.get().setTraceId(traceId);
     }
 
     /**
-     * 设置 spanId
+     * Sets the span ID.
      *
-     * @param spanId 当前调用节点 ID
+     * @param spanId the current call node ID
      */
     public static void setSpanId(String spanId) {
         CTX_CACHE.get().setSpanId(spanId);
     }
 
     /**
-     * 设置当前认证主体。
+     * Sets the authenticated principal for the current request.
      *
-     * <p>
-     * 一般在认证成功后调用。
-     * </p>
+     * <p>Typically called after successful authentication.</p>
      *
-     * @param principal 当前用户身份
+     * @param principal the current user identity
      */
     public static void setPrincipal(AuthPrincipal principal) {
         CTX_CACHE.get().setPrincipal(principal);
     }
 
     /**
-     * 获取当前认证主体。
+     * Returns the current authenticated principal.
      *
-     * @return 当前用户身份，若未认证则可能为 null
+     * @return the current user identity, or null if not authenticated
      */
     public static AuthPrincipal getPrincipal() {
         return CTX_CACHE.get().getPrincipal();
     }
 
     /**
-     * 设置 token 哈希值。
+     * Sets the token hash value.
      *
-     * <p>
-     * 用于记录当前认证 token 的摘要信息，便于审计、追踪或二次校验。
-     * 不应保存明文 token。
-     * </p>
+     * <p>Used for recording a digest of the current authentication token
+     * for auditing, tracking, or secondary validation.
+     * The plaintext token must never be stored.</p>
      *
-     * @param tokenHash token 摘要
+     * @param tokenHash the token digest
      */
     public static void setTokenHash(String tokenHash) {
         CTX_CACHE.get().setTokenHash(tokenHash);
     }
 
     /**
-     * 获取当前 token 哈希值。
+     * Returns the current token hash.
      *
-     * @return token 摘要
+     * @return the token digest
      */
     public static String getTokenHash() {
         return CTX_CACHE.get().getTokenHash();
     }
 
     /**
-     * 清除当前 token 哈希值。
+     * Clears the current token hash.
      */
     public static void clearTokenHash() {
         CTX_CACHE.get().setTokenHash(null);
     }
 
     /**
-     * 写入扩展属性。
+     * Writes an extension attribute.
      *
-     * <p>
-     * 用于保存当前请求过程中的附加上下文数据。
-     * 例如：业务标识、扩展安全信息、灰度信息等。
-     * </p>
+     * <p>Used to store additional contextual data for the current request,
+     * such as business identifiers, extended security info, or feature flags.</p>
      *
-     * @param key   属性键
-     * @param value 属性值
+     * @param key   the attribute key
+     * @param value the attribute value
      */
     public static void putAttr(String key, Object value) {
         CTX_CACHE.get().putAttr(key, value);
     }
 
     /**
-     * 删除扩展属性。
+     * Removes an extension attribute.
      *
-     * @param key 属性键
+     * @param key the attribute key
      */
     public static void removeAttr(String key) {
         CTX_CACHE.get().removeAttr(key);
     }
 
     /**
-     * 按指定类型获取扩展属性。
+     * Returns an extension attribute with type checking.
      *
-     * <p>
-     * 若属性不存在，返回 null；
-     * 若属性存在但类型不匹配，将抛出 {@link ClassCastException}。
-     * </p>
+     * <p>Returns null if the attribute is absent.
+     * Throws {@link ClassCastException} if the value is not of the expected type.</p>
      *
-     * @param key  属性键
-     * @param type 期望类型
-     * @param <T>  类型参数
-     * @return 属性值
+     * @param key  the attribute key
+     * @param type the expected type
+     * @param <T>  the type parameter
+     * @return the attribute value, or null if absent
      */
     public static <T> T getAttr(String key, Class<T> type) {
         return CTX_CACHE.get().getAttr(key, type);
     }
 
     /**
-     * 将当前上下文绑定到 MDC。
+     * Binds the current context data to MDC.
      *
-     * <p>
-     * 常用于请求入口、异步线程恢复后，使日志自动带上 traceId、userId、clientIp 等字段。
-     * </p>
+     * <p>Call this at request entry or after restoring context in an async
+     * thread so that log patterns automatically include traceId, userId,
+     * clientIp, etc.</p>
      */
     public static void bindMdc() {
         CTX_CACHE.get().bindToMdc();
     }
 
     /**
-     * 清理 MDC 中的上下文字段。
+     * Clears context fields from MDC.
      *
-     * <p>
-     * 通常在请求结束时调用，防止线程复用带来的日志污染。
-     * </p>
+     * <p>Typically called at request completion to prevent log
+     * cross-contamination on thread reuse.</p>
      */
     public static void clearMdc() {
         Ctx.clearMdc();
     }
 
     /**
-     * 重置当前线程上下文。
+     * Resets the current thread's context.
      *
-     * <p>该操作会：</p>
+     * <p>This operation:</p>
      * <ul>
-     *     <li>清理 MDC</li>
-     *     <li>移除当前线程的 ThreadLocal 上下文</li>
+     *   <li>Clears MDC</li>
+     *   <li>Removes the ThreadLocal context for the current thread</li>
      * </ul>
      *
-     * <p>
-     * 这是请求结束时必须执行的清理动作。
-     * 否则在线程池复用场景中，可能导致上一个请求的数据泄露到下一个请求。
-     * </p>
+     * <p>This is a mandatory cleanup at the end of every request.
+     * Without it, thread-pool reuse could leak data from one request
+     * to the next.</p>
      */
     public static void reset() {
         clearMdc();
@@ -334,41 +309,40 @@ public final class CtxUtil {
     }
 
     /**
-     * 获取请求开始时间（毫秒时间戳）
+     * Returns the request start time in epoch millis.
      *
-     * @return 请求起始时间
+     * @return the request start timestamp
      */
     public static long getRequestStartTs() {
         return CTX_CACHE.get().getRequestStartTs();
     }
 
     /**
-     * 获取请求开始时间（纳秒）
+     * Returns the request start time in nanoseconds.
      *
-     * @return 请求起始纳秒时间
+     * @return the request start nanos
      */
     public static long getRequestStartNano() {
         return CTX_CACHE.get().getRequestStartNano();
     }
 
     /**
-     * 获取当前 traceId
+     * Returns the current trace ID.
      *
-     * @return traceId
+     * @return the trace ID
      */
     public static String getTraceId() {
         return CTX_CACHE.get().getTraceId();
     }
 
     /**
-     * 获取当前 traceId，若不存在则抛出异常。
+     * Returns the current trace ID, throwing if absent.
      *
-     * <p>
-     * 适用于必须要求当前线程已完成 trace 初始化的场景。
-     * </p>
+     * <p>Useful when the current thread is required to have completed
+     * trace initialisation.</p>
      *
-     * @return 非空 traceId
-     * @throws IllegalStateException 当前线程未设置 traceId 时抛出
+     * @return the non-null trace ID
+     * @throws IllegalStateException if no trace ID has been set for this thread
      */
     public static String getRequiredTraceId() {
         String traceId = getTraceId();
@@ -379,38 +353,39 @@ public final class CtxUtil {
     }
 
     /**
-     * 获取当前 spanId
+     * Returns the current span ID.
      *
-     * @return spanId
+     * @return the span ID
      */
     public static String getSpanId() {
         return CTX_CACHE.get().getSpanId();
     }
 
     /**
-     * 获取父级 spanId
+     * Returns the parent span ID.
      *
-     * @return parentSpanId
+     * @return the parent span ID
      */
     public static String getParentSpanId() {
         return CTX_CACHE.get().getParentSpanId();
     }
 
     /**
-     * 获取客户端标识
+     * Returns the client identifier.
      *
-     * @return client 标识
+     * @return the client identifier
      */
     public static String getClient() {
         return CTX_CACHE.get().getClient();
     }
 
     /**
-     * 获取客户端 IP
+     * Returns the client IP address.
      *
-     * @return 客户端 IP
+     * @return the client IP
      */
     public static String getClientIp() {
         return CTX_CACHE.get().getClientIp();
     }
+
 }

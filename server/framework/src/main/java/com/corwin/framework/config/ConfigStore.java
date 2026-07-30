@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 系统配置存储抽象。
+ * Abstraction for the system configuration persistence store.
  *
  * @author Corwin 2026/2/25
  */

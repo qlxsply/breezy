@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
+ * Utility for parsing raw string config values into typed values (int, long, boolean, decimal, string list/set).
+ * <p>
+ * All methods throw {@link com.corwin.framework.error.SysException} on parse failure.
+ *
  * @author Corwin 2026/1/31
  */
 public final class ConfigValueParser {

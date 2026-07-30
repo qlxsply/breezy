@@ -1,7 +1,7 @@
 package com.corwin.framework.error;
 
 /**
- * Cache 组件错误码定义。
+ * Cache-component error codes.
  *
  * @author Corwin 2026/4/19
  */

@@ -1,7 +1,8 @@
 package com.corwin.framework.mybatis.pagination;
 
 /**
- * SQL JDBC 占位符计数器。
+ * Counts JDBC placeholder ({@code ?}) characters in an SQL string,
+ * correctly ignoring placeholders inside string literals, identifiers, and comments.
  *
  * @author Corwin 2026/7/28
  */

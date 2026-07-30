@@ -3,44 +3,54 @@ package com.corwin.framework.web.auth;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * SSE（Server-Sent Events）专用短时票据服务。
+ * Short-lived ticket service for SSE (Server-Sent Events) connections.
  *
- * <p>设计背景：</p>
+ * <p>Design background:</p>
  * <ul>
- *     <li>SSE 客户端通常使用浏览器原生 {@code EventSource} 建立连接。</li>
- *     <li>{@code EventSource} 对自定义请求头支持有限，实际场景中通常不方便携带
- *     {@code Authorization: Bearer xxx} 这类标准鉴权头。</li>
- *     <li>因此需要一种“只用于 SSE 建连阶段”的临时凭证机制，将常规登录态转换为
- *     可通过 URL 参数传递的短时票据。</li>
+ *   <li>SSE clients typically use the browser-native {@code EventSource} API.</li>
+ *   <li>{@code EventSource} has limited support for custom request headers,
+ *       making it impractical to carry a standard {@code Authorization: Bearer xxx}
+ *       header in many real-world scenarios.</li>
+ *   <li>A temporary credential mechanism dedicated to the SSE connection phase
+ *       is needed, converting the regular login state into a short-lived ticket
+ *       that can be passed via URL parameters.</li>
  * </ul>
  *
- * <p>典型流程：</p>
+ * <p>Typical flow:</p>
  * <ol>
- *     <li>前端先通过普通受保护接口（携带 JWT / Token）调用签发接口。</li>
- *     <li>服务端根据当前登录用户信息签发一个短时、一次性的 SSE ticket。</li>
- *     <li>前端使用该 ticket 作为查询参数访问 SSE stream 接口。</li>
- *     <li>服务端在鉴权过滤器中消费 ticket，并还原出用户身份上下文。</li>
+ *   <li>The frontend calls a ticket-issuing endpoint through a normal
+ *       protected API (carrying JWT / Token).</li>
+ *   <li>The server issues a short-lived, one-time SSE ticket based on the
+ *       authenticated user's identity.</li>
+ *   <li>The frontend accesses the SSE stream endpoint using the ticket
+ *       as a query parameter.</li>
+ *   <li>The authentication filter consumes the ticket and restores the
+ *       user's identity context.</li>
  * </ol>
  *
- * <p>设计目标：</p>
+ * <p>Design goals:</p>
  * <ul>
- *     <li>仅用于 SSE 建连，不替代常规 Token。</li>
- *     <li>ticket 应当是短时有效的。</li>
- *     <li>ticket 应当支持一次性消费，防止重放。</li>
- *     <li>ticket 认证成功后可恢复出 {@link TokenPayload}，供后续请求上下文使用。</li>
+ *   <li>SSE connection only — does not replace the regular Token mechanism.</li>
+ *   <li>The ticket must be short-lived.</li>
+ *   <li>The ticket must be one-time consumable to prevent replay.</li>
+ *   <li>Successful ticket authentication must recover the full
+ *       {@link TokenPayload} for downstream context.</li>
  * </ul>
  *
- * <p>安全说明：</p>
+ * <p>Security considerations:</p>
  * <ul>
- *     <li>本服务生成的 ticket 不应作为长期身份凭证使用。</li>
- *     <li>ticket 更适合通过 HTTPS 下的查询参数短暂传递。</li>
- *     <li>由于查询参数可能出现在访问日志中，建议控制 ticket 的 TTL 并避免日志明文记录。</li>
+ *   <li>Tickets issued by this service must not be used as long-term credentials.</li>
+ *   <li>Tickets are intended for brief transmission via HTTPS query parameters.</li>
+ *   <li>Since query parameters may appear in access logs, keep the TTL short
+ *       and avoid logging the ticket value in plain text.</li>
  * </ul>
  *
- * <p>实现说明：</p>
+ * <p>Implementation notes:</p>
  * <ul>
- *     <li>当前接口不限定具体存储方式，可由内存、Redis 或数据库实现。</li>
- *     <li>在单机场景下可采用内存实现；分布式场景下通常应改为共享存储。</li>
+ *   <li>This interface does not mandate a specific storage backend;
+ *       in-memory, Redis, or database implementations are all valid.</li>
+ *   <li>An in-memory implementation suffices for single-node deployments;
+ *       distributed deployments should use shared storage.</li>
  * </ul>
  *
  * @author Corwin 2026/3/30
@@ -49,71 +59,76 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface SseTicketService {
 
     /**
-     * 签发一个新的 SSE 短时票据。
+     * Issues a new short-lived SSE ticket.
      *
-     * <p>该方法通常在用户已通过常规 Token 鉴权后调用，将当前用户身份信息
-     * 转换为一个“仅用于 SSE 建连阶段”的短时票据。</p>
+     * <p>This method is typically called after the user has been authenticated
+     * via the normal Token mechanism, converting the current user identity
+     * into a temporary ticket for SSE connection only.</p>
      *
-     * <p>返回的 ticket 应满足以下约束：</p>
+     * <p>The returned ticket must satisfy:</p>
      * <ul>
-     *     <li>足够随机，难以猜测；</li>
-     *     <li>存在明确过期时间；</li>
-     *     <li>可在后续 {@link #consume(String)} 时还原出对应用户身份。</li>
+     *   <li>Sufficiently random and hard to guess</li>
+     *   <li>Has a well-defined expiration time</li>
+     *   <li>Can be used later in {@link #consume(String)} to recover the user identity</li>
      * </ul>
      *
-     * @param payload 当前用户身份载荷，通常来自已验证通过的登录态
-     * @return 新签发的票据对象，包含票据值及过期时间
+     * @param payload the current user identity payload, typically from a verified login session
+     * @return the newly issued ticket, containing the ticket value and expiration time
      */
     SseTicket issue(TokenPayload payload);
 
     /**
-     * 消费一个 SSE 短时票据，并还原出原始身份载荷。
+     * Consumes an SSE ticket and recovers the original identity payload.
      *
-     * <p>“消费”强调该 ticket 通常是一次性的：一旦成功读取，就不应再次复用。</p>
+     * <p>"Consume" implies the ticket is typically one-time: once successfully
+     * read, it must not be reusable.</p>
      *
-     * <p>典型校验项包括：</p>
+     * <p>Typical validation checks include:</p>
      * <ul>
-     *     <li>ticket 非空；</li>
-     *     <li>ticket 存在；</li>
-     *     <li>ticket 未过期；</li>
-     *     <li>ticket 未被重复使用。</li>
+     *   <li>Ticket is non-null</li>
+     *   <li>Ticket exists in the store</li>
+     *   <li>Ticket has not expired</li>
+     *   <li>Ticket has not been used before</li>
      * </ul>
      *
-     * <p>该方法通常在鉴权过滤器中调用，仅对 SSE stream 请求生效。</p>
+     * <p>This method is typically called in the authentication filter,
+     * effective only for SSE stream requests.</p>
      *
-     * @param ticket 前端提交的票据值
-     * @return 与该票据绑定的用户身份载荷
-     * @throws IllegalArgumentException 当 ticket 为空、无效、已过期或已被消费时抛出
+     * @param ticket the ticket value submitted by the frontend
+     * @return the user identity payload bound to this ticket
+     * @throws IllegalArgumentException if the ticket is null, invalid, expired, or already consumed
      */
     TokenPayload consume(String ticket);
 
     /**
-     * 判断当前请求是否应使用 SSE ticket 机制进行鉴权。
+     * Determines whether the current request should use SSE ticket authentication.
      *
-     * <p>该方法的用途是将 ticket 认证能力限制在特定请求范围内，
-     * 避免普通接口误用 SSE ticket。</p>
+     * <p>The purpose of this method is to restrict ticket authentication to
+     * specific request paths, preventing normal APIs from inadvertently
+     * accepting SSE tickets.</p>
      *
-     * <p>通常会根据以下条件判断：</p>
+     * <p>Typical criteria:</p>
      * <ul>
-     *     <li>HTTP 方法是否符合要求（一般为 GET）；</li>
-     *     <li>请求路径是否为 SSE stream 接口；</li>
-     *     <li>必要时还可结合 Content-Type、Accept 等信息进一步收敛。</li>
+     *   <li>HTTP method (typically GET)</li>
+     *   <li>Request path matches the SSE stream endpoint</li>
+     *   <li>Optionally, Content-Type or Accept headers for further narrowing</li>
      * </ul>
      *
-     * @param request 当前 HTTP 请求
-     * @return true 表示当前请求支持使用 SSE ticket 鉴权；false 表示不支持
+     * @param request the current HTTP request
+     * @return true if the request supports SSE ticket authentication; false otherwise
      */
     boolean supports(HttpServletRequest request);
 
     /**
-     * SSE 短时票据对象。
+     * Short-lived SSE ticket object.
      *
-     * @param value                票据值，通常为高随机、URL 安全的短字符串
-     * @param expiresAtEpochMillis 票据过期时间戳（毫秒）
+     * @param value                the ticket value, typically a high-entropy, URL-safe short string
+     * @param expiresAtEpochMillis the ticket expiration timestamp in epoch millis
      */
     record SseTicket(
             String value,
             long expiresAtEpochMillis
     ) {
     }
+
 }

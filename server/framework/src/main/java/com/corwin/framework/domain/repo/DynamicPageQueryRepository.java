@@ -4,8 +4,13 @@ import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 
 /**
- * 动态条件查询仓储接口
+ * Repository interface for dynamic paginated queries.
+ * <p>
+ * Implementations provide filtered, sorted, and paginated queries
+ * based on a domain-specific query object.
  *
+ * @param <T> the result entity type
+ * @param <Q> the query condition type
  * @author Corwin 2026/4/9
  */
 public interface DynamicPageQueryRepository<T, Q> {

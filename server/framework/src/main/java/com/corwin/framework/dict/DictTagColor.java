@@ -1,6 +1,11 @@
 package com.corwin.framework.dict;
 
 /**
+ * Predefined tag color palette with corresponding hex values and tag types.
+ * <p>
+ * Used to render consistent colored badges and indicators in the UI.
+ * Each constant maps a semantic color name to a concrete hex value.
+ *
  * @author Corwin 2026/3/15
  */
 public enum DictTagColor implements DictEnumDefinition {

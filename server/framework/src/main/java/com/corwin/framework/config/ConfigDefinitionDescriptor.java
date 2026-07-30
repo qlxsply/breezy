@@ -3,6 +3,15 @@ package com.corwin.framework.config;
 import java.util.Objects;
 
 /**
+ * Immutable descriptor that combines a {@link ConfigDefinition} with its
+ * originating {@link ConfigScope}, providing the fully-qualified metadata
+ * for a single configuration item.
+ *
+ * @param code        the unique config code (derived from {@link ConfigDefinition#name()})
+ * @param description the human-readable description
+ * @param valueType   the expected value type
+ * @param level       the config level (defaults to {@link ConfigLevel#SYSTEM})
+ * @param scope       the config scope (defaults to {@link ConfigScope#FRAMEWORK})
  * @author Corwin 2026/5/5
  */
 public record ConfigDefinitionDescriptor(

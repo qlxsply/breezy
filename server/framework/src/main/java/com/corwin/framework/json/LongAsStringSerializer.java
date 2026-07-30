@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 
 /**
- * 将 Long 类型序列化为 String 输出，防止前端 JavaScript 丢失精度
+ * Jackson serializer that writes {@link Long} values as strings to prevent JavaScript precision loss.
  *
  * @author Corwin 2026/2/10
  */

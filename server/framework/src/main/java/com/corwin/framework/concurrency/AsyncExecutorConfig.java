@@ -11,9 +11,8 @@ import org.springframework.scheduling.annotation.AsyncConfigurer;
 import java.util.concurrent.Executor;
 
 /**
- * Spring 异步执行器配置。
- *
- * <p>用于指定 {@code @Async} 默认使用的线程池。
+ * {@link org.springframework.scheduling.annotation.AsyncConfigurer} that wires
+ * the application's async thread pool into Spring's {@code @Async} infrastructure.
  *
  * @author Corwin 2026/3/30
  */
@@ -31,7 +30,7 @@ public class AsyncExecutorConfig implements AsyncConfigurer {
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        //仅处理返回值为 void 的 @Async 方法抛出的异常。
+        // Only handles exceptions thrown by void @Async methods.
         return (ex, method, params) -> {
             String traceId = CtxUtil.getTraceId();
             String spanId = CtxUtil.getSpanId();

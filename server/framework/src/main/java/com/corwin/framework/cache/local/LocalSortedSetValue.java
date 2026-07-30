@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * 本地 sorted set 结构。
+ * Thread-safe local sorted-set structure backed by a {@link java.util.TreeMap} and read-write lock.
  *
  * @author Corwin 2026/4/19
  */

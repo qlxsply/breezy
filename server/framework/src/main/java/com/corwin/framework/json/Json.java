@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
+ * Static convenience wrapper around a Spring-managed {@link ObjectMapper}.
+ * <p>
+ * Provides common JSON operations (serialize / deserialize / convert / pretty-print)
+ * as static methods, throwing {@link com.corwin.framework.error.SysException} on failure.
  *
  * @author Corwin 2026/1/7
  */

@@ -3,7 +3,9 @@ package com.corwin.framework.error;
 import java.util.Objects;
 
 /**
- * 错误码校验工具。
+ * Error-code validation utility.
+ * <p>
+ * Checks that a code is a six-digit numeric string and falls within its declared range.
  *
  * @author Corwin 2026/3/30
  */

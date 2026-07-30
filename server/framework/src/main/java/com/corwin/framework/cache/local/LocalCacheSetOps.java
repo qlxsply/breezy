@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 本地 set 缓存操作。
+ * Local cache set operations backed by {@link java.util.concurrent.ConcurrentHashMap}.
  *
  * @author Corwin 2026/4/19
  */

@@ -14,7 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 基于 JSqlParser 的 count SQL 优化器。
+ * Optimizes count SQL generation using JSqlParser-based AST analysis.
+ * <p>
+ * When safe, removes ORDER BY and replaces select items with {@code COUNT(*)}
+ * to allow the database to use a simpler execution plan. Falls back to
+ * {@code SELECT COUNT(*) FROM (...)} wrapping when the SQL cannot be safely rewritten.
  *
  * @author Corwin 2026/7/28
  */
@@ -63,8 +67,8 @@ public final class JSqlParserCountSqlOptimizer {
 
     private String doBuildCountSql(String originalSql, int parameterMappingCount) {
         /*
-         * MyBatis ParameterMapping 数量和 SQL 中实际 ? 数量不一致时，
-         * 不做任何删除或列替换，直接保守包装。
+         * When the number of MyBatis ParameterMappings doesn't match the SQL ? count,
+         * skip AST rewriting and fall back to conservative wrapping.
          */
         if (SqlPlaceholderCounter.count(originalSql) != parameterMappingCount) {
             return wrapCount(originalSql);
@@ -95,10 +99,10 @@ public final class JSqlParserCountSqlOptimizer {
 
             return wrapCount(orderByRemoval.sql());
         } catch (JSQLParserException exception) {
-            /*
-             * 某些 MySQL 特有语法可能暂时无法解析。
-             * 此时不做 AST 优化，采用保守子查询。
-             */
+        /*
+         * MySQL-specific syntax may not be parseable by JSqlParser.
+         * Fall back to conservative wrapping when parsing fails.
+         */
             return wrapCount(originalSql);
         }
     }
@@ -119,8 +123,7 @@ public final class JSqlParserCountSqlOptimizer {
         }
 
         /*
-         * ORDER BY 中含有 JDBC 参数。
-         * 恢复 ORDER BY，不能执行直接 COUNT 改写。
+         * ORDER BY contains JDBC parameters; restore it and skip direct COUNT rewriting.
          */
         select.setOrderByElements(originalOrderBy);
 
@@ -136,8 +139,7 @@ public final class JSqlParserCountSqlOptimizer {
     private void replaceSelectItemsWithCount(PlainSelect plainSelect) throws JSQLParserException {
 
         /*
-         * 使用 JSqlParser 自己解析 COUNT(*)，
-         * 避免手动构造不同版本下略有差异的 Function AST。
+         * Let JSqlParser parse COUNT(*) itself to avoid version-dependent AST differences.
          */
         PlainSelect countTemplate = (PlainSelect) CCJSqlParserUtil.parse("SELECT COUNT(*)");
 
@@ -156,9 +158,8 @@ public final class JSqlParserCountSqlOptimizer {
         }
 
         /*
-         * 当前 MySQL 实现通过在 SQL 尾部追加 LIMIT。
-         * 带锁查询的 LIMIT 位置需要单独通过 AST 方言重写，
-         * 第一版明确拒绝。
+         * The current MySQL implementation appends LIMIT at the end of SQL.
+         * Locking queries would need dialect-specific AST rewriting; reject for now.
          */
         if (select.getForClause() != null || select.getForMode() != null || select.getForUpdateTable() != null) {
             throw new PaginationException("Automatic pagination does not support " + "FOR UPDATE or locking clauses");

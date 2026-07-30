@@ -1,7 +1,9 @@
 package com.corwin.framework.scheduling;
 
 /**
- * 定时任务执行身份提供者。
+ * Strategy interface providing the {@link SchedulerExecutionIdentity} for scheduled tasks.
+ * <p>
+ * Implementations typically look up a dedicated system user or configuration.
  *
  * @author Corwin 2026/3/23
  */

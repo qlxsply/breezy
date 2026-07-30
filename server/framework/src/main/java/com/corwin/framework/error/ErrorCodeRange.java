@@ -1,33 +1,31 @@
 package com.corwin.framework.error;
 
 /**
- * 错误码号段定义。
+ * Defines a range of error codes (inclusive boundaries).
  * <p>
- * 约定：
- * - start / end 均为包含边界
- * - code 使用纯数字字符串，长度固定
+ * Codes are fixed-length numeric strings; containment is determined by lexicographic comparison.
  *
  * @author Corwin 2026/3/30
  */
 public interface ErrorCodeRange {
 
     /**
-     * 号段名称，便于测试报错时识别
+     * Range name for identification (e.g. in error messages).
      */
     String getName();
 
     /**
-     * 起始编码（包含）
+     * Start code (inclusive).
      */
     String getStart();
 
     /**
-     * 结束编码（包含）
+     * End code (inclusive).
      */
     String getEnd();
 
     /**
-     * 判断指定 code 是否在当前号段内
+     * Checks whether the given code falls within this range.
      */
     default boolean contains(String code) {
         if (code == null) {

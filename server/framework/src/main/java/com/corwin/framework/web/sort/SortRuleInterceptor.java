@@ -6,7 +6,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * 请求级排序规则注入拦截器。
+ * Per-request interceptor that resolves and injects sort rules into
+ * {@link SortRuleContextHolder} before the handler executes.
  *
  * @author Corwin 2026/7/29
  */

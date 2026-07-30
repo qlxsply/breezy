@@ -1,7 +1,7 @@
 package com.corwin.framework.error;
 
 /**
- * 基础错误码号段定义。
+ * Built-in error-code ranges for framework and Breezy business modules.
  *
  * @author Corwin 2026/3/30
  */

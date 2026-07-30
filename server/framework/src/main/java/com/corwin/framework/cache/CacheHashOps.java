@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Hash 类型缓存操作。
+ * Hash-type cache operations.
  *
  * @author Corwin 2026/4/19
  */

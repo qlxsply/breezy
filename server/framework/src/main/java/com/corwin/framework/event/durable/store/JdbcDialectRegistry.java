@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * JDBC 方言注册表。
+ * Registry of available {@link JdbcDialect} implementations, keyed by {@link DatabaseVendor}.
  *
  * @author Corwin 2026/4/12
  */

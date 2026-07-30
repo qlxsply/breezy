@@ -3,26 +3,26 @@ package com.corwin.framework.event.handler;
 import com.corwin.framework.event.model.AsyncEvent;
 
 /**
- * V1 接口式事件处理器模型（兼容保留）。
+ * V1 interface-based event handler (kept for compatibility during migration).
  * <p>
- * V2 推荐使用 {@code @AsyncEventListener} 注解监听，本接口保留用于历史代码迁移期。
+ * New code should use {@code @AsyncEventListener} annotation instead.
  *
  * @author Corwin 2026/3/31
  */
 public interface AsyncEventHandler<T extends AsyncEvent> {
 
     /**
-     * 声明当前处理器支持的事件类型。
+     * Returns the event type this handler supports.
      */
     Class<T> eventType();
 
     /**
-     * 处理事件。
+     * Handles the event.
      */
     void onEvent(T event);
 
     /**
-     * 处理顺序，值越小优先级越高。
+     * Execution order; lower values have higher priority.
      */
     default int order() {
         return 0;

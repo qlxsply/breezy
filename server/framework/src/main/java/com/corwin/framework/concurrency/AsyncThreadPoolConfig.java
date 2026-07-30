@@ -10,19 +10,15 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * 异步线程池配置。
- *
- * <p>提供统一异步线程池，用于：</p>
+ * Configuration for the application-wide asynchronous thread pool.
+ * <p>
+ * Provides a unified {@link java.util.concurrent.Executor} for {@code @Async} methods
+ * and manual async task submission with the following features:
  * <ul>
- *     <li>{@code @Async}</li>
- *     <li>业务手工提交异步任务</li>
- * </ul>
- *
- * <p>线程池特性：</p>
- * <ul>
- *     <li>支持 Ctx + MDC 上下文自动传播</li>
- *     <li>优雅停机时等待任务完成</li>
- *     <li>线程池满载时由调用线程执行任务（CallerRunsPolicy）</li>
+ *   <li>Automatic Ctx + MDC context propagation via {@link ContextCopyingTaskDecorator}</li>
+ *   <li>Graceful shutdown waiting for in-flight tasks to complete</li>
+ *   <li>{@link java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy CallerRunsPolicy}
+ *       when the queue is full</li>
  * </ul>
  *
  * @author Corwin 2026/3/30
@@ -33,11 +29,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class AsyncThreadPoolConfig {
 
     /**
-     * 任务上下文复制装饰器。
-     *
-     * <p>用于在线程切换时复制调用线程中的 Ctx 与 MDC。</p>
-     *
-     * @return TaskDecorator
+     * Task decorator that copies the calling thread's Ctx and MDC to the worker thread.
      */
     @Bean
     public TaskDecorator contextCopyingTaskDecorator() {
@@ -45,18 +37,13 @@ public class AsyncThreadPoolConfig {
     }
 
     /**
-     * 默认异步线程池。
+     * The default async thread pool bean named {@code "taskExecutor"}.
+     * <p>
+     * Core pool size = 4, max pool size = 16, queue capacity = 2000,
+     * with {@link java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy} rejection policy.
      *
-     * <p>参数说明：</p>
-     * <ul>
-     *     <li>corePoolSize = 4：核心线程数</li>
-     *     <li>maxPoolSize = 16：最大线程数</li>
-     *     <li>queueCapacity = 2000：任务队列容量</li>
-     *     <li>CallerRunsPolicy：线程池满时由提交线程执行，降低任务丢失风险</li>
-     * </ul>
-     *
-     * @param contextCopyingTaskDecorator 上下文复制装饰器
-     * @return Executor
+     * @param contextCopyingTaskDecorator the context-copying decorator
+     * @return the configured executor
      */
     @Bean(name = "taskExecutor")
     public Executor taskExecutor(TaskDecorator contextCopyingTaskDecorator) {

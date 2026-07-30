@@ -6,10 +6,10 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * 默认 Kafka topic 解析器。
+ * Default Kafka topic resolver.
  * <p>
- * 规则：{@code normalized(topicPrefix) + "." + normalized(eventType)}。
- * 其中归一化会将非法字符替换为点号并压缩连续分隔符，确保 topic 命名稳定可用。
+ * Rule: {@code normalized(topicPrefix) + "." + normalized(eventType)}.
+ * Normalisation replaces illegal characters with dots and collapses consecutive separators.
  *
  * @author Corwin 2026/4/10
  */

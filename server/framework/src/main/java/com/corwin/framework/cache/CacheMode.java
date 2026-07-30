@@ -1,7 +1,7 @@
 package com.corwin.framework.cache;
 
 /**
- * 缓存模式定义。
+ * Cache deployment mode — local-only, Redis-only, or combined local+Redis.
  *
  * @author Corwin 2026/4/19
  */

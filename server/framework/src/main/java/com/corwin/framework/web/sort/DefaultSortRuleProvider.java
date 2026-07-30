@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.method.HandlerMethod;
 
 /**
- * 默认排序规则提供者：所有接口默认不支持排序。
+ * Default {@link SortRuleProvider} that disables sorting for all endpoints.
+ * <p>
+ * Serves as the fallback when no custom provider is registered.
  *
  * @author Corwin 2026/7/29
  */

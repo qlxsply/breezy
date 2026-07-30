@@ -1,7 +1,9 @@
 package com.corwin.framework.error;
 
 /**
- * 业务异常：用于表达“可预期的业务失败”，对外返回对应的 ErrorCode。
+ * Business exception representing an expected, recoverable failure.
+ * <p>
+ * Carries an {@link ErrorCode} that is returned to the API consumer.
  *
  * @author Corwin 2026/3/30
  */

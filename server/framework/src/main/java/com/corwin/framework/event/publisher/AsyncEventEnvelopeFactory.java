@@ -4,10 +4,9 @@ import com.corwin.framework.event.model.AsyncEvent;
 import com.corwin.framework.event.model.AsyncEventEnvelope;
 
 /**
- * 事件信封构造器。
- * <p>
- * 负责将业务事件对象转换为统一的 {@code AsyncEventEnvelope}，并补齐
- * 事件 ID、事件发生时间、上下文快照、来源与生产者信息等元数据。
+ * Factory that converts a business {@link AsyncEvent} into a fully-populated
+ * {@link AsyncEventEnvelope}, filling in event ID, timestamp, context snapshot,
+ * source, and producer metadata.
  *
  * @author Corwin 2026/4/9
  */

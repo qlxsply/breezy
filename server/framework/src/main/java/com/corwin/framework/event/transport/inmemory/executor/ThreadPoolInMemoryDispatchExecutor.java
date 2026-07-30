@@ -8,13 +8,13 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 基于线程池的内存分发执行器。
+ * Thread-pool-based in-memory dispatch executor.
  * <p>
- * 特点：
+ * Features:
  * <ul>
- *     <li>通过配置控制核心线程、最大线程、队列容量与线程名前缀。</li>
- *     <li>拒绝策略使用 CallerRunsPolicy，在突发流量下提供背压。</li>
- *     <li>关闭阶段支持超时等待，超时后强制中断。</li>
+ *   <li>Configurable core/max threads, queue capacity, and thread name prefix.</li>
+ *   <li>CallerRunsPolicy rejection for backpressure under burst traffic.</li>
+ *   <li>Graceful shutdown with timeout, then forceful interrupt.</li>
  * </ul>
  *
  * @author Corwin 2026/4/9

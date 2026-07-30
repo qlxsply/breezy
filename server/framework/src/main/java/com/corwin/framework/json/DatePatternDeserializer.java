@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
+ * Jackson deserializer for {@link java.util.Date} using a configurable date-time pattern.
  *
  * @author Corwin 2026/1/7
  */

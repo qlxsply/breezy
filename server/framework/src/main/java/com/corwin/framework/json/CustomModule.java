@@ -18,6 +18,11 @@ import java.time.LocalTime;
 import java.util.Date;
 
 /**
+ * Custom Jackson module that registers application-wide serializers and deserializers.
+ * <p>
+ * Handles {@link java.time.LocalDateTime}, {@link java.time.LocalDate},
+ * {@link java.time.LocalTime}, {@link java.time.Instant}, and {@link java.util.Date}
+ * using the format patterns defined in {@link com.corwin.framework.constant.DateTimePatterns}.
  *
  * @author Corwin 2026/1/7
  */

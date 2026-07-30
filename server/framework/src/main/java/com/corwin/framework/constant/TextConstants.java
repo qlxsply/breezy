@@ -1,7 +1,7 @@
 package com.corwin.framework.constant;
 
 /**
- * 文本常量。
+ * Commonly used text constants for string operations.
  *
  * @author Corwin 2026/3/23
  */

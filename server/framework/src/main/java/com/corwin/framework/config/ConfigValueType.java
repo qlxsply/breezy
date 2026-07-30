@@ -3,6 +3,7 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * Supported config value types.
  *
  * @author Corwin 2025/10/19
  */

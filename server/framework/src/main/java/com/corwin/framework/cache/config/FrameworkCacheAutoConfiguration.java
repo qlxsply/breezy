@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Cache 组件自动配置。
+ * Auto-configuration for the cache component.
  *
  * @author Corwin 2026/4/19
  */

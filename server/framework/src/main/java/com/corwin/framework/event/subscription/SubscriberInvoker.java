@@ -3,10 +3,9 @@ package com.corwin.framework.event.subscription;
 import com.corwin.framework.event.model.AsyncEventEnvelope;
 
 /**
- * 订阅者调用抽象。
- * <p>
- * 无论监听来源是注解方法还是其他适配方式，最终都收敛为该调用接口，
- * 使 transport 只关注“如何投递”，而不关心“如何反射调用业务代码”。
+ * Abstraction for invoking a subscriber — regardless of whether it was registered
+ * via annotation or another mechanism. Transports depend only on this interface
+ * and do not need to know about reflection or bean invocation details.
  *
  * @author Corwin 2026/4/9
  */

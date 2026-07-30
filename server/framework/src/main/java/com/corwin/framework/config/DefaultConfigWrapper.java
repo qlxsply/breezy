@@ -5,6 +5,8 @@ import com.corwin.framework.util.LowDate;
 import java.util.TimeZone;
 
 /**
+ * Convenience wrapper for reading framework default config values.
+ *
  * @author Corwin 2026/1/31
  */
 public class DefaultConfigWrapper {

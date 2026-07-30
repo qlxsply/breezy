@@ -4,6 +4,11 @@ import com.corwin.framework.dict.DictEnumDefinition;
 import lombok.Getter;
 
 /**
+ * Whitelist matching strategy types.
+ * <p>
+ * Each enum constant represents a different path-matching approach used
+ * to determine whether a request URI is exempt from authentication.
+ *
  * @author Corwin 2026/3/23
  */
 @Getter

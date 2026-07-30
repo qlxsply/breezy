@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.TimeZone;
 
 /**
+ * Jackson auto-configuration that registers {@link CustomModule} and sets the default time zone.
  *
  * @author Corwin 2026/1/7
  */

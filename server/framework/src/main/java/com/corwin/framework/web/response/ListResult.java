@@ -8,22 +8,26 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Generic list response wrapper.
+ * <p>
+ * Carries the element list along with total and current count metadata.
  *
+ * @param <T> the element type
  * @author Corwin 2026/1/8
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ListResult<T> {
     /**
-     * 元素总数量
+     * Total number of elements (across all pages)
      */
     private final Integer count;
     /**
-     * 当前元素数量
+     * Number of elements in the current response
      */
     private final Integer size;
     /**
-     * 当前元素列表
+     * The current page's element list
      */
     private final List<T> list;
 

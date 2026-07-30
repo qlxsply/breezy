@@ -8,10 +8,10 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 import java.util.Objects;
 
 /**
- * 事件传输组件生命周期桥接器。
+ * Lifecycle-aware extension of {@link AsyncEventTransport}.
  * <p>
- * 通过 Spring 生命周期回调统一控制 transport 启停时序：
- * 容器单例完成后再启动，容器销毁时执行关闭。
+ * Adds start/stop methods and a bound flag so transports can bind their topology
+ * at startup and release resources on shutdown.
  *
  * @author Corwin 2026/4/9
  */

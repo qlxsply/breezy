@@ -25,27 +25,27 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 请求/响应日志过滤器。
+ * Request/response logging filter.
  *
- * <p>核心职责：
+ * <p>Core responsibilities:
  * <ul>
- *     <li>记录请求入口信息（协议、方法、路径、来源IP）</li>
- *     <li>记录请求参数与 JSON 请求体</li>
- *     <li>记录 JSON 响应体（受长度限制）</li>
- *     <li>记录请求耗时与状态码</li>
+ *   <li>Log request entry info (protocol, method, path, client IP)</li>
+ *   <li>Log request parameters and JSON body</li>
+ *   <li>Log JSON response body (truncated to a maximum length)</li>
+ *   <li>Log request duration and HTTP status code</li>
  * </ul>
  *
- * <p>设计约束：
+ * <p>Design constraints:
  * <ul>
- *     <li>路径排除规则与流式路径规则由配置中心驱动，不在框架层硬编码业务路径</li>
- *     <li>对于流式响应（如 SSE），跳过响应包装器，避免破坏持续输出语义</li>
- *     <li>日志体积受 {@link #MAX_BODY_LOG_LENGTH} 控制，避免大报文刷屏</li>
+ *   <li>Exclusion and streaming-path rules are driven by configuration, not hardcoded</li>
+ *   <li>Streaming responses (e.g. SSE) skip the response wrapper to preserve semantics</li>
+ *   <li>Body log size is capped at {@link #MAX_BODY_LOG_LENGTH} to prevent flooding</li>
  * </ul>
  *
- * <p>相关配置：
+ * <p>Related configuration:
  * <ul>
- *     <li>{@link DefaultConfigKeys#LOGGING_FILTER_EXCLUDE_PREFIXES}：过滤器跳过路径前缀</li>
- *     <li>{@link DefaultConfigKeys#LOGGING_FILTER_STREAM_PREFIXES}：按路径识别流式响应（同时保留 Accept 识别）</li>
+ *   <li>{@link DefaultConfigKeys#LOGGING_FILTER_EXCLUDE_PREFIXES} — path prefixes to skip</li>
+ *   <li>{@link DefaultConfigKeys#LOGGING_FILTER_STREAM_PREFIXES} — path prefixes for streaming responses</li>
  * </ul>
  *
  * @author Corwin 2025/10/11
@@ -55,17 +55,17 @@ import java.util.stream.Collectors;
 public class LoggingFilter extends OncePerRequestFilter implements Ordered {
 
     /**
-     * 单次日志输出体的最大长度，超长截断。
+     * Maximum length for a single body log entry; longer content is truncated.
      */
     private static final int MAX_BODY_LOG_LENGTH = 4096;
 
     /**
-     * 配置读取失败时的兜底排除前缀。
+     * Default fallback exclude prefixes when configuration cannot be read.
      */
     private static final List<String> DEFAULT_EXCLUDE_PREFIXES = List.of("/static/", "/actuator", "/favicon.ico");
 
     /**
-     * 配置读取失败时的兜底流式路径前缀。
+     * Default fallback streaming path prefixes when configuration cannot be read.
      */
     private static final List<String> DEFAULT_STREAM_PREFIXES = List.of("/api/sse/");
 
@@ -131,12 +131,12 @@ public class LoggingFilter extends OncePerRequestFilter implements Ordered {
     }
 
     /**
-     * 判定是否为流式响应请求。
+     * Determines whether the request expects a streaming response.
      *
-     * <p>判定规则：
+     * <p>Detection rules:
      * <ul>
-     *     <li>请求头 Accept 包含 text/event-stream</li>
-     *     <li>或命中配置项 {@link DefaultConfigKeys#LOGGING_FILTER_STREAM_PREFIXES} 的路径前缀</li>
+     *   <li>The {@code Accept} header contains {@code text/event-stream}</li>
+     *   <li>The request URI matches one of the configured stream path prefixes</li>
      * </ul>
      */
     private boolean isStreamRequest(HttpServletRequest request) {

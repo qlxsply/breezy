@@ -1,7 +1,10 @@
 package com.corwin.framework.constant;
 
 /**
- * HTTP 请求头常量。
+ * Standard HTTP header name constants used by the framework.
+ * <p>
+ * Includes custom headers for distributed tracing (X-Trace-Id, X-Span-Id),
+ * client identification (X-Client), and standard auth header (Authorization).
  *
  * @author Corwin 2026/3/23
  */

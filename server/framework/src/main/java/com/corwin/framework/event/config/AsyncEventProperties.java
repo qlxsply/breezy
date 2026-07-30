@@ -6,10 +6,10 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 异步事件组件配置模型。
+ * Configuration model for the async event component ({@code framework.async-event.*}).
  * <p>
- * 以“能力分组”组织配置，覆盖启动策略、发布元数据、上下文传播、内存执行引擎、
- * Kafka 与 RabbitMQ 传输参数。
+ * Organized by capability groups: startup strategy, publishing metadata, context propagation,
+ * in-memory dispatch engine, Kafka and RabbitMQ transport parameters.
  *
  * @author Corwin 2026/3/31
  */
@@ -19,7 +19,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AsyncEventProperties {
 
     /**
-     * 是否启用异步事件组件。
+     * Whether to enable the async event component.
      */
     private boolean enabled = true;
     /**

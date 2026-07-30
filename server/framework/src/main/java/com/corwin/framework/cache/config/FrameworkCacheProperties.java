@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 /**
- * Cache 组件配置。
+ * Configuration properties for the cache component ({@code framework.cache.*}).
  *
  * @author Corwin 2026/4/19
  */

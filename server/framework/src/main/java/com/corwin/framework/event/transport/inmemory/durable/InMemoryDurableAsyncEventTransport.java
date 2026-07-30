@@ -36,12 +36,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
- * IN_MEMORY_DURABLE transport。
+ * Durable in-memory transport backed by {@link com.corwin.framework.event.durable.store.PersistentEventStore}.
  * <p>
- * 核心语义：
- * 1. 发布先持久化 event + delivery，再入本地队列。
- * 2. 消费前必须 claim，确保多节点下同一 delivery 只被一个节点执行。
- * 3. 启动时恢复未完成 delivery，不做运行时周期恢复扫描。
+ * Core semantics:
+ * <ol>
+ *   <li>Publish persists event + delivery before enqueuing locally.</li>
+ *   <li>Consume must claim first, ensuring each delivery is processed by only one node.</li>
+ *   <li>Startup recovers incomplete deliveries; no periodic runtime recovery scan.</li>
+ * </ol>
  *
  * @author Corwin 2026/4/12
  */

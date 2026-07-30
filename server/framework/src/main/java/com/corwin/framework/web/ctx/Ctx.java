@@ -10,34 +10,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 请求上下文对象（Request Context）。
+ * Request-scoped context object holding per-request state.
  *
- * <p>
- * 该类用于在一次 HTTP 请求生命周期内，集中存储与请求相关的上下文信息，
- * 并通过 ThreadLocal（通常由 CtxUtil 持有）在不同层之间传递。
- * </p>
+ * <p>Stores tracing, authentication, client, and custom extension data
+ * associated with a single HTTP request, carried across layers via
+ * {@link java.lang.ThreadLocal} (typically managed by {@link CtxUtil}).</p>
  *
- * <h2>设计目标</h2>
+ * <h2>Design goals</h2>
  * <ul>
- *     <li>统一承载请求级数据（Tracing / 用户 / 客户端 / 自定义扩展）</li>
- *     <li>避免在方法间层层传参</li>
- *     <li>支持日志追踪（通过 MDC 注入）</li>
- *     <li>支持跨线程传播（通过 copy 方法）</li>
+ *   <li>Centralise request-level data (tracing, user, client, custom attributes)</li>
+ *   <li>Avoid passing parameters through multiple method layers</li>
+ *   <li>Support log correlation via MDC injection</li>
+ *   <li>Support cross-thread propagation via {@link #copy()}</li>
  * </ul>
  *
- * <h2>线程模型</h2>
+ * <h2>Thread model</h2>
  * <ul>
- *     <li>通常绑定在 ThreadLocal 中（每个请求线程独立）</li>
- *     <li>非线程安全，不应在多个线程共享同一个实例</li>
- *     <li>跨线程使用时必须调用 {@link #copy()}</li>
+ *   <li>Typically bound to a ThreadLocal — one instance per request thread</li>
+ *   <li>Not thread-safe; must not be shared across threads</li>
+ *   <li>Use {@link #copy()} before passing to another thread</li>
  * </ul>
  *
- * <h2>典型使用场景</h2>
+ * <h2>Typical usage</h2>
  * <ul>
- *     <li>网关 / Filter 初始化上下文</li>
- *     <li>认证模块写入用户信息</li>
- *     <li>日志系统读取 traceId / userId</li>
- *     <li>业务代码存放临时上下文数据</li>
+ *   <li>Gateway / Filter initialises context at request entry</li>
+ *   <li>Authentication module writes user information</li>
+ *   <li>Logging system reads traceId / userId</li>
+ *   <li>Business code stores temporary contextual data</li>
  * </ul>
  *
  * @author Corwin
@@ -48,85 +47,81 @@ import java.util.Map;
 public class Ctx {
 
     /**
-     * 请求开始时间（毫秒时间戳）
-     * 用于日志统计、请求耗时计算
+     * Request start time in epoch millis.
+     * Used for logging and request duration calculation.
      */
     private long requestStartTs;
 
     /**
-     * 请求开始时间（纳秒级）
-     * 用于更高精度的性能分析
+     * Request start time in nanoseconds.
+     * Used for high-precision performance analysis.
      */
     private long requestStartNano;
 
     /**
-     * 分布式追踪 ID（TraceId）
-     * 用于串联整个调用链
+     * Distributed tracing ID, correlated across the entire call chain.
      */
     private String traceId;
 
     /**
-     * 当前 Span ID
+     * Current span ID within the distributed trace.
      */
     private String spanId;
 
     /**
-     * 父级 Span ID
+     * Parent span ID for the current span.
      */
     private String parentSpanId;
 
     /**
-     * 客户端标识（如 web / app / service）
+     * Client identifier (e.g. web, app, service).
      */
     private String client;
 
     /**
-     * 客户端 IP 地址
+     * Client IP address.
      */
     private String clientIp;
 
     /**
-     * 当前请求的认证主体（用户信息）
+     * Authenticated principal for the current request.
      */
     private AuthPrincipal principal;
 
     /**
-     * Token 的哈希值（用于安全校验或日志追踪）
-     * 注意：不应存储明文 token
+     * Token hash for security auditing and log correlation.
+     * Plaintext token must never be stored.
      */
     private String tokenHash;
 
     /**
-     * 扩展属性容器（用于存储自定义上下文数据）
+     * Extension attribute map for custom contextual data.
      *
-     * <p>特点：</p>
+     * <p>Characteristics:</p>
      * <ul>
-     *     <li>懒初始化（避免无用内存开销）</li>
-     *     <li>key-value 结构</li>
-     *     <li>无类型约束（调用方负责类型安全）</li>
+     *     <li>Lazy-initialized to avoid unnecessary memory overhead</li>
+     *     <li>Key-value structure with no type constraints (caller is responsible for type safety)</li>
      * </ul>
      */
     private Map<String, Object> attributes;
 
     /**
-     * 创建当前上下文的副本（浅拷贝）。
+     * Creates a shallow copy of the current context.
      *
-     * <p>
-     * 用于跨线程传播上下文，例如：
-     * </p>
+     * <p>Used for propagating context across threads, e.g.:</p>
      * <ul>
-     *     <li>线程池任务</li>
-     *     <li>异步执行</li>
+     *     <li>Thread pool tasks</li>
+     *     <li>Async execution</li>
      *     <li>CompletableFuture</li>
      * </ul>
      *
-     * <p>注意：</p>
+     * <p>Notes:</p>
      * <ul>
-     *     <li>attributes 为浅拷贝（Map 复制，但 value 仍为引用）</li>
-     *     <li>AuthPrincipal 为不可变对象（record），可安全共享</li>
+     *     <li>attributes is shallow-copied (Map copied, values remain references)</li>
+     *     <li>AuthPrincipal is immutable (record) and can be safely shared</li>
      * </ul>
      *
-     * @return 新的 Ctx 实例
+     * @return a new Ctx instance with copied values
      */
     public Ctx copy() {
         Ctx copy = new Ctx();
@@ -146,23 +141,21 @@ public class Ctx {
     }
 
     /**
-     * 将上下文信息绑定到 SLF4J MDC（Mapped Diagnostic Context）。
+     * Binds context data to the SLF4J MDC (Mapped Diagnostic Context).
      *
-     * <p>
-     * MDC 常用于日志系统，使日志自动携带上下文信息，例如：
-     * traceId、userId、clientIp 等。
-     * </p>
+     * <p>Enables log patterns to automatically include fields such as
+     * traceId, userId, and clientIp.</p>
      *
-     * <p>调用时机：</p>
+     * <p>Calling convention:</p>
      * <ul>
-     *     <li>请求入口（Filter / Interceptor）</li>
-     *     <li>线程切换后重新绑定</li>
+     *     <li>At request entry (Filter / Interceptor)</li>
+     *     <li>After thread switch, to re-bind in the new thread</li>
      * </ul>
      *
-     * <p>注意：</p>
+     * <p>Notes:</p>
      * <ul>
-     *     <li>MDC 基于 ThreadLocal，线程切换后需要重新绑定</li>
-     *     <li>必须在请求结束时调用 {@link #clearMdc()}</li>
+     *     <li>MDC is ThreadLocal-based; re-binding is required after a thread switch</li>
+     *     <li>{@link #clearMdc()} must be called at request completion</li>
      * </ul>
      */
     public void bindToMdc() {
@@ -184,12 +177,12 @@ public class Ctx {
     }
 
     /**
-     * 清理 MDC 中的上下文数据。
+     * Clears MDC context data at request completion.
      *
-     * <p>必须在请求结束时调用，防止 ThreadLocal 污染：</p>
+     * <p>Mandatory to prevent ThreadLocal leakage:</p>
      * <ul>
-     *     <li>线程复用导致日志串数据</li>
-     *     <li>用户信息泄露</li>
+     *     <li>Log data cross-contamination on thread reuse</li>
+     *     <li>Unintended user information exposure</li>
      * </ul>
      */
     public static void clearMdc() {
@@ -201,10 +194,10 @@ public class Ctx {
     }
 
     /**
-     * 写入扩展属性
+     * Writes an extension attribute.
      *
-     * @param key   属性名
-     * @param value 属性值
+     * @param key   the attribute name
+     * @param value the attribute value
      */
     public void putAttr(String key, Object value) {
         if (attributes == null) {
@@ -214,9 +207,9 @@ public class Ctx {
     }
 
     /**
-     * 删除扩展属性
+     * Removes an extension attribute.
      *
-     * <p>当 attributes 为空时会自动置为 null，以减少内存占用</p>
+     * <p>Sets the internal map to null when empty to reduce memory footprint.</p>
      */
     public void removeAttr(String key) {
         if (attributes == null) {
@@ -229,19 +222,19 @@ public class Ctx {
     }
 
     /**
-     * 获取扩展属性（无类型校验）
+     * Returns an extension attribute without type checking.
      */
     public Object getAttr(String key) {
         return attributes == null ? null : attributes.get(key);
     }
 
     /**
-     * 获取扩展属性（带类型校验）
+     * Returns an extension attribute with type checking.
      *
-     * @param key  属性名
-     * @param type 期望类型
-     * @return 属性值
-     * @throws ClassCastException 类型不匹配时抛出
+     * @param key  the attribute name
+     * @param type the expected type
+     * @return the attribute value, or null if absent
+     * @throws ClassCastException if the value is not of the expected type
      */
     @SuppressWarnings("unchecked")
     public <T> T getAttr(String key, Class<T> type) {

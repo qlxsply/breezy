@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * MyBatis PageData 分页配置。
+ * Configuration properties for the MyBatis {@link PageData} pagination plugin.
  *
  * @author Corwin 2026/7/28
  */
@@ -17,14 +17,13 @@ public class MybatisPaginationProperties {
     private boolean enabled = true;
 
     /**
-     * 最大分页大小。
-     * 超出时抛出 PaginationException，不进行静默截断。
+     * Maximum allowed page size. Exceeding this value triggers a {@link PaginationException}.
      */
     private int maxPageSize = 500;
 
     /**
-     * 动态 SQL 可能产生不同的最终 SQL。
-     * 这里缓存解析后的 count SQL，采用有界 LRU。
+     * LRU cache size for parsed count-SQL results. Dynamic SQL may generate different
+     * final SQL strings, so caching avoids repeated parsing.
      */
     private int countSqlCacheSize = 1024;
 

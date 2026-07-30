@@ -1,7 +1,7 @@
 package com.corwin.framework.event.durable.store;
 
 /**
- * durable 事件状态。
+ * Status for durable event lifecycle.
  *
  * @author Corwin 2026/4/12
  */

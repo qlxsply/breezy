@@ -11,8 +11,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 通用的延迟队列处理器基类
+ * Abstract base processor for delay-queue-based task scheduling.
+ * <p>
+ * Submits {@link DelayedElement} instances to a {@link java.util.concurrent.DelayQueue}
+ * and processes them asynchronously via a dedicated single-thread executor.
+ * Duplicate payloads are automatically replaced with the latest submission.
  *
+ * @param <T> the payload type
  * @author Corwin 2026/3/16
  */
 @Slf4j
@@ -53,7 +58,7 @@ public abstract class DelayQueueProcessor<T> {
     }
 
     /**
-     * 提交延迟任务
+     * Submit a delayed task, replacing any existing task with the same payload.
      */
     public void submit(DelayedElement<T> element) {
         // 先移除旧的（如果 payload 相同），保证堆中只有一个该任务的最新版
@@ -64,7 +69,7 @@ public abstract class DelayQueueProcessor<T> {
     }
 
     /**
-     * 取消延迟任务
+     * Cancel the delayed task with the given payload.
      */
     public void cancel(T payload) {
         // 这里依赖 DelayedElement 的 equals 实现（仅比较 payload）
@@ -86,7 +91,7 @@ public abstract class DelayQueueProcessor<T> {
     }
 
     /**
-     * 子类实现具体的业务逻辑
+     * Implement the actual business logic for processing a delayed task.
      */
     protected abstract void processTask(T payload);
 }

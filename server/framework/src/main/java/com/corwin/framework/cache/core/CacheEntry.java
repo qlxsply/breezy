@@ -7,7 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * 本地缓存条目。
+ * A local cache entry holding a typed value, its data type, TTL, and expiration instant.
  *
  * @author Corwin 2026/4/19
  */

@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 /**
- * TTL 查询结果。
+ * Result of a TTL query — existence, persistence flag, and optional remaining duration.
  *
  * @author Corwin 2026/4/19
  */

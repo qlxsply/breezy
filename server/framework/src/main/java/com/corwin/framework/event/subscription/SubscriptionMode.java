@@ -1,9 +1,9 @@
 package com.corwin.framework.event.subscription;
 
 /**
- * 订阅模式枚举。
+ * Subscription mode — currently only {@link #DEFAULT} is supported.
  * <p>
- * 当前仅提供默认模式，后续可扩展广播、顺序等策略标记。
+ * Extensible in the future for broadcast, ordered delivery, etc.
  *
  * @author Corwin 2026/4/9
  */

@@ -11,34 +11,39 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Generic paginated response wrapper.
+ * <p>
+ * Converts a {@link com.corwin.framework.domain.page.PageData} into a
+ * frontend-friendly structure with page metadata and element list.
  *
+ * @param <T> the element type
  * @author Corwin 2026/1/8
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PageResult<T> {
     /**
-     * 当前页码（1-based）
+     * Current page number (1-based)
      */
     private final int pageNo;
     /**
-     * 每页容量（请求参数）
+     * Page size as requested
      */
     private final int pageSize;
     /**
-     * 当前页实际元素数量
+     * Number of elements in the current page
      */
     private final int numberOfElements;
     /**
-     * 总页数
+     * Total number of pages
      */
     private final int totalPages;
     /**
-     * 总元素数量
+     * Total number of elements across all pages
      */
     private final int totalElements;
     /**
-     * 当前页数据
+     * The current page's element list
      */
     private final List<T> elements;
 

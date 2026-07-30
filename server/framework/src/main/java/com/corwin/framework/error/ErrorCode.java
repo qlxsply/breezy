@@ -1,26 +1,27 @@
 package com.corwin.framework.error;
 
 /**
- * 统一错误码协议：用于对外返回 code/msg。
- * - 框架提供 BaseError
- * - 业务系统可自定义 enum 实现该接口
+ * Unified error-code contract for API responses.
+ * <p>
+ * The framework provides {@link BaseError}; business modules may implement this interface
+ * with their own enums.
  *
  * @author Corwin 2026/3/30
  */
 public interface ErrorCode {
 
     /**
-     * 业务错误码（与 HTTP 状态码区分）
+     * Business error code (distinct from HTTP status codes).
      */
     String getCode();
 
     /**
-     * 面向调用方的提示信息
+     * Human-readable message for the API consumer.
      */
     String getMsg();
 
     /**
-     * 当前错误码所属号段
+     * The error-code range this code belongs to.
      */
     ErrorCodeRange getRange();
 

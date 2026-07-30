@@ -3,11 +3,10 @@ package com.corwin.framework.event.context;
 import com.corwin.framework.event.model.EventCtxSnapshot;
 
 /**
- * 消费上下文绑定器。
+ * Binds the consume context from {@link EventCtxSnapshot} to the current consumer thread.
  * <p>
- * 负责在消费线程中将事件信封里的 {@link EventCtxSnapshot} 恢复为当前线程上下文，
- * 并返回一个可关闭作用域用于在消费结束后恢复原上下文。
- * 不同 transport 通过该抽象复用同一套上下文恢复逻辑。
+ * Returns a {@link ConsumeContextScope} that restores the original context when closed.
+ * All transports share this single context-restore abstraction.
  *
  * @author Corwin 2026/4/9
  */

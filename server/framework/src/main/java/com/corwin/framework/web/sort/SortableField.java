@@ -1,8 +1,10 @@
 package com.corwin.framework.web.sort;
 
 /**
- * 可排序字段定义，field 面向前端，column 面向 SQL。
+ * Maps a frontend-facing sort field name to its corresponding SQL column name.
  *
+ * @param field  the field name exposed to the frontend
+ * @param column the corresponding SQL column name
  * @author Corwin 2026/7/29
  */
 public record SortableField(

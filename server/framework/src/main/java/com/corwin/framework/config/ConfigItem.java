@@ -1,20 +1,21 @@
 package com.corwin.framework.config;
 
 /**
+ * A single configuration item with key, raw value, and value type.
  *
  * @author Corwin 2025/10/14
  */
 public final class ConfigItem {
     /**
-     * 配置项键，{@link DefaultConfigKeys}
+     * Config key; defined constants are listed in {@link DefaultConfigKeys}.
      */
     public String key;
     /**
-     * 配置项值
+     * Raw string value.
      */
     public String value;
     /**
-     * 配置项值类型
+     * Value type hint for parsing.
      */
     public ConfigValueType type;
 }

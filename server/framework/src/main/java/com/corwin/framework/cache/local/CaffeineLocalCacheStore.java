@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * 基于 Caffeine 的本地缓存存储。
+ * {@link LocalCacheStore} implementation backed by Caffeine.
  *
  * @author Corwin 2026/4/19
  */

@@ -3,6 +3,8 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * User-selectable decimal number format options.
+ *
  * @author Corwin 2026/5/5
  */
 public enum UserDecimalFormatOption implements DictEnumDefinition {

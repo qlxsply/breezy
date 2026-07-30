@@ -1,10 +1,10 @@
 package com.corwin.framework.event.transport.inmemory.executor;
 
 /**
- * 内存分发执行器抽象。
+ * Interface for in-memory event dispatch — delivering events to all consumers
+ * within a single process.
  * <p>
- * 用于将“订阅消费任务执行策略”从 transport 语义中解耦，
- * 便于在同一语义下切换线程池或 Disruptor 引擎。
+ * Allows implementations (sync/async/bounded/unbounded) to be swapped seamlessly.
  *
  * @author Corwin 2026/4/9
  */

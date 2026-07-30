@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /**
- * 默认数据库类型识别实现。
+ * Default {@link DatabaseVendorResolver} that inspects {@link java.sql.DatabaseMetaData#getDatabaseProductName()}.
  *
  * @author Corwin 2026/4/12
  */

@@ -5,9 +5,13 @@ import com.corwin.framework.config.ConfigRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
+ * Resolves the real client IP address from an HTTP request.
+ * <p>
+ * Supports multiple proxy header modes (X-Real-IP, X-Forwarded-For,
+ * CF-Connecting-IP, True-Client-IP) configurable via
+ * {@link com.corwin.framework.config.DefaultConfigKeys#CLIENT_IP_MODE}.
  *
  * @author Corwin 2026/3/30
- * 2025/12/9
  */
 public class IpUtil {
 
@@ -39,14 +43,20 @@ public class IpUtil {
     }
 
     /**
-     * 直接取 header, Cloudflare / True-Client-IP，这些 Header 通常只有一个值。
+     * Returns the value directly from a single-value header
+     * (e.g. Cloudflare / True-Client-IP).
      */
     private static String getSingleHeaderIp(String value) {
         return isValid(value) ? value.trim() : null;
     }
 
     /**
-     * 从可能含多个 IP 的 header（如 X-Forwarded-For）中取首位或末尾
+     * Returns the first or last IP from a multi-value header
+     * (e.g. X-Forwarded-For).
+     *
+     * @param value the header value, may be null or blank
+     * @param first if {@code true}, returns the first IP; otherwise the last
+     * @return the extracted IP, or null if invalid
      */
     private static String getHeaderListIp(String value, boolean first) {
         if (!isValid(value)) {
@@ -62,6 +72,13 @@ public class IpUtil {
         return isValid(ip) ? ip : null;
     }
 
+    /**
+     * Checks whether the given IP string is non-null, non-blank, and
+     * not the literal "unknown" (case-insensitive).
+     *
+     * @param ip the IP string to validate
+     * @return {@code true} if the IP appears to be a real client address
+     */
     private static boolean isValid(String ip) {
         return ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip);
     }

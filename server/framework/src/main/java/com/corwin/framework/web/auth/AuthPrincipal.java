@@ -5,7 +5,17 @@ import com.corwin.framework.constant.UserType;
 import java.util.Set;
 
 /**
+ * Authenticated principal representing the current user.
+ * <p>
+ * Carries the user's identity, role type, administrative flag, and
+ * permission codes. A {@link #guest()} factory produces an unauthenticated
+ * principal with no permissions.
  *
+ * @param userId          the user's ID, may be null for guests
+ * @param username        the user's login name
+ * @param userType        the user type ({@link UserType})
+ * @param admin           whether the user has administrative privileges
+ * @param permissionCodes the set of permission codes granted to the user
  * @author Corwin 2026/4/20
  */
 public record AuthPrincipal(

@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * durable 事件事实源存储抽象。
+ * Abstraction for the durable event store (the event-sourcing source of truth).
  *
  * @author Corwin 2026/4/12
  */

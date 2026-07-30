@@ -47,13 +47,11 @@ import java.net.InetAddress;
 import java.util.Objects;
 
 /**
- * 异步事件组件自动配置。
+ * Auto-configuration for the async event component.
  * <p>
- * 负责装配事件组件的核心依赖，包括：
- * 发布器、信封工厂、订阅注册表、监听扫描器、上下文绑定器、序列化器、
- * topic 解析器以及按模式选择的 transport。
- * <p>
- * 通过 {@link ConditionalOnMissingBean} 保留自定义扩展入口，业务可按需覆盖任一默认实现。
+ * Assembles core dependencies: publisher, envelope factory, subscription registry,
+ * listener scanner, context binder, serializer, topic resolver, and transport.
+ * Each bean is conditional on {@code @ConditionalOnMissingBean} to allow overriding.
  *
  * @author Corwin 2026/3/31
  */
@@ -62,7 +60,7 @@ import java.util.Objects;
 public class AsyncEventAutoConfiguration {
 
     /**
-     * 注册消费组解析器。
+     * Registers the consumer group resolver.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -71,7 +69,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册订阅注册表。
+     * Registers the subscription registry.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -80,7 +78,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册监听注解扫描处理器。
+     * Registers the annotation-based listener scanner.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -90,7 +88,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册消费上下文绑定器。
+     * Registers the consume context binder.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -99,7 +97,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册事件信封工厂。
+     * Registers the event envelope factory.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -109,7 +107,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册默认事件序列化器。
+     * Registers the default event serializer.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -118,7 +116,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册 Kafka topic 解析器。
+     * Registers the Kafka topic resolver.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -127,7 +125,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 根据配置模式选择并创建 transport。
+     * Selects and creates the transport based on the configured mode.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -148,7 +146,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册事件发布器；组件关闭时回退为 Noop 实现。
+     * Registers the event publisher; falls back to {@link com.corwin.framework.event.publisher.NoopAsyncEventPublisher} when disabled.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -161,7 +159,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 注册 transport 生命周期管理器。
+     * Registers the transport lifecycle manager.
      */
     @Bean
     @ConditionalOnMissingBean
@@ -171,7 +169,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 构建内存 transport，并按配置选择执行引擎。
+     * Builds an in-memory transport with the configured dispatch engine.
      */
     private AsyncEventTransport createInMemoryTransport(AsyncEventProperties properties, ConsumeContextBinder contextBinder) {
         InMemoryDispatchExecutor executor = switch (properties.getInMemory().getEngine()) {
@@ -182,7 +180,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 构建 durable 内存 transport。
+     * Builds a durable in-memory transport backed by JDBC storage.
      */
     private AsyncEventTransport createInMemoryDurableTransport(AsyncEventProperties properties,
             ConsumeContextBinder contextBinder, EventSerializer serializer, DataSource dataSource,
@@ -209,7 +207,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 解析 durable 节点标识。
+     * Resolves the durable node identifier.
      */
     private String resolveNodeId(AsyncEventProperties properties, Environment environment) {
         String configured = properties.getDurable().getNodeId();
@@ -227,7 +225,7 @@ public class AsyncEventAutoConfiguration {
     }
 
     /**
-     * 解析主机名（失败时回退 unknown）。
+     * Resolves the hostname (falls back to "unknown" on failure).
      */
     private String resolveHost() {
         String host = System.getenv("HOSTNAME");

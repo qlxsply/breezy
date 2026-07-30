@@ -17,11 +17,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Kafka transport（当前为本地分发语义实现）。
+ * Local-dispatch Kafka transport (simulation mode).
  * <p>
- * 当前模块未引入真实 Kafka 客户端依赖时，该实现通过“序列化 + 反序列化 + 本地执行器”
- * 模拟跨边界传输链路，优先验证订阅模型、来源过滤、上下文恢复与异常日志结构。
- * 后续接入真实 Kafka 时可沿用同一抽象边界。
+ * Without a real Kafka client dependency, this implementation simulates the
+ * cross-boundary transport path via serialisation + deserialisation + local executor,
+ * validating subscription models, source filtering, context restoration, and
+ * error logging. The same abstraction boundary applies when switching to real Kafka.
  *
  * @author Corwin 2026/4/9
  */

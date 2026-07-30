@@ -1,9 +1,10 @@
 package com.corwin.framework.error;
 
 /**
- * 系统异常：用于表达“非预期系统失败”，内部日志需要完整堆栈；
+ * System exception representing an unexpected, unrecoverable failure.
  * <p>
- * 对外返回时使用 outwardCode（对外可展示的错误码）。
+ * Carries an {@link ErrorCode} ({@code outwardCode}) that is safe to expose to API consumers
+ * while the full stack trace is logged internally.
  *
  * @author Corwin 2025/5/12
  */

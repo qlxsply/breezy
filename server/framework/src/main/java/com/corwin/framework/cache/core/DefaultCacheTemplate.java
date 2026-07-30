@@ -5,7 +5,7 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.error.CacheError;
 
 /**
- * 默认缓存模板实现。
+ * Default {@link CacheTemplate} implementation that delegates to the appropriate provider.
  *
  * @author Corwin 2026/4/19
  */

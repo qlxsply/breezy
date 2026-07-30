@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.time.Instant;
 
 /**
+ * Jackson deserializer for {@link java.time.Instant} that accepts epoch-millisecond values.
+ * <p>
+ * Supports both numeric (e.g. {@code 1700000000000}) and string-wrapped number formats.
  *
  * @author Corwin 2026/1/7
  */

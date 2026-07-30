@@ -3,6 +3,18 @@ package com.corwin.framework.domain.page;
 import java.util.List;
 
 /**
+ * Generic paginated data result.
+ * <p>
+ * Carries the current page number, page size, element count metadata,
+ * and the actual element list for the current page.
+ *
+ * @param <T>             the element type
+ * @param pageNo          the current page number (1-based)
+ * @param pageSize        the page size
+ * @param numberOfElements the number of elements in the current page
+ * @param totalPages      the total number of pages
+ * @param totalElements   the total number of elements across all pages
+ * @param elements        the element list for the current page
  * @author Corwin 2026/3/30
  */
 public record PageData<T>(

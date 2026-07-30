@@ -9,22 +9,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * 基于 {@code java.time} 的主时间工具。
+ * Primary date/time utility based on {@code java.time}.
  * <p>
- * 核心约定：
+ * Core conventions:
  * <ul>
- *     <li>时间线统一以 {@link Instant} 为准，适合存储、比较、传输</li>
- *     <li>展示与输入统一使用 {@link LocalDateTime} / {@link LocalDate} / {@link LocalTime}</li>
- *     <li>未显式指定时区时，统一使用 {@link ZoneId#systemDefault()}</li>
- *     <li>时间范围查询推荐使用半开区间：{@code [startInclusive, endExclusive)}</li>
+ *   <li>The timeline is represented by {@link Instant} — suitable for
+ *       storage, comparison, and transmission</li>
+ *   <li>Display and input use {@link LocalDateTime} / {@link LocalDate} /
+ *       {@link LocalTime}</li>
+ *   <li>When no time zone is explicitly specified, the system default
+ *       ({@link ZoneId#systemDefault()}) is used</li>
+ *   <li>Day-range queries should use the half-open interval
+ *       {@code [startInclusive, endExclusive)}</li>
  * </ul>
- * <p>
- * 使用示例：
+ *
  * <pre>{@code
  * Instant now = HighDate.mockInstant();
  * Instant dayStart = HighDate.toStartOfDay(now);
  * Instant nextDayStart = HighDate.toStartOfNextDay(now);
- * // 查询推荐：createdAt >= dayStart && createdAt < nextDayStart
+ * // Query: createdAt >= dayStart && createdAt < nextDayStart
  *
  * LocalDateTime local = HighDate.ofDateTime(now);
  * String text = HighDate.format(local);
@@ -36,103 +39,111 @@ import java.util.Objects;
 public final class HighDate {
 
     /**
-     * 返回默认时区。
+     * Returns the system default time zone.
      * <p>
-     * 当业务未显式提供用户时区时，统一走该入口，避免在项目中直接散落调用
-     * {@code ZoneId.systemDefault()}。
+     * All code should use this single entry point instead of calling
+     * {@code ZoneId.systemDefault()} directly, to keep a central point
+     * for potential overrides.
+     *
+     * @return the system default {@link ZoneId}
      */
     public static ZoneId zone() {
         return ZoneId.systemDefault();
     }
 
-    /* ----------------------- real (真实当前时间) ----------------------- */
+    /* ----------------------- real (actual current time) ----------------------- */
 
     /**
-     * 当前瞬时（时间线），不依赖时区
+     * Returns the current instant on the timeline.
+     * Does not depend on time zone.
+     *
+     * @return the current {@link Instant}
      */
     public static Instant realInstant() {
         return Instant.now();
     }
 
     /**
-     * 当前本地日期时间（系统默认时区）
-     */
-    /**
-     * 当前真实瞬时在默认时区下对应的本地日期时间。
+     * Returns the current local date-time in the system default time zone.
+     *
+     * @return the current {@link LocalDateTime}
      */
     public static LocalDateTime realDateTime() {
         return ofDateTime(realInstant());
     }
 
     /**
-     * 当前本地日期（系统默认时区）
-     */
-    /**
-     * 当前真实瞬时在默认时区下对应的本地日期。
+     * Returns the current local date in the system default time zone.
+     *
+     * @return the current {@link LocalDate}
      */
     public static LocalDate realDate() {
         return realDateTime().toLocalDate();
     }
 
     /**
-     * 当前本地时间（系统默认时区）
-     */
-    /**
-     * 当前真实瞬时在默认时区下对应的本地时间。
+     * Returns the current local time in the system default time zone.
+     *
+     * @return the current {@link LocalTime}
      */
     public static LocalTime realTime() {
         return realDateTime().toLocalTime();
     }
 
     /**
-     * 当前时间戳（毫秒）
+     * Returns the current timestamp in milliseconds.
+     *
+     * @return the current epoch millis
      */
     public static long realTimestampMillis() {
         return realInstant().toEpochMilli();
     }
 
-    /* ----------------------- mock (偏移后的当前时间) ----------------------- */
+    /* ----------------------- mock (offset current time) ----------------------- */
 
     /**
-     * mock 瞬时（= now + offsetSeconds），不依赖时区
+     * Returns the mocked current instant (= now + offsetSeconds).
+     * Does not depend on time zone. The offset is read from
+     * {@link DefaultConfigKeys#TIME_OFFSET}.
+     *
+     * @return the mocked {@link Instant}
      */
     public static Instant mockInstant() {
-        long offsetSeconds = ConfigRegistry.longV(DefaultConfigKeys.TIME_OFFSET); // 约定：秒
+        long offsetSeconds = ConfigRegistry.longV(DefaultConfigKeys.TIME_OFFSET);
         return Instant.now().plusSeconds(offsetSeconds);
     }
 
     /**
-     * mock 本地日期时间（系统默认时区）
-     */
-    /**
-     * 当前 mock 瞬时在默认时区下对应的本地日期时间。
+     * Returns the mocked local date-time in the system default time zone.
+     *
+     * @return the mocked {@link LocalDateTime}
      */
     public static LocalDateTime mockDateTime() {
         return ofDateTime(mockInstant());
     }
 
     /**
-     * mock 本地日期（系统默认时区）
-     */
-    /**
-     * 当前 mock 瞬时在默认时区下对应的本地日期。
+     * Returns the mocked local date in the system default time zone.
+     *
+     * @return the mocked {@link LocalDate}
      */
     public static LocalDate mockDate() {
         return mockDateTime().toLocalDate();
     }
 
     /**
-     * mock 本地时间（系统默认时区）
-     */
-    /**
-     * 当前 mock 瞬时在默认时区下对应的本地时间。
+     * Returns the mocked local time in the system default time zone.
+     *
+     * @return the mocked {@link LocalTime}
      */
     public static LocalTime mockTime() {
         return mockDateTime().toLocalTime();
     }
 
     /**
-     * mock 时间戳（毫秒）
+     * Returns the mocked timestamp in milliseconds.
+     *
+     * @return the mocked epoch millis
      */
     public static long mockTimestampMillis() {
         return mockInstant().toEpochMilli();
@@ -141,101 +152,156 @@ public final class HighDate {
     /* ----------------------- convert (timestamp <-> local) ----------------------- */
 
     /**
-     * 毫秒时间戳 -> 本地日期时间（系统默认时区）
-     */
-    /**
-     * 将毫秒时间戳转为 {@link Instant}。
+     * Creates an {@link Instant} from epoch milliseconds.
+     *
+     * @param epochMillis the milliseconds since 1970-01-01T00:00:00Z
+     * @return the corresponding {@link Instant}
      */
     public static Instant ofInstant(long epochMillis) {
         return Instant.ofEpochMilli(epochMillis);
     }
 
     /**
-     * 将秒时间戳转为 {@link Instant}。
+     * Creates an {@link Instant} from epoch seconds.
+     *
+     * @param epochSeconds the seconds since 1970-01-01T00:00:00Z
+     * @return the corresponding {@link Instant}
      */
     public static Instant ofInstantSeconds(long epochSeconds) {
         return Instant.ofEpochSecond(epochSeconds);
     }
 
     /**
-     * 将 {@link Instant} 转为默认时区下的本地日期时间。
+     * Converts epoch milliseconds to a {@link LocalDateTime} in the
+     * system default time zone.
+     *
+     * @param epochMillis the milliseconds since 1970-01-01T00:00:00Z
+     * @return the corresponding {@link LocalDateTime}
      */
     public static LocalDateTime ofDateTime(long epochMillis) {
         return ofDateTime(ofInstant(epochMillis));
     }
 
     /**
-     * 将 {@link Instant} 转为默认时区下的本地日期时间。
+     * Converts an {@link Instant} to a {@link LocalDateTime} in the
+     * system default time zone.
+     *
+     * @param instant the instant to convert
+     * @return the corresponding {@link LocalDateTime}
      */
     public static LocalDateTime ofDateTime(Instant instant) {
         return ofDateTime(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 转为指定时区下的本地日期时间。
+     * Converts an {@link Instant} to a {@link LocalDateTime} in the
+     * specified time zone.
+     *
+     * @param instant the instant to convert
+     * @param zoneId  the target time zone
+     * @return the corresponding {@link LocalDateTime}
      */
     public static LocalDateTime ofDateTime(Instant instant, ZoneId zoneId) {
         return LocalDateTime.ofInstant(instant, zoneId);
     }
 
     /**
-     * 毫秒时间戳 -> 本地日期（系统默认时区）
+     * Converts epoch milliseconds to a {@link LocalDate} in the system
+     * default time zone.
+     *
+     * @param epochMillis the milliseconds since 1970-01-01T00:00:00Z
+     * @return the corresponding {@link LocalDate}
      */
     public static LocalDate ofDate(long epochMillis) {
         return ofDateTime(epochMillis).toLocalDate();
     }
 
     /**
-     * 将 {@link Instant} 转为默认时区下的本地日期。
+     * Converts an {@link Instant} to a {@link LocalDate} in the system
+     * default time zone.
+     *
+     * @param instant the instant to convert
+     * @return the corresponding {@link LocalDate}
      */
     public static LocalDate ofDate(Instant instant) {
         return ofDateTime(instant).toLocalDate();
     }
 
     /**
-     * 将 {@link Instant} 转为指定时区下的本地日期。
+     * Converts an {@link Instant} to a {@link LocalDate} in the specified
+     * time zone.
+     *
+     * @param instant the instant to convert
+     * @param zoneId  the target time zone
+     * @return the corresponding {@link LocalDate}
      */
     public static LocalDate ofDate(Instant instant, ZoneId zoneId) {
         return ofDateTime(instant, zoneId).toLocalDate();
     }
 
     /**
-     * 毫秒时间戳 -> 本地时间（系统默认时区）
+     * Converts epoch milliseconds to a {@link LocalTime} in the system
+     * default time zone.
+     *
+     * @param epochMillis the milliseconds since 1970-01-01T00:00:00Z
+     * @return the corresponding {@link LocalTime}
      */
     public static LocalTime ofTime(long epochMillis) {
         return ofDateTime(epochMillis).toLocalTime();
     }
 
     /**
-     * 将 {@link Instant} 转为默认时区下的本地时间。
+     * Converts an {@link Instant} to a {@link LocalTime} in the system
+     * default time zone.
+     *
+     * @param instant the instant to convert
+     * @return the corresponding {@link LocalTime}
      */
     public static LocalTime ofTime(Instant instant) {
         return ofDateTime(instant).toLocalTime();
     }
 
     /**
-     * 将 {@link Instant} 转为指定时区下的本地时间。
+     * Converts an {@link Instant} to a {@link LocalTime} in the specified
+     * time zone.
+     *
+     * @param instant the instant to convert
+     * @param zoneId  the target time zone
+     * @return the corresponding {@link LocalTime}
      */
     public static LocalTime ofTime(Instant instant, ZoneId zoneId) {
         return ofDateTime(instant, zoneId).toLocalTime();
     }
 
     /**
-     * 将 {@link Instant} 转为默认时区下的 {@link ZonedDateTime}。
+     * Converts an {@link Instant} to a {@link ZonedDateTime} in the
+     * system default time zone.
+     *
+     * @param instant the instant to convert
+     * @return the corresponding {@link ZonedDateTime}
      */
     public static ZonedDateTime ofZonedDateTime(Instant instant) {
         return instant.atZone(zone());
     }
 
     /**
-     * 将 {@link Instant} 转为指定时区下的 {@link ZonedDateTime}。
+     * Converts an {@link Instant} to a {@link ZonedDateTime} in the
+     * specified time zone.
+     *
+     * @param instant the instant to convert
+     * @param zoneId  the target time zone
+     * @return the corresponding {@link ZonedDateTime}
      */
     public static ZonedDateTime ofZonedDateTime(Instant instant, ZoneId zoneId) {
         return instant.atZone(zoneId);
     }
 
     /**
-     * 将默认时区下的本地日期时间转为 {@link Instant}。
+     * Converts a {@link LocalDateTime} to an {@link Instant} using the
+     * system default time zone.
+     *
+     * @param dateTime the local date-time to convert, may be null
+     * @return the corresponding {@link Instant}, or null if input is null
      */
     public static Instant toInstant(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -245,7 +311,12 @@ public final class HighDate {
     }
 
     /**
-     * 将指定时区下的本地日期时间转为 {@link Instant}。
+     * Converts a {@link LocalDateTime} to an {@link Instant} using the
+     * specified time zone.
+     *
+     * @param dateTime the local date-time to convert, may be null
+     * @param zoneId   the target time zone
+     * @return the corresponding {@link Instant}, or null if input is null
      */
     public static Instant toInstant(LocalDateTime dateTime, ZoneId zoneId) {
         if (dateTime == null) {
@@ -255,7 +326,11 @@ public final class HighDate {
     }
 
     /**
-     * 将默认时区下的日期转为当天 00:00:00 对应的 {@link Instant}。
+     * Converts a {@link LocalDate} to an {@link Instant} at start-of-day
+     * in the system default time zone.
+     *
+     * @param date the local date to convert, may be null
+     * @return the corresponding {@link Instant}, or null if input is null
      */
     public static Instant toInstant(LocalDate date) {
         if (date == null) {
@@ -265,7 +340,12 @@ public final class HighDate {
     }
 
     /**
-     * 将指定时区下的日期转为当天 00:00:00 对应的 {@link Instant}。
+     * Converts a {@link LocalDate} to an {@link Instant} at start-of-day
+     * in the specified time zone.
+     *
+     * @param date   the local date to convert, may be null
+     * @param zoneId the target time zone
+     * @return the corresponding {@link Instant}, or null if input is null
      */
     public static Instant toInstant(LocalDate date, ZoneId zoneId) {
         if (date == null) {
@@ -275,16 +355,27 @@ public final class HighDate {
     }
 
     /**
-     * 将默认时区下的日期和时间拼装为 {@link Instant}。
+     * Combines a {@link LocalDate} and {@link LocalTime} into an
+     * {@link Instant} using the system default time zone.
+     *
+     * @param date the date portion, may be null
+     * @param time the time portion, may be null
+     * @return the combined {@link Instant}, or null if either input is null
      */
     public static Instant toInstant(LocalDate date, LocalTime time) {
         return toInstant(date, time, zone());
     }
 
     /**
-     * 将指定时区下的日期和时间拼装为 {@link Instant}。
+     * Combines a {@link LocalDate} and {@link LocalTime} into an
+     * {@link Instant} using the specified time zone.
      * <p>
-     * 适用于表单拆分输入“日期 + 时间”的场景。
+     * Useful for form inputs that split date and time into separate fields.
+     *
+     * @param date   the date portion, may be null
+     * @param time   the time portion, may be null
+     * @param zoneId the target time zone
+     * @return the combined {@link Instant}, or null if either input is null
      */
     public static Instant toInstant(LocalDate date, LocalTime time, ZoneId zoneId) {
         if (date == null || time == null) {
@@ -294,7 +385,11 @@ public final class HighDate {
     }
 
     /**
-     * 本地日期时间（系统默认时区）-> 毫秒时间戳
+     * Converts a {@link LocalDateTime} to epoch milliseconds using the
+     * system default time zone.
+     *
+     * @param ldt the local date-time to convert, may be null
+     * @return the epoch millis, or 0 if input is null
      */
     public static long toEpochMillis(LocalDateTime ldt) {
         if (ldt == null) {
@@ -304,7 +399,11 @@ public final class HighDate {
     }
 
     /**
-     * 本地日期时间（系统默认时区）-> 秒时间戳
+     * Converts a {@link LocalDateTime} to epoch seconds using the system
+     * default time zone.
+     *
+     * @param ldt the local date-time to convert, may be null
+     * @return the epoch seconds, or 0 if input is null
      */
     public static long toEpochSeconds(LocalDateTime ldt) {
         if (ldt == null) {
@@ -314,7 +413,10 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 转为毫秒时间戳。
+     * Converts an {@link Instant} to epoch milliseconds.
+     *
+     * @param instant the instant to convert, may be null
+     * @return the epoch millis, or 0 if input is null
      */
     public static long toEpochMillis(Instant instant) {
         if (instant == null) {
@@ -324,7 +426,10 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 转为秒时间戳。
+     * Converts an {@link Instant} to epoch seconds.
+     *
+     * @param instant the instant to convert, may be null
+     * @return the epoch seconds, or 0 if input is null
      */
     public static long toEpochSeconds(Instant instant) {
         if (instant == null) {
@@ -336,7 +441,11 @@ public final class HighDate {
     /* ----------------------- range / boundary ----------------------- */
 
     /**
-     * 归一化到当天开始时间 `00:00:00`。
+     * Returns the start of the day ({@code 00:00:00}) for the given
+     * date-time.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the start-of-day, or null if input is null
      */
     public static LocalDateTime toStartOfDay(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -346,7 +455,10 @@ public final class HighDate {
     }
 
     /**
-     * 将日期转为当天开始时间 `00:00:00`。
+     * Returns the start of the day ({@code 00:00:00}) for the given date.
+     *
+     * @param date the source date, may be null
+     * @return the start-of-day, or null if input is null
      */
     public static LocalDateTime toStartOfDay(LocalDate date) {
         if (date == null) {
@@ -356,9 +468,13 @@ public final class HighDate {
     }
 
     /**
-     * 归一化到次日开始时间 `00:00:00`。
+     * Returns the start of the next day ({@code 00:00:00}) for the given
+     * date-time.
      * <p>
-     * 推荐作为按天查询的排他上界。
+     * Recommended as the exclusive upper bound in day-range queries.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the start of the next day, or null if input is null
      */
     public static LocalDateTime toStartOfNextDay(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -368,7 +484,10 @@ public final class HighDate {
     }
 
     /**
-     * 将日期转为次日开始时间 `00:00:00`。
+     * Returns the start of the next day ({@code 00:00:00}) for the given date.
+     *
+     * @param date the source date, may be null
+     * @return the start of the next day, or null if input is null
      */
     public static LocalDateTime toStartOfNextDay(LocalDate date) {
         if (date == null) {
@@ -378,9 +497,13 @@ public final class HighDate {
     }
 
     /**
-     * 返回当天最后一个纳秒时刻。
+     * Returns the last nanosecond of the day for the given date-time.
      * <p>
-     * 仅用于兼容“日结束”语义，查询上界仍优先推荐 {@link #toStartOfNextDay(LocalDateTime)}。
+     * Exists for "end-of-day" compatibility. For query boundaries,
+     * prefer {@link #toStartOfNextDay(LocalDateTime)}.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the end-of-day, or null if input is null
      */
     public static LocalDateTime toEndOfDay(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -390,7 +513,10 @@ public final class HighDate {
     }
 
     /**
-     * 返回指定日期当天最后一个纳秒时刻。
+     * Returns the last nanosecond of the day for the given date.
+     *
+     * @param date the source date, may be null
+     * @return the end-of-day, or null if input is null
      */
     public static LocalDateTime toEndOfDay(LocalDate date) {
         if (date == null) {
@@ -400,14 +526,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的当天开始。
+     * Normalizes an {@link Instant} to the start of its day in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the start-of-day instant, or null if input is null
      */
     public static Instant toStartOfDay(Instant instant) {
         return toStartOfDay(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的当天开始。
+     * Normalizes an {@link Instant} to the start of its day in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the start-of-day instant, or null if input is null
      */
     public static Instant toStartOfDay(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -417,14 +552,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的次日开始。
+     * Normalizes an {@link Instant} to the start of the next day in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the next-day-start instant, or null if input is null
      */
     public static Instant toStartOfNextDay(Instant instant) {
         return toStartOfNextDay(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的次日开始。
+     * Normalizes an {@link Instant} to the start of the next day in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the next-day-start instant, or null if input is null
      */
     public static Instant toStartOfNextDay(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -434,14 +578,23 @@ public final class HighDate {
     }
 
     /**
-     * 返回默认时区下当天最后一个纳秒时刻。
+     * Returns the last nanosecond of the day for the given instant in
+     * the system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the end-of-day instant, or null if input is null
      */
     public static Instant toEndOfDay(Instant instant) {
         return toEndOfDay(instant, zone());
     }
 
     /**
-     * 返回指定时区下当天最后一个纳秒时刻。
+     * Returns the last nanosecond of the day for the given instant in
+     * the specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the end-of-day instant, or null if input is null
      */
     public static Instant toEndOfDay(Instant instant, ZoneId zoneId) {
         Instant nextDayStart = toStartOfNextDay(instant, zoneId);
@@ -452,7 +605,11 @@ public final class HighDate {
     }
 
     /**
-     * 归一化到当月第一天 `00:00:00`。
+     * Returns the start of the current month ({@code 1st 00:00:00}) for
+     * the given date-time.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the month-start, or null if input is null
      */
     public static LocalDateTime toStartOfMonth(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -462,7 +619,11 @@ public final class HighDate {
     }
 
     /**
-     * 归一化到下月第一天 `00:00:00`。
+     * Returns the start of the next month ({@code 1st 00:00:00}) for
+     * the given date-time.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the next-month-start, or null if input is null
      */
     public static LocalDateTime toStartOfNextMonth(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -472,7 +633,11 @@ public final class HighDate {
     }
 
     /**
-     * 归一化到当年第一天 `00:00:00`。
+     * Returns the start of the current year ({@code Jan 1st 00:00:00})
+     * for the given date-time.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the year-start, or null if input is null
      */
     public static LocalDateTime toStartOfYear(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -482,7 +647,11 @@ public final class HighDate {
     }
 
     /**
-     * 归一化到下一年第一天 `00:00:00`。
+     * Returns the start of the next year ({@code Jan 1st 00:00:00})
+     * for the given date-time.
+     *
+     * @param dateTime the source date-time, may be null
+     * @return the next-year-start, or null if input is null
      */
     public static LocalDateTime toStartOfNextYear(LocalDateTime dateTime) {
         if (dateTime == null) {
@@ -492,14 +661,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的当月开始。
+     * Normalizes an {@link Instant} to the start of its month in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the month-start instant, or null if input is null
      */
     public static Instant toStartOfMonth(Instant instant) {
         return toStartOfMonth(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的当月开始。
+     * Normalizes an {@link Instant} to the start of its month in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the month-start instant, or null if input is null
      */
     public static Instant toStartOfMonth(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -510,14 +688,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的下月开始。
+     * Normalizes an {@link Instant} to the start of the next month in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the next-month-start instant, or null if input is null
      */
     public static Instant toStartOfNextMonth(Instant instant) {
         return toStartOfNextMonth(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的下月开始。
+     * Normalizes an {@link Instant} to the start of the next month in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the next-month-start instant, or null if input is null
      */
     public static Instant toStartOfNextMonth(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -528,14 +715,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的当年开始。
+     * Normalizes an {@link Instant} to the start of its year in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the year-start instant, or null if input is null
      */
     public static Instant toStartOfYear(Instant instant) {
         return toStartOfYear(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的当年开始。
+     * Normalizes an {@link Instant} to the start of its year in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the year-start instant, or null if input is null
      */
     public static Instant toStartOfYear(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -546,14 +742,23 @@ public final class HighDate {
     }
 
     /**
-     * 将 {@link Instant} 归一化到默认时区的下一年开始。
+     * Normalizes an {@link Instant} to the start of the next year in the
+     * system default time zone.
+     *
+     * @param instant the source instant, may be null
+     * @return the next-year-start instant, or null if input is null
      */
     public static Instant toStartOfNextYear(Instant instant) {
         return toStartOfNextYear(instant, zone());
     }
 
     /**
-     * 将 {@link Instant} 归一化到指定时区的下一年开始。
+     * Normalizes an {@link Instant} to the start of the next year in the
+     * specified time zone.
+     *
+     * @param instant the source instant, may be null
+     * @param zoneId  the target time zone
+     * @return the next-year-start instant, or null if input is null
      */
     public static Instant toStartOfNextYear(Instant instant, ZoneId zoneId) {
         if (instant == null) {
@@ -564,7 +769,13 @@ public final class HighDate {
     }
 
     /**
-     * 计算半开区间 {@code [startInclusive, endExclusive)} 的毫秒差。
+     * Computes the difference in milliseconds for the half-open interval
+     * {@code [startInclusive, endExclusive)}.
+     *
+     * @param startInclusive the start of the interval (inclusive)
+     * @param endExclusive   the end of the interval (exclusive)
+     * @return the number of milliseconds between the two instants
+     * @throws NullPointerException if either argument is null
      */
     public static long betweenMillis(Instant startInclusive, Instant endExclusive) {
         Objects.requireNonNull(startInclusive, "startInclusive required");
@@ -573,7 +784,13 @@ public final class HighDate {
     }
 
     /**
-     * 计算半开区间 {@code [startInclusive, endExclusive)} 的秒差。
+     * Computes the difference in seconds for the half-open interval
+     * {@code [startInclusive, endExclusive)}.
+     *
+     * @param startInclusive the start of the interval (inclusive)
+     * @param endExclusive   the end of the interval (exclusive)
+     * @return the number of seconds between the two instants
+     * @throws NullPointerException if either argument is null
      */
     public static long betweenSeconds(Instant startInclusive, Instant endExclusive) {
         Objects.requireNonNull(startInclusive, "startInclusive required");
@@ -582,7 +799,12 @@ public final class HighDate {
     }
 
     /**
-     * 返回两个瞬时中更早的一个；允许任一参数为 {@code null}。
+     * Returns the earlier of the two instants; either argument may be
+     * {@code null}.
+     *
+     * @param left  the first instant, may be null
+     * @param right the second instant, may be null
+     * @return the earlier instant, or the non-null one if the other is null
      */
     public static Instant min(Instant left, Instant right) {
         if (left == null) {
@@ -595,7 +817,12 @@ public final class HighDate {
     }
 
     /**
-     * 返回两个瞬时中更晚的一个；允许任一参数为 {@code null}。
+     * Returns the later of the two instants; either argument may be
+     * {@code null}.
+     *
+     * @param left  the first instant, may be null
+     * @param right the second instant, may be null
+     * @return the later instant, or the non-null one if the other is null
      */
     public static Instant max(Instant left, Instant right) {
         if (left == null) {
@@ -608,132 +835,203 @@ public final class HighDate {
     }
 
     /* ----------------------- parse / format ----------------------- */
-    // 注意：LocalDateTime/LocalDate/LocalTime 本身不带时区信息；
-    // parse/format 只是字符串 <-> 本地时间对象，与时区无关（除非字符串里包含 offset/zone）。
 
     /**
-     * 按默认格式 {@code yyyy-MM-dd HH:mm:ss} 解析本地日期时间。
+     * Parses a date-time string using the default pattern
+     * {@code yyyy-MM-dd HH:mm:ss}.
+     *
+     * @param str the string to parse
+     * @return the parsed {@link LocalDateTime}
      */
     public static LocalDateTime parse(String str) {
         return parse(str, DateTimePatterns.DATE_TIME_FMT);
     }
 
     /**
-     * 按默认格式 {@code yyyy-MM-dd} 解析本地日期。
+     * Parses a date string using the default pattern {@code yyyy-MM-dd}.
+     *
+     * @param str the string to parse
+     * @return the parsed {@link LocalDate}
      */
     public static LocalDate parseDate(String str) {
         return parseDate(str, DateTimePatterns.DATE_FMT);
     }
 
     /**
-     * 按默认格式 {@code HH:mm:ss} 解析本地时间。
+     * Parses a time string using the default pattern {@code HH:mm:ss}.
+     *
+     * @param str the string to parse
+     * @return the parsed {@link LocalTime}
      */
     public static LocalTime parseTime(String str) {
         return parseTime(str, DateTimePatterns.TIME_FMT);
     }
 
     /**
-     * 使用指定格式器解析本地日期时间。
+     * Parses a date-time string using a custom {@link DateTimeFormatter}.
+     *
+     * @param str       the string to parse
+     * @param formatter the formatter to use
+     * @return the parsed {@link LocalDateTime}
      */
     public static LocalDateTime parse(String str, DateTimeFormatter formatter) {
         return LocalDateTime.parse(str, formatter);
     }
 
     /**
-     * 使用指定 pattern 解析本地日期时间。
+     * Parses a date-time string using a custom pattern.
      * <p>
-     * 示例：{@code HighDate.parse("2026/03/14 08:30", "yyyy/MM/dd HH:mm")}。
+     * Example: {@code HighDate.parse("2026/03/14 08:30", "yyyy/MM/dd HH:mm")}.
+     *
+     * @param str     the string to parse
+     * @param pattern the pattern to use
+     * @return the parsed {@link LocalDateTime}
      */
     public static LocalDateTime parse(String str, String pattern) {
         return parse(str, DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
-     * 使用指定格式器解析本地日期。
+     * Parses a date string using a custom {@link DateTimeFormatter}.
+     *
+     * @param str       the string to parse
+     * @param formatter the formatter to use
+     * @return the parsed {@link LocalDate}
      */
     public static LocalDate parseDate(String str, DateTimeFormatter formatter) {
         return LocalDate.parse(str, formatter);
     }
 
     /**
-     * 使用指定 pattern 解析本地日期。
+     * Parses a date string using a custom pattern.
+     *
+     * @param str     the string to parse
+     * @param pattern the pattern to use
+     * @return the parsed {@link LocalDate}
      */
     public static LocalDate parseDate(String str, String pattern) {
         return parseDate(str, DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
-     * 使用指定格式器解析本地时间。
+     * Parses a time string using a custom {@link DateTimeFormatter}.
+     *
+     * @param str       the string to parse
+     * @param formatter the formatter to use
+     * @return the parsed {@link LocalTime}
      */
     public static LocalTime parseTime(String str, DateTimeFormatter formatter) {
         return LocalTime.parse(str, formatter);
     }
 
     /**
-     * 使用指定 pattern 解析本地时间。
+     * Parses a time string using a custom pattern.
+     *
+     * @param str     the string to parse
+     * @param pattern the pattern to use
+     * @return the parsed {@link LocalTime}
      */
     public static LocalTime parseTime(String str, String pattern) {
         return parseTime(str, DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
-     * 按默认格式 {@code yyyy-MM-dd HH:mm:ss} 格式化本地日期时间。
+     * Formats a {@link LocalDateTime} using the default pattern
+     * {@code yyyy-MM-dd HH:mm:ss}.
+     *
+     * @param ldt the date-time to format
+     * @return the formatted string
      */
     public static String format(LocalDateTime ldt) {
         return format(ldt, DateTimePatterns.DATE_TIME_FMT);
     }
 
     /**
-     * 按默认格式 {@code yyyy-MM-dd} 格式化本地日期。
+     * Formats a {@link LocalDate} using the default pattern
+     * {@code yyyy-MM-dd}.
+     *
+     * @param ld the date to format
+     * @return the formatted string
      */
     public static String format(LocalDate ld) {
         return format(ld, DateTimePatterns.DATE_FMT);
     }
 
     /**
-     * 按默认格式 {@code HH:mm:ss} 格式化本地时间。
+     * Formats a {@link LocalTime} using the default pattern
+     * {@code HH:mm:ss}.
+     *
+     * @param lt the time to format
+     * @return the formatted string
      */
     public static String format(LocalTime lt) {
         return format(lt, DateTimePatterns.TIME_FMT);
     }
 
     /**
-     * 使用指定格式器格式化本地日期时间。
+     * Formats a {@link LocalDateTime} using a custom
+     * {@link DateTimeFormatter}.
+     *
+     * @param ldt       the date-time to format
+     * @param formatter the formatter to use
+     * @return the formatted string
      */
     public static String format(LocalDateTime ldt, DateTimeFormatter formatter) {
         return ldt.format(formatter);
     }
 
     /**
-     * 使用指定 pattern 格式化本地日期时间。
+     * Formats a {@link LocalDateTime} using a custom pattern.
+     *
+     * @param ldt     the date-time to format
+     * @param pattern the pattern to use
+     * @return the formatted string
      */
     public static String format(LocalDateTime ldt, String pattern) {
         return format(ldt, DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
-     * 使用指定格式器格式化本地日期。
+     * Formats a {@link LocalDate} using a custom
+     * {@link DateTimeFormatter}.
+     *
+     * @param ld        the date to format
+     * @param formatter the formatter to use
+     * @return the formatted string
      */
     public static String format(LocalDate ld, DateTimeFormatter formatter) {
         return ld.format(formatter);
     }
 
     /**
-     * 使用指定 pattern 格式化本地日期。
+     * Formats a {@link LocalDate} using a custom pattern.
+     *
+     * @param ld     the date to format
+     * @param pattern the pattern to use
+     * @return the formatted string
      */
     public static String format(LocalDate ld, String pattern) {
         return format(ld, DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
-     * 使用指定格式器格式化本地时间。
+     * Formats a {@link LocalTime} using a custom
+     * {@link DateTimeFormatter}.
+     *
+     * @param lt        the time to format
+     * @param formatter the formatter to use
+     * @return the formatted string
      */
     public static String format(LocalTime lt, DateTimeFormatter formatter) {
         return lt.format(formatter);
     }
 
     /**
-     * 使用指定 pattern 格式化本地时间。
+     * Formats a {@link LocalTime} using a custom pattern.
+     *
+     * @param lt     the time to format
+     * @param pattern the pattern to use
+     * @return the formatted string
      */
     public static String format(LocalTime lt, String pattern) {
         return format(lt, DateTimeFormatter.ofPattern(pattern));

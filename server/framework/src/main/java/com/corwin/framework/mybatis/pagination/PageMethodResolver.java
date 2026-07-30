@@ -11,7 +11,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 解析 MyBatis statement 对应 Mapper 方法是否需要 PageData 自动分页。
+ * Resolves whether a MyBatis mapper method requires automatic {@link PageData} pagination.
+ * <p>
+ * A method qualifies if its return type is {@link PageData} and it accepts a {@link com.corwin.framework.domain.page.PageSpec PageSpec}
+ * parameter. Results are cached by statement ID.
  *
  * @author Corwin 2026/7/28
  */
@@ -41,8 +44,8 @@ public final class PageMethodResolver {
                     .filter(method -> !method.isSynthetic()).toList();
 
             /*
-             * 根据项目约束，不允许重载。
-             * 这里仍采用静默放行，避免分页组件改变普通 MyBatis 行为。
+             * Method overloading is not permitted per project convention.
+             * Silently skip to avoid interfering with ordinary MyBatis behavior.
              */
             if (methods.size() != 1) {
                 return PageMethodDescriptor.ORDINARY;
@@ -57,8 +60,8 @@ public final class PageMethodResolver {
             return pageSpecCount == 1 && returnsPageData ? PageMethodDescriptor.PAGED : PageMethodDescriptor.ORDINARY;
         } catch (ClassNotFoundException | LinkageError ignored) {
             /*
-             * XML namespace 不一定必须是 Mapper 接口。
-             * 无法解析时作为普通 MyBatis statement 处理。
+             * An XML namespace may not always correspond to a Mapper interface.
+             * Treat unresolvable statements as ordinary ones.
              */
             return PageMethodDescriptor.ORDINARY;
         }

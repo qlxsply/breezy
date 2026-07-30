@@ -1,7 +1,10 @@
 package com.corwin.framework.web.sort;
 
 /**
- * 当前请求排序规则上下文。
+ * Thread-local holder for the current request's {@link SortRule}.
+ * <p>
+ * The rule is set by {@link SortRuleInterceptor} during pre-handle and
+ * automatically cleared after request completion.
  *
  * @author Corwin 2026/7/29
  */

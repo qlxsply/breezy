@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * 基于 JDBC 的 durable 事件事实源实现。
+ * JDBC-based implementation of {@link PersistentEventStore}.
  *
  * @author Corwin 2026/4/12
  */

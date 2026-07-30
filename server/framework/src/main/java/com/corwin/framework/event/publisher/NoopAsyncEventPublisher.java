@@ -6,10 +6,9 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * 空操作发布器。
+ * No-op {@link AsyncEventPublisher} used as a fallback when the event component is disabled.
  * <p>
- * 在异步事件组件关闭时作为降级实现注入，确保业务调用发布接口时不抛错、
- * 也不会触发任何传输行为。
+ * All publish calls succeed silently without triggering any transport.
  *
  * @author Corwin 2026/3/31
  */

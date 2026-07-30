@@ -10,10 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 默认消费上下文绑定器。
- * <p>
- * 该实现会在消费前保存当前线程上下文与 MDC，再根据事件快照恢复消费上下文，
- * 并在作用域关闭时完整回滚，避免异步线程复用导致上下文污染。
+ * Default {@link ConsumeContextBinder} that saves the current thread context and MDC,
+ * restores the snapshot context for consumption, and fully rolls back on scope close.
  *
  * @author Corwin 2026/4/9
  */

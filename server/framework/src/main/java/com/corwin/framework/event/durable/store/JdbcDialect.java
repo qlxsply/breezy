@@ -3,14 +3,14 @@ package com.corwin.framework.event.durable.store;
 import java.util.List;
 
 /**
- * durable JDBC 方言抽象。
+ * JDBC dialect abstraction for durable event store operations.
  *
  * @author Corwin 2026/4/12
  */
 public interface JdbcDialect {
 
     /**
-     * 数据库类型。
+     * The database vendor this dialect targets.
      */
     DatabaseVendor vendor();
 

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Factory for creating {@link com.corwin.framework.domain.page.PageSpec}
+ * instances from page/sort request DTOs.
+ *
  * @author Corwin 2026/3/30
  */
 public final class PageSpecFactory {

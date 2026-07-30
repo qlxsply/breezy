@@ -11,7 +11,7 @@ import com.corwin.framework.error.BizException;
 import com.corwin.framework.error.CacheError;
 
 /**
- * 本地 + Redis 两级缓存扩展位。
+ * Placeholder {@link com.corwin.framework.cache.core.CacheProvider} for the local+Redis tiered mode (not yet implemented).
  *
  * @author Corwin 2026/4/19
  */

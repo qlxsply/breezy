@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 本地 object 缓存操作。
+ * Local cache object (key-value) operations backed by the store.
  *
  * @author Corwin 2026/4/19
  */
