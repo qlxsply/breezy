@@ -5,6 +5,10 @@ import com.corwin.system.resource.domain.model.ResourceType;
 import java.util.List;
 
 /**
+ * Response DTO representing a node in the system resource tree.
+ *
+ * <p>Supports recursive children to represent the full tree hierarchy.</p>
+ *
  * @author Corwin 2026/6/29
  */
 public record SystemResourceTreeItemRes(

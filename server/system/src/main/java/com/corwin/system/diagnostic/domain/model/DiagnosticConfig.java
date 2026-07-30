@@ -4,6 +4,9 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
+ * Domain model encapsulating the configuration parameters for a diagnostic session.
+ * Performs validation and clamping of all numeric fields in the compact constructor.
+ *
  * @author Corwin 2026/4/16
  */
 public record DiagnosticConfig(
@@ -32,6 +35,10 @@ public record DiagnosticConfig(
     public static final long MIN_THRESHOLD_MS = 1L;
     public static final long MAX_TTL_SECONDS = 86_400L;
 
+    /**
+     * Compact constructor that validates and clamps all numeric fields within their allowed ranges,
+     * and normalises the items set.
+     */
     public DiagnosticConfig {
         intervalMs = clamp(intervalMs, MIN_INTERVAL_MS, MAX_INTERVAL_MS, DEFAULT_INTERVAL_MS);
         historyCapacity = clamp(historyCapacity, MIN_HISTORY_CAPACITY, MAX_HISTORY_CAPACITY, DEFAULT_HISTORY_CAPACITY);
@@ -43,12 +50,23 @@ public record DiagnosticConfig(
         ttlSeconds = clamp(ttlSeconds, 60L, MAX_TTL_SECONDS, DEFAULT_TTL_SECONDS);
     }
 
+    /**
+     * Returns a default configuration with all diagnostic items enabled and standard thresholds.
+     *
+     * @return the default diagnostic configuration
+     */
     public static DiagnosticConfig defaultConfig() {
         return new DiagnosticConfig(DEFAULT_INTERVAL_MS, DEFAULT_HISTORY_CAPACITY, DEFAULT_EVENT_CAPACITY,
                 EnumSet.allOf(DiagnosticItem.class), false, DEFAULT_SLOW_REQUEST_THRESHOLD_MS,
                 DEFAULT_SLOW_SQL_THRESHOLD_MS, DEFAULT_TTL_SECONDS);
     }
 
+    /**
+     * Checks whether the given diagnostic item is enabled in this configuration.
+     *
+     * @param item the diagnostic item to check
+     * @return true if the item is included and non-null
+     */
     public boolean includes(DiagnosticItem item) {
         return item != null && items.contains(item);
     }

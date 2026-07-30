@@ -14,11 +14,18 @@ import java.lang.management.RuntimeMXBean;
 import java.util.List;
 
 /**
+ * Collector that captures JVM runtime state including memory, class loading, GC activity, and CPU usage.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
 public class JvmStateCollector {
 
+    /**
+     * Collects and returns a full JVM snapshot from the platform MXBeans.
+     *
+     * @return a JvmSnapshot with current runtime metrics
+     */
     public JvmSnapshot collect() {
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         MemoryMXBean memory = ManagementFactory.getMemoryMXBean();

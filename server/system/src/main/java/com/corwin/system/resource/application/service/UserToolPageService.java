@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 /**
+ * Application service for user-facing tool pages.
+ *
+ * <p>Builds the list of accessible tool pages and granted permission codes for
+ * the currently authenticated end-user based on their feature access configuration.</p>
+ *
  * @author Corwin 2026/6/6
  */
 @Service
@@ -23,6 +28,11 @@ public class UserToolPageService {
     private final PermissionService permissionService;
     private final UserFeatureAccessService userFeatureAccessService;
 
+    /**
+     * Builds the set of tools and permission codes available to the currently authenticated user.
+     *
+     * @return the user tools view containing tool pages and granted permission codes
+     */
     public UserToolsView currentUserTools() {
         Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
         if (principalOptional.isEmpty()) {

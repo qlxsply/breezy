@@ -17,6 +17,11 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
+ * JPA-based implementation of ConfigStore.
+ * Retrieves and persists system configuration using JPA repository,
+ * merges stored entities with registered definitions, and refreshes
+ * the ConfigRegistry on value updates.
+ *
  * @author Corwin 2026/5/5
  */
 @Slf4j
@@ -26,12 +31,18 @@ public class JpaConfigStore implements ConfigStore {
 
     private final ConfigJpaRepository configJpaRepository;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional(readOnly = true)
     public List<StoredConfig> findAllActive() {
         return mergeAllDefinitions();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional(readOnly = true)
     public List<StoredConfig> findByKeyword(String keyword) {
@@ -46,12 +57,18 @@ public class JpaConfigStore implements ConfigStore {
                 .toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional(readOnly = true)
     public List<StoredConfig> findByLevel(ConfigLevel level) {
         return mergeAllDefinitions().stream().filter(item -> item.level() == level).toList();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<StoredConfig> findByCode(String code) {
@@ -63,6 +80,9 @@ public class JpaConfigStore implements ConfigStore {
                 .map(this::toStoredConfig);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional
     public boolean updateValue(String code, String value) {

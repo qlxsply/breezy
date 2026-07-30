@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 月度调度日模式。
+ * Enum for monthly scheduling day mode (exact day or last day of month).
  *
  * @author Corwin 2026/4/15
  */

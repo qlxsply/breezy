@@ -32,6 +32,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for user feature administration.
+ *
+ * <p>Provides endpoints for managing product applications, user application packages,
+ * and per-user feature access overrides in the admin console.</p>
+ *
  * @author Corwin 2026/6/14
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -42,6 +47,12 @@ public class UserFeatureAdminController {
 
     private final UserFeatureAdminService userFeatureAdminService;
 
+    /**
+     * Paginates product applications with keyword and enabled filter.
+     *
+     * @param req the page request with optional keyword and enabled filter
+     * @return paginated application response
+     */
     @PostMapping("/applications/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view"})
     public ApiResponse<PageResult<UserFeatureApplicationRes>> pageApplications(
@@ -52,6 +63,11 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toApplicationRes));
     }
 
+    /**
+     * Returns all applications as a flat catalog for selection dropdowns.
+     *
+     * @return list of all application responses
+     */
     @GetMapping("/applications/catalog")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view"})
     public ApiResponse<List<UserFeatureApplicationRes>> applicationCatalog() {
@@ -59,12 +75,25 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(applications.stream().map(UserFeatureAdminController::toApplicationRes).toList());
     }
 
+    /**
+     * Gets a single application by its ID.
+     *
+     * @param id the application ID
+     * @return the application response
+     */
     @GetMapping("/applications/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view"})
     public ApiResponse<UserFeatureApplicationRes> getApplication(@PathVariable Long id) {
         return ApiResponse.ok(toApplicationRes(userFeatureAdminService.getApplication(id)));
     }
 
+    /**
+     * Enables or disables a product application.
+     *
+     * @param id  the application ID
+     * @param req the status update request
+     * @return true on success
+     */
     @PutMapping("/applications/{id}/status")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufa.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -73,6 +102,12 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(userFeatureAdminService.updateApplicationStatus(id, req.enabled()));
     }
 
+    /**
+     * Paginates user application packages with keyword and enabled filter.
+     *
+     * @param req the page request with optional keyword and enabled filter
+     * @return paginated package response
+     */
     @PostMapping("/packages/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.view"})
     public ApiResponse<PageResult<UserFeaturePackageRes>> pagePackages(@RequestBody UserFeaturePackagePageReq req) {
@@ -82,12 +117,24 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toPackageRes));
     }
 
+    /**
+     * Gets a single user application package by its ID.
+     *
+     * @param id the package ID
+     * @return the package response
+     */
     @GetMapping("/packages/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.view"})
     public ApiResponse<UserFeaturePackageRes> getPackage(@PathVariable Long id) {
         return ApiResponse.ok(toPackageRes(userFeatureAdminService.getPackage(id)));
     }
 
+    /**
+     * Creates a new user application package.
+     *
+     * @param req the package creation request
+     * @return the created package response
+     */
     @PostMapping("/packages")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.CREATE, description = "创建用户应用包",
@@ -96,6 +143,13 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(toPackageRes(userFeatureAdminService.createPackage(toPackageCommand(req))));
     }
 
+    /**
+     * Updates an existing user application package.
+     *
+     * @param id  the package ID
+     * @param req the package update request
+     * @return the updated package response
+     */
     @PutMapping("/packages/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, description = "更新用户应用包",
@@ -105,6 +159,13 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(toPackageRes(userFeatureAdminService.updatePackage(id, toPackageCommand(req))));
     }
 
+    /**
+     * Enables or disables a user application package.
+     *
+     * @param id  the package ID
+     * @param req the status update request
+     * @return true on success
+     */
     @PutMapping("/packages/{id}/status")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, description = "更新用户应用包状态",
@@ -113,6 +174,13 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(userFeatureAdminService.updatePackageStatus(id, req.enabled()));
     }
 
+    /**
+     * Deletes a user application package by its ID.
+     * <p>Also removes all associated application/feature access records and package member mappings.</p>
+     *
+     * @param id the package ID
+     * @return true on success
+     */
     @DeleteMapping("/packages/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.DELETE, description = "删除用户应用包",
@@ -121,12 +189,27 @@ public class UserFeatureAdminController {
         return ApiResponse.ok(userFeatureAdminService.deletePackage(id));
     }
 
+    /**
+     * Gets the full user feature management view for a specific user.
+     * <p>Returns assigned packages, application access state with inherited/effective visibility, and per-feature overrides.</p>
+     *
+     * @param userId the user ID
+     * @return the user management response
+     */
     @GetMapping("/users/{userId}/management")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufu.view"})
     public ApiResponse<UserFeatureUserManagementRes> getUserManagement(@PathVariable Long userId) {
         return ApiResponse.ok(toUserManagementRes(userFeatureAdminService.getUserManagement(userId)));
     }
 
+    /**
+     * Saves the full user feature management configuration for a specific user.
+     * <p>Updates package assignments, application-level overrides, and feature-level overrides.</p>
+     *
+     * @param userId the user ID
+     * @param req    the user management configuration request
+     * @return true on success
+     */
     @PutMapping("/users/{userId}/management")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufu.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE_USER,

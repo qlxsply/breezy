@@ -6,6 +6,8 @@ import com.corwin.system.userfeature.domain.model.UserPackageFeatureAccess;
 import java.util.List;
 
 /**
+ * Domain repository for package-level feature access grants.
+ *
  * @author Corwin 2026/6/14
  */
 public interface UserPackageFeatureAccessRepository extends DomainRepository<UserPackageFeatureAccess, Long> {

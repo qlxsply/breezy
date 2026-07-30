@@ -20,6 +20,9 @@ import com.corwin.system.webuser.interfaces.web.res.WebUserRes;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * REST controller for external user administration.
+ * Provides paginated listing, retrieval, and status update endpoints for admin users.
+ *
  * @author Corwin 2026/5/11
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -33,6 +36,9 @@ public class WebUserAdminController {
         this.webUserAdminService = webUserAdminService;
     }
 
+    /**
+     * Paginated listing of external users with optional keyword and status filter.
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
     public ApiResponse<PageResult<WebUserRes>> page(@RequestBody WebUserPageReq req) {
@@ -40,12 +46,18 @@ public class WebUserAdminController {
         return ApiResponse.ok(PageResult.of(page, WebUserAdminController::toRes));
     }
 
+    /**
+     * Retrieve a single external user by ID.
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
     public ApiResponse<WebUserRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toRes(webUserAdminService.get(id)));
     }
 
+    /**
+     * Update the status of an external user (e.g. enable/disable).
+     */
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.edit"})
     @Audit(resource = AuditResource.EXTERNAL_USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)

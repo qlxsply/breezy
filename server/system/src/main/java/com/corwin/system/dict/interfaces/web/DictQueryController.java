@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * REST controller for querying dictionary data.
+ * <p>Provides read-only endpoints to retrieve enabled dictionary items.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -26,12 +29,18 @@ public class DictQueryController {
 
     private final DictQueryService dictQueryService;
 
+    /**
+     * Lists all enabled items of a dictionary type identified by its code.
+     */
     @GetMapping("/{code}/items")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<List<DictItemRes>> listItems(@PathVariable String code) {
         return ApiResponse.ok(dictQueryService.listEnabledItems(code).stream().map(this::toItemRes).toList());
     }
 
+    /**
+     * Batch-queries enabled items for multiple dictionary type codes.
+     */
     @PostMapping("/batch-items")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<Map<String, List<DictItemRes>>> batchItems(@RequestBody DictBatchQueryReq req) {
@@ -42,6 +51,9 @@ public class DictQueryController {
         return ApiResponse.ok(result);
     }
 
+    /**
+     * Resolves the display label for a given item value under the specified dict type.
+     */
     @GetMapping("/{code}/label")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<String> resolveLabel(@PathVariable String code, @RequestParam String value) {

@@ -24,6 +24,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * Admin REST controller for managing API metadata.
+ *
+ * <p>Provides endpoints for listing, searching, enabling/disabling APIs,
+ * and updating sort configurations. All endpoints require ADMIN authentication.</p>
+ *
  * @author Corwin 2026/1/23
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -34,12 +39,23 @@ public class ApiAdminController {
 
     private final ApiAdminService apiAdminService;
 
+    /**
+     * Lists all registered API metadata.
+     *
+     * @return the list of APIs
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<List<ApiRes>> list() {
         return ApiResponse.ok(apiAdminService.listAll().stream().map(this::toDto).toList());
     }
 
+    /**
+     * Paginated search for API metadata with filtering.
+     *
+     * @param req the page request with filter criteria
+     * @return the paginated API result
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<PageResult<ApiRes>> page(@RequestBody ApiPageReq req) {
@@ -51,12 +67,24 @@ public class ApiAdminController {
         return ApiResponse.ok(PageResult.of(apiAdminService.page(query, pageSpec), this::toDto));
     }
 
+    /**
+     * Returns the detail of a specific API by ID.
+     *
+     * @param id the API ID
+     * @return the API detail
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.view"})
     public ApiResponse<ApiRes> detail(@PathVariable Long id) {
         return ApiResponse.ok(toDto(apiAdminService.get(id)));
     }
 
+    /**
+     * Publishes (enables) an API by its ID.
+     *
+     * @param id the API ID
+     * @return the updated API
+     */
     @PutMapping("/{id}/publish")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.pub"})
     @Audit(resource = AuditResource.API, action = AuditAction.PUBLISH, level = AuditLevel.HIGH)
@@ -64,6 +92,12 @@ public class ApiAdminController {
         return ApiResponse.ok(toDto(apiAdminService.publish(id)));
     }
 
+    /**
+     * Disables an API by its ID.
+     *
+     * @param id the API ID
+     * @return the updated API
+     */
     @PutMapping("/{id}/disable")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.off"})
     @Audit(resource = AuditResource.API, action = AuditAction.DISABLE, level = AuditLevel.HIGH)
@@ -71,6 +105,13 @@ public class ApiAdminController {
         return ApiResponse.ok(toDto(apiAdminService.disable(id)));
     }
 
+    /**
+     * Updates the sort options JSON configuration for an API.
+     *
+     * @param id  the API ID
+     * @param req the request containing the sort options JSON
+     * @return the updated API
+     */
     @PutMapping("/{id}/sort-options")
     @Authorize(userType = UserType.ADMIN, permissions = {"api.edit"})
     @Audit(resource = AuditResource.API, action = AuditAction.UPDATE, level = AuditLevel.HIGH)

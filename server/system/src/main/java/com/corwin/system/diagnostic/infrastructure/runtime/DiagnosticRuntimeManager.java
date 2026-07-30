@@ -17,6 +17,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * Central manager for the diagnostic runtime lifecycle. Orchestrates session start/stop,
+ * snapshot scheduling, collector coordination, and automatic expiry handling.
+ *
  * @author Corwin 2026/4/16
  */
 @Slf4j
@@ -49,6 +52,13 @@ public class DiagnosticRuntimeManager {
         this.jfrCollector = jfrCollector;
     }
 
+    /**
+     * Starts a new diagnostic session: configures repositories, clears previous state,
+     * starts JFR if enabled, and begins periodic snapshot capture.
+     *
+     * @param session the session to start
+     * @return the started session
+     */
     public synchronized DiagnosticSession start(DiagnosticSession session) {
         stopInternal(false);
         snapshotRepository.configureCapacity(session.config().historyCapacity());
@@ -69,6 +79,13 @@ public class DiagnosticRuntimeManager {
         return session;
     }
 
+    /**
+     * Updates an existing diagnostic session with new config: reschedules snapshot tasks
+     * and restarts JFR if the configuration changed.
+     *
+     * @param session the updated session
+     * @return the updated session
+     */
     public synchronized DiagnosticSession update(DiagnosticSession session) {
         RuntimeState current = state.get();
         if (current != null) {
@@ -89,15 +106,32 @@ public class DiagnosticRuntimeManager {
         return session;
     }
 
+    /**
+     * Stops the diagnostic session and clears all runtime state.
+     *
+     * @return true if a session was active and stopped
+     */
     public synchronized boolean stop() {
         return stopInternal(true);
     }
 
+    /**
+     * Returns the current session if it exists and is still active (not expired).
+     *
+     * @return the current active session wrapped in Optional
+     */
     public Optional<DiagnosticSession> currentSession() {
         expireIfNecessary();
         return sessionRepository.current().filter(item -> item.isActive(Instant.now()));
     }
 
+    /**
+     * Checks whether the given diagnostic item is currently being collected.
+     * Automatically stops the session if it has expired.
+     *
+     * @param item the diagnostic item to check
+     * @return true if the item is being actively collected
+     */
     public boolean isCollecting(DiagnosticItem item) {
         RuntimeState current = state.get();
         if (current == null) {
@@ -110,10 +144,20 @@ public class DiagnosticRuntimeManager {
         return current.session().config().includes(item);
     }
 
+    /**
+     * Returns the slow request threshold from the current session's config.
+     *
+     * @return threshold in milliseconds, or 0 if no session is active
+     */
     public long slowRequestThresholdMs() {
         return currentSession().map(item -> item.config().slowRequestThresholdMs()).orElse(0L);
     }
 
+    /**
+     * Returns the slow SQL threshold from the current session's config.
+     *
+     * @return threshold in milliseconds, or 0 if no session is active
+     */
     public long slowSqlThresholdMs() {
         return currentSession().map(item -> item.config().slowSqlThresholdMs()).orElse(0L);
     }

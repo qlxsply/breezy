@@ -37,6 +37,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 /**
+ * Application service for end-user (non-admin) operations including
+ * self-registration, profile retrieval and update, password change, and logout.
+ *
  * @author Corwin 2026/4/19
  */
 @Service
@@ -54,6 +57,13 @@ public class UserService {
     private final WebUserLifecycleService webUserLifecycleService;
     private final WebUserIdentitySupport webUserIdentitySupport;
 
+    /**
+     * Registers a new end-user with username/password credentials, creates identity and credential records,
+     * assigns default feature packages, and records the registration lifecycle event.
+     *
+     * @param cmd the registration command containing username, nickname, and password
+     * @return the registered user's profile view
+     */
     @Transactional
     public UserProfileView register(RegisterUserCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -83,11 +93,22 @@ public class UserService {
         return toView(user, identity.getIdentityValue());
     }
 
+    /**
+     * Returns the profile of the currently authenticated end-user.
+     *
+     * @return the current user's profile view
+     */
     public UserProfileView currentProfile() {
         WebUser user = currentUser();
         return toView(user, resolveAccount(user));
     }
 
+    /**
+     * Updates the profile (nickname) of the currently authenticated end-user.
+     *
+     * @param cmd the update command containing the new nickname
+     * @return the updated profile view
+     */
     @Transactional
     public UserProfileView updateMyProfile(UpdateMyProfileCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -100,10 +121,21 @@ public class UserService {
         return toView(user, resolveAccount(user));
     }
 
+    /**
+     * Changes the password for the currently authenticated end-user.
+     *
+     * @param cmd the change password command containing old and new passwords
+     * @return true if the password was changed successfully
+     */
     public boolean changeMyPassword(ChangePasswordCommand cmd) {
         return webUserAuthService.changePassword(cmd);
     }
 
+    /**
+     * Logs out the currently authenticated end-user.
+     *
+     * @return true if the logout was successful
+     */
     public boolean logout() {
         return webUserAuthService.logout();
     }

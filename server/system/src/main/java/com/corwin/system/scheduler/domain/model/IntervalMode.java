@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 固定间隔调度模式。
+ * Enum for fixed-interval scheduling mode (FIXED_RATE or FIXED_DELAY).
  *
  * @author Corwin 2026/4/15
  */

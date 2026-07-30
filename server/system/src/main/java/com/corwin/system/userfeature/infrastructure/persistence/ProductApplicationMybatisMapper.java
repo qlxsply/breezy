@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 产品应用 MyBatis 查询 Mapper。
+ * MyBatis mapper for paginated queries of {@link com.corwin.system.userfeature.domain.model.ProductApplication}.
  *
  * @author Corwin 2026/7/28
  */

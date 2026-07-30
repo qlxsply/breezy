@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * Application service for querying method invocation statistics with pagination, filtering, and sorting.
  * @author Corwin 2026/3/25
  */
 @Service
@@ -33,6 +34,16 @@ public class MethodStatQueryAppService {
     private final MethodStatAggregateRepository aggregateRepository;
     private final MethodStatSwitchAppService switchAppService;
 
+    /**
+     * Retrieve a paginated list of method statistics, filtered by method name and sorted by the given field.
+     * @param methodName optional method name filter
+     * @param matchMode matching mode (EXACT or fuzzy)
+     * @param sortBy field to sort by
+     * @param sortDirection sort direction (ASC or DESC)
+     * @param pageNo page number (1-based)
+     * @param pageSize page size
+     * @return paginated method statistics
+     */
     public PageData<MethodStatStatsView> pageStats(String methodName, String matchMode, String sortBy,
             String sortDirection, Integer pageNo, Integer pageSize) {
         long nowMillis = HighDate.realTimestampMillis();
@@ -43,6 +54,12 @@ public class MethodStatQueryAppService {
     }
 
     @MethodStat
+    /**
+     * Retrieve detailed statistics for a specific method by its key.
+     * @param key the method key string
+     * @return the method statistics view
+     */
+    @MethodStat
     public MethodStatStatsView getMethodStats(String key) {
         BizAssert.notBlank(key, BaseError.MISSING_PARAMETER);
         MethodStatKey methodStatKey = MethodStatKey.of(key.trim());
@@ -51,6 +68,12 @@ public class MethodStatQueryAppService {
         return toStatsView(metadata, HighDate.realTimestampMillis());
     }
 
+    /**
+     * Convert metadata and its aggregate snapshot into a complete stats view.
+     * @param metadata the method metadata
+     * @param nowMillis current timestamp for window calculations
+     * @return the stats view
+     */
     private MethodStatStatsView toStatsView(MethodStatMetadata metadata, long nowMillis) {
         MethodStatAggregateSnapshot snapshot = aggregateRepository.findByKey(metadata.key())
                 .map(item -> item.snapshot(nowMillis)).orElseGet(() -> emptySnapshot(metadata.key()));
@@ -69,11 +92,23 @@ public class MethodStatQueryAppService {
                 metrics.p50(), metrics.p90(), metrics.p95(), metrics.p99());
     }
 
+    /**
+     * Create an empty snapshot with zero values for the given key.
+     * @param key the method key
+     * @return empty snapshot
+     */
     private MethodStatAggregateSnapshot emptySnapshot(MethodStatKey key) {
         return new MethodStatAggregateSnapshot(key, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
                 MethodStatDurationMetrics.empty());
     }
 
+    /**
+     * Check if a method name matches the filter based on exact or fuzzy matching.
+     * @param currentMethodName the actual method name
+     * @param methodName the filter value
+     * @param matchMode matching mode (EXACT or fuzzy)
+     * @return true if the method name matches the filter
+     */
     private boolean matchesMethodName(String currentMethodName, String methodName, String matchMode) {
         String normalizedFilter = normalize(methodName);
         if (normalizedFilter == null) {
@@ -86,6 +121,12 @@ public class MethodStatQueryAppService {
         return current.toLowerCase(Locale.ROOT).contains(normalizedFilter.toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Build a comparator for method stats views based on the specified sort field and direction.
+     * @param sortBy the field to sort by
+     * @param sortDirection sort direction (ASC or DESC)
+     * @return configured comparator
+     */
     private Comparator<MethodStatStatsView> buildStatsComparator(String sortBy, String sortDirection) {
         String normalizedSortBy = normalize(sortBy);
         if (normalizedSortBy == null) {
@@ -123,6 +164,11 @@ public class MethodStatQueryAppService {
         return comparator.thenComparing(MethodStatStatsView::key);
     }
 
+    /**
+     * Normalize a string value by trimming it; returns null if blank or null.
+     * @param value the input value
+     * @return normalized value or null
+     */
     private String normalize(String value) {
         if (value == null) {
             return null;
@@ -134,6 +180,13 @@ public class MethodStatQueryAppService {
         return normalized;
     }
 
+    /**
+     * Apply in-memory pagination on a list.
+     * @param all the full list of items
+     * @param pageNo page number (1-based)
+     * @param pageSize items per page
+     * @return paginated result
+     */
     private <T> PageData<T> page(List<T> all, Integer pageNo, Integer pageSize) {
         PageSpec pageSpec = PageSpec.of(pageNo, pageSize, List.of());
         int from = (pageSpec.pageNo() - 1) * pageSpec.pageSize();

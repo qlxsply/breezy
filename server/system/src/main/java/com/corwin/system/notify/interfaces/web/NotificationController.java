@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 通知消息控制器
+ * REST controller for notification management.
+ * <p>Exposes endpoints for querying, pulling, and marking notifications as read.</p>
  *
  * @author Corwin 2026/3/30
  */

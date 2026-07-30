@@ -29,6 +29,14 @@ public class SseAppService {
     private final SseSessionManager sessionManager;
     private final ApplicationEventPublisher eventPublisher;
 
+    /**
+     * Sends missed messages to a reconnecting SSE client based on the last event ID.
+     * <p>Deliveries already in ACKED status are skipped.</p>
+     *
+     * @param userId      the target user ID
+     * @param userType    the target user type
+     * @param lastEventId the ID of the last successfully received event (may be null)
+     */
     @Transactional
     public void catchUp(Long userId, UserType userType, @Nullable Long lastEventId) {
         long afterEventId = lastEventId == null || lastEventId < 0 ? 0L : lastEventId;

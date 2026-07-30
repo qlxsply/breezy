@@ -13,6 +13,8 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
+ * JPA entity representing the many-to-many association between roles and resources.
+ *
  * @author Corwin 2026/6/29
  */
 @Getter
@@ -23,25 +25,37 @@ import java.time.Instant;
                 @Index(name = "idx_sys_role_resource_resource_id", columnList = "resource_id")})
 public class RoleResource {
 
+    /** Primary key. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Foreign key to the associated role. */
     @Column(name = "role_id", nullable = false)
     private Long roleId;
 
+    /** Foreign key to the associated resource. */
     @Column(name = "resource_id", nullable = false)
     private Long resourceId;
 
+    /** ID of the operator who created this association. */
     @Column(name = "created_by")
     private Long createdBy;
 
+    /** Timestamp when this association was created. */
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     protected RoleResource() {
     }
 
+    /**
+     * Creates a role-resource association.
+     *
+     * @param roleId     the role ID
+     * @param resourceId the resource ID
+     * @param operator   ID of the creating operator
+     */
     public RoleResource(Long roleId, Long resourceId, Long operator) {
         this.roleId = roleId;
         this.resourceId = resourceId;

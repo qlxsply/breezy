@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 /**
+ * Application service for admin management of external web users.
+ * Provides paginated listing, retrieval, and status update operations.
+ *
  * @author Corwin 2026/5/11
  */
 @Service
@@ -36,6 +39,14 @@ public class WebUserAdminService {
         this.webUserLifecycleService = webUserLifecycleService;
     }
 
+    /**
+     * Paginated query of web users with optional keyword and status filtering.
+     *
+     * @param keyword search keyword for display name or nickname
+     * @param status  optional status filter string
+     * @param spec    pagination specification
+     * @return paginated admin view data
+     */
     public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
         WebUserStatus normalizedStatus = parseStatus(status);
         PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
@@ -43,10 +54,23 @@ public class WebUserAdminService {
                 page.totalElements(), page.elements().stream().map(this::toView).toList());
     }
 
+    /**
+     * Retrieve a single web user by ID.
+     *
+     * @param id the user ID
+     * @return the admin view
+     */
     public WebUserAdminView get(Long id) {
         return toView(requireUser(id));
     }
 
+    /**
+     * Update a web user's status (enable/disable).
+     *
+     * @param id  the user ID
+     * @param cmd the update command containing the target status
+     * @return the updated admin view
+     */
     @Transactional
     public WebUserAdminView update(Long id, UpdateWebUserCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -62,6 +86,9 @@ public class WebUserAdminService {
         return toView(webUserRepository.save(user));
     }
 
+    /**
+     * Find a user by ID or throw NOT_FOUND.
+     */
     private WebUser requireUser(Long id) {
         return webUserRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }

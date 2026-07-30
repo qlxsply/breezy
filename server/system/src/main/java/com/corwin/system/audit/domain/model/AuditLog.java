@@ -8,7 +8,10 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 审计日志
+ * JPA entity representing an audit log record.
+ * Maps to the {@code sys_audit_log} table and captures the full lifecycle
+ * of a single audited request, including operator context, request details,
+ * response summary, and execution timings.
  *
  * @author Corwin 2026/4/19
  */

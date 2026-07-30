@@ -17,6 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Resolves audit metadata from {@link Audit} annotations at runtime.
+ * Caches resolved {@link AuditOperation} instances keyed by method and
+ * implementation class to avoid repeated reflection lookups.
+ *
  * @author Corwin 2026/4/19
  */
 @Component
@@ -24,6 +28,15 @@ public class AuditAnnotationResolver {
 
     private final ConcurrentMap<CacheKey, Optional<AuditOperation>> cache = new ConcurrentHashMap<>();
 
+    /**
+     * Resolves the audit operation metadata for a given method and target class.
+     * Checks for {@link Audit} and {@code ApiMeta} annotations, caches the result,
+     * and returns a resolved {@link AuditOperation} or {@code null} if no annotation is present.
+     *
+     * @param declaredMethod the method being invoked
+     * @param targetClass    the actual runtime class of the target (may be a CGLIB proxy)
+     * @return the resolved audit operation, or {@code null} if not annotated
+     */
     public AuditOperation resolve(Method declaredMethod, Class<?> targetClass) {
         Objects.requireNonNull(declaredMethod, "declaredMethod required");
 

@@ -31,6 +31,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * Authenticator component that resolves raw tokens (internal opaque, external JWT,
+ * or SSE ticket) into {@link AuthPrincipal} objects, with caching and validation
+ * against the user and session stores.
+ *
  * @author Corwin 2026/4/19
  */
 @Component
@@ -62,6 +66,14 @@ public class AuthPrincipalAuthenticator {
         this.webUserJwtTokenService = webUserJwtTokenService;
     }
 
+    /**
+     * Authenticates an internal (opaque) token by looking up the session hash,
+     * validating session state and user status, and returning the cached or
+     * freshly-built principal.
+     *
+     * @param rawToken the raw opaque token
+     * @return the authenticated principal
+     */
     public AuthPrincipal authenticateInternalToken(String rawToken) {
         String tokenHash = opaqueTokenService.hash(rawToken);
         Optional<AuthPrincipal> cached = authSessionCacheService.get(tokenHash);
@@ -100,6 +112,13 @@ public class AuthPrincipalAuthenticator {
         return principal;
     }
 
+    /**
+     * Authenticates an external JWT token by parsing and validating the
+     * web user JWT payload, user status, token version, and restrictions.
+     *
+     * @param rawToken the raw JWT string
+     * @return the authenticated principal
+     */
     public AuthPrincipal authenticateExternalToken(String rawToken) {
         WebUserJwtTokenService.WebUserJwtPayload payload = webUserJwtTokenService.parse(rawToken);
         if (payload.userId() == null || payload.userType() != UserType.USER) {
@@ -123,6 +142,13 @@ public class AuthPrincipalAuthenticator {
         return new AuthPrincipal(user.getId(), payload.account(), UserType.USER, false, permissionCodes);
     }
 
+    /**
+     * Authenticates using an SSE ticket payload, building a principal from
+     * the ticket's user info and resolved permissions.
+     *
+     * @param payload the decoded ticket payload
+     * @return the authenticated principal
+     */
     public AuthPrincipal authenticateSseTicket(TokenPayload payload) {
         if (payload == null || payload.userId() == null || payload.userAccount() == null || payload.userAccount()
                 .isBlank()) {
@@ -136,10 +162,16 @@ public class AuthPrincipalAuthenticator {
                 DefaultUser.isAdmin(payload.userId()), permissionCodes);
     }
 
+    /**
+     * Caches a principal in the session cache for the given TTL.
+     */
     public void cacheSession(String tokenHash, AuthPrincipal principal, Duration ttl) {
         authSessionCacheService.set(tokenHash, principal, ttl);
     }
 
+    /**
+     * Removes a principal from the session cache.
+     */
     public void evictSession(String tokenHash) {
         authSessionCacheService.delete(tokenHash);
     }

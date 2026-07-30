@@ -5,6 +5,8 @@ import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.stereotype.Component;
 
 /**
+ * Provides the AOP pointcut definition that matches methods annotated with {@code @MethodStat}
+ * or all public methods in web controllers ({@code com.corwin.*.interfaces.web.*}).
  * @author Corwin 2026/4/1
  */
 @Component
@@ -19,6 +21,9 @@ public class MethodStatPointcutProvider {
         this.pointcut.setExpression(EXPRESSION);
     }
 
+    /**
+     * @return the configured AOP pointcut
+     */
     public Pointcut pointcut() {
         return pointcut;
     }

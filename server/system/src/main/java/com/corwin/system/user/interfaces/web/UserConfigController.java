@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * REST controller for admin user personalized configuration management.
+ * Provides endpoints to view and update user-specific configuration overrides.
  *
  * @author Corwin 2026/3/30
  */
@@ -27,6 +29,11 @@ public class UserConfigController {
 
     private final UserConfigAppService userConfigAppService;
 
+    /**
+     * Returns the merged configuration for the current admin user.
+     *
+     * @return a list of user configuration entries
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"pro.cfg.view"})
     public ApiResponse<List<UserConfigsRes>> getMyConfigs() {
@@ -35,6 +42,13 @@ public class UserConfigController {
                 userConfigAppService.getMergedConfigs(userId).stream().map(UserConfigController::toRes).toList());
     }
 
+    /**
+     * Updates a personalized configuration value for the current admin user.
+     *
+     * @param code the configuration code
+     * @param body the request body containing the new value
+     * @return true if successful
+     */
     @PutMapping("/{code}")
     @Authorize(userType = UserType.ADMIN, permissions = {"pro.cfg.edit"})
     public ApiResponse<Boolean> updateMyConfig(@PathVariable String code, @RequestBody Map<String, String> body) {

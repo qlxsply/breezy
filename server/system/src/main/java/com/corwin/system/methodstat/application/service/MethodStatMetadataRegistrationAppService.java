@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 /**
+ * Application service for registering method metadata when a method is first intercepted.
  * @author Corwin 2026/3/25
  */
 @Service
@@ -20,6 +21,11 @@ public class MethodStatMetadataRegistrationAppService {
     private final MethodStatMetadataRepository metadataRepository;
     private final MethodStatSwitchStateRepository switchStateRepository;
 
+    /**
+     * Register metadata for a method descriptor, creating a default switch state if none exists.
+     * @param descriptor the method descriptor to register
+     * @return the registered metadata
+     */
     public MethodStatMetadata register(MethodStatMethodDescriptor descriptor) {
         Objects.requireNonNull(descriptor, "descriptor required");
 

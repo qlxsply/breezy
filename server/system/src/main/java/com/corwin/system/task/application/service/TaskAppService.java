@@ -22,7 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 任务应用服务
+ * Application service for task management operations.
+ * Handles task definition synchronization, lifecycle management (publish/stop/run),
+ * configuration updates, and startup scheduling.
  *
  * @author Corwin 2026/3/30
  */
@@ -36,6 +38,10 @@ public class TaskAppService {
     private final TaskConfigRepository taskConfigRepository;
     private final TaskSchedulerManager taskSchedulerManager;
 
+    /**
+     * Scans all Spring beans for {@link InternalTask} annotations, synchronizes the
+     * detected task definitions with the database, and marks removed tasks accordingly.
+     */
     @Transactional
     public void syncTaskDefinitions() {
         log.info("[task-sync] starting task definition scan...");
@@ -101,6 +107,9 @@ public class TaskAppService {
         log.info("[task-sync] scan completed. total scanned: {}", scannedTasks.size());
     }
 
+    /**
+     * Loads all published task configurations and schedules them for periodic execution.
+     */
     public void startupAllTasks() {
         log.info("[task-startup] loading published tasks...");
         List<TaskConfig> publishedConfigs = taskConfigRepository.findAllByTaskStatus(TaskStatus.PUBLISHED);
@@ -120,6 +129,11 @@ public class TaskAppService {
         log.info("[task-startup] startup completed. total scheduled: {}", count);
     }
 
+    /**
+     * Lists all non-removed tasks with their current configuration status.
+     *
+     * @return a list of task views
+     */
     public List<TaskView> listTasks() {
         List<TaskDefinition> defs = taskDefinitionRepository.findAllByRemovedFalse();
         return defs.stream().map(def -> {
@@ -131,6 +145,12 @@ public class TaskAppService {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * Updates the cron expression for a task and re-publishes it if currently active.
+     *
+     * @param code     the task code
+     * @param cronExpr the new cron expression
+     */
     @Transactional
     public void updateTaskConfig(String code, String cronExpr) {
         TaskConfig config = taskConfigRepository.findById(code)
@@ -143,6 +163,11 @@ public class TaskAppService {
         }
     }
 
+    /**
+     * Publishes a task, activating its cron-based scheduled execution.
+     *
+     * @param code the task code
+     */
     @Transactional
     public void publishTask(String code) {
         TaskConfig config = taskConfigRepository.findById(code)
@@ -160,6 +185,11 @@ public class TaskAppService {
         taskSchedulerManager.scheduleTask(code, config.getCronExpr(), def.getBeanName(), def.getMethodName());
     }
 
+    /**
+     * Stops a task, disabling its scheduled execution.
+     *
+     * @param code the task code
+     */
     @Transactional
     public void stopTask(String code) {
         TaskConfig config = taskConfigRepository.findById(code)
@@ -170,6 +200,11 @@ public class TaskAppService {
         taskSchedulerManager.cancelTask(code);
     }
 
+    /**
+     * Triggers immediate one-time execution of a task.
+     *
+     * @param code the task code
+     */
     public void runTask(String code) {
         TaskDefinition def = taskDefinitionRepository.findById(code)
                 .orElseThrow(() -> new RuntimeException("Task definition not found: " + code));

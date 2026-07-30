@@ -15,6 +15,8 @@ import java.time.Instant;
 import java.util.Date;
 
 /**
+ * Service for issuing and parsing JWT tokens for external web user authentication.
+ *
  * @author Corwin 2026/5/11
  */
 @Component
@@ -26,6 +28,13 @@ public class WebUserJwtTokenService {
         this.authConfigService = authConfigService;
     }
 
+    /**
+     * Issue a signed JWT access token for the given principal.
+     *
+     * @param principal    the authenticated principal
+     * @param tokenVersion the token version for revocation support
+     * @return the issued token and its expiration time
+     */
     public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
         Instant now = HighDate.mockInstant();
         Instant expiresAt = now.plus(authConfigService.externalAccessTokenTtl());
@@ -39,6 +48,12 @@ public class WebUserJwtTokenService {
         return new IssuedAccessToken(token, expiresAt);
     }
 
+    /**
+     * Parse and verify a signed JWT access token.
+     *
+     * @param token the JWT string
+     * @return the parsed payload
+     */
     public WebUserJwtPayload parse(String token) {
         Claims claims = Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token).getPayload();
         Long userId = claims.get("uid", Long.class);

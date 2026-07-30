@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Severity levels for audit log entries.
+ * Ranges from LOW (informational) to CRITICAL (severe),
+ * each with an associated label, tag color, and tag type for UI rendering.
  *
  * @author Corwin 2026/4/19
  */

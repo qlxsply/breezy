@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link LoginSessionRepository}.
+ *
  * @author Corwin 2026/4/19
  */
 @Repository

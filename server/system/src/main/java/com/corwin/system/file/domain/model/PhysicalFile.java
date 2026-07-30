@@ -12,8 +12,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 物理文件记录。
- * 对应磁盘上的真实文件，通过摘要去重。
+ * Physical file record representing a real file on disk.
+ * <p>Files are de-duplicated by their SHA-256 hash. Multiple logical files may
+ * reference the same physical file. The reference count tracks how many logical
+ * references exist.</p>
  *
  * @author Corwin 2026/2/23
  */
@@ -62,14 +64,16 @@ public class PhysicalFile {
     }
 
     /**
-     * 逻辑行为：增加引用
+     * Increments the reference count for this physical file.
+     * Called when a new logical file references this physical file.
      */
     public void incrementRef() {
         this.refCount++;
     }
 
     /**
-     * 逻辑行为：减少引用
+     * Decrements the reference count for this physical file.
+     * When the count reaches zero, the file becomes eligible for deletion.
      */
     public void decrementRef() {
         if (this.refCount > 0) {
@@ -77,6 +81,10 @@ public class PhysicalFile {
         }
     }
 
+    /**
+     * Returns {@code true} if this physical file has no remaining references
+     * and can be safely deleted from disk.
+     */
     public boolean canDelete() {
         return this.refCount <= 0;
     }

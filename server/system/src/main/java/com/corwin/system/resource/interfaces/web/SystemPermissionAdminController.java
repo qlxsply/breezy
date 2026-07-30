@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
+ * Admin REST controller for system-level permission lookups.
+ *
+ * <p>Provides endpoints for retrieving assignable permissions used during
+ * resource permission binding. Requires ADMIN authentication.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -26,6 +31,11 @@ public class SystemPermissionAdminController {
 
     private final PermissionService permissionService;
 
+    /**
+     * Lists all permissions that can be assigned to resources.
+     *
+     * @return the list of assignable permissions
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {

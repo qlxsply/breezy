@@ -20,6 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * Admin REST controller for managing system resources (menu/function/button tree).
+ *
+ * <p>Provides CRUD operations for the system resource tree, including permission
+ * binding management. All endpoints require ADMIN authentication.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -30,18 +35,35 @@ public class SystemResourceAdminController {
 
     private final SystemResourceAdminService systemResourceAdminService;
 
+    /**
+     * Returns the full resource tree with permission bindings.
+     *
+     * @return the list of tree items
+     */
     @GetMapping("/tree")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.view"})
     public ApiResponse<List<SystemResourceTreeItemRes>> tree() {
         return ApiResponse.ok(systemResourceAdminService.tree().stream().map(this::toTreeRes).toList());
     }
 
+    /**
+     * Returns the detail of a specific resource by its ID.
+     *
+     * @param id the resource ID
+     * @return the resource detail
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.view"})
     public ApiResponse<SystemResourceDetailRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDetailRes(systemResourceAdminService.get(id)));
     }
 
+    /**
+     * Creates a new system resource.
+     *
+     * @param req the request containing resource properties
+     * @return the created resource detail
+     */
     @PostMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"res.add"})
     public ApiResponse<SystemResourceDetailRes> create(@RequestBody SaveSystemResourceReq req) {
@@ -50,6 +72,13 @@ public class SystemResourceAdminController {
                 req.enabled(), req.defaultEntry(), req.systemBuiltin(), req.remark())));
     }
 
+    /**
+     * Updates an existing system resource.
+     *
+     * @param id  the resource ID
+     * @param req the request containing updated resource properties
+     * @return the updated resource detail
+     */
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.edit"})
     public ApiResponse<SystemResourceDetailRes> update(@PathVariable Long id, @RequestBody SaveSystemResourceReq req) {
@@ -58,18 +87,37 @@ public class SystemResourceAdminController {
                 req.enabled(), req.defaultEntry(), req.systemBuiltin(), req.remark())));
     }
 
+    /**
+     * Deletes a system resource and all its descendants.
+     *
+     * @param id the resource ID
+     * @return true if the deletion was successful
+     */
     @DeleteMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.del"})
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         return ApiResponse.ok(systemResourceAdminService.delete(id));
     }
 
+    /**
+     * Returns the permission IDs currently bound to a resource.
+     *
+     * @param resourceId the resource ID
+     * @return the permission selection data
+     */
     @GetMapping("/{resourceId}/permissions")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.view"})
     public ApiResponse<SystemResourcePermissionSelectionRes> permissions(@PathVariable Long resourceId) {
         return ApiResponse.ok(toPermissionRes(systemResourceAdminService.permissions(resourceId)));
     }
 
+    /**
+     * Updates the permission bindings for a resource.
+     *
+     * @param resourceId the resource ID
+     * @param req        the request containing the new permission IDs
+     * @return true if the update was successful
+     */
     @PutMapping("/{resourceId}/permissions")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.edit"})
     public ApiResponse<Boolean> updatePermissions(@PathVariable Long resourceId,

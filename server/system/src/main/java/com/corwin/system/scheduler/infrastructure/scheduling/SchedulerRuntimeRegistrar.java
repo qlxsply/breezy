@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 动态任务运行时注册器。
+ * Registrar that manages the lifecycle of scheduled job futures using a ThreadPoolTaskScheduler.
  *
  * @author Corwin 2026/4/15
  */
@@ -51,6 +51,11 @@ public class SchedulerRuntimeRegistrar {
         this.schedulerJobTaskScheduler = schedulerJobTaskScheduler;
     }
 
+    /**
+     * Registers a job for scheduled execution. Cancels any existing registration first.
+     *
+     * @param jobId the job ID
+     */
     public void register(String jobId) {
         cancel(jobId);
 
@@ -93,6 +98,7 @@ public class SchedulerRuntimeRegistrar {
         }
     }
 
+    /** Cancels a scheduled job future if present. */
     public void cancel(String jobId) {
         ScheduledFuture<?> future = futures.remove(jobId);
         if (future != null) {
@@ -100,6 +106,7 @@ public class SchedulerRuntimeRegistrar {
         }
     }
 
+    /** Triggers a job execution immediately (manual trigger). */
     public void triggerNow(String jobId) {
         SchedulerJobDefinition definition = definitionRepository.findById(jobId).filter(item -> !item.isDeleted())
                 .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
@@ -116,6 +123,7 @@ public class SchedulerRuntimeRegistrar {
                         runtimeRepository, executionRepository, lock));
     }
 
+    /** Recovers and registers all enabled, non-deleted jobs (called at startup). */
     public void recoverAll() {
         for (SchedulerJobDefinition definition : definitionRepository.findAllByEnabledTrueAndDeletedFalse()) {
             register(definition.getJobId());

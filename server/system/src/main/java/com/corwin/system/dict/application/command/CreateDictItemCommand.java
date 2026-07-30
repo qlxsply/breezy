@@ -1,6 +1,8 @@
 package com.corwin.system.dict.application.command;
 
 /**
+ * Command for creating a new dictionary item under an existing dictionary type.
+ *
  * @author Corwin 2026/3/15
  */
 public record CreateDictItemCommand(

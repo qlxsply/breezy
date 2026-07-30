@@ -6,6 +6,8 @@ import com.corwin.system.scheduler.domain.model.SchedulerTriggerType;
 import java.time.Instant;
 
 /**
+ * Response DTO for a job execution record.
+ *
  * @author Corwin 2026/4/15
  */
 public record SchedulerJobExecutionRes(

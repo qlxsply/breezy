@@ -24,6 +24,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.List;
 
 /**
+ * Core dispatcher that orchestrates notification creation, message delivery
+ * persistence, and real-time push via SSE and Web Push channels.
+ *
  * @author Corwin 2026/3/16
  */
 @Slf4j
@@ -53,6 +56,22 @@ public class NotificationDispatcher implements MessageDispatchPort {
         return toResult(outcome.delivery(), outcome.notificationId());
     }
 
+    /**
+     * Dispatches a preview message with explicit behavior overrides (used for health checks).
+     *
+     * @param userId               the target user ID
+     * @param userType             the target user type
+     * @param type                 the message type
+     * @param title                the message title
+     * @param content              the message content
+     * @param route                the front-end route
+     * @param priority             the priority override
+     * @param sseEnabled           whether SSE push is enabled
+     * @param webPushEnabled       whether Web Push is enabled
+     * @param panelAutoOpen        whether to auto-open the notification panel
+     * @param osNotificationEnabled whether to send OS-level notification
+     * @return the created delivery record
+     */
     @Transactional
     public MessageDelivery dispatchPreview(Long userId, UserType userType, MsgType type, String title, String content,
             String route,

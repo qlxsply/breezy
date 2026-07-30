@@ -4,6 +4,8 @@ import com.corwin.framework.web.request.PageRuleRequest;
 import com.corwin.framework.web.request.SortRuleRequest;
 
 /**
+ * Request DTO for paginated role listing with optional keyword and enabled filter.
+ *
  * @author Corwin 2026/7/7
  */
 public record RolePageReq(

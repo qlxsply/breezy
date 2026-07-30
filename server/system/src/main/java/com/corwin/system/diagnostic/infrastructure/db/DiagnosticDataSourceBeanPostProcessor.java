@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 
 /**
+ * BeanPostProcessor that wraps all DataSource beans with DiagnosticMonitoringDataSource
+ * to enable SQL execution monitoring and connection pool state tracking.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
@@ -27,6 +30,10 @@ public class DiagnosticDataSourceBeanPostProcessor implements BeanPostProcessor 
         this.dbPoolStateCollector = dbPoolStateCollector;
     }
 
+    /**
+     * Wraps DataSource beans with DiagnosticMonitoringDataSource and registers them with
+     * the DbPoolStateCollector. Skips beans that are already DiagnosticMonitoringDataSource instances.
+     */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (!(bean instanceof DataSource dataSource)) {

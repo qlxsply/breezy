@@ -6,6 +6,8 @@ import com.corwin.system.userfeature.domain.model.ProductFeaturePermissionBindin
 import java.util.List;
 
 /**
+ * Domain repository for feature-permission binding relations.
+ *
  * @author Corwin 2026/6/14
  */
 public interface ProductFeaturePermissionBindingRepository extends DomainRepository<ProductFeaturePermissionBinding, Long> {

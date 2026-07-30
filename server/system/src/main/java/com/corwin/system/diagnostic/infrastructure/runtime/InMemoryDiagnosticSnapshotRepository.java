@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * In-memory implementation of DiagnosticSnapshotRepository backed by a DiagnosticRingBuffer.
+ *
  * @author Corwin 2026/4/16
  */
 @Repository

@@ -7,30 +7,16 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 系统资源。
+ * System resource entity representing a node in the admin resource tree.
  *
- * <p>
- * 该实体用于统一表示管理后台中的目录、菜单、功能、按钮资源。
- * </p>
+ * <p>This unified entity represents directories, menus, functions, and buttons,
+ * distinguished by the {@code resourceType} field. The tree hierarchy is built
+ * using the {@code parentId} field.</p>
  *
- * <p>
- * 原先可以拆分为 Menu、Function、MenuFunction 等多个概念。
- * 合并后，通过 resourceType 字段区分资源节点类型，通过 parentId 构建完整资源树。
- * </p>
- *
- * <p>
- * 支持的资源树结构：
- * </p>
- *
+ * <p>Supported tree structure:</p>
  * <pre>
- * resources
+ * DIRECTORY
  * ├── DIRECTORY
- * │   ├── DIRECTORY
- * │   └── MENU
- * │       ├── MENU
- * │       ├── FUNCTION
- * │       │   └── BUTTON
- * │       └── BUTTON
  * └── MENU
  *     ├── MENU
  *     ├── FUNCTION
@@ -38,43 +24,11 @@ import java.time.Instant;
  *     └── BUTTON
  * </pre>
  *
- * <p>
- * 资源类型约束：
- * </p>
- *
+ * <p>Key constraints:</p>
  * <ul>
- *     <li>DIRECTORY 下只能挂载 DIRECTORY、MENU。</li>
- *     <li>MENU 下只能挂载 MENU、FUNCTION、BUTTON。</li>
- *     <li>FUNCTION 下只能挂载 BUTTON。</li>
- *     <li>BUTTON 是叶子资源，不允许挂载任何子资源。</li>
- * </ul>
- *
- * <p>
- * 权限码绑定约束：
- * </p>
- *
- * <ul>
- *     <li>权限码不是资源树节点。</li>
- *     <li>只有 BUTTON 类型资源允许绑定权限码。</li>
- *     <li>按钮和权限码通过 {@link ResourcePermission} 关联。</li>
- * </ul>
- *
- * <p>
- * 字段说明：
- * </p>
- *
- * <ul>
- *     <li>code：资源编码，全局唯一，建议使用业务语义编码。</li>
- *     <li>parentId：父资源 ID，根资源为空。</li>
- *     <li>resourceType：资源类型。</li>
- *     <li>path：前端路由路径，通常用于 MENU 或 FUNCTION。</li>
- *     <li>component：前端组件路径，通常用于 MENU 或 FUNCTION。</li>
- *     <li>icon：图标，通常用于 DIRECTORY 或 MENU。</li>
- *     <li>sortNo：同级排序号。</li>
- *     <li>visible：是否可见，主要影响前端展示。</li>
- *     <li>enabled：是否启用，主要影响资源是否生效。</li>
- *     <li>defaultEntry：是否默认入口，通常用于菜单或功能。</li>
- *     <li>systemBuiltin：是否系统内置资源。</li>
+ *   <li>Permission codes are not resource tree nodes.</li>
+ *   <li>Only BUTTON-type resources can bind permission codes.</li>
+ *   <li>Permission bindings are managed via {@link ResourcePermission}.</li>
  * </ul>
  *
  * @author Corwin
@@ -88,163 +42,99 @@ import java.time.Instant;
 public class Resource {
 
     /**
-     * 资源 ID。
+     * Primary key ID.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 资源编码。
-     *
-     * <p>
-     * 全局唯一。
-     * 建议使用稳定的业务语义编码，例如：
-     * </p>
-     *
-     * <pre>
-     * system
-     * system.user
-     * system.user.create
-     * system.user.delete
-     * </pre>
+     * Unique resource code with business semantics (e.g. "system", "system.user", "system.user.create").
      */
     @Column(name = "code", nullable = false, length = 128)
     private String code;
 
     /**
-     * 父资源 ID。
-     *
-     * <p>
-     * 顶级资源的 parentId 为空。
-     * 通过 parentId 构建完整资源树。
-     * </p>
+     * Parent resource ID for building the tree hierarchy. Null for root resources.
      */
     @Column(name = "parent_id")
     private Long parentId;
 
     /**
-     * 资源名称。
-     *
-     * <p>
-     * 用于后台管理界面展示。
-     * </p>
+     * Resource display name shown in the admin interface.
      */
     @Column(name = "name", nullable = false, length = 128)
     private String name;
 
     /**
-     * 资源类型。
-     *
-     * <p>
-     * 用于区分目录、菜单、功能、按钮。
-     * </p>
+     * Resource type distinguishing directory, menu, function, or button.
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "resource_type", nullable = false, length = 32)
     private ResourceType resourceType;
 
     /**
-     * 前端路由路径。
-     *
-     * <p>
-     * 通常用于 MENU 或 FUNCTION。
-     * DIRECTORY 和 BUTTON 一般不需要配置。
-     * </p>
+     * Front-end route path, typically used for MENU or FUNCTION resources.
      */
     @Column(name = "path", length = 512)
     private String path;
 
     /**
-     * 前端组件路径。
-     *
-     * <p>
-     * 通常用于 MENU 或 FUNCTION。
-     * DIRECTORY 和 BUTTON 一般不需要配置。
-     * </p>
+     * Front-end component path, typically used for MENU or FUNCTION resources.
      */
     @Column(name = "component", length = 512)
     private String component;
 
     /**
-     * 图标。
-     *
-     * <p>
-     * 通常用于 DIRECTORY 或 MENU。
-     * FUNCTION 和 BUTTON 一般不需要配置。
-     * </p>
+     * Icon identifier, typically used for DIRECTORY or MENU resources.
      */
     @Column(name = "icon", length = 128)
     private String icon;
 
     /**
-     * 排序号。
-     *
-     * <p>
-     * 用于同级资源排序。
-     * 数值越小越靠前。
-     * </p>
+     * Sort order among siblings. Lower values appear first.
      */
     @Column(name = "sort_no", nullable = false)
     private Integer sortNo;
 
     /**
-     * 是否可见。
-     *
-     * <p>
-     * 主要影响前端是否展示。
-     * 例如隐藏菜单、隐藏功能可以 visible=false。
-     * </p>
+     * Whether the resource is visible in the front-end UI.
      */
     @Column(name = "visible", nullable = false)
     private Boolean visible;
 
     /**
-     * 是否启用。
-     *
-     * <p>
-     * enabled=false 表示资源停用。
-     * 停用资源一般不参与权限分配、菜单渲染或按钮鉴权。
-     * </p>
+     * Whether the resource is enabled. Disabled resources do not participate in authorization.
      */
     @Column(name = "enabled", nullable = false)
     private Boolean enabled;
 
     /**
-     * 是否默认入口。
-     *
-     * <p>
-     * 通常用于 MENU 或 FUNCTION。
-     * 例如某个菜单下存在多个功能页时，可以指定其中一个功能为默认入口。
-     * </p>
+     * Whether this resource is the default entry point (typically for MENU or FUNCTION).
      */
     @Column(name = "default_entry", nullable = false)
     private Boolean defaultEntry;
 
     /**
-     * 是否系统内置资源。
-     *
-     * <p>
-     * 系统内置资源通常不允许被普通用户删除。
-     * </p>
+     * Whether this resource is system-built. System-built resources should not be deleted by regular users.
      */
     @Column(name = "system_builtin", nullable = false)
     private Boolean systemBuiltin;
 
     /**
-     * 备注。
+     * Optional remark or description.
      */
     @Column(name = "remark", length = 512)
     private String remark;
 
     /**
-     * 创建时间。
+     * Creation timestamp.
      */
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     /**
-     * 更新时间。
+     * Last update timestamp.
      */
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
@@ -256,20 +146,20 @@ public class Resource {
     }
 
     /**
-     * 创建资源。
+     * Creates a new resource.
      *
-     * @param code          资源编码
-     * @param parentId      父资源 ID，顶级资源为空
-     * @param name          资源名称
-     * @param resourceType  资源类型
-     * @param path          前端路由路径
-     * @param component     前端组件路径
-     * @param icon          图标
-     * @param sortNo        排序号
-     * @param visible       是否可见
-     * @param defaultEntry  是否默认入口
-     * @param systemBuiltin 是否系统内置资源
-     * @param remark        备注
+     * @param code          unique resource code
+     * @param parentId      parent resource ID, null for root resources
+     * @param name          resource display name
+     * @param resourceType  resource type (DIRECTORY, MENU, FUNCTION, or BUTTON)
+     * @param path          front-end route path
+     * @param component     front-end component path
+     * @param icon          icon identifier
+     * @param sortNo        sort order among siblings
+     * @param visible       whether the resource is visible
+     * @param defaultEntry  whether this is the default entry
+     * @param systemBuiltin whether this resource is system-built
+     * @param remark        optional remark
      */
     public Resource(String code, Long parentId, String name, ResourceType resourceType, String path, String component,
             String icon, Integer sortNo, Boolean visible, Boolean defaultEntry, Boolean systemBuiltin, String remark) {
@@ -296,11 +186,11 @@ public class Resource {
     }
 
     /**
-     * 修改资源基础信息。
+     * Updates the resource's basic information (name, icon, remark).
      *
-     * @param name   资源名称
-     * @param icon   图标
-     * @param remark 备注
+     * @param name   the new display name
+     * @param icon   the new icon identifier
+     * @param remark the new remark
      */
     public void modifyBasicInfo(String name, String icon, String remark) {
         this.name = requireNotBlank(name, "资源名称不能为空");
@@ -309,25 +199,33 @@ public class Resource {
         touch();
     }
 
+    /**
+     * Changes the resource code.
+     *
+     * @param code the new unique resource code
+     */
     public void changeCode(String code) {
         this.code = requireNotBlank(code, "资源编码不能为空");
         touch();
     }
 
+    /**
+     * Changes the resource type.
+     *
+     * @param resourceType the new resource type
+     */
     public void changeType(ResourceType resourceType) {
         this.resourceType = requireNonNull(resourceType, "资源类型不能为空");
         touch();
     }
 
     /**
-     * 修改前端路由信息。
+     * Updates the front-end route information (path and component).
      *
-     * <p>
-     * 通常只建议 MENU 或 FUNCTION 类型资源配置 path/component。
-     * </p>
+     * <p>Typically applicable to MENU or FUNCTION resources.</p>
      *
-     * @param path      前端路由路径
-     * @param component 前端组件路径
+     * @param path      the new front-end route path
+     * @param component the new front-end component path
      */
     public void modifyRoute(String path, String component) {
         this.path = normalizeBlank(path);
@@ -336,14 +234,12 @@ public class Resource {
     }
 
     /**
-     * 修改父资源。
+     * Moves this resource under a new parent.
      *
-     * <p>
-     * 该方法只修改 parentId。
-     * 父子类型是否合法应由领域服务根据 {@link ResourceType#canHaveChild(ResourceType)} 统一校验。
-     * </p>
+     * <p>Type compatibility should be validated by the domain service
+     * using {@link ResourceType#canHaveChild(ResourceType)}.</p>
      *
-     * @param parentId 父资源 ID
+     * @param parentId the new parent resource ID
      */
     public void moveTo(Long parentId) {
         this.parentId = parentId;
@@ -351,9 +247,9 @@ public class Resource {
     }
 
     /**
-     * 修改排序号。
+     * Changes the sort order.
      *
-     * @param sortNo 排序号
+     * @param sortNo the new sort order value
      */
     public void changeSortNo(Integer sortNo) {
         this.sortNo = requireNonNull(sortNo, "排序号不能为空");
@@ -361,7 +257,7 @@ public class Resource {
     }
 
     /**
-     * 启用资源。
+     * Enables this resource.
      */
     public void enable() {
         this.enabled = true;
@@ -369,7 +265,7 @@ public class Resource {
     }
 
     /**
-     * 停用资源。
+     * Disables this resource.
      */
     public void disable() {
         this.enabled = false;
@@ -377,7 +273,7 @@ public class Resource {
     }
 
     /**
-     * 显示资源。
+     * Makes this resource visible.
      */
     public void show() {
         this.visible = true;
@@ -385,7 +281,7 @@ public class Resource {
     }
 
     /**
-     * 隐藏资源。
+     * Hides this resource.
      */
     public void hide() {
         this.visible = false;
@@ -393,7 +289,7 @@ public class Resource {
     }
 
     /**
-     * 标记为默认入口。
+     * Marks this resource as the default entry point.
      */
     public void markDefaultEntry() {
         this.defaultEntry = true;
@@ -401,7 +297,7 @@ public class Resource {
     }
 
     /**
-     * 取消默认入口。
+     * Removes the default entry status from this resource.
      */
     public void cancelDefaultEntry() {
         this.defaultEntry = false;
@@ -419,71 +315,71 @@ public class Resource {
     }
 
     /**
-     * 判断是否为目录资源。
+     * Checks whether this resource is a directory.
      *
-     * @return true 表示当前资源是目录
+     * @return true if this is a DIRECTORY-type resource
      */
     public boolean isDirectory() {
         return this.resourceType == ResourceType.DIRECTORY;
     }
 
     /**
-     * 判断是否为菜单资源。
+     * Checks whether this resource is a menu.
      *
-     * @return true 表示当前资源是菜单
+     * @return true if this is a MENU-type resource
      */
     public boolean isMenu() {
         return this.resourceType == ResourceType.MENU;
     }
 
     /**
-     * 判断是否为功能资源。
+     * Checks whether this resource is a function.
      *
-     * @return true 表示当前资源是功能
+     * @return true if this is a FUNCTION-type resource
      */
     public boolean isFunction() {
         return this.resourceType == ResourceType.FUNCTION;
     }
 
     /**
-     * 判断是否为按钮资源。
+     * Checks whether this resource is a button.
      *
-     * @return true 表示当前资源是按钮
+     * @return true if this is a BUTTON-type resource
      */
     public boolean isButton() {
         return this.resourceType == ResourceType.BUTTON;
     }
 
     /**
-     * 判断当前资源是否允许挂载子资源。
+     * Checks whether this resource can have child resources.
      *
-     * @return true 表示允许挂载子资源
+     * @return true if this resource can have children
      */
     public boolean canHaveChildren() {
         return this.resourceType.canHaveChildren();
     }
 
     /**
-     * 判断当前资源是否允许挂载指定子资源。
+     * Checks whether this resource can have a child of the specified type.
      *
-     * @param childType 子资源类型
-     * @return true 表示允许挂载
+     * @param childType the child resource type to check
+     * @return true if the specified child type is allowed
      */
     public boolean canHaveChild(ResourceType childType) {
         return this.resourceType.canHaveChild(childType);
     }
 
     /**
-     * 判断当前资源是否允许绑定权限码。
+     * Checks whether this resource can bind permission codes.
      *
-     * @return true 表示允许绑定权限码
+     * @return true if this resource can bind permissions
      */
     public boolean canBindPermission() {
         return this.resourceType.canBindPermission();
     }
 
     /**
-     * 更新时间。
+     * Updates the timestamp to mark the resource as modified.
      */
     private void touch() {
         this.updatedAt = HighDate.mockInstant();

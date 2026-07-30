@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * REST controller for user-facing tool pages.
+ *
+ * <p>Provides endpoints that return the set of tools and permission codes
+ * available to the currently authenticated user. All endpoints are publicly
+ * accessible (permit-all).</p>
+ *
  * @author Corwin 2026/6/6
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -25,6 +31,11 @@ public class UserToolController {
 
     private final UserToolPageService userToolPageService;
 
+    /**
+     * Returns the tools and permission codes available to the current user.
+     *
+     * @return the response containing tool pages and permission codes
+     */
     @GetMapping
     @PermitAll
     public ApiResponse<UserToolsRes> currentUserTools() {

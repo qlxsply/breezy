@@ -3,6 +3,8 @@ package com.corwin.system.resource.interfaces.web.res;
 import java.util.List;
 
 /**
+ * Response DTO containing detailed permission info for the current user.
+ *
  * @author Corwin 2026/2/2
  */
 public record MyPermissionsDetailRes(

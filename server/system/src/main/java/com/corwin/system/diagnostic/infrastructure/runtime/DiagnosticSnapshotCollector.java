@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 
 /**
+ * Facade that orchestrates all individual collectors to produce a single composite DiagnosticSnapshot.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
@@ -42,6 +44,12 @@ public class DiagnosticSnapshotCollector {
         this.jfrCollector = jfrCollector;
     }
 
+    /**
+     * Collects a full snapshot by invoking each collector based on the enabled diagnostic items.
+     *
+     * @param config the diagnostic config determining which items to collect
+     * @return a composite DiagnosticSnapshot
+     */
     public DiagnosticSnapshot collect(DiagnosticConfig config) {
         return new DiagnosticSnapshot(Instant.now(),
                 config.includes(DiagnosticItem.JVM) ? jvmStateCollector.collect() : null,

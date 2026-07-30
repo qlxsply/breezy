@@ -3,6 +3,8 @@ package com.corwin.system.config.application.command;
 import java.util.Objects;
 
 /**
+ * Command object for updating a configuration value.
+ * Encapsulates the config code and the raw value to be set.
  *
  * @author Corwin 2026/1/11
  */

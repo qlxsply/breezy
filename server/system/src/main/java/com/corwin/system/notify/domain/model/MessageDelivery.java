@@ -16,7 +16,9 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 消息投递记录。
+ * Domain entity representing a message delivery record.
+ * <p>Tracks the delivery lifecycle of a notification, including status transitions
+ * (PENDING -> SENT -> ACKED/FAILED), delivery channels, and timestamps.</p>
  *
  * @author Corwin 2026/3/19
  */
@@ -86,6 +88,23 @@ public class MessageDelivery {
     protected MessageDelivery() {
     }
 
+    /**
+     * Creates a new delivery record in PENDING status with full parameters.
+     *
+     * @param userId               the target user ID
+     * @param userType             the target user type
+     * @param notificationId       the associated notification ID (may be null)
+     * @param msgType              the message type
+     * @param title                the message title
+     * @param content              the message content
+     * @param route                the front-end route
+     * @param priority             the priority level
+     * @param panelAutoOpen        whether to auto-open the notification panel
+     * @param osNotificationEnabled whether to send OS-level notification
+     * @param bizType              the business type (optional)
+     * @param bizId                the business ID (optional)
+     * @return a new {@link MessageDelivery} in PENDING state
+     */
     public static MessageDelivery pending(Long userId, UserType userType, Long notificationId, String msgType, String title,
             String content,
             String route, String priority, boolean panelAutoOpen, boolean osNotificationEnabled,
@@ -108,6 +127,21 @@ public class MessageDelivery {
         return delivery;
     }
 
+    /**
+     * Creates a new delivery record in PENDING status with simplified parameters.
+     * <p>Auto-resolves panelAutoOpen and osNotificationEnabled based on priority.</p>
+     *
+     * @param userId   the target user ID
+     * @param userType the target user type
+     * @param msgType  the message type
+     * @param title    the message title
+     * @param content  the message content
+     * @param route    the front-end route
+     * @param priority the priority level
+     * @param bizType  the business type (optional)
+     * @param bizId    the business ID (optional)
+     * @return a new {@link MessageDelivery} in PENDING state
+     */
     public static MessageDelivery pending(Long userId, UserType userType, String msgType, String title, String content,
             String route, String priority, String bizType, String bizId) {
         return pending(userId, userType, null, msgType, title, content, route, priority,
@@ -116,6 +150,9 @@ public class MessageDelivery {
                 bizType, bizId);
     }
 
+    /**
+     * Transitions this delivery to SENT status. No-op if already ACKED.
+     */
     public void markSent() {
         if (status == MessageDeliveryStatus.ACKED) {
             return;
@@ -124,11 +161,17 @@ public class MessageDelivery {
         sentAt = HighDate.mockInstant();
     }
 
+    /**
+     * Transitions this delivery to ACKED status.
+     */
     public void markAcked() {
         status = MessageDeliveryStatus.ACKED;
         ackedAt = HighDate.mockInstant();
     }
 
+    /**
+     * Transitions this delivery to FAILED status. No-op if already ACKED.
+     */
     public void markFailed() {
         if (status == MessageDeliveryStatus.ACKED) {
             return;

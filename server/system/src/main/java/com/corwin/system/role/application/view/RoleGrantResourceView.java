@@ -1,6 +1,8 @@
 package com.corwin.system.role.application.view;
 
 /**
+ * View of a grantable resource with tree structure support.
+ *
  * @author Corwin 2026/5/7
  */
 public record RoleGrantResourceView(

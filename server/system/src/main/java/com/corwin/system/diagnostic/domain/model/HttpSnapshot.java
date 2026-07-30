@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Snapshot of HTTP request metrics including in-flight count, totals, status distribution, and latency percentiles.
+ *
  * @author Corwin 2026/4/16
  */
 public record HttpSnapshot(
@@ -18,6 +20,9 @@ public record HttpSnapshot(
         List<HttpUriStatSnapshot> topUris
 ) {
 
+    /**
+     * Compact constructor that normalises null collections to immutable empty ones.
+     */
     public HttpSnapshot {
         statusCounts = statusCounts == null ? Map.of() : Map.copyOf(statusCounts);
         topUris = topUris == null ? List.of() : List.copyOf(topUris);

@@ -1,6 +1,8 @@
 package com.corwin.system.dict.application.command;
 
 /**
+ * Command representing a single dictionary item within a draft-based save operation.
+ *
  * @author Corwin 2026/5/18
  */
 public record SaveDictTypeItemCommand(

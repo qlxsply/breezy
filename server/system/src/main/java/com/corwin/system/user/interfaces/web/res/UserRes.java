@@ -6,6 +6,8 @@ import com.corwin.system.user.domain.model.UserStatus;
 import java.time.Instant;
 
 /**
+ * Response DTO for a user entity.
+ *
  * @author Corwin 2026/1/22
  */
 public record UserRes(

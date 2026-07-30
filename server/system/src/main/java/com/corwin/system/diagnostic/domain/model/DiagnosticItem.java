@@ -1,6 +1,8 @@
 package com.corwin.system.diagnostic.domain.model;
 
 /**
+ * Enumerates the collectable diagnostic data items.
+ *
  * @author Corwin 2026/4/16
  */
 public enum DiagnosticItem {

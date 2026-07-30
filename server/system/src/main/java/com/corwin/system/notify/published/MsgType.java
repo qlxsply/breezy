@@ -5,6 +5,10 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Message type enumeration for notifications.
+ * <p>Defines supported message categories such as to-do reminders, system events,
+ * and business events, each with associated display label, tag color, and tag type.</p>
+ *
  * @author Corwin 2026/4/16
  */
 public enum MsgType implements DictEnumDefinition {

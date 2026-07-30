@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * REST controller providing management endpoints for method statistics collection switches and data clearing.
  * @author Corwin 2026/3/25
  */
 @ApiMeta(module = ApiModuleCode.METHODSTAT)
@@ -25,6 +26,10 @@ public class MethodStatManageController {
 
     private final MethodStatManageAppService manageAppService;
 
+    /**
+     * Retrieve the current global statistics collection switch state.
+     * @return the global switch state
+     */
     @GetMapping("/global-switch")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.switch.view"})
     public ApiResponse<MethodStatGlobalSwitchRes> globalSwitch() {
@@ -32,6 +37,11 @@ public class MethodStatManageController {
         return ApiResponse.ok(new MethodStatGlobalSwitchRes(view.enabled()));
     }
 
+    /**
+     * Enable or disable the global statistics collection.
+     * @param req the request containing the new enabled state
+     * @return updated global switch state
+     */
     @PutMapping("/global-switch")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.switch.edit"})
     public ApiResponse<MethodStatGlobalSwitchRes> updateGlobalSwitch(@RequestBody MethodStatGlobalSwitchUpdateReq req) {
@@ -39,6 +49,11 @@ public class MethodStatManageController {
         return ApiResponse.ok(new MethodStatGlobalSwitchRes(view.enabled()));
     }
 
+    /**
+     * Retrieve the per-method statistics switch state for the given key.
+     * @param key the method key
+     * @return the method switch state
+     */
     @GetMapping("/method-switch")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.switch.view"})
     public ApiResponse<MethodStatMethodSwitchRes> methodSwitch(@RequestParam("key") String key) {
@@ -46,6 +61,11 @@ public class MethodStatManageController {
         return ApiResponse.ok(new MethodStatMethodSwitchRes(view.key(), view.enabled()));
     }
 
+    /**
+     * Enable or disable statistics collection for a specific method.
+     * @param req the request containing the method key and new state
+     * @return updated method switch state
+     */
     @PutMapping("/method-switch")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.switch.edit"})
     public ApiResponse<MethodStatMethodSwitchRes> updateMethodSwitch(@RequestBody MethodStatMethodSwitchUpdateReq req) {
@@ -53,6 +73,11 @@ public class MethodStatManageController {
         return ApiResponse.ok(new MethodStatMethodSwitchRes(view.key(), view.enabled()));
     }
 
+    /**
+     * Enable or disable statistics collection for all registered methods at once.
+     * @param req the request containing the new enabled state
+     * @return empty success response
+     */
     @PutMapping("/method-switch/all")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.switch.edit"})
     public ApiResponse<Object> updateAllMethodSwitch(@RequestBody MethodStatAllMethodSwitchUpdateReq req) {
@@ -60,6 +85,11 @@ public class MethodStatManageController {
         return ApiResponse.ok();
     }
 
+    /**
+     * Clear aggregated statistics for a specific method by its key.
+     * @param key the method key
+     * @return empty success response
+     */
     @DeleteMapping("/stats")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.stat.clear"})
     public ApiResponse<Object> clearMethodStats(@RequestParam("key") String key) {
@@ -67,6 +97,10 @@ public class MethodStatManageController {
         return ApiResponse.ok();
     }
 
+    /**
+     * Clear all aggregated statistics across every method.
+     * @return empty success response
+     */
     @DeleteMapping("/stats/all")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.stat.clear"})
     public ApiResponse<Object> clearAllStats() {

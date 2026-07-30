@@ -8,13 +8,21 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * Web 用户 MyBatis 查询 Mapper。
+ * MyBatis mapper for paginated web user queries.
  *
  * @author Corwin 2026/7/28
  */
 @Mapper
 public interface WebUserMybatisMapper {
 
+    /**
+     * Paginated query for web users with optional keyword and status filtering.
+     *
+     * @param keyword optional LIKE pattern for display/nickname search
+     * @param status  optional status filter
+     * @param spec    pagination and sorting specification
+     * @return paginated result
+     */
     PageData<WebUser> page(@Param("keyword") String keyword, @Param("status") WebUserStatus status,
             @Param("spec") PageSpec spec);
 }

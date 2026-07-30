@@ -1,6 +1,8 @@
 package com.corwin.system.dict.interfaces.web.req;
 
 /**
+ * Request DTO for updating an existing dictionary item.
+ *
  * @author Corwin 2026/3/15
  */
 public record UpdateDictItemReq(

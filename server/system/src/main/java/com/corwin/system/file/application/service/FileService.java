@@ -35,6 +35,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
+ * Application service for file and folder command operations.
+ * Implements {@link FileCommandPort} and provides transactional operations
+ * for uploading, creating, deleting, renaming, and moving files and folders.
+ *
  * @author Corwin 2026/2/23
  */
 @Slf4j
@@ -46,6 +50,15 @@ public class FileService implements FileCommandPort {
     private final PhysicalFileRepository physicalFileRepository;
     private final LocalStorageProvider storageProvider;
 
+    /**
+     * Uploads a file from an input stream. Computes the SHA-256 hash for
+     * de-duplication, stores the physical file, and creates a logical file record.
+     *
+     * @param cmd         the upload command with metadata
+     * @param inputStream the file content stream
+     * @param purpose     the business purpose category
+     * @return the logical file ID of the uploaded file
+     */
     @Override
     @Transactional
     public String uploadFile(UploadFileCommand cmd, InputStream inputStream, FilePurpose purpose) {
@@ -92,6 +105,16 @@ public class FileService implements FileCommandPort {
         }
     }
 
+    /**
+     * Creates an internal system file with the given content and file type.
+     * The file is stored under an application-owned purpose folder.
+     *
+     * @param fileName the desired file name
+     * @param fileType the predefined file type (defines content type and extension)
+     * @param content  the file content as bytes
+     * @param purpose  the business purpose
+     * @return the logical file ID
+     */
     @Override
     @Transactional
     public String createInternalFile(String fileName, InternalFileType fileType, byte[] content, FilePurpose purpose) {
@@ -125,6 +148,12 @@ public class FileService implements FileCommandPort {
         return logicalFile.getId();
     }
 
+    /**
+     * Reads the full binary content of a file by its logical file ID.
+     *
+     * @param fileId the logical file ID
+     * @return the file content as a byte array
+     */
     @Override
     public byte[] readFileContent(String fileId) {
         BizAssert.notBlank(fileId, BaseError.MISSING_PARAMETER);
@@ -235,12 +264,18 @@ public class FileService implements FileCommandPort {
         void write(String relativePath, String physicalFileName) throws IOException;
     }
 
+    /**
+     * Deletes a logical file without owner validation.
+     */
     @Override
     @Transactional
     public void deleteFile(String fileId) {
         deleteFile(fileId, null, null);
     }
 
+    /**
+     * Deletes a logical file with optional owner validation.
+     */
     @Override
     @Transactional
     public void deleteFile(String fileId, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -265,6 +300,9 @@ public class FileService implements FileCommandPort {
         });
     }
 
+    /**
+     * Creates a new folder node under the given parent, preventing duplicate names.
+     */
     @Override
     @Transactional
     public String createFolder(OwnerType ownerType, String ownerId, String parentId, String name) {
@@ -284,6 +322,9 @@ public class FileService implements FileCommandPort {
         return logicalFileRepository.save(folder).getId();
     }
 
+    /**
+     * Renames a folder with duplicate-name validation.
+     */
     @Override
     @Transactional
     public void renameFolder(String folderId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -308,6 +349,9 @@ public class FileService implements FileCommandPort {
         logicalFileRepository.save(folder);
     }
 
+    /**
+     * Renames a file with duplicate-name resolution for user-owned files.
+     */
     @Override
     @Transactional
     public void renameFile(String fileId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -332,6 +376,11 @@ public class FileService implements FileCommandPort {
         logicalFileRepository.save(file);
     }
 
+    /**
+     * Deletes a folder. If {@code recursive} is true, all descendant files and
+     * sub-folders are also deleted; otherwise an error is thrown if the folder
+     * is not empty.
+     */
     @Override
     @Transactional
     public void deleteFolder(String folderId, boolean recursive, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -362,6 +411,9 @@ public class FileService implements FileCommandPort {
         }
     }
 
+    /**
+     * Moves a file to a target parent folder with duplicate-name resolution.
+     */
     @Override
     @Transactional
     public void moveFile(String fileId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
@@ -389,6 +441,10 @@ public class FileService implements FileCommandPort {
         logicalFileRepository.save(file);
     }
 
+    /**
+     * Moves a folder to a target parent folder.
+     * Prevents moving a folder into itself or one of its own descendants.
+     */
     @Override
     @Transactional
     public void moveFolder(String folderId, String targetParentId, OwnerType expectedOwnerType,

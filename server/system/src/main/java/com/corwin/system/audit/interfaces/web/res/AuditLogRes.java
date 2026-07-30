@@ -9,6 +9,10 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Response DTO for audit log entries.
+ * Contains all fields of an audit log suitable for API serialization,
+ * with {@link JsonLongString} annotations for safe long-number transport.
+ *
  * @author Corwin 2026/4/19
  */
 public record AuditLogRes(

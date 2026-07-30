@@ -6,7 +6,7 @@ import java.time.ZoneId;
 import java.util.Set;
 
 /**
- * 每周规则。
+ * Schedule rule for weekly execution on specific days at a fixed time.
  *
  * @author Corwin 2026/4/15
  */

@@ -3,6 +3,8 @@ package com.corwin.system.resource.interfaces.web.req;
 import com.corwin.framework.web.request.PageRuleRequest;
 
 /**
+ * Request DTO for paginated API query with filtering criteria.
+ *
  * @author Corwin 2026/7/29
  */
 public record ApiPageReq(

@@ -5,6 +5,8 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the lifecycle status of a login session.
+ *
  * @author Corwin 2026/4/19
  */
 public enum SessionStatus implements DictEnumDefinition {

@@ -16,6 +16,9 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
+ * Handler interceptor that enforces {@link PermitAll}, {@link Authorize},
+ * and {@link Authenticated} annotations on controller methods and classes.
+ *
  * @author Corwin 2026/4/19
  */
 @Component

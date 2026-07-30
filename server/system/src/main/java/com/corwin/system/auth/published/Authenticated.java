@@ -8,11 +8,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Annotation that requires the request to be authenticated on a controller
+ * method or class, optionally restricting to a specific user type.
+ *
  * @author Corwin 2026/4/19
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Authenticated {
 
+    /**
+     * The required user type for access.
+     */
     UserType userType() default UserType.GUEST;
 }

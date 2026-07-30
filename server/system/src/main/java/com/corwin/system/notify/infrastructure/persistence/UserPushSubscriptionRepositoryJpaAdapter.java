@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link UserPushSubscriptionRepository}.
+ * <p>Delegates persistence operations to {@link UserPushSubscriptionJpaRepository}.</p>
+ *
  * @author Corwin 2026/3/19
  */
 @Repository

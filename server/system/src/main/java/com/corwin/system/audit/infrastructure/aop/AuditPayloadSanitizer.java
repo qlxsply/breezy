@@ -24,6 +24,10 @@ import java.security.Principal;
 import java.util.*;
 
 /**
+ * Sanitizes and summarizes request/response payloads for audit logging.
+ * Masks sensitive fields (e.g., passwords, tokens), truncates payloads to
+ * configured maximum lengths, and filters out framework-internal argument types.
+ *
  * @author Corwin 2026/4/19
  */
 @Component
@@ -35,6 +39,12 @@ public class AuditPayloadSanitizer {
             "confirmpassword", "token", "accesstoken", "refreshtoken", "authorization", "secret", "secretkey",
             "privatekey", "credential", "credentials");
 
+    /**
+     * Summarizes HTTP request parameters into a JSON string, masking sensitive fields.
+     *
+     * @param parameterMap the raw parameter map from the HTTP request
+     * @return a sanitized JSON summary, or {@code null} if the map is empty or null
+     */
     public String summarizeRequestParameters(Map<String, String[]> parameterMap) {
         if (parameterMap == null || parameterMap.isEmpty()) {
             return null;
@@ -55,6 +65,14 @@ public class AuditPayloadSanitizer {
         return summarize(normalized, ConfigRegistry.intV(SystemConfigKeys.AUDIT_RECORD_REQUEST_MAX_LENGTH));
     }
 
+    /**
+     * Summarizes the request body arguments into a JSON string, masking sensitive fields.
+     * Filters out framework-internal argument types such as {@link ServletRequest},
+     * {@link MultipartFile}, and {@link BindingResult}.
+     *
+     * @param arguments the method argument array from the intercepted join point
+     * @return a sanitized JSON summary, or {@code null} if no relevant arguments exist
+     */
     public String summarizeRequestBody(Object[] arguments) {
         if (arguments == null || arguments.length == 0) {
             return null;
@@ -73,6 +91,13 @@ public class AuditPayloadSanitizer {
         return summarize(payload, ConfigRegistry.intV(SystemConfigKeys.AUDIT_RECORD_REQUEST_MAX_LENGTH));
     }
 
+    /**
+     * Summarizes the response body into a JSON string, masking sensitive fields.
+     * If the response is an {@link ApiResponse}, extracts its data payload.
+     *
+     * @param response the object returned by the intercepted method
+     * @return a sanitized JSON summary, or {@code null} if the response is null
+     */
     public String summarizeResponseBody(Object response) {
         Object payload = response;
         if (response instanceof ApiResponse<?> apiResponse) {
@@ -81,6 +106,12 @@ public class AuditPayloadSanitizer {
         return summarize(payload, ConfigRegistry.intV(SystemConfigKeys.AUDIT_RECORD_RESPONSE_MAX_LENGTH));
     }
 
+    /**
+     * Summarizes an error message from a throwable, truncated to the configured maximum length.
+     *
+     * @param throwable the exception thrown during method execution
+     * @return the truncated error message, or the class name if the message is null
+     */
     public String summarizeErrorMessage(Throwable throwable) {
         if (throwable == null) {
             return null;

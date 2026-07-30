@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * REST controller for password policy configuration retrieval.
+ * Exposes endpoints to read current password strength and policy rules.
+ *
  * @author Corwin 2026/7/13
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -21,6 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PasswordPolicyConfigController {
 
+    /**
+     * Retrieve the current password policy configuration.
+     *
+     * @return the password policy settings
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<PasswordPolicyConfigRes> get() {

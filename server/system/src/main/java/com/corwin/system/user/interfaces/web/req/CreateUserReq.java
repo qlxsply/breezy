@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.util.List;
 
 /**
+ * Request object for creating a new admin user.
+ *
  * @author Corwin 2026/1/22
  */
 @Getter

@@ -7,6 +7,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Enumeration of built-in system and admin users with reserved IDs.
+ * Provides lookup and classification utilities for reserved accounts.
+ *
  * @author Corwin 2026/1/30
  */
 public enum DefaultUser {
@@ -40,10 +43,21 @@ public enum DefaultUser {
         return userType;
     }
 
+    /**
+     * Returns all built-in system users (UserType.SYSTEM).
+     *
+     * @return an unmodifiable list of system users
+     */
     public static List<DefaultUser> systemUsers() {
         return Cache.SYSTEM_USERS_LIST;
     }
 
+    /**
+     * Looks up a default user by its reserved ID.
+     *
+     * @param userId the user ID to look up
+     * @return an Optional containing the DefaultUser if found, or empty otherwise
+     */
     public static Optional<DefaultUser> byId(Long userId) {
         if (userId == null) {
             return Optional.empty();
@@ -51,6 +65,12 @@ public enum DefaultUser {
         return Optional.ofNullable(Cache.BY_ID.get(userId));
     }
 
+    /**
+     * Checks whether the given user ID belongs to a built-in system user.
+     *
+     * @param userId the user ID to check
+     * @return true if the ID corresponds to a system user
+     */
     public static boolean isSystemUser(Long userId) {
         if (userId == null) {
             return false;
@@ -58,10 +78,22 @@ public enum DefaultUser {
         return Cache.SYSTEM_USER_IDS.contains(userId);
     }
 
+    /**
+     * Checks whether the given user ID is the built-in admin.
+     *
+     * @param userId the user ID to check
+     * @return true if the ID is the admin (1000L)
+     */
     public static boolean isAdmin(Long userId) {
         return userId != null && userId == ADMIN.id;
     }
 
+    /**
+     * Checks whether the given user ID is reserved (belongs to any default user).
+     *
+     * @param userId the user ID to check
+     * @return true if the ID is reserved
+     */
     public static boolean isReserved(Long userId) {
         if (userId == null) {
             return false;

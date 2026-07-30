@@ -13,6 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 
 /**
+ * JDBC proxy that wraps Connection instances to intercept statement creation and
+ * wrap each created Statement with DiagnosticStatementProxy for SQL monitoring.
+ *
  * @author Corwin 2026/4/16
  */
 public final class DiagnosticConnectionProxy implements InvocationHandler {
@@ -30,6 +33,15 @@ public final class DiagnosticConnectionProxy implements InvocationHandler {
         this.sqlExecutionObserver = sqlExecutionObserver;
     }
 
+    /**
+     * Wraps a Connection with a diagnostic proxy.
+     *
+     * @param dataSourceName      the data source name
+     * @param target              the original connection to wrap
+     * @param runtimeManager      the runtime manager for checking collection state
+     * @param sqlExecutionObserver the SQL execution observer
+     * @return a proxied Connection, or null if the target was null
+     */
     public static Connection wrap(String dataSourceName, Connection target, DiagnosticRuntimeManager runtimeManager,
                                   SqlExecutionObserver sqlExecutionObserver) {
         if (target == null) {
@@ -39,6 +51,9 @@ public final class DiagnosticConnectionProxy implements InvocationHandler {
                 new DiagnosticConnectionProxy(dataSourceName, target, runtimeManager, sqlExecutionObserver));
     }
 
+    /**
+     * Intercepts connection method calls and wraps any created statements with diagnostic proxies.
+     */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();

@@ -15,7 +15,9 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 消息通知
+ * Domain entity representing a notification message.
+ * <p>Stores notification content, metadata (type, priority, route), and read status
+ * for a specific user.</p>
  *
  * @author Corwin 2026/3/30
  */
@@ -60,6 +62,17 @@ public class Notification {
     protected Notification() {
     }
 
+    /**
+     * Creates a new unread notification for the given user.
+     *
+     * @param userId   the target user ID
+     * @param userType the target user type
+     * @param title    the notification title
+     * @param content  the notification content (optional)
+     * @param msgType  the message type identifier
+     * @param priority the priority level
+     * @param route    the front-end route for navigation
+     */
     public Notification(Long userId, UserType userType, String title, String content, String msgType, String priority,
             String route) {
         this.userId = userId;
@@ -73,6 +86,9 @@ public class Notification {
         this.createdAt = HighDate.mockInstant();
     }
 
+    /**
+     * Marks this notification as read. No-op if already read.
+     */
     public void markAsRead() {
         if (this.isRead) {
             return;

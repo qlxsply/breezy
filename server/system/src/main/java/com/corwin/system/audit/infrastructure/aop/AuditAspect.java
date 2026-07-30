@@ -30,6 +30,14 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * AOP aspect that intercepts methods annotated with {@link Audit @Audit}.
+ * Captures request/response context, timing, and outcome, then builds
+ * an {@link AuditRecordCommand} and delegates to {@link AuditLogService}
+ * for persistence.
+ *
+ * @author Corwin 2026/7/30
+ */
 @Aspect
 @Component
 public class AuditAspect {
@@ -45,6 +53,16 @@ public class AuditAspect {
         this.auditLogService = auditLogService;
     }
 
+    /**
+     * Around advice that wraps the annotated method execution with audit logging.
+     * Records the start time, proceeds with the method, captures the result or
+     * exception, then builds an audit record with request metadata, sanitized
+     * payloads, and execution duration.
+     *
+     * @param joinPoint the AOP join point for the intercepted method
+     * @return the result of the proxied method invocation
+     * @throws Throwable if the proxied method throws an exception
+     */
     @Around("@annotation(com.corwin.system.audit.published.Audit)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();

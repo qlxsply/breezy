@@ -12,6 +12,9 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
+ * JPA entity representing a dictionary item.
+ * <p>A dictionary item belongs to a dictionary type and carries a code, label, value, sorting order, and optional hierarchical relation via parentItemId.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @Getter
@@ -79,6 +82,9 @@ public class DictItem {
     protected DictItem() {
     }
 
+    /**
+     * Constructs a new DictItem entity with the given attributes.
+     */
     public DictItem(String id, String dictTypeId, String parentItemId, String itemCode, String itemLabel,
             String itemValue, Integer sortNo, boolean enabled, boolean defaultItem, String tagColor, String tagType,
             String extraJson, String description, String operator) {
@@ -101,6 +107,9 @@ public class DictItem {
         this.updatedBy = operator;
     }
 
+    /**
+     * Updates the mutable fields of this dictionary item.
+     */
     public void update(String parentItemId, String itemLabel, String itemValue, Integer sortNo, boolean enabled,
             boolean defaultItem, String tagColor, String tagType, String extraJson, String description,
             String operator) {
@@ -117,26 +126,41 @@ public class DictItem {
         touch(operator);
     }
 
+    /**
+     * Enables this dictionary item.
+     */
     public void enable(String operator) {
         this.enabled = true;
         touch(operator);
     }
 
+    /**
+     * Disables this dictionary item.
+     */
     public void disable(String operator) {
         this.enabled = false;
         touch(operator);
     }
 
+    /**
+     * Updates the sort order of this dictionary item.
+     */
     public void updateSortNo(Integer sortNo, String operator) {
         this.sortNo = sortNo;
         touch(operator);
     }
 
+    /**
+     * Marks this item as the default item of its dictionary type.
+     */
     public void markDefault(String operator) {
         this.defaultItem = true;
         touch(operator);
     }
 
+    /**
+     * Clears the default flag of this item.
+     */
     public void clearDefault(String operator) {
         this.defaultItem = false;
         touch(operator);

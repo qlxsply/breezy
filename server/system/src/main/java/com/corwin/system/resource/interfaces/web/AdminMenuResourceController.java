@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * REST controller for retrieving the admin menu resource tree.
+ *
+ * <p>Provides the menu tree structure that is displayed in the admin panel
+ * sidebar. The returned resources are filtered based on the current admin
+ * user's role-based permissions.</p>
+ *
  * @author Corwin 2026/5/31
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -26,6 +32,11 @@ public class AdminMenuResourceController {
 
     private final AdminMenuResourceService adminMenuResourceService;
 
+    /**
+     * Returns the menu resource tree for the current admin user.
+     *
+     * @return the admin menu resources
+     */
     @GetMapping
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AdminMenuResourcesRes> currentAdminMenuResources() {

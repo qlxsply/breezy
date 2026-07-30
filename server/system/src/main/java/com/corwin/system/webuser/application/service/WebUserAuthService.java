@@ -33,6 +33,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Application service for external web user authentication flows.
+ * Handles login, token refresh, password change, logout, and account cancellation.
+ *
  * @author Corwin 2026/5/11
  */
 @Service
@@ -77,6 +80,12 @@ public class WebUserAuthService {
         this.authConfigService = authConfigService;
     }
 
+    /**
+     * Authenticate an external user with account and password, issue tokens on success.
+     *
+     * @param cmd the login command containing account and password
+     * @return login view with access token, refresh token, and user info
+     */
     @Transactional
     public WebUserLoginView login(LoginCommand cmd) {
         BizAssert.notNull(cmd, AuthError.BAD_CREDENTIALS);
@@ -121,6 +130,12 @@ public class WebUserAuthService {
                 new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.USER, false));
     }
 
+    /**
+     * Refresh an access token using a valid refresh token (token rotation applied).
+     *
+     * @param rawRefreshToken the raw refresh token string
+     * @return login view with newly issued tokens
+     */
     @Transactional
     public WebUserLoginView refresh(String rawRefreshToken) {
         var rotatedRefreshToken = refreshTokenService.rotate(rawRefreshToken, currentUserAgent());
@@ -146,11 +161,20 @@ public class WebUserAuthService {
                 new WebUserAuthView(user.getId(), identity.getIdentityValue(), UserType.USER, false));
     }
 
+    /**
+     * Retrieve the currently authenticated external user's info from the security context.
+     */
     public WebUserAuthView currentUser() {
         AuthPrincipal principal = requireExternalPrincipal();
         return new WebUserAuthView(principal.userId(), principal.username(), UserType.USER, false);
     }
 
+    /**
+     * Change the authenticated user's password. Validates old password and password policy.
+     *
+     * @param cmd the change password command with old and new passwords
+     * @return true if the password was changed successfully
+     */
     @Transactional
     public boolean changePassword(ChangePasswordCommand cmd) {
         BizAssert.notBlank(cmd.oldPassword(), AuthError.BAD_CREDENTIALS);
@@ -175,6 +199,11 @@ public class WebUserAuthService {
         return true;
     }
 
+    /**
+     * Log out the current user by revoking tokens.
+     *
+     * @return true if logout succeeded
+     */
     @Transactional
     public boolean logout() {
         AuthPrincipal principal = requireExternalPrincipal();
@@ -186,6 +215,12 @@ public class WebUserAuthService {
         return true;
     }
 
+    /**
+     * Cancel/close the current user's account. Revokes all identities and credentials.
+     *
+     * @param reason the cancellation reason
+     * @return true if the account was cancelled
+     */
     @Transactional
     public boolean cancelCurrentUser(String reason) {
         AuthPrincipal principal = requireExternalPrincipal();
@@ -206,10 +241,16 @@ public class WebUserAuthService {
         return true;
     }
 
+    /**
+     * Find a user by ID or throw NOT_FOUND.
+     */
     private WebUser requireUser(Long userId) {
         return webUserRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Retrieve the current principal and verify it is an external user.
+     */
     private AuthPrincipal requireExternalPrincipal() {
         AuthPrincipal principal = securityContextService.current();
         BizAssert.state(principal.userType() == UserType.USER, AuthError.FORBIDDEN);

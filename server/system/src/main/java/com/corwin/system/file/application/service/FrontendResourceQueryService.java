@@ -12,6 +12,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
+ * Service for resolving and serving frontend static resource files.
+ * Searches for resources across multiple candidate directories and provides
+ * path traversal protection.
+ *
  * @author Corwin 2026/6/15
  */
 @Service
@@ -41,6 +45,14 @@ public class FrontendResourceQueryService {
         this.baseDirectory = baseDirectory0;
     }
 
+    /**
+     * Resolves and returns a frontend resource file view for the given path.
+     * The path is sanitized to prevent directory traversal attacks.
+     *
+     * @param resourcePath the relative resource path (may contain leading slash)
+     * @return a view object with the resolved file path, name, content type, and size
+     * @throws IOException if the file cannot be read
+     */
     public FrontendResourceFileView getResource(String resourcePath) throws IOException {
         String normalizedResourcePath = normalizeResourcePath(resourcePath);
         Path relativePath = Path.of(normalizedResourcePath).normalize();

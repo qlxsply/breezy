@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link RoleRepository}.
+ *
  * @author Corwin 2026/3/30
  */
 @Repository
@@ -54,26 +56,41 @@ public class RoleRepositoryJpaAdapter implements RoleRepository {
         repo.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<Role> findByCode(String code) {
         return repo.findByCode(code);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean existsByCode(String code) {
         return repo.existsByCode(code);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Role> findAllByOrderByIdAsc() {
         return repo.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Role> findByIdIn(List<Long> ids) {
         return repo.findByIdIn(ids);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
         return mybatisMapper.page(LikePatternUtils.toContainsPattern(keyword), enabled, spec);

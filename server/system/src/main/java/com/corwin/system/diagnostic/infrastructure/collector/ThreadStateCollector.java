@@ -10,11 +10,18 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Collector that captures JVM thread state including counts by state and deadlock detection.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
 public class ThreadStateCollector {
 
+    /**
+     * Collects and returns a thread snapshot with state distribution and deadlocked thread IDs.
+     *
+     * @return a ThreadSnapshot with current thread metrics
+     */
     public ThreadSnapshot collect() {
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
         long[] threadIds = threadBean.getAllThreadIds();

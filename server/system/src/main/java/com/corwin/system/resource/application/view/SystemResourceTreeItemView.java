@@ -5,6 +5,8 @@ import com.corwin.system.resource.domain.model.ResourceType;
 import java.util.List;
 
 /**
+ * View object representing a node in the system resource tree.
+ *
  * @author Corwin 2026/6/29
  */
 public record SystemResourceTreeItemView(

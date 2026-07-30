@@ -5,6 +5,8 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Account status for a web user. Implements DictEnumDefinition for dictionary tag display.
+ *
  * @author Corwin 2026/5/11
  */
 public enum WebUserStatus implements DictEnumDefinition {

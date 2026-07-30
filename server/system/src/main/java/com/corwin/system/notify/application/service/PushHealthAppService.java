@@ -36,6 +36,14 @@ public class PushHealthAppService {
     private final NotificationDispatcher notificationDispatcher;
     private final WebPushVapidService webPushVapidService;
 
+    /**
+     * Queries the push health status for the specified user, including subscription
+     * details, delivery info, and VAPID readiness.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @return the push health view
+     */
     @Transactional(readOnly = true)
     public PushHealthView queryHealth(Long userId, UserType userType) {
         if (userId == null || userType == null) {
@@ -70,6 +78,13 @@ public class PushHealthAppService {
                 latestError, subscriptionViews, latestDelivery);
     }
 
+    /**
+     * Sends a high-priority health check notification to verify the push delivery chain.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @return the delivery view of the sent health check
+     */
     @Transactional
     public PushHealthDeliveryView sendHighPriorityHealthCheck(Long userId, UserType userType) {
         if (userId == null || userType == null) {

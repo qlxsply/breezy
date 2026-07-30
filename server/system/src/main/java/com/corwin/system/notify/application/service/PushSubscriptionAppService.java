@@ -22,10 +22,22 @@ public class PushSubscriptionAppService {
     private final UserPushSubscriptionRepository userPushSubscriptionRepository;
     private final WebPushVapidService webPushVapidService;
 
+    /**
+     * Returns the VAPID public key for Web Push subscriptions.
+     *
+     * @return the Base64-encoded public key
+     */
     public String getPublicKey() {
         return webPushVapidService.getPublicKey();
     }
 
+    /**
+     * Saves or refreshes a push subscription for the given user and device.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @param command  the subscription details
+     */
     @Transactional
     public void saveSubscription(Long userId, UserType userType, SavePushSubscriptionCommand command) {
         if (userId == null || userType == null || command == null) {
@@ -51,6 +63,13 @@ public class PushSubscriptionAppService {
                 });
     }
 
+    /**
+     * Deactivates the push subscription for the given user and device.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @param deviceId the device identifier
+     */
     @Transactional
     public void removeSubscription(Long userId, UserType userType, String deviceId) {
         if (userId == null || userType == null) {

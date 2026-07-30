@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link SchedulerJobExecutionRepository}.
+ *
  * @author Corwin 2026/4/15
  */
 @Component
@@ -52,6 +54,9 @@ public class SchedulerJobExecutionRepositoryJpaAdapter implements SchedulerJobEx
         jpaRepository.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PageData<SchedulerJobExecution> pageByJobId(String jobId, PageSpec spec) {
         return mybatisMapper.pageByJobId(jobId, spec);

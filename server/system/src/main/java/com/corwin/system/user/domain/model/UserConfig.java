@@ -12,7 +12,8 @@ import lombok.Getter;
 import java.util.Objects;
 
 /**
- * 用户个性化配置
+ * Represents a personalized configuration entry for a user,
+ * mapped to the {@code sys_user_config} table with a unique constraint on (user_id, config_code).
  *
  * @author Corwin 2026/3/30
  */
@@ -22,16 +23,20 @@ import java.util.Objects;
        uniqueConstraints = {@UniqueConstraint(name = "uk_user_config", columnNames = {"user_id", "config_code"})})
 public class UserConfig {
 
+    /** Primary key, auto-incremented. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** The user this configuration entry belongs to. */
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    /** Configuration code/key identifying the setting. */
     @Column(name = "config_code", nullable = false, length = 128)
     private String configCode;
 
+    /** Configuration value associated with the config code. */
     @Column(name = "config_value", nullable = false, length = 4000)
     private String configValue;
 
@@ -44,6 +49,11 @@ public class UserConfig {
         this.configValue = Objects.requireNonNull(configValue);
     }
 
+    /**
+     * Updates the configuration value.
+     *
+     * @param configValue the new configuration value
+     */
     public void updateValue(String configValue) {
         this.configValue = configValue;
     }

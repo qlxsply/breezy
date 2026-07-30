@@ -1,6 +1,8 @@
 package com.corwin.system.diagnostic.domain.model;
 
 /**
+ * Per-statement SQL execution statistics for a specific data source.
+ *
  * @author Corwin 2026/4/16
  */
 public record SqlStatementStatSnapshot(

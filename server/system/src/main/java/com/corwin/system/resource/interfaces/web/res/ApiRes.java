@@ -6,6 +6,8 @@ import com.corwin.system.resource.domain.model.ApiMethod;
 import com.corwin.system.resource.domain.model.ApiProtocol;
 
 /**
+ * Response DTO for API metadata with security and audit attributes.
+ *
  * @author Corwin 2026/1/23
  */
 public record ApiRes(

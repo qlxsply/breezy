@@ -5,6 +5,8 @@ import com.corwin.system.resource.domain.model.ResourceType;
 import java.util.List;
 
 /**
+ * Response DTO containing the full detail of a system resource.
+ *
  * @author Corwin 2026/6/29
  */
 public record SystemResourceDetailRes(

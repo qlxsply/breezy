@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 
 /**
- * 每日规则。
+ * Schedule rule for daily execution at a fixed time.
  *
  * @author Corwin 2026/4/15
  */

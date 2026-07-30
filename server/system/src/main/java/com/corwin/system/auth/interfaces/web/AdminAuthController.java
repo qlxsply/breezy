@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for internal (admin) user authentication: login,
+ * current user info, logout, and password change.
+ *
  * @author Corwin 2026/5/11
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -38,6 +41,9 @@ public class AdminAuthController {
         this.userConfigAppService = userConfigAppService;
     }
 
+    /**
+     * Authenticates an admin user with account and password.
+     */
     @PostMapping("/login")
     @PermitAll
     public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
@@ -46,18 +52,27 @@ public class AdminAuthController {
                 result.refreshTokenExpiresAt(), toAuthDto(result.user())));
     }
 
+    /**
+     * Returns the currently authenticated admin user's information.
+     */
     @GetMapping("/me")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AuthUserRes> me() {
         return ApiResponse.ok(toAuthDto(authService.currentUser()));
     }
 
+    /**
+     * Logs out the current admin user by revoking the session.
+     */
     @PostMapping("/logout")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<Boolean> logout() {
         return ApiResponse.ok(authService.logout());
     }
 
+    /**
+     * Changes the current admin user's password.
+     */
     @PutMapping("/password")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {

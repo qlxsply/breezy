@@ -3,6 +3,9 @@ package com.corwin.system.file.published;
 import lombok.Getter;
 
 /**
+ * Categorizes the business purpose of an uploaded or system-managed file.
+ * <p>Each purpose has a Chinese description for display.</p>
+ *
  * @author Corwin 2026/4/16
  */
 @Getter

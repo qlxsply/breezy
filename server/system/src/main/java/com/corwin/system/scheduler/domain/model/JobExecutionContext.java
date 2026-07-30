@@ -3,7 +3,7 @@ package com.corwin.system.scheduler.domain.model;
 import java.time.Instant;
 
 /**
- * 任务执行上下文。
+ * Record providing execution context information to a job handler.
  *
  * @author Corwin 2026/4/15
  */

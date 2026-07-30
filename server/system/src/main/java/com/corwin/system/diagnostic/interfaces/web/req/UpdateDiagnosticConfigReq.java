@@ -5,6 +5,8 @@ import com.corwin.system.diagnostic.domain.model.DiagnosticItem;
 import java.util.Set;
 
 /**
+ * Request DTO for updating the configuration of a running diagnostic session.
+ *
  * @author Corwin 2026/4/16
  */
 public record UpdateDiagnosticConfigReq(

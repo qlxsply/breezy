@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
+ * Service for issuing, rotating, and revoking refresh tokens for external users.
+ *
  * @author Corwin 2026/6/7
  */
 @Service
@@ -27,6 +29,13 @@ public class RefreshTokenService {
     private final OpaqueTokenService opaqueTokenService;
     private final AuthConfigService authConfigService;
 
+    /**
+     * Issues a new refresh token for the given user.
+     *
+     * @param userId     the user ID
+     * @param clientInfo optional client information
+     * @return the issued refresh token details
+     */
     @Transactional
     public IssuedRefreshToken issue(Long userId, String clientInfo) {
         Instant expiresAt = HighDate.mockInstant().plus(authConfigService.externalRefreshTokenTtl());
@@ -36,6 +45,13 @@ public class RefreshTokenService {
         return new IssuedRefreshToken(userId, rawToken, expiresAt);
     }
 
+    /**
+     * Rotates an existing refresh token: revokes the old one and issues a new one.
+     *
+     * @param rawRefreshToken the raw (unhashed) current refresh token
+     * @param clientInfo      optional client information
+     * @return the newly issued refresh token details
+     */
     @Transactional
     public IssuedRefreshToken rotate(String rawRefreshToken, String clientInfo) {
         RefreshToken current = requireActiveToken(rawRefreshToken);
@@ -44,6 +60,12 @@ public class RefreshTokenService {
         return issue(current.getUserId(), clientInfo);
     }
 
+    /**
+     * Revokes all active refresh tokens for a given user.
+     *
+     * @param userId the user ID
+     * @param reason the revocation reason
+     */
     @Transactional
     public void revokeActiveTokens(Long userId, String reason) {
         List<RefreshToken> activeTokens = refreshTokenRepository.findByUserIdAndStatus(userId, RefreshTokenStatus.ACTIVE);
@@ -81,6 +103,9 @@ public class RefreshTokenService {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
+    /**
+     * Record representing a newly issued refresh token with its expiry time.
+     */
     public record IssuedRefreshToken(
             Long userId,
             String rawToken,

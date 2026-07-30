@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 
 /**
- * 每月规则。
+ * Schedule rule for monthly execution on a specific day or the last day of the month.
  *
  * @author Corwin 2026/4/15
  */

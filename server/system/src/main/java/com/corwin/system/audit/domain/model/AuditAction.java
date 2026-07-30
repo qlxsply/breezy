@@ -3,6 +3,10 @@ package com.corwin.system.audit.domain.model;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * Enumeration of auditable action types.
+ * Defines the specific operations that can be recorded in an audit trail,
+ * such as CREATE, UPDATE, DELETE, and other domain-specific actions.
+ *
  * @author Corwin 2026/5/21
  */
 public enum AuditAction implements DictEnumDefinition {

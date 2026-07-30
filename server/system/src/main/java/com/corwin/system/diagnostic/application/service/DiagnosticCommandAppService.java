@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 
 /**
+ * Application service for diagnostic command operations: starting, stopping, and
+ * updating the configuration of diagnostic sessions. Delegates to DiagnosticRuntimeManager
+ * for lifecycle management.
+ *
  * @author Corwin 2026/4/16
  */
 @Service
@@ -25,6 +29,12 @@ public class DiagnosticCommandAppService {
         this.runtimeManager = runtimeManager;
     }
 
+    /**
+     * Starts a new diagnostic session. If a session is already active, returns the existing one.
+     *
+     * @param command the start diagnostic command
+     * @return the current diagnostic session view
+     */
     public DiagnosticSessionView start(StartDiagnosticCommand command) {
         Instant now = HighDate.realInstant();
         DiagnosticSession current = runtimeManager.currentSession().orElse(null);
@@ -37,6 +47,13 @@ public class DiagnosticCommandAppService {
         return toView(session, now);
     }
 
+    /**
+     * Updates the configuration of the currently active diagnostic session.
+     *
+     * @param command the update diagnostic config command
+     * @return the updated diagnostic session view
+     * @throws com.corwin.framework.error.BizException if no session is active
+     */
     public DiagnosticSessionView updateConfig(UpdateDiagnosticConfigCommand command) {
         Instant now = HighDate.realInstant();
         DiagnosticSession current = runtimeManager.currentSession()
@@ -47,6 +64,11 @@ public class DiagnosticCommandAppService {
         return toView(updatedSession, now);
     }
 
+    /**
+     * Stops the currently running diagnostic session.
+     *
+     * @return true if a session was active and stopped, false otherwise
+     */
     public boolean stop() {
         return runtimeManager.stop();
     }

@@ -1,6 +1,7 @@
 package com.corwin.system.methodstat.interfaces.web.res;
 
 /**
+ * Response DTO for method invocation statistics, mirroring {@code MethodStatStatsView} for API serialization.
  * @author Corwin 2026/3/25
  */
 public record MethodStatStatsRes(

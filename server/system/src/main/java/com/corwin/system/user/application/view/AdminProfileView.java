@@ -6,6 +6,8 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * View object representing an admin user's profile, including recent login activities.
+ *
  * @author Corwin 2026/6/4
  */
 public record AdminProfileView(

@@ -43,6 +43,14 @@ public class TaskSchedulerManager {
         return scheduler;
     }
 
+    /**
+     * Schedules a task with the given cron expression. Cancels any existing schedule for the same code.
+     *
+     * @param code       the task code
+     * @param cronExpr   the cron expression
+     * @param beanName   the Spring bean name
+     * @param methodName the method name to invoke
+     */
     public void scheduleTask(String code, String cronExpr, String beanName, String methodName) {
         cancelTask(code);
 
@@ -60,6 +68,11 @@ public class TaskSchedulerManager {
         }
     }
 
+    /**
+     * Cancels a scheduled task if it exists.
+     *
+     * @param code the task code
+     */
     public void cancelTask(String code) {
         ScheduledFuture<?> future = scheduledTasks.remove(code);
         if (future != null) {
@@ -68,6 +81,13 @@ public class TaskSchedulerManager {
         }
     }
 
+    /**
+     * Executes a task immediately in a separate thread.
+     *
+     * @param code       the task code
+     * @param beanName   the Spring bean name
+     * @param methodName the method name to invoke
+     */
     public void executeNow(String code, String beanName, String methodName) {
         try {
             Object bean = applicationContext.getBean(beanName);
@@ -78,6 +98,13 @@ public class TaskSchedulerManager {
         }
     }
 
+    /**
+     * Wraps task execution with MDC trace ID setup, principal injection, timing, and cleanup.
+     *
+     * @param code   the task code
+     * @param bean   the bean instance
+     * @param method the method to invoke
+     */
     private void wrapAndExecute(String code, Object bean, Method method) {
         String traceId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
         try {

@@ -1,6 +1,8 @@
 package com.corwin.system.diagnostic.domain.model;
 
 /**
+ * Enumerates the types of diagnostic events that can be emitted during a session.
+ *
  * @author Corwin 2026/4/16
  */
 public enum DiagnosticEventType {

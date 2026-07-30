@@ -6,7 +6,8 @@ import com.corwin.framework.config.ConfigValueType;
 import com.corwin.framework.config.DefaultConfigKeys;
 
 /**
- * 系统配置枚举定义。
+ * Enumeration of all system configuration keys.
+ * Defines each configuration's code, description, value type, and level.
  *
  * @author Corwin 2026/4/16
  */
@@ -62,6 +63,13 @@ public enum SystemConfigKeys implements ConfigDefinition {
         return level;
     }
 
+    /**
+     * Resolve a ConfigDefinition by its code.
+     * Checks framework default keys first, then falls back to local enum values.
+     *
+     * @param code the configuration code
+     * @return the matching ConfigDefinition, or null if not found
+     */
     public static ConfigDefinition fromCode(String code) {
         if (code == null || code.isBlank()) {
             return null;

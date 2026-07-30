@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
+ * Application service for admin profile operations including
+ * profile retrieval, update, and login activity queries.
+ *
  * @author Corwin 2026/6/4
  */
 @Service
@@ -29,12 +32,24 @@ public class AdminProfileAppService {
     private final UserRepository userRepository;
     private final LoginLogService loginLogService;
 
+    /**
+     * Returns the profile of the currently authenticated admin user,
+     * including recent login activity.
+     *
+     * @return the admin profile view
+     */
     @Transactional(readOnly = true)
     public AdminProfileView currentProfile() {
         User user = currentInternalUser();
         return toView(user);
     }
 
+    /**
+     * Updates the nickname of the currently authenticated admin user.
+     *
+     * @param cmd the update command containing the new nickname
+     * @return the updated admin profile view
+     */
     @Transactional
     public AdminProfileView updateMyProfile(UpdateAdminProfileCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -45,6 +60,11 @@ public class AdminProfileAppService {
         return toView(user);
     }
 
+    /**
+     * Returns the username of the currently authenticated admin user.
+     *
+     * @return the current admin username
+     */
     @Transactional(readOnly = true)
     public String currentUsername() {
         return currentInternalUser().getUsername();

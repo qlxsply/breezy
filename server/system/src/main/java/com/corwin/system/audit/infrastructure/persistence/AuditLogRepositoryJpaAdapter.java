@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * Adapter implementing {@link AuditLogRepository} by delegating to
+ * JPA for CRUD operations and MyBatis for paginated dynamic queries.
+ * Normalizes query string fields with LIKE patterns before execution.
+ *
  * @author Corwin 2026/4/19
  */
 @Repository
@@ -54,6 +58,14 @@ public class AuditLogRepositoryJpaAdapter implements AuditLogRepository {
         repo.flush();
     }
 
+    /**
+     * Executes a paginated dynamic query via the MyBatis mapper.
+     * String filter fields are normalized to LIKE patterns before execution.
+     *
+     * @param query the query filter parameters
+     * @param spec  the pagination and sort specification
+     * @return a page of matching {@link AuditLog} entities
+     */
     @Override
     public PageData<AuditLog> pageByQuery(AuditLogPageQuery query, PageSpec spec) {
         return mybatisMapper.pageByQuery(normalizeQuery(query), spec);

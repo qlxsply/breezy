@@ -7,12 +7,15 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 字典类型 MyBatis 查询 Mapper。
+ * MyBatis mapper for paginated dictionary type queries.
  *
  * @author Corwin 2026/7/28
  */
 @Mapper
 public interface DictTypeMybatisMapper {
 
+    /**
+     * Paginates dictionary types with optional code and name like-pattern filtering.
+     */
     PageData<DictType> page(@Param("code") String code, @Param("name") String name, @Param("spec") PageSpec spec);
 }

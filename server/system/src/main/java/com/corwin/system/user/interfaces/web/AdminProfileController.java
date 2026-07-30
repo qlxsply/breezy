@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * REST controller for admin profile operations including profile retrieval,
+ * login activity pagination, and profile update.
+ *
  * @author Corwin 2026/6/4
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -32,12 +35,23 @@ public class AdminProfileController {
     private final AdminProfileAppService adminProfileAppService;
     private final LoginLogService loginLogService;
 
+    /**
+     * Returns the profile of the currently authenticated admin user.
+     *
+     * @return the admin profile with recent login activities
+     */
     @GetMapping
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AdminProfileRes> currentProfile() {
         return ApiResponse.ok(toRes(adminProfileAppService.currentProfile()));
     }
 
+    /**
+     * Paginates the login activities for the current admin user.
+     *
+     * @param req the page request
+     * @return a paginated result of login activities
+     */
     @PostMapping("/login-activities")
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<PageResult<AdminProfileLoginActivityRes>> pageLoginActivities(
@@ -47,6 +61,12 @@ public class AdminProfileController {
         return ApiResponse.ok(PageResult.of(page, AdminProfileController::toActivityRes));
     }
 
+    /**
+     * Updates the nickname of the currently authenticated admin user.
+     *
+     * @param req the update request containing the new nickname
+     * @return the updated admin profile
+     */
     @PutMapping
     @Authenticated(userType = UserType.ADMIN)
     public ApiResponse<AdminProfileRes> updateMyProfile(@RequestBody UpdateAdminProfileReq req) {

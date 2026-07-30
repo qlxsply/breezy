@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the structure type of a dictionary type.
+ * <p>Supported types: FLAT (flat list), TREE (hierarchical tree).</p>
+ *
  * @author Corwin 2026/3/15
  */
 public enum DictStructureType implements DictEnumDefinition {

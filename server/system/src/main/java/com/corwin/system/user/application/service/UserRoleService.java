@@ -23,6 +23,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
+ * Application service for managing user-role assignments.
+ * Handles role query, bulk update, and cascading permission cache invalidation.
+ *
  * @author Corwin 2026/1/23
  */
 @Service
@@ -35,10 +38,24 @@ public class UserRoleService {
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
+    /**
+     * Returns the role IDs assigned to a given user.
+     *
+     * @param userId the user ID
+     * @return a list of role IDs
+     */
     public List<Long> userRoles(Long userId) {
         return userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList();
     }
 
+    /**
+     * Replaces all role assignments for a user, clearing the permission cache
+     * and evicting active sessions for the affected user.
+     *
+     * @param userId the user ID
+     * @param cmd    the command containing the new role IDs
+     * @return true if the update was performed
+     */
     @Transactional
     public boolean updateUserRoles(Long userId, UpdateUserRolesCommand cmd) {
         if (DefaultUser.isReserved(userId)) {

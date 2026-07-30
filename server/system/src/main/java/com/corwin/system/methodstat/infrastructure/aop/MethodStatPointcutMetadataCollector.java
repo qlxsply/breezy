@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * Implementation of {@link MethodStatMetadataCollector} that scans all beans in the
+ * application context and registers metadata for methods matching the configured pointcut.
  * @author Corwin 2026/4/1
  */
 @Slf4j
@@ -30,6 +32,11 @@ public class MethodStatPointcutMetadataCollector implements MethodStatMetadataCo
     private final MethodStatAnnotationResolver annotationResolver;
     private final MethodStatMetadataRegistrationAppService metadataRegistrationAppService;
 
+    /**
+     * Iterate over all registered beans, match methods against the pointcut, and register
+     * their metadata for statistics collection.
+     * @return the number of methods successfully registered
+     */
     @Override
     public int collectAllPointcutMetadata() {
         Map<String, MethodStatMethodDescriptor> descriptors = new LinkedHashMap<>();

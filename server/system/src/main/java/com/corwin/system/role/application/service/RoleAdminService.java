@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Application service for role CRUD administration.
+ *
  * @author Corwin 2026/1/23
  */
 @Service
@@ -37,18 +39,44 @@ public class RoleAdminService {
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
+    /**
+     * Returns all roles ordered by ID ascending.
+     *
+     * @return list of all roles
+     */
     public List<Role> list() {
         return roleRepository.findAllByOrderByIdAsc();
     }
 
+    /**
+     * Paginated query with optional keyword and enabled filter.
+     *
+     * @param keyword optional search keyword
+     * @param enabled optional enabled filter
+     * @param spec    pagination specification
+     * @return paginated result
+     */
     public PageData<Role> page(String keyword, Boolean enabled, PageSpec spec) {
         return roleRepository.page(keyword, enabled, PageSpecSorts.apply(spec));
     }
 
+    /**
+     * Retrieves a role by ID.
+     *
+     * @param id the role ID
+     * @return the role entity
+     * @throws BizException if not found
+     */
     public Role get(Long id) {
         return roleRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Creates a new role from the given command.
+     *
+     * @param cmd the create command
+     * @return the newly created role
+     */
     @Transactional
     public Role create(CreateRoleCommand cmd) {
         String code = normalizeCode(cmd.code());
@@ -62,6 +90,13 @@ public class RoleAdminService {
         return roleRepository.save(role);
     }
 
+    /**
+     * Updates an existing role.
+     *
+     * @param id  the role ID
+     * @param cmd the update command
+     * @return the updated role
+     */
     @Transactional
     public Role update(Long id, UpdateRoleCommand cmd) {
         Role role = get(id);
@@ -80,6 +115,11 @@ public class RoleAdminService {
         return roleRepository.save(role);
     }
 
+    /**
+     * Deletes a role and its related associations, and kicks out affected user sessions.
+     *
+     * @param id the role ID
+     */
     @Transactional
     public void delete(Long id) {
         Role role = get(id);

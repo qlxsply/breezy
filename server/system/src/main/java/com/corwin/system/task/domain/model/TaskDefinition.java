@@ -8,8 +8,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 /**
- * 任务定义实体（对应代码中的标记方法）
- * 
+ * Entity representing a task definition mapped from an {@code @InternalTask}-annotated method.
+ *
  * @author Corwin 2026/3/30
  */
 @Entity
@@ -52,6 +52,14 @@ public class TaskDefinition {
 
     public Instant getUpdatedAt() { return updatedAt; }
 
+    /**
+     * Updates the task definition metadata and refreshes the update timestamp.
+     *
+     * @param name        the new task name
+     * @param description the new task description
+     * @param beanName    the new Spring bean name
+     * @param methodName  the new method name
+     */
     public void updateDetails(String name, String description, String beanName, String methodName) {
         this.name = name;
         this.description = description;
@@ -60,11 +68,24 @@ public class TaskDefinition {
         touch();
     }
 
+    /**
+     * Marks this task definition as logically removed.
+     */
     public void markRemoved() {
         this.removed = true;
         touch();
     }
 
+    /**
+     * Factory method to create a new task definition.
+     *
+     * @param code        the unique task code
+     * @param name        the task name
+     * @param description the task description
+     * @param beanName    the Spring bean name
+     * @param methodName  the method name
+     * @return a new TaskDefinition instance
+     */
     public static TaskDefinition create(String code, String name, String description, String beanName, String methodName) {
         TaskDefinition def = new TaskDefinition();
         def.code = code;

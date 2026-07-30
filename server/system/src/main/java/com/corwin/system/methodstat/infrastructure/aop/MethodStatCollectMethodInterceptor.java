@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 
 /**
+ * AOP method interceptor that collects invocation statistics for methods matching the pointcut.
+ * It checks the global and per-method switches, registers metadata, measures execution duration,
+ * and publishes an event for asynchronous aggregation.
  * @author Corwin 2026/4/1
  */
 @Slf4j
@@ -27,6 +30,12 @@ public class MethodStatCollectMethodInterceptor implements MethodInterceptor {
     private final MethodStatSwitchAppService switchAppService;
     private final AsyncEventPublisher eventPublisher;
 
+    /**
+     * Intercept the method invocation, record timing and result, and publish a statistics event.
+     * @param invocation the method invocation
+     * @return the result of the intercepted method
+     * @throws Throwable if the intercepted method throws
+     */
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         if (!switchAppService.isGlobalEnabled()) {

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
+ * In-memory implementation of DiagnosticEventRepository backed by a DiagnosticRingBuffer.
+ *
  * @author Corwin 2026/4/16
  */
 @Repository

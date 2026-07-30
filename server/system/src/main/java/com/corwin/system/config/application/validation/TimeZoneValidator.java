@@ -11,17 +11,27 @@ import org.springframework.stereotype.Component;
 import java.util.TimeZone;
 
 /**
+ * Validator for the USER_TIME_ZONE configuration value.
+ * Ensures the provided time zone identifier corresponds to a valid
+ * Java TimeZone.
+ *
  * @author Corwin 2026/1/31
  */
 @Order(10)
 @Component
 public class TimeZoneValidator implements ConfigValueValidator {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supports(StoredConfig config) {
         return config != null && DefaultConfigKeys.USER_TIME_ZONE.name().equals(config.code());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate(StoredConfig config, String rawValue) {
         if (rawValue == null || rawValue.isBlank()) {

@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link UserApplicationPackageRepository}.
+ *
+ * <p>Uses MyBatis for paginated queries and JPA for standard CRUD.</p>
+ *
  * @author Corwin 2026/6/14
  */
 @Repository

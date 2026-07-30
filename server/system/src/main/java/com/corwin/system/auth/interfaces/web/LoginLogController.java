@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * REST controller for querying login/logout event audit logs.
+ *
  * @author Corwin 2026/1/23
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -28,6 +30,9 @@ public class LoginLogController {
 
     private final LoginLogService loginLogService;
 
+    /**
+     * Paginated query of login audit logs with optional filters.
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"log.view"})
     public ApiResponse<PageResult<LoginLogRes>> page(@RequestBody LoginLogPageReq req) {

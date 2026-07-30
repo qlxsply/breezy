@@ -11,6 +11,8 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
+ * Resolves a {@link MethodStatMethodDescriptor} from a declared method and target class,
+ * determining the actual implementation class and building the method key.
  * @author Corwin 2026/3/25
  */
 @Component
@@ -19,6 +21,12 @@ public class MethodStatAnnotationResolver {
 
     private final MethodStatKeyStrategy keyStrategy;
 
+    /**
+     * Resolve a method descriptor by identifying the implementation class and method.
+     * @param declaredMethod the originally declared method
+     * @param targetClass the target class (may be a proxy)
+     * @return the resolved method descriptor
+     */
     public MethodStatMethodDescriptor resolve(Method declaredMethod, Class<?> targetClass) {
         Objects.requireNonNull(declaredMethod, "declaredMethod required");
 

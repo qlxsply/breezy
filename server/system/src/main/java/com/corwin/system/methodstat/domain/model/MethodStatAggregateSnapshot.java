@@ -3,6 +3,8 @@ package com.corwin.system.methodstat.domain.model;
 import java.util.Objects;
 
 /**
+ * Immutable snapshot of aggregate method statistics at a point in time, including total and
+ * recent call counts across multiple time windows and duration metrics.
  * @author Corwin 2026/3/25
  */
 public record MethodStatAggregateSnapshot(

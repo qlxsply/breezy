@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link RoleResourceRepository}.
+ *
  * @author Corwin 2026/6/29
  */
 @Repository
@@ -50,27 +52,42 @@ public class RoleResourceRepositoryJpaAdapter implements RoleResourceRepository 
         repo.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<RoleResource> findByRoleId(Long roleId) {
         return repo.findByRoleId(roleId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<RoleResource> findByRoleIdIn(List<Long> roleIds) {
         return repo.findByRoleIdIn(roleIds);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<RoleResource> findByResourceIdIn(Collection<Long> resourceIds) {
         return repo.findByResourceIdIn(resourceIds);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteByRoleId(Long roleId) {
         repo.deleteByRoleId(roleId);
         repo.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteByResourceIdIn(Collection<Long> resourceIds) {
         repo.deleteByResourceIdIn(resourceIds);

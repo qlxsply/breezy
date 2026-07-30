@@ -5,6 +5,10 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * API communication protocol enumeration.
+ *
+ * <p>Currently only HTTP is supported as the transport protocol.</p>
+ *
  * @author Corwin 2026/1/23
  */
 public enum ApiProtocol implements DictEnumDefinition {

@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 任务配置仓储 JPA 适配器
+ * JPA adapter implementation of {@link TaskConfigRepository}.
+ * Delegates all operations to the underlying {@link TaskConfigJpaRepository}.
  *
  * @author Corwin 2026/3/30
  */
@@ -20,38 +21,59 @@ public class TaskConfigRepositoryJpaAdapter implements TaskConfigRepository {
 
     private final TaskConfigJpaRepository jpaRepository;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <S extends TaskConfig> S save(S entity) {
         return jpaRepository.save(entity);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <S extends TaskConfig> List<S> saveAll(Iterable<S> entities) {
         return jpaRepository.saveAll(entities);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Optional<TaskConfig> findById(String id) {
         return jpaRepository.findById(id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean existsById(String id) {
         return jpaRepository.existsById(id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void delete(TaskConfig entity) {
         jpaRepository.delete(entity);
         jpaRepository.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deleteById(String id) {
         jpaRepository.deleteById(id);
         jpaRepository.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<TaskConfig> findAllByTaskStatus(TaskStatus taskStatus) {
         return jpaRepository.findAllByTaskStatus(taskStatus);

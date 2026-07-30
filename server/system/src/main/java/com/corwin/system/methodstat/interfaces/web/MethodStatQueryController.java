@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller providing query endpoints for method statistics data.
  * @author Corwin 2026/3/25
  */
 @ApiMeta(module = ApiModuleCode.METHODSTAT)
@@ -28,6 +29,11 @@ public class MethodStatQueryController {
 
     private final MethodStatQueryAppService queryAppService;
 
+    /**
+     * Retrieve a paginated list of method statistics with optional filtering and sorting.
+     * @param req the page request containing filter and sort parameters
+     * @return paginated statistics response
+     */
     @PostMapping("/stats/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.stat.view"})
     public ApiResponse<PageResult<MethodStatStatsRes>> pageStats(@RequestBody MethodStatStatsPageReq req) {
@@ -40,6 +46,11 @@ public class MethodStatQueryController {
         return ApiResponse.ok(PageResult.of(page, MethodStatQueryController::toStatsRes));
     }
 
+    /**
+     * Retrieve detailed statistics for a specific method by its key.
+     * @param key the method key
+     * @return the method stats detail
+     */
     @GetMapping("/stats/detail")
     @Authorize(userType = UserType.ADMIN, permissions = {"mst.stat.view"})
     public ApiResponse<MethodStatStatsRes> methodStatsDetail(@RequestParam("key") String key) {

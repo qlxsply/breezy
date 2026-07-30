@@ -54,6 +54,16 @@ public class SseSessionManager {
         return send(userId, userType, eventName, data, id);
     }
 
+    /**
+     * Sends a message to the specified user with an explicit event ID.
+     *
+     * @param userId    the target user ID
+     * @param userType  the target user type
+     * @param eventName the SSE event name
+     * @param data      the event data
+     * @param eventId   the explicit event ID (auto-generated if blank)
+     * @return true if the message was sent successfully, false otherwise
+     */
     public boolean send(Long userId, UserType userType, String eventName, Object data, String eventId) {
         String id = eventId;
         if (id == null || id.isBlank()) {
@@ -80,10 +90,20 @@ public class SseSessionManager {
         emitter.send(SseEmitter.event().id(msg.id()).name(msg.name()).data(msg.data()));
     }
 
+    /**
+     * Removes the SSE session for the specified user.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     */
     public void remove(Long userId, UserType userType) {
         sessions.remove(new UserSessionKey(userId, userType));
     }
 
+    /**
+     * Scheduled heartbeat that sends ping events to all active SSE sessions.
+     * Dead sessions are automatically removed.
+     */
     @Scheduled(fixedDelay = 30_000L)
     public void heartbeat() {
         for (Map.Entry<UserSessionKey, UserSession> entry : sessions.entrySet()) {

@@ -7,6 +7,10 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Spring Data JPA repository for {@link ResourcePermission} entity.
+ *
+ * <p>Provides database access for resource-permission binding operations.</p>
+ *
  * @author Corwin 2026/6/29
  */
 public interface ResourcePermissionJpaRepository extends JpaRepository<ResourcePermission, Long> {

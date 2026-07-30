@@ -1,6 +1,8 @@
 package com.corwin.system.dict.interfaces.web.res;
 
 /**
+ * Response DTO for dictionary item data.
+ *
  * @author Corwin 2026/3/15
  */
 public record DictItemRes(

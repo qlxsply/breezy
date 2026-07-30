@@ -5,6 +5,8 @@ import com.corwin.framework.json.JsonLongString;
 import java.time.Instant;
 
 /**
+ * Response DTO for a role entity.
+ *
  * @author Corwin 2026/1/23
  */
 public record RoleRes(

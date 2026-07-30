@@ -24,6 +24,10 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Application service for system configuration administration.
+ * Provides use cases for querying, paginating, updating configuration values,
+ * and previewing client IP resolution and time offset calculations.
+ *
  * @author Corwin 2026/5/5
  */
 @Service
@@ -33,6 +37,13 @@ public class ConfigAdminService {
     private final ConfigStore configStore;
     private final List<ConfigValueValidator> validators;
 
+    /**
+     * Query configurations by optional code and description fuzzy matching.
+     *
+     * @param codeLike        optional code filter
+     * @param descriptionLike optional description filter
+     * @return list of matching stored configurations
+     */
     public List<StoredConfig> query(String codeLike, String descriptionLike) {
         String normalizedCodeLike = codeLike == null ? "" : codeLike.trim();
         String normalizedDescriptionLike = descriptionLike == null ? "" : descriptionLike.trim();
@@ -47,6 +58,14 @@ public class ConfigAdminService {
                         .contains(loweredDescriptionLike)).toList();
     }
 
+    /**
+     * Paginated query of configurations with optional code and description filtering.
+     *
+     * @param codeLike        optional code filter
+     * @param descriptionLike optional description filter
+     * @param spec            the page specification
+     * @return page of stored configurations
+     */
     public PageData<StoredConfig> page(String codeLike, String descriptionLike, PageSpec spec) {
         List<StoredConfig> matched = query(codeLike, descriptionLike);
         int total = matched.size();
@@ -55,6 +74,12 @@ public class ConfigAdminService {
         return PageData.of(spec.pageNo(), spec.pageSize(), total, matched.subList(fromIndex, toIndex));
     }
 
+    /**
+     * Update a configuration value after validating it against all applicable validators.
+     *
+     * @param cmd the command containing the config code and new value
+     * @return true if the update was successful
+     */
     @Transactional
     public boolean updateValue(UpdateConfigValueCommand cmd) {
         BizAssert.notNull(ConfigDefinitionCatalog.findByCode(cmd.code()).orElse(null), BaseError.INVALID_PARAMETER);
@@ -65,6 +90,17 @@ public class ConfigAdminService {
         }).orElse(false);
     }
 
+    /**
+     * Preview the resolved client IP based on the specified mode and request header values.
+     *
+     * @param mode           the client IP resolution mode
+     * @param remoteAddr     the remote address from the request
+     * @param xRealIp        the X-Real-IP header value
+     * @param xForwardedFor  the X-Forwarded-For header value
+     * @param cfConnectingIp the CF-Connecting-IP header value
+     * @param trueClientIp   the True-Client-IP header value
+     * @return the client IP preview view
+     */
     public ConfigClientIpPreviewView previewClientIp(String mode, String remoteAddr, String xRealIp,
             String xForwardedFor, String cfConnectingIp, String trueClientIp) {
         BizAssert.notBlank(mode, BaseError.INVALID_PARAMETER);
@@ -77,6 +113,15 @@ public class ConfigAdminService {
                 cfConnectingIp, trueClientIp);
     }
 
+    /**
+     * Preview time offset calculation. If targetEpochMillis is provided, the offset
+     * from the current server time is calculated. Otherwise, the mocked time based
+     * on offsetSeconds is returned.
+     *
+     * @param offsetSeconds     the offset in seconds to apply
+     * @param targetEpochMillis the target epoch millis to calculate offset from
+     * @return the time offset preview view
+     */
     public ConfigTimeOffsetPreviewView previewTimeOffset(Long offsetSeconds, Long targetEpochMillis) {
         long safeOffsetSeconds = offsetSeconds == null ? 0L : offsetSeconds;
         Instant serverNow = HighDate.realInstant();

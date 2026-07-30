@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 
 /**
+ * Event handler that processes {@link MethodStatInvocationEvent} asynchronously,
+ * applying the invocation data to the relevant aggregate for statistics accumulation.
  * @author Corwin 2026/3/31
  */
 @Slf4j
@@ -26,6 +28,10 @@ public class MethodStatInvocationEventHandler {
         this.switchAppService = Objects.requireNonNull(switchAppService, "switchAppService required");
     }
 
+    /**
+     * Handle the invocation event by applying it to the corresponding aggregate.
+     * @param event the invocation event to process
+     */
     @AsyncEventListener
     public void onEvent(MethodStatInvocationEvent event) {
         if (!switchAppService.isCollectEnabled(event.key())) {

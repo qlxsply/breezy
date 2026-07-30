@@ -4,6 +4,8 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.system.resource.domain.model.ApiAccessType;
 
 /**
+ * Query object for paginated API search with dynamic filter criteria.
+ *
  * @author Corwin 2026/6/21
  */
 public record ApiPageQuery(

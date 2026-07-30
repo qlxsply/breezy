@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link UserPackageFeatureAccessRepository}.
+ *
+ * <p>Delegates CRUD operations to {@link UserPackageFeatureAccessJpaRepository} and flushes after destructive operations.</p>
+ *
  * @author Corwin 2026/6/14
  */
 @Repository

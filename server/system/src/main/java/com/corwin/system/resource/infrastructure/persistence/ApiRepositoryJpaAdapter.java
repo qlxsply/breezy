@@ -16,6 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link ApiRepository}.
+ *
+ * <p>Delegates basic CRUD to {@link ApiJpaRepository} and paginated queries
+ * to {@link ApiMybatisMapper} for dynamic filtering support.</p>
+ *
  * @author Corwin 2026/3/30
  */
 @Repository

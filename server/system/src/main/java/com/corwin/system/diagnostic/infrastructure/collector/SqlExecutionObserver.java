@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
+ * Observer that tracks SQL execution metrics including per-statement aggregates,
+ * slow SQL and error counts, and emits corresponding diagnostic events.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
@@ -34,6 +37,16 @@ public class SqlExecutionObserver {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Records a single SQL execution and updates all relevant counters and aggregates.
+     * Emits slow SQL and SQL error events when thresholds or errors are encountered.
+     *
+     * @param dataSourceName     the name of the data source
+     * @param sql                the executed SQL string
+     * @param durationMs         the execution duration in milliseconds
+     * @param error              the error if execution failed, or null
+     * @param slowSqlThresholdMs the slow SQL threshold in milliseconds
+     */
     public void record(String dataSourceName, String sql, long durationMs, Throwable error, long slowSqlThresholdMs) {
         String normalizedDataSourceName = normalizeDataSourceName(dataSourceName);
         String normalizedSql = normalizeSql(sql);
@@ -65,6 +78,11 @@ public class SqlExecutionObserver {
         trimSqlStatsIfNecessary();
     }
 
+    /**
+     * Returns a snapshot of aggregated SQL execution metrics and top statements.
+     *
+     * @return the current SqlSnapshot
+     */
     public SqlSnapshot snapshot() {
         long total = totalExecutions.sum();
         long duration = totalDurationMs.sum();
@@ -77,6 +95,9 @@ public class SqlExecutionObserver {
                         .toList());
     }
 
+    /**
+     * Resets all SQL metrics and per-statement aggregates to their initial state.
+     */
     public void reset() {
         totalExecutions.reset();
         totalDurationMs.reset();

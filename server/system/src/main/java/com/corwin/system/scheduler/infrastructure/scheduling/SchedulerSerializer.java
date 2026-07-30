@@ -6,21 +6,24 @@ import com.corwin.system.scheduler.domain.model.ScheduleRule;
 import org.springframework.stereotype.Component;
 
 /**
- * 调度模型序列化器。
+ * Serializer for serializing and deserializing schedule rules and job payloads to/from JSON bytes.
  *
  * @author Corwin 2026/4/15
  */
 @Component
 public class SchedulerSerializer {
 
+    /** Serializes a schedule rule to JSON bytes. */
     public byte[] serializeScheduleRule(ScheduleRule scheduleRule) {
         return serialize(scheduleRule);
     }
 
+    /** Deserializes a schedule rule from JSON bytes. */
     public ScheduleRule deserializeScheduleRule(byte[] bytes, String className) {
         return deserialize(bytes, className, ScheduleRule.class);
     }
 
+    /** Serializes a job payload to JSON bytes, returning null if payload is null. */
     public byte[] serializePayload(JobPayload payload) {
         if (payload == null) {
             return null;
@@ -28,6 +31,7 @@ public class SchedulerSerializer {
         return serialize(payload);
     }
 
+    /** Deserializes a job payload from JSON bytes, returning null if class name or bytes are empty. */
     public JobPayload deserializePayload(byte[] bytes, String className) {
         if (className == null || className.isBlank() || bytes == null || bytes.length == 0) {
             return null;

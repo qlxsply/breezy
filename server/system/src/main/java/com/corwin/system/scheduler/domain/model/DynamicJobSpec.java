@@ -3,7 +3,7 @@ package com.corwin.system.scheduler.domain.model;
 import java.util.Objects;
 
 /**
- * 动态任务规格。
+ * Specification for registering a dynamic scheduled job with handler, schedule rule and payload.
  *
  * @author Corwin 2026/4/15
  */
@@ -31,42 +31,58 @@ public final class DynamicJobSpec<P extends JobPayload> {
         this.remark = builder.remark;
     }
 
+    /**
+     * Creates a new builder for the given handler.
+     *
+     * @param handler the job handler
+     * @param <P>     the payload type
+     * @return a new Builder
+     */
     public static <P extends JobPayload> Builder<P> forHandler(SchedulerJobHandler<P> handler) {
         return new Builder<>(handler);
     }
 
+    /** Returns the unique job identifier. */
     public String jobId() {
         return jobId;
     }
 
+    /** Returns the job display name. */
     public String name() {
         return name;
     }
 
+    /** Returns the job namespace. */
     public String namespace() {
         return namespace;
     }
 
+    /** Returns the job handler. */
     public SchedulerJobHandler<P> handler() {
         return handler;
     }
 
+    /** Returns the scheduling rule. */
     public ScheduleRule scheduleRule() {
         return scheduleRule;
     }
 
+    /** Returns the job payload. */
     public P payload() {
         return payload;
     }
 
+    /** Returns whether the job is enabled. */
     public boolean enabled() {
         return enabled;
     }
 
+    /** Returns whether concurrent execution is allowed. */
     public boolean allowConcurrent() {
         return allowConcurrent;
     }
 
+    /** Returns the optional remark. */
     public String remark() {
         return remark;
     }

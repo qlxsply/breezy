@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
+ * Default implementation of {@link SecurityContextService} backed by the
+ * request-level {@link CtxUtil} context.
+ *
  * @author Corwin 2026/4/19
  */
 @Service

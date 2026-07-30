@@ -22,7 +22,7 @@ import java.time.ZoneId;
 import java.util.Comparator;
 
 /**
- * 调度规则触发器。
+ * Spring {@link Trigger} implementation that computes next execution times from a {@link ScheduleRule}.
  *
  * @author Corwin 2026/4/15
  */
@@ -34,6 +34,7 @@ public class ScheduleRuleTrigger implements Trigger {
         this.scheduleRule = scheduleRule;
     }
 
+    /** Computes the next execution time based on the schedule rule and trigger context. */
     @Override
     @Nullable
     public Instant nextExecution(TriggerContext triggerContext) {
@@ -43,11 +44,13 @@ public class ScheduleRuleTrigger implements Trigger {
         return nextExecution(scheduleRule, lastScheduledExecution, lastCompletion, now);
     }
 
+    /** Calculates the first scheduled execution time for a rule. */
     @Nullable
     public static Instant firstExecution(ScheduleRule rule) {
         return nextExecution(rule, null, null, HighDate.mockInstant());
     }
 
+    /** Calculates the next execution time after a given scheduled/completion time. */
     @Nullable
     public static Instant nextExecutionAfter(ScheduleRule rule, @Nullable Instant lastScheduledExecution,
             @Nullable Instant lastCompletion) {

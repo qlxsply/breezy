@@ -39,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
+ * REST controller exposing role administration and grant management endpoints.
+ *
  * @author Corwin 2026/1/23
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -50,12 +52,18 @@ public class RoleAdminController {
     private final RoleAdminService roleAdminService;
     private final RoleGrantService roleGrantService;
 
+    /**
+     * Returns all roles.
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.view"})
     public ApiResponse<List<RoleRes>> list() {
         return ApiResponse.ok(roleAdminService.list().stream().map(RoleAdminController::toDto).toList());
     }
 
+    /**
+     * Paginated role list with keyword and enabled filters.
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.view"})
     public ApiResponse<PageResult<RoleRes>> page(@RequestBody RolePageReq req) {
@@ -63,6 +71,12 @@ public class RoleAdminController {
                 PageSpecFactory.of(req.page(), req.sort())), RoleAdminController::toDto));
     }
 
+    /**
+     * Creates a new role.
+     */
+    /**
+     * Creates a new role.
+     */
     @PostMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.add"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.CREATE, level = AuditLevel.HIGH)
@@ -71,12 +85,24 @@ public class RoleAdminController {
         return ApiResponse.ok(toDto(roleAdminService.create(cmd)));
     }
 
+    /**
+     * Retrieves a single role by ID.
+     */
+    /**
+     * Retrieves a single role by ID.
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.view"})
     public ApiResponse<RoleRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDto(roleAdminService.get(id)));
     }
 
+    /**
+     * Updates an existing role.
+     */
+    /**
+     * Updates an existing role.
+     */
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.edit"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -85,6 +111,12 @@ public class RoleAdminController {
         return ApiResponse.ok(toDto(roleAdminService.update(id, cmd)));
     }
 
+    /**
+     * Deletes a role by ID.
+     */
+    /**
+     * Deletes a role by ID.
+     */
     @DeleteMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.del"})
     @Audit(resource = AuditResource.ROLE, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
@@ -93,18 +125,27 @@ public class RoleAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Returns all resources available for role grant configuration.
+     */
     @GetMapping("/grant-resources")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view"})
     public ApiResponse<List<RoleGrantResourceRes>> grantResources() {
         return ApiResponse.ok(roleGrantService.grantResources().stream().map(this::toGrantRes).toList());
     }
 
+    /**
+     * Returns the currently granted resource IDs for a given role.
+     */
     @GetMapping("/{id}/grant")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view"})
     public ApiResponse<RoleGrantSelectionRes> roleGrantSelection(@PathVariable Long id) {
         return ApiResponse.ok(toGrantSelectionRes(roleGrantService.roleGrantSelection(id)));
     }
 
+    /**
+     * Updates the resource grants assigned to a role.
+     */
     @PutMapping("/{id}/grant")
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.edit"})
     @Audit(resource = AuditResource.ROLE_GRANT, action = AuditAction.GRANT, level = AuditLevel.HIGH)

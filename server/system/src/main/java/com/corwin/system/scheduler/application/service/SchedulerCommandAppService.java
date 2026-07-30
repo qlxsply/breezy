@@ -24,7 +24,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.Instant;
 
 /**
- * 动态任务命令应用服务。
+ * Application service for handling scheduler job command requests (upsert, pause, resume, cancel, delete, trigger).
  *
  * @author Corwin 2026/4/15
  */
@@ -45,6 +45,11 @@ public class SchedulerCommandAppService {
         this.runtimeRegistrar = runtimeRegistrar;
     }
 
+    /**
+     * Handles a job upsert request: creates or updates the job definition and runtime state.
+     *
+     * @param spec the job specification
+     */
     @Transactional
     public void handleUpsert(DynamicJobSpec<?> spec) {
         BizAssert.notNull(spec, BaseError.MISSING_PARAMETER);
@@ -100,6 +105,11 @@ public class SchedulerCommandAppService {
         });
     }
 
+    /**
+     * Handles a job pause request.
+     *
+     * @param jobId the job ID
+     */
     @Transactional
     public void pauseRequested(String jobId) {
         SchedulerJobDefinition definition = requireDefinition(jobId);
@@ -113,6 +123,11 @@ public class SchedulerCommandAppService {
         afterCommit(() -> runtimeRegistrar.cancel(jobId));
     }
 
+    /**
+     * Handles a job resume request.
+     *
+     * @param jobId the job ID
+     */
     @Transactional
     public void resumeRequested(String jobId) {
         SchedulerJobDefinition definition = requireDefinition(jobId);
@@ -131,6 +146,11 @@ public class SchedulerCommandAppService {
         afterCommit(() -> runtimeRegistrar.register(jobId));
     }
 
+    /**
+     * Handles a job cancel request.
+     *
+     * @param jobId the job ID
+     */
     @Transactional
     public void cancelRequested(String jobId) {
         SchedulerJobDefinition definition = requireDefinition(jobId);
@@ -144,6 +164,11 @@ public class SchedulerCommandAppService {
         afterCommit(() -> runtimeRegistrar.cancel(jobId));
     }
 
+    /**
+     * Handles a job delete request (soft-delete).
+     *
+     * @param jobId the job ID
+     */
     @Transactional
     public void deleteRequested(String jobId) {
         SchedulerJobDefinition definition = requireDefinition(jobId);
@@ -157,6 +182,11 @@ public class SchedulerCommandAppService {
         afterCommit(() -> runtimeRegistrar.cancel(jobId));
     }
 
+    /**
+     * Triggers a job execution immediately.
+     *
+     * @param jobId the job ID
+     */
     public void triggerNow(String jobId) {
         requireDefinition(jobId);
         runtimeRegistrar.triggerNow(jobId);

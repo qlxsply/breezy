@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 动态任务查询应用服务。
+ * Application service for querying scheduler job definitions, runtime states and execution history.
  *
  * @author Corwin 2026/4/15
  */
@@ -38,6 +38,11 @@ public class SchedulerQueryAppService {
         this.executionRepository = executionRepository;
     }
 
+    /**
+     * Lists all non-deleted jobs with their runtime status.
+     *
+     * @return list of job views
+     */
     public List<SchedulerJobView> listJobs() {
         return definitionRepository.findAllByDeletedFalse().stream()
                 .map(definition -> toView(definition, runtimeRepository.findById(definition.getJobId()).orElse(null)))
@@ -45,6 +50,12 @@ public class SchedulerQueryAppService {
                 .toList();
     }
 
+    /**
+     * Gets detailed information for a single job.
+     *
+     * @param jobId the job ID
+     * @return detail view
+     */
     public SchedulerJobDetailView getJob(String jobId) {
         BizAssert.notBlank(jobId, BaseError.MISSING_PARAMETER);
         SchedulerJobDefinition definition = definitionRepository.findById(jobId)
@@ -54,6 +65,13 @@ public class SchedulerQueryAppService {
         return toDetailView(definition, runtime);
     }
 
+    /**
+     * Paginated query for execution history of a specific job.
+     *
+     * @param jobId the job ID
+     * @param spec  pagination specification
+     * @return paginated execution views
+     */
     public PageData<SchedulerJobExecutionView> pageExecutions(String jobId, PageSpec spec) {
         BizAssert.notBlank(jobId, BaseError.MISSING_PARAMETER);
         PageData<SchedulerJobExecution> pageData = executionRepository.pageByJobId(jobId, spec);

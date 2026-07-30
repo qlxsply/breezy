@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enumeration of user account statuses (ENABLED / DISABLED) with dictionary metadata
+ * for display rendering (label, tag color, tag type).
+ *
  * @author Corwin 2026/1/22
  */
 public enum UserStatus implements DictEnumDefinition {

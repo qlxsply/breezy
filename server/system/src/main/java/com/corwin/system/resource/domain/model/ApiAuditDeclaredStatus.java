@@ -5,6 +5,11 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * API audit declaration status enumeration.
+ *
+ * <p>Indicates whether audit logging is enabled (ENABLED) or disabled (DISABLED)
+ * for an API endpoint.</p>
+ *
  * @author Corwin 2026/6/21
  */
 public enum ApiAuditDeclaredStatus implements DictEnumDefinition {

@@ -7,6 +7,10 @@ import com.corwin.system.resource.domain.model.ApiProtocol;
 import java.time.Instant;
 
 /**
+ * Command for recording an audit log entry.
+ * Carries all data needed to persist a single audit trail record,
+ * including operator identity, request metadata, and execution outcome.
+ *
  * @author Corwin 2026/4/19
  */
 public record AuditRecordCommand(

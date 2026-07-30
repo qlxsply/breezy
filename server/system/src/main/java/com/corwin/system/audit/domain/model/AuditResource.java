@@ -3,6 +3,10 @@ package com.corwin.system.audit.domain.model;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
+ * Enumeration of auditable resource types.
+ * Defines the system resources that can be tracked in audit logs,
+ * such as users, roles, configurations, and system files.
+ *
  * @author Corwin 2026/5/21
  */
 public enum AuditResource implements DictEnumDefinition {

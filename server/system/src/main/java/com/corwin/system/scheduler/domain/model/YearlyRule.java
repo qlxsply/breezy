@@ -5,7 +5,7 @@ import java.time.Month;
 import java.time.ZoneId;
 
 /**
- * 每年规则。
+ * Schedule rule for yearly execution on a specific month and day.
  *
  * @author Corwin 2026/4/15
  */

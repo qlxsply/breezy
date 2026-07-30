@@ -5,6 +5,11 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * API permission declaration status enumeration.
+ *
+ * <p>Indicates whether an API endpoint has a permission declaration (DECLARED)
+ * or does not (UNDECLARED).</p>
+ *
  * @author Corwin 2026/6/21
  */
 public enum ApiPermissionDeclaredStatus implements DictEnumDefinition {

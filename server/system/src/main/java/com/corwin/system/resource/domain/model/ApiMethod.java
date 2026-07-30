@@ -5,6 +5,10 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * HTTP method enumeration for API endpoints.
+ *
+ * <p>Defines the standard HTTP methods supported for API route matching.</p>
+ *
  * @author Corwin 2026/1/23
  */
 public enum ApiMethod implements DictEnumDefinition {

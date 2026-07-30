@@ -1,6 +1,8 @@
 package com.corwin.system.dict.application.view;
 
 /**
+ * View object representing a dictionary item for read-only display.
+ *
  * @author Corwin 2026/3/15
  */
 public record DictItemView(

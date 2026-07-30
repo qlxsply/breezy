@@ -4,6 +4,8 @@ import com.corwin.framework.web.request.PageRuleRequest;
 import com.corwin.framework.web.request.SortRuleRequest;
 
 /**
+ * Request DTO for paginated dictionary type query.
+ *
  * @author Corwin 2026/3/16
  */
 public record DictTypePageReq(

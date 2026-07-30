@@ -14,6 +14,9 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
+ * JPA entity representing a dictionary type.
+ * <p>A dictionary type defines a logical group of dictionary items, including its value type, structure type, source type, and enabled status.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @Getter
@@ -70,6 +73,9 @@ public class DictType {
     protected DictType() {
     }
 
+    /**
+     * Constructs a new DictType entity with the given attributes.
+     */
     public DictType(String id, String code, String name, String description, String enumClass, DictValueType valueType,
             DictStructureType structureType, DictSourceType sourceType,
             boolean enabled, String operator) {
@@ -88,6 +94,9 @@ public class DictType {
         this.updatedBy = operator;
     }
 
+    /**
+     * Updates the mutable fields of this dictionary type.
+     */
     public void update(String name, String description, String enumClass, DictValueType valueType,
             DictStructureType structureType, boolean enabled,
             String operator) {
@@ -100,11 +109,17 @@ public class DictType {
         touch(operator);
     }
 
+    /**
+     * Enables this dictionary type.
+     */
     public void enable(String operator) {
         this.enabled = true;
         touch(operator);
     }
 
+    /**
+     * Disables this dictionary type.
+     */
     public void disable(String operator) {
         this.enabled = false;
         touch(operator);

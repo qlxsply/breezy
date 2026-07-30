@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 调度规则抽象。
+ * Sealed interface for all schedule rule types.
  *
  * @author Corwin 2026/4/15
  */

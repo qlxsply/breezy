@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 
 /**
- * 任务动态配置实体
+ * Entity representing the dynamic runtime configuration of a task.
  *
  * @author Corwin 2026/3/30
  */
@@ -50,18 +50,35 @@ public class TaskConfig {
 
     public String getLastErrorMessage() { return lastErrorMessage; }
 
+    /**
+     * Updates the cron expression for this task.
+     *
+     * @param cronExpr the new cron expression
+     */
     public void updateCronExpr(String cronExpr) {
         this.cronExpr = cronExpr;
     }
 
+    /**
+     * Marks this configuration as published, enabling scheduled execution.
+     */
     public void markPublished() {
         this.taskStatus = TaskStatus.PUBLISHED;
     }
 
+    /**
+     * Marks this configuration as disabled, stopping scheduled execution.
+     */
     public void markDisabled() {
         this.taskStatus = TaskStatus.DISABLED;
     }
 
+    /**
+     * Factory method to create a default task configuration with UNPUBLISHED status.
+     *
+     * @param code the unique task code
+     * @return a new TaskConfig instance
+     */
     public static TaskConfig createDefault(String code) {
         TaskConfig config = new TaskConfig();
         config.code = code;

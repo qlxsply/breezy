@@ -7,12 +7,19 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 调度任务执行历史 MyBatis 查询 Mapper。
+ * MyBatis mapper for paginated job execution history queries.
  *
  * @author Corwin 2026/7/28
  */
 @Mapper
 public interface SchedulerJobExecutionMybatisMapper {
 
+    /**
+     * Paginated query for execution records of a specific job.
+     *
+     * @param jobId the job ID
+     * @param spec  pagination specification
+     * @return paginated execution data
+     */
     PageData<SchedulerJobExecution> pageByJobId(@Param("jobId") String jobId, @Param("spec") PageSpec spec);
 }

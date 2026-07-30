@@ -6,6 +6,8 @@ import com.corwin.framework.error.ErrorCodeRanges;
 import com.corwin.framework.error.ErrorCodes;
 
 /**
+ * Error codes for the authentication and authorization domain.
+ *
  * @author Corwin 2026/4/19
  */
 public enum AuthError implements ErrorCode {

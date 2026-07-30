@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link RefreshTokenRepository}.
+ *
  * @author Corwin 2026/6/7
  */
 @Repository

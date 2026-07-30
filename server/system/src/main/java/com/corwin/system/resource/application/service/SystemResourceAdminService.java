@@ -29,6 +29,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for managing the system resource tree (directories, menus,
+ * functions, buttons) and their permission bindings.
+ *
+ * <p>Provides use-case orchestration for CRUD operations on resources, tree
+ * building, permission assignment, and subtree deletion with integrity checks.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @Service
@@ -41,6 +47,11 @@ public class SystemResourceAdminService {
     private final RoleResourceRepository roleResourceRepository;
     private final ApiPermissionCache apiPermissionCache;
 
+    /**
+     * Returns the full system resource tree with permission binding information.
+     *
+     * @return the list of root-level tree items with children recursively attached
+     */
     public List<SystemResourceTreeItemView> tree() {
         List<Resource> resources = sortedResources(resourceRepository.findAll());
         Map<Long, List<Long>> permissionIdsByResourceId = permissionIdsByResourceId(resources);
@@ -50,11 +61,23 @@ public class SystemResourceAdminService {
                 .toList();
     }
 
+    /**
+     * Retrieves the detail of a specific resource by its ID.
+     *
+     * @param id the resource ID
+     * @return the resource detail view
+     */
     public SystemResourceDetailView get(Long id) {
         Resource resource = requireResource(id);
         return toDetailView(resource, permissionIdsByResourceId(List.of(resource)).getOrDefault(resource.getId(), List.of()));
     }
 
+    /**
+     * Returns the permission IDs currently bound to a resource.
+     *
+     * @param resourceId the resource ID
+     * @return the permission selection view
+     */
     public SystemResourcePermissionSelectionView permissions(Long resourceId) {
         Resource resource = requireResource(resourceId);
         BizAssert.state(resource.canBindPermission(), BaseError.INVALID_PARAMETER);
@@ -62,6 +85,24 @@ public class SystemResourceAdminService {
         return new SystemResourcePermissionSelectionView(permissionIds);
     }
 
+    /**
+     * Creates a new system resource with validation.
+     *
+     * @param parentId      parent resource ID, null for root resources
+     * @param code          unique resource code
+     * @param name          resource display name
+     * @param resourceType  resource type
+     * @param path          front-end route path
+     * @param component     front-end component path
+     * @param icon          icon identifier
+     * @param sortNo        sort order
+     * @param visible       whether the resource is visible
+     * @param enabled       whether the resource is enabled
+     * @param defaultEntry  whether this is the default entry
+     * @param systemBuiltin whether system-defined
+     * @param remark        optional remark
+     * @return the created resource detail view
+     */
     @Transactional
     public SystemResourceDetailView create(Long parentId, String code, String name, ResourceType resourceType,
             String path, String component, String icon, Integer sortNo, Boolean visible, Boolean enabled,
@@ -75,6 +116,25 @@ public class SystemResourceAdminService {
         return toDetailView(resourceRepository.save(resource), List.of());
     }
 
+    /**
+     * Updates an existing system resource with full validation.
+     *
+     * @param id            the resource ID
+     * @param parentId      new parent resource ID
+     * @param code          new resource code
+     * @param name          new resource name
+     * @param resourceType  new resource type
+     * @param path          new front-end route path
+     * @param component     new front-end component path
+     * @param icon          new icon identifier
+     * @param sortNo        new sort order
+     * @param visible       new visibility
+     * @param enabled       new enabled status
+     * @param defaultEntry  new default entry status
+     * @param systemBuiltin new system-built status
+     * @param remark        new remark
+     * @return the updated resource detail view
+     */
     @Transactional
     public SystemResourceDetailView update(Long id, Long parentId, String code, String name, ResourceType resourceType,
             String path, String component, String icon, Integer sortNo, Boolean visible, Boolean enabled,
@@ -99,6 +159,15 @@ public class SystemResourceAdminService {
         return toDetailView(saved, permissionIds);
     }
 
+    /**
+     * Deletes a resource and its entire subtree.
+     *
+     * <p>Also removes associated role-resource and resource-permission bindings.
+     * System-built resources cannot be deleted.</p>
+     *
+     * @param id the root resource ID of the subtree to delete
+     * @return true if deletion was successful
+     */
     @Transactional
     public boolean delete(Long id) {
         Resource target = requireResource(id);
@@ -122,6 +191,13 @@ public class SystemResourceAdminService {
         return true;
     }
 
+    /**
+     * Updates the permission bindings for a resource, replacing existing bindings.
+     *
+     * @param resourceId    the resource ID (must be a BUTTON-type resource)
+     * @param permissionIds the new list of permission IDs to bind
+     * @return true if the update was successful
+     */
     @Transactional
     public boolean updatePermissions(Long resourceId, List<Long> permissionIds) {
         Resource resource = requireResource(resourceId);

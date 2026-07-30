@@ -15,11 +15,18 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 /**
+ * Collector that captures OS-level state including host info, CPU/memory usage, network interfaces, and disks.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
 public class OsStateCollector {
 
+    /**
+     * Collects and returns a full OS snapshot from platform MXBeans and file system APIs.
+     *
+     * @return an OsSnapshot with current OS metrics
+     */
     public OsSnapshot collect() {
         java.lang.management.OperatingSystemMXBean baseBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
         com.sun.management.OperatingSystemMXBean osBean =

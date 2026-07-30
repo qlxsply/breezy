@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * Request DTO for creating a new role.
+ *
  * @author Corwin 2026/1/23
  */
 @Getter

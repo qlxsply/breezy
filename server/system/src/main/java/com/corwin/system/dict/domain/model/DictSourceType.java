@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the source type of a dictionary type.
+ * <p>Supported types: BUILTIN (built-in system dictionary), CUSTOM (user-defined dictionary).</p>
+ *
  * @author Corwin 2026/3/15
  */
 public enum DictSourceType implements DictEnumDefinition {

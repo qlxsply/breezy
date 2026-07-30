@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 /**
- * 动态任务处理器注册表。
+ * Registry for all {@link SchedulerJobHandler} beans, keyed by their {@link HandlerKey}.
  *
  * @author Corwin 2026/4/15
  */
@@ -20,6 +20,7 @@ public class SchedulerHandlerRegistry {
     private final List<SchedulerJobHandler<?>> handlers;
     private final Map<String, SchedulerJobHandler<?>> handlerMap = new LinkedHashMap<>();
 
+    /** Initializes the handler map, throwing on duplicate keys. */
     @PostConstruct
     public void init() {
         for (SchedulerJobHandler<?> handler : handlers) {
@@ -31,6 +32,7 @@ public class SchedulerHandlerRegistry {
         }
     }
 
+    /** Looks up a handler by its key. */
     public Optional<SchedulerJobHandler<?>> get(HandlerKey key) {
         if (key == null) {
             return Optional.empty();
@@ -38,6 +40,11 @@ public class SchedulerHandlerRegistry {
         return Optional.ofNullable(handlerMap.get(key.value()));
     }
 
+    /**
+     * Returns all registered handlers.
+     *
+     * @return collection of all registered handlers
+     */
     public Collection<SchedulerJobHandler<?>> listAll() {
         return List.copyOf(handlerMap.values());
     }

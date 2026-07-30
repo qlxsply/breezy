@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
+ * Servlet filter that authenticates each incoming request by resolving the
+ * authorization header (JWT or opaque token) or SSE ticket, then sets the
+ * {@link AuthPrincipal} into the request context.
+ *
  * @author Corwin 2026/4/19
  */
 @Component
@@ -115,6 +119,7 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
 
     @Override
     public int getOrder() {
+        // Run after other high-priority filters
         return Ordered.HIGHEST_PRECEDENCE + 2;
     }
 }

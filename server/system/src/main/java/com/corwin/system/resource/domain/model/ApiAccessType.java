@@ -5,6 +5,11 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * API access type enumeration.
+ *
+ * <p>Defines the access control level for an API endpoint:
+ * public access (PERMIT_ALL), authenticated-only (AUTHENTICATED),
+ * authorized with permissions (AUTHORIZED), or completely denied (DENY).</p>
  *
  * @author Corwin 2026/4/19
  */

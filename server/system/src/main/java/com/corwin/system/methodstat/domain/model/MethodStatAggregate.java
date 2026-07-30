@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
+ * Domain aggregate that maintains sliding-window invocation counts and duration samples
+ * for a single monitored method. Uses time-windowed bucket counters for efficient
+ * recent-call tracking (last minute, hour, day).
  * @author Corwin 2026/3/25
  */
 public class MethodStatAggregate {
@@ -26,14 +29,25 @@ public class MethodStatAggregate {
     private int durationSampleCount;
     private int durationSampleCursor;
 
+    /**
+     * Create a new aggregate for the given method key.
+     * @param key the unique method identifier
+     */
     public MethodStatAggregate(MethodStatKey key) {
         this.key = Objects.requireNonNull(key, "key required");
     }
 
+    /**
+     * @return the unique method key for this aggregate
+     */
     public MethodStatKey key() {
         return key;
     }
 
+    /**
+     * Apply an invocation event to this aggregate, updating all counters and duration samples.
+     * @param event the invocation event to process
+     */
     public synchronized void apply(MethodStatInvocationEvent event) {
         Objects.requireNonNull(event, "event required");
 
@@ -51,6 +65,11 @@ public class MethodStatAggregate {
         appendDuration(event.durationMillis());
     }
 
+    /**
+     * Take a point-in-time snapshot of all aggregated statistics.
+     * @param nowMillis current timestamp in milliseconds for window computations
+     * @return the aggregate snapshot
+     */
     public synchronized MethodStatAggregateSnapshot snapshot(long nowMillis) {
         long epochSecond = Math.floorDiv(nowMillis, 1000L);
 
@@ -66,6 +85,9 @@ public class MethodStatAggregate {
                 calculateDurationMetrics());
     }
 
+    /**
+     * Reset all counters and samples to their initial state.
+     */
     public synchronized void clear() {
         totalCalls = 0L;
         totalSuccess = 0L;

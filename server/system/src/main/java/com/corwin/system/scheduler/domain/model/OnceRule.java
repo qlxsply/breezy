@@ -3,7 +3,7 @@ package com.corwin.system.scheduler.domain.model;
 import java.time.Instant;
 
 /**
- * 单次执行规则。
+ * Schedule rule for one-time execution at a specific instant.
  *
  * @author Corwin 2026/4/15
  */

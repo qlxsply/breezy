@@ -8,6 +8,8 @@ import com.corwin.system.userfeature.domain.model.UserApplicationPackage;
 import java.util.List;
 
 /**
+ * Domain repository for user application packages.
+ *
  * @author Corwin 2026/6/14
  */
 public interface UserApplicationPackageRepository extends DomainRepository<UserApplicationPackage, Long> {

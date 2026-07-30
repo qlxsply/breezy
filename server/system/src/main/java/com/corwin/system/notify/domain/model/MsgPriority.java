@@ -5,7 +5,10 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
- * 消息优先级枚举
+ * Message priority enumeration (LOW, MEDIUM, HIGH).
+ * <p>Each priority level has an associated display label, tag color, and tag type
+ * for UI rendering.</p>
+ *
  * @author Corwin 2026/3/16
  */
 public enum MsgPriority implements DictEnumDefinition {

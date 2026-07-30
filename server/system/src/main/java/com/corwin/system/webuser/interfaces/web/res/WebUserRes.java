@@ -5,6 +5,8 @@ import com.corwin.framework.constant.UserType;
 import java.time.Instant;
 
 /**
+ * Response DTO for external user information exposed to admin API.
+ *
  * @author Corwin 2026/5/11
  */
 public record WebUserRes(

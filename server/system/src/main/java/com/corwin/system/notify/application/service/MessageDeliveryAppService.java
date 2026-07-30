@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Application service implementing {@link MessageDeliveryPort} for acknowledging deliveries.
+ *
  * @author Corwin 2026/4/15
  */
 @Service
@@ -17,6 +19,13 @@ public class MessageDeliveryAppService implements MessageDeliveryPort {
 
     private final MessageDeliveryRepository messageDeliveryRepository;
 
+    /**
+     * Acknowledges a delivery as received/read by the user, if not already acknowledged.
+     *
+     * @param userId     the user ID
+     * @param userType   the user type
+     * @param deliveryId the delivery record ID
+     */
     @Override
     @Transactional
     public void ackDelivery(Long userId, UserType userType, Long deliveryId) {

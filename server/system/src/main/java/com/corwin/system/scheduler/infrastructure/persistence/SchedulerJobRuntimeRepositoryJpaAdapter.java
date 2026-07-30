@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link SchedulerJobRuntimeRepository}.
+ *
  * @author Corwin 2026/4/15
  */
 @Component
@@ -50,6 +52,9 @@ public class SchedulerJobRuntimeRepositoryJpaAdapter implements SchedulerJobRunt
         jpaRepository.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<SchedulerJobRuntime> findAllByStatus(SchedulerJobStatus status) {
         return jpaRepository.findAllByStatus(status);

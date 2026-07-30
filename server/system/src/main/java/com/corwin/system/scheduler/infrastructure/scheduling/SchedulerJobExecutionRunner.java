@@ -19,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 单次任务执行器。
+ * Runnable that executes a single scheduled job, managing execution state and concurrency locking.
  *
  * @author Corwin 2026/4/15
  */
@@ -34,6 +34,18 @@ public class SchedulerJobExecutionRunner implements Runnable {
     private final SchedulerJobExecutionRepository executionRepository;
     private final ReentrantLock executionLock;
 
+    /**
+     * Creates a runnable for a single job execution.
+     *
+     * @param jobId               the job identifier
+     * @param handler             the job handler
+     * @param payload             the job payload
+     * @param scheduleRule        the scheduling rule (used for next-fire computation)
+     * @param triggerType         how this execution was triggered
+     * @param runtimeRepository   runtime state repository
+     * @param executionRepository execution history repository
+     * @param executionLock       optional lock for concurrency control (null if concurrent allowed)
+     */
     @SuppressWarnings("unchecked")
     public SchedulerJobExecutionRunner(String jobId, SchedulerJobHandler<?> handler, JobPayload payload,
             ScheduleRule scheduleRule, SchedulerTriggerType triggerType, SchedulerJobRuntimeRepository runtimeRepository,
@@ -48,6 +60,7 @@ public class SchedulerJobExecutionRunner implements Runnable {
         this.executionLock = executionLock;
     }
 
+    /** Executes the job: acquires lock, invokes handler, records result and schedules next execution. */
     @Override
     public void run() {
         Instant scheduledTime = HighDate.mockInstant();

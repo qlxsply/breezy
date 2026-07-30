@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the value type of dictionary items.
+ * <p>Supported types: STRING, NUMBER, BOOLEAN.</p>
+ *
  * @author Corwin 2026/3/15
  */
 public enum DictValueType implements DictEnumDefinition {

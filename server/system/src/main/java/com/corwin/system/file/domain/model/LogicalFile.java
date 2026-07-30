@@ -16,8 +16,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 逻辑文件节点。
- * 同时表示逻辑文件和逻辑目录。
+ * Logical file node representing either a file or a folder in the storage tree.
+ * <p>Each logical file has an owner (user or application), a parent folder,
+ * and optionally references a physical file on disk (for file nodes).
+ * Folder nodes have no physical file reference.</p>
  *
  * @author Corwin 2026/2/23
  */
@@ -78,6 +80,17 @@ public class LogicalFile {
         this.updatedAt = this.createdAt;
     }
 
+    /**
+     * Creates a new file-type logical node.
+     *
+     * @param ownerType      the owner type
+     * @param ownerId        the owner identifier
+     * @param parentId       the parent folder ID (nullable for root)
+     * @param fileName       the file name
+     * @param physicalFileId the associated physical file ID (must be non-null)
+     * @param purpose        the business purpose category
+     * @return a new file-type LogicalFile instance
+     */
     public static LogicalFile file(OwnerType ownerType, String ownerId, String parentId, String fileName,
             String physicalFileId, String purpose) {
         return new LogicalFile(ownerType, ownerId, parentId, LogicalNodeType.FILE, fileName,
@@ -85,28 +98,53 @@ public class LogicalFile {
                 Objects.requireNonNull(purpose, "purpose required"));
     }
 
+    /**
+     * Creates a new folder-type logical node.
+     *
+     * @param ownerType the owner type
+     * @param ownerId   the owner identifier
+     * @param parentId  the parent folder ID (nullable for root)
+     * @param fileName  the folder name
+     * @return a new folder-type LogicalFile instance
+     */
     public static LogicalFile folder(OwnerType ownerType, String ownerId, String parentId, String fileName) {
         return new LogicalFile(ownerType, ownerId, parentId, LogicalNodeType.FOLDER, fileName, null, null);
     }
 
+    /**
+     * Returns {@code true} if this node is a file.
+     */
     public boolean isFile() {
         return nodeType == LogicalNodeType.FILE;
     }
 
+    /**
+     * Returns {@code true} if this node is a folder.
+     */
     public boolean isFolder() {
         return nodeType == LogicalNodeType.FOLDER;
     }
 
+    /**
+     * Renames this logical node and updates its modification timestamp.
+     */
     public void rename(String newName) {
         this.fileName = Objects.requireNonNull(newName, "new name required");
         this.updatedAt = HighDate.mockDateTime();
     }
 
+    /**
+     * Moves this logical node to a new parent folder and updates its modification timestamp.
+     */
     public void move(String newParentId) {
         this.parentId = newParentId;
         this.updatedAt = HighDate.mockDateTime();
     }
 
+    /**
+     * Replaces the physical file reference of this logical file node.
+     * Only valid for file-type nodes; folder nodes will throw an exception.
+     */
     public void replacePhysicalFile(String newPhysicalFileId) {
         if (!isFile()) {
             throw new IllegalStateException("folder node has no physical file");

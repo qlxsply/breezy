@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
+ * A DataSource decorator that wraps returned Connections with DiagnosticConnectionProxy
+ * to enable SQL execution monitoring.
+ *
  * @author Corwin 2026/4/16
  */
 public class DiagnosticMonitoringDataSource extends DelegatingDataSource {
@@ -26,11 +29,17 @@ public class DiagnosticMonitoringDataSource extends DelegatingDataSource {
         this.sqlExecutionObserver = sqlExecutionObserver;
     }
 
+    /**
+     * Returns a proxied connection for SQL monitoring.
+     */
     @Override
     public Connection getConnection() throws SQLException {
         return DiagnosticConnectionProxy.wrap(beanName, super.getConnection(), runtimeManager, sqlExecutionObserver);
     }
 
+    /**
+     * Returns a proxied connection for SQL monitoring using the given credentials.
+     */
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
         return DiagnosticConnectionProxy.wrap(beanName, super.getConnection(username, password), runtimeManager,

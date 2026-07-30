@@ -6,6 +6,8 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Response DTO for an admin user profile including recent login activities.
+ *
  * @author Corwin 2026/6/4
  */
 public record AdminProfileRes(

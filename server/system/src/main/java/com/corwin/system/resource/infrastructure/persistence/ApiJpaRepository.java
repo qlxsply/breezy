@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * Spring Data JPA repository for {@link Api} entity.
+ *
+ * <p>Provides database access for API metadata CRUD operations.</p>
+ *
  * @author Corwin 2026/3/30
  */
 public interface ApiJpaRepository extends JpaRepository<Api, Long> {

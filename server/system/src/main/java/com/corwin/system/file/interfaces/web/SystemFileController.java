@@ -38,7 +38,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * 系统文件接口，提供上传、预览、下载与管理查询能力。
+ * REST controller for system file operations including upload, preview, download,
+ * and administrative queries.
  *
  * @author Corwin 2026/2/23
  */
@@ -53,7 +54,12 @@ public class SystemFileController {
     private final LocalStorageProvider storageProvider;
 
     /**
-     * 上传文件。
+     * Uploads a file for a given purpose and optional owner.
+     *
+     * @param purpose the business purpose category
+     * @param ownerId the owner identifier (defaults to "system" if absent)
+     * @param file    the uploaded multipart file
+     * @return the logical file ID of the uploaded file
      */
     @PostMapping("/upload")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.file.upload"})
@@ -70,7 +76,8 @@ public class SystemFileController {
     }
 
     /**
-     * 在线预览文件内容。
+     * Streams file content for online preview. Checks the file size against the
+     * configured preview size limit before streaming.
      */
     @GetMapping("/view/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.preview"})
@@ -94,7 +101,7 @@ public class SystemFileController {
     }
 
     /**
-     * 查询文件元数据。
+     * Returns metadata for a single file.
      */
     @GetMapping("/meta/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.preview"})
@@ -103,7 +110,8 @@ public class SystemFileController {
     }
 
     /**
-     * 下载文件。
+     * Downloads a file with Content-Disposition attachment header.
+     * Supports UTF-8 encoded file names for international compatibility.
      */
     @GetMapping("/download/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.download"})
@@ -128,7 +136,7 @@ public class SystemFileController {
     }
 
     /**
-     * 批量查询文件元数据。
+     * Returns metadata for multiple files in a single request.
      */
     @PostMapping("/metadata/batch")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.file.metadata.batch"})
@@ -137,7 +145,7 @@ public class SystemFileController {
     }
 
     /**
-     * 管理端查询全部文件元数据。
+     * Lists all file metadata for the admin console.
      */
     @GetMapping("/admin/list")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.view"})
@@ -146,7 +154,8 @@ public class SystemFileController {
     }
 
     /**
-     * 管理端按节点、关键字和排序条件查询文件树内容。
+     * Lists storage nodes for the admin console with keyword filtering,
+     * recursive traversal, and sorting options.
      */
     @PostMapping("/admin/nodes")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.view"})
@@ -162,7 +171,8 @@ public class SystemFileController {
     }
 
     /**
-     * 查询逻辑文件对应的物理文件详情。
+     * Returns the physical file details for a given logical file, including
+     * the absolute filesystem path.
      */
     @GetMapping("/admin/logical-files/{logicalFileId}/physical")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.phys.view"})
@@ -183,7 +193,7 @@ public class SystemFileController {
     }
 
     /**
-     * 查询物理文件关联的逻辑文件引用列表。
+     * Lists all logical file references pointing to a given physical file.
      */
     @PostMapping("/admin/physical/{physicalFileId}/logical-refs")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.ref.view"})

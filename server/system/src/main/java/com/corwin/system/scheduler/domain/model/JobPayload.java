@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 动态任务参数标记接口。
+ * Marker interface for job payload types.
  *
  * @author Corwin 2026/4/15
  */

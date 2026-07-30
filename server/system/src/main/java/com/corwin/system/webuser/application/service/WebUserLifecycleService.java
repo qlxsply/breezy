@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
+ * Service for recording lifecycle events (login, logout, disable, etc.) for web users.
+ *
  * @author Corwin 2026/5/11
  */
 @Service
@@ -22,6 +24,13 @@ public class WebUserLifecycleService {
         this.repository = repository;
     }
 
+    /**
+     * Record a lifecycle event for the given user.
+     *
+     * @param userId   the user ID
+     * @param type     the event type
+     * @param metadata additional event metadata as key-value pairs
+     */
     public void record(Long userId, WebUserLifecycleEventType type, Map<String, Object> metadata) {
         repository.save(new WebUserLifecycleEvent(userId, type, operatorType(), operatorId(),
                 metadata == null || metadata.isEmpty() ? null : Json.toStr(metadata)));

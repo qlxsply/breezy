@@ -6,6 +6,8 @@ import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
 import java.util.List;
 
 /**
+ * Response DTO for authenticated user information.
+ *
  * @author Corwin 2026/1/22
  */
 public record AuthUserRes(

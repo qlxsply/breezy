@@ -22,6 +22,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for querying and listing storage nodes.
+ * Implements the {@link FileQueryPort} inbound port and provides
+ * both owner-scoped and global (admin) query capabilities.
+ *
  * @author Corwin 2026/2/23
  */
 @Service
@@ -31,6 +35,10 @@ public class FileQueryService implements FileQueryPort {
     private final LogicalFileRepository logicalFileRepository;
     private final PhysicalFileRepository physicalFileRepository;
 
+    /**
+     * Lists storage nodes scoped to a specific owner, with optional recursive traversal,
+     * keyword filtering, and sorting.
+     */
     @Override
     public List<StorageNodeView> listContent(OwnerType ownerType, String ownerId, StorageQueryCommand query) {
         List<LogicalFile> nodes = new ArrayList<>();
@@ -42,6 +50,10 @@ public class FileQueryService implements FileQueryPort {
         return nodeViews;
     }
 
+    /**
+     * Lists all storage nodes globally (admin scope) with optional recursive traversal,
+     * keyword filtering, and sorting.
+     */
     public List<StorageNodeView> listAdminContent(StorageQueryCommand query) {
         List<LogicalFile> nodes = new ArrayList<>();
 
@@ -52,6 +64,9 @@ public class FileQueryService implements FileQueryPort {
         return nodeViews;
     }
 
+    /**
+     * Lists logical file references pointing to a given physical file.
+     */
     public List<StorageNodeView> listLogicalFileRefs(String physicalFileId, String keyword, StorageSortBy sortBy,
             StorageSortOrder sortOrder) {
         List<LogicalFile> logicalFiles = logicalFileRepository.findByPhysicalFileId(physicalFileId);
@@ -60,6 +75,11 @@ public class FileQueryService implements FileQueryPort {
         return nodes;
     }
 
+    /**
+     * Retrieves the logical file and its associated physical file record.
+     *
+     * @throws BizException if the file is not found or is a folder node
+     */
     public LogicalPhysicalFileView getLogicalPhysicalFile(String fileId) {
         LogicalFile logicalFile = logicalFileRepository.findById(fileId)
                 .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
@@ -69,6 +89,9 @@ public class FileQueryService implements FileQueryPort {
         return new LogicalPhysicalFileView(logicalFile, physicalFile);
     }
 
+    /**
+     * Retrieves the metadata view for a single file by its logical file ID.
+     */
     @Override
     public StorageNodeView getFileMetadata(String fileId) {
         LogicalFile logicalFile = logicalFileRepository.findById(fileId)
@@ -77,12 +100,18 @@ public class FileQueryService implements FileQueryPort {
         return toFileView(logicalFile);
     }
 
+    /**
+     * Retrieves metadata for multiple files by their logical file IDs.
+     */
     @Override
     public List<StorageNodeView> getMetadataBatch(List<String> ids) {
         return logicalFileRepository.findAllById(ids).stream().filter(LogicalFile::isFile).map(this::toFileView)
                 .toList();
     }
 
+    /**
+     * Lists metadata for all file nodes across the entire system.
+     */
     public List<StorageNodeView> listAllFileMetadata() {
         return logicalFileRepository.findAll().stream().filter(LogicalFile::isFile).map(this::toFileView).toList();
     }
@@ -209,11 +238,17 @@ public class FileQueryService implements FileQueryPort {
         return name.toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Converts a logical file entity to its storage node view representation.
+     */
     public StorageNodeView toFileView(LogicalFile file) {
         assertFileNode(file);
         return toNodeView(file, toPhysicalMap(List.of(file)));
     }
 
+    /**
+     * Converts a logical node and its optional physical file map entry into a storage node view.
+     */
     public StorageNodeView toNodeView(LogicalFile node, Map<String, PhysicalFile> physicalMap) {
         if (node == null) {
             throw new BizException(BaseError.NOT_FOUND);
@@ -227,6 +262,10 @@ public class FileQueryService implements FileQueryPort {
                 node.getUpdatedAt());
     }
 
+    /**
+     * Resolves the MIME content type for a file based on its extension if the provided
+     * content type is null or blank.
+     */
     public String resolveContentType(String fileName, String contentType) {
         if (contentType != null && !contentType.isBlank()) {
             return contentType;

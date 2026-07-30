@@ -22,6 +22,10 @@ import java.time.Instant;
 import java.util.concurrent.Executor;
 
 /**
+ * Application service for audit log operations.
+ * Provides synchronous and asynchronous recording of audit entries,
+ * retrieval by ID, and paginated querying with dynamic filters.
+ *
  * @author Corwin 2026/4/19
  */
 @Slf4j
@@ -36,6 +40,14 @@ public class AuditLogService {
         this.taskExecutor = taskExecutor;
     }
 
+    /**
+     * Records an audit log entry synchronously or asynchronously based on configuration.
+     * Builds an {@link AuditLog} domain object from the command and persists it.
+     * If async mode is enabled, the save is submitted to the task executor;
+     * on submission failure it falls back to synchronous saving.
+     *
+     * @param command the audit record command carrying all log data
+     */
     public void record(AuditRecordCommand command) {
         if (command == null) {
             return;
@@ -67,6 +79,13 @@ public class AuditLogService {
         }
     }
 
+    /**
+     * Retrieves an audit log by its ID.
+     *
+     * @param id the audit log primary key
+     * @return the matching {@link AuditLog} entity
+     * @throws com.corwin.framework.error.BizException if the id is null or the record is not found
+     */
     public AuditLog get(Long id) {
         BizAssert.notNull(id, BaseError.INVALID_PARAMETER);
         AuditLog auditLog = auditLogRepository.findById(id).orElse(null);
@@ -74,6 +93,23 @@ public class AuditLogService {
         return auditLog;
     }
 
+    /**
+     * Performs a paginated query of audit logs with dynamic filters.
+     *
+     * @param traceId          optional trace ID filter
+     * @param operatorUserId   optional operator user ID filter
+     * @param operatorUsername optional operator username filter
+     * @param applicationCode  optional application code filter
+     * @param requestUri       optional request URI filter
+     * @param auditResource    optional audit resource filter
+     * @param auditAction      optional audit action filter
+     * @param auditLevel       optional severity level filter
+     * @param success          optional success status filter
+     * @param startAt          optional start of the time range
+     * @param endAt            optional end of the time range
+     * @param spec             pagination and sort specification
+     * @return a page of matching {@link AuditLog} entities
+     */
     public PageData<AuditLog> page(String traceId, Long operatorUserId, String operatorUsername, String applicationCode,
             String requestUri, String auditResource, String auditAction, AuditLevel auditLevel, Boolean success,
             Instant startAt, Instant endAt, PageSpec spec) {

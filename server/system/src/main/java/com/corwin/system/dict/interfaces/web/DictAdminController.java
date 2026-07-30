@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for dictionary type and item administration.
+ * <p>Provides admin CRUD endpoints for managing dictionary types and their items.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -41,6 +44,9 @@ public class DictAdminController {
 
     private final DictAdminService dictAdminService;
 
+    /**
+     * Paginates dictionary types with optional filtering.
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<PageResult<DictTypeRes>> list(@RequestBody DictTypePageReq req) {
@@ -49,12 +55,18 @@ public class DictAdminController {
                         this::toTypeRes));
     }
 
+    /**
+     * Gets a single dictionary type by id.
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<DictTypeRes> get(@PathVariable String id) {
         return ApiResponse.ok(toTypeRes(dictAdminService.getType(id)));
     }
 
+    /**
+     * Creates a new dictionary type with initial items.
+     */
     @PostMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<DictTypeRes> create(@RequestBody CreateDictTypeReq req) {
@@ -64,6 +76,9 @@ public class DictAdminController {
         return ApiResponse.ok(toTypeRes(view));
     }
 
+    /**
+     * Updates an existing dictionary type and its items.
+     */
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<DictTypeRes> update(@PathVariable String id, @RequestBody UpdateDictTypeReq req) {
@@ -73,24 +88,36 @@ public class DictAdminController {
         return ApiResponse.ok(toTypeRes(view));
     }
 
+    /**
+     * Enables or disables a dictionary type.
+     */
     @PutMapping("/{id}/status")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<Boolean> updateStatus(@PathVariable String id, @RequestBody UpdateDictStatusReq req) {
         return ApiResponse.ok(dictAdminService.updateTypeStatus(id, req.enabled()));
     }
 
+    /**
+     * Deletes a dictionary type and all its items.
+     */
     @DeleteMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<Boolean> delete(@PathVariable String id) {
         return ApiResponse.ok(dictAdminService.deleteType(id));
     }
 
+    /**
+     * Lists all items of a dictionary type.
+     */
     @GetMapping("/{id}/items")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.view"})
     public ApiResponse<List<DictItemRes>> listItems(@PathVariable String id) {
         return ApiResponse.ok(dictAdminService.listItems(id).stream().map(this::toItemRes).toList());
     }
 
+    /**
+     * Creates a new dictionary item under the specified type.
+     */
     @PostMapping("/{id}/items")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<DictItemRes> createItem(@PathVariable String id, @RequestBody CreateDictItemReq req) {
@@ -101,6 +128,9 @@ public class DictAdminController {
         return ApiResponse.ok(toItemRes(view));
     }
 
+    /**
+     * Updates an existing dictionary item.
+     */
     @PutMapping("/items/{itemId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<DictItemRes> updateItem(@PathVariable String itemId, @RequestBody UpdateDictItemReq req) {
@@ -111,18 +141,27 @@ public class DictAdminController {
         return ApiResponse.ok(toItemRes(view));
     }
 
+    /**
+     * Enables or disables a dictionary item.
+     */
     @PutMapping("/items/{itemId}/status")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<Boolean> updateItemStatus(@PathVariable String itemId, @RequestBody UpdateDictStatusReq req) {
         return ApiResponse.ok(dictAdminService.updateItemStatus(itemId, req.enabled()));
     }
 
+    /**
+     * Deletes a dictionary item if it has no children.
+     */
     @DeleteMapping("/items/{itemId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<Boolean> deleteItem(@PathVariable String itemId) {
         return ApiResponse.ok(dictAdminService.deleteItem(itemId));
     }
 
+    /**
+     * Reorders items of a dictionary type.
+     */
     @PutMapping("/{id}/items/sort")
     @Authorize(userType = UserType.ADMIN, permissions = {"dict.edit"})
     public ApiResponse<Boolean> sortItems(@PathVariable String id, @RequestBody UpdateDictItemSortReq req) {

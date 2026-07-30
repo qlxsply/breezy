@@ -15,6 +15,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link LoginLogRepository}.
+ *
  * @author Corwin 2026/4/15
  */
 @Repository

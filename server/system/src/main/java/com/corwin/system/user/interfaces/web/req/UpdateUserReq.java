@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * Request object for updating an existing user's nickname and/or status.
+ *
  * @author Corwin 2026/1/22
  */
 @Getter

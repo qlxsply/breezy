@@ -12,6 +12,10 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
+ * Default implementation of {@link RunAsService} that supports executing
+ * code under system, scheduler, event, or custom principals by manipulating
+ * the request-level security context.
+ *
  * @author Corwin 2026/4/19
  */
 @Service

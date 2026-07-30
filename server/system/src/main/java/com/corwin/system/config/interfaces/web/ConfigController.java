@@ -35,6 +35,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * REST controller for system configuration management.
+ * Provides endpoints for listing, updating, and previewing system configurations
+ * including client IP resolution and time offset.
+ *
  * @author Corwin 2026/5/5
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -46,6 +50,12 @@ public class ConfigController {
     private final ConfigAdminService appService;
     private final NotificationDispatcher notificationDispatcher;
 
+    /**
+     * List configurations with pagination and optional fuzzy search by code or description.
+     *
+     * @param req the page request with optional codeLike and descriptionLike filters
+     * @return paginated configuration entries
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
     public ApiResponse<PageResult<ConfigRes>> list(@RequestBody ConfigPageReq req) {
@@ -53,6 +63,13 @@ public class ConfigController {
         return ApiResponse.ok(PageResult.of(page, this::toRes));
     }
 
+    /**
+     * Update the value of a configuration identified by its code.
+     *
+     * @param code the configuration code
+     * @param req  the request containing the new value
+     * @return true if the update was successful
+     */
     @PutMapping("/{code}")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.edit"})
     @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -61,6 +78,13 @@ public class ConfigController {
         return ApiResponse.ok(result);
     }
 
+    /**
+     * Preview the resolved client IP based on the specified resolution mode and request headers.
+     *
+     * @param req     the preview request specifying the resolution mode
+     * @param request the HTTP servlet request to extract header information
+     * @return the client IP preview result
+     */
     @PostMapping("/preview/client-ip")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
     public ApiResponse<ConfigClientIpPreviewRes> previewClientIp(@RequestBody ConfigClientIpPreviewReq req,
@@ -71,6 +95,12 @@ public class ConfigController {
         return ApiResponse.ok(toClientIpPreviewRes(view));
     }
 
+    /**
+     * Preview the time offset calculation based on the provided offset seconds or target epoch millis.
+     *
+     * @param req the preview request with offset or target timestamp
+     * @return the time offset preview result
+     */
     @PostMapping("/preview/time-offset")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
     public ApiResponse<ConfigTimeOffsetPreviewRes> previewTimeOffset(@RequestBody ConfigTimeOffsetPreviewReq req) {
@@ -78,6 +108,13 @@ public class ConfigController {
         return ApiResponse.ok(toTimeOffsetPreviewRes(view));
     }
 
+    /**
+     * Preview message push notification by dispatching a test notification
+     * with the given route, priority, and delivery options.
+     *
+     * @param req the preview message push request
+     * @return a confirmation message indicating the preview was sent
+     */
     @PostMapping("/preview/msg-push")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.preview.push"})
     public ApiResponse<String> previewMsgPush(@RequestBody PreviewMsgPushReq req) {
@@ -113,6 +150,12 @@ public class ConfigController {
                 view.calculatedOffsetSeconds(), view.offsetSeconds(), view.mockedEpochMillis());
     }
 
+    /**
+     * Resolve the message type from a raw string input, defaulting to BUSINESS_EVENT.
+     *
+     * @param raw the raw message type string
+     * @return the resolved MsgType enum
+     */
     private MsgType resolveMsgType(String raw) {
         if (raw == null || raw.isBlank()) {
             return MsgType.BUSINESS_EVENT;
@@ -136,6 +179,12 @@ public class ConfigController {
         }
     }
 
+    /**
+     * Retrieve the current authenticated user ID from the request context.
+     *
+     * @return the current user ID
+     * @throws com.corwin.framework.error.BizException if the user is not authenticated
+     */
     private Long currentUserId() {
         AuthPrincipal principal = CtxUtil.getPrincipal();
         Long userId = principal == null ? null : principal.userId();

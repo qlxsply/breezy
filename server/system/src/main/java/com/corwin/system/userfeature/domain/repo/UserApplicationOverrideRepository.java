@@ -6,6 +6,8 @@ import com.corwin.system.userfeature.domain.model.UserApplicationOverride;
 import java.util.List;
 
 /**
+ * Domain repository for per-user application access overrides.
+ *
  * @author Corwin 2026/6/14
  */
 public interface UserApplicationOverrideRepository extends DomainRepository<UserApplicationOverride, Long> {

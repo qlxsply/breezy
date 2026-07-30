@@ -5,6 +5,9 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the types of login/logout/security events that can be
+ * recorded in the audit log.
+ *
  * @author Corwin 2026/1/23
  */
 public enum LoginEventType implements DictEnumDefinition {

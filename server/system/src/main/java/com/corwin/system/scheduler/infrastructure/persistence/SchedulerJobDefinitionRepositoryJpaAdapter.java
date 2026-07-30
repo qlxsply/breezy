@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link SchedulerJobDefinitionRepository}.
+ *
  * @author Corwin 2026/4/15
  */
 @Component
@@ -50,16 +52,25 @@ public class SchedulerJobDefinitionRepositoryJpaAdapter implements SchedulerJobD
         jpaRepository.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<SchedulerJobDefinition> findAllByDeletedFalse() {
         return jpaRepository.findAllByDeletedFalse();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<SchedulerJobDefinition> findAllByEnabledTrueAndDeletedFalse() {
         return jpaRepository.findAllByEnabledTrueAndDeletedFalse();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<SchedulerJobDefinition> findAllBySourceAndDeletedFalse(SchedulerJobSource source) {
         return jpaRepository.findAllBySourceAndDeletedFalse(source);

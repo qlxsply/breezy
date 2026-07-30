@@ -20,6 +20,9 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Application service for notification management.
+ * <p>Handles querying, pulling, and marking notifications as read.</p>
+ *
  * @author Corwin 2026/3/30
  */
 @Service
@@ -29,11 +32,28 @@ public class NotificationAppService {
     private final NotificationRepository notificationRepository;
     private final MessageDeliveryRepository messageDeliveryRepository;
 
+    /**
+     * Lists unread notifications for the given user, limited to the specified count.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @param limit    the maximum number of results
+     * @return the list of unread notification views
+     */
     public List<NotificationView> listUnread(Long userId, UserType userType, int limit) {
         return notificationRepository.findByUserIdAndUserTypeAndIsReadFalseOrderByCreatedAtDesc(userId, userType)
                 .stream().limit(limit).map(this::toRes).toList();
     }
 
+    /**
+     * Paginates notifications for the given user, optionally filtering by status.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @param status   the filter status ("all" or "unread")
+     * @param spec     the page specification
+     * @return the paginated notification view data
+     */
     public PageData<NotificationView> page(Long userId, UserType userType, String status, PageSpec spec) {
         NotificationPageQuery query = new NotificationPageQuery(userId, userType, isUnreadStatus(status));
         PageData<Notification> page = notificationRepository.pageByQuery(query, PageSpecSorts.apply(spec));
@@ -42,10 +62,26 @@ public class NotificationAppService {
                 page.totalElements(), items);
     }
 
+    /**
+     * Returns the count of unread notifications for the given user.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @return the unread count
+     */
     public long getUnreadCount(Long userId, UserType userType) {
         return notificationRepository.countByUserIdAndUserTypeAndIsReadFalse(userId, userType);
     }
 
+    /**
+     * Pulls unread notifications created after the specified timestamp.
+     *
+     * @param userId      the user ID
+     * @param userType    the user type
+     * @param afterMillis the earliest creation time (epoch millis) to include
+     * @param limit       the maximum number of results (clamped to 1-200)
+     * @return the pull result with items and last pull timestamp
+     */
     public NotificationPullView pullUnread(Long userId, UserType userType, long afterMillis, int limit) {
         int safeLimit = Math.clamp(limit, 1, 200);
         Instant after = afterMillis > 0 ? Instant.ofEpochMilli(afterMillis) : Instant.EPOCH;
@@ -56,6 +92,13 @@ public class NotificationAppService {
         return new NotificationPullView(items, lastPullAt);
     }
 
+    /**
+     * Marks a single notification as read and acknowledges its deliveries.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     * @param id       the notification ID
+     */
     @Transactional
     public void markRead(Long userId, UserType userType, Long id) {
         notificationRepository.findByIdAndUserIdAndUserType(id, userId, userType).ifPresent(n -> {
@@ -65,6 +108,12 @@ public class NotificationAppService {
         });
     }
 
+    /**
+     * Marks all unread notifications as read for the given user and acknowledges their deliveries.
+     *
+     * @param userId   the user ID
+     * @param userType the user type
+     */
     @Transactional
     public void markAllRead(Long userId, UserType userType) {
         List<Notification> unread = notificationRepository.findByUserIdAndUserTypeAndIsReadFalseOrderByCreatedAtDesc(

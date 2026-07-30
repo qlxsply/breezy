@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 
 /**
+ * Default implementation of {@link AuthConfigService} that reads authentication
+ * configuration values from the system {@link ConfigStore}.
+ *
  * @author Corwin 2026/4/19
  */
 @Service

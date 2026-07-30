@@ -6,6 +6,8 @@ import com.corwin.system.scheduler.domain.model.SchedulerJobType;
 import java.time.Instant;
 
 /**
+ * View of a scheduled job with its runtime status for list display.
+ *
  * @author Corwin 2026/4/15
  */
 public record SchedulerJobView(

@@ -17,7 +17,9 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 用户 Web Push 订阅。
+ * Domain entity representing a user's Web Push subscription.
+ * <p>Stores browser push subscription details including endpoint, encryption keys,
+ * and tracks push delivery status per device.</p>
  *
  * @author Corwin 2026/3/19
  */
@@ -73,6 +75,17 @@ public class UserPushSubscription {
     protected UserPushSubscription() {
     }
 
+    /**
+     * Creates a new active push subscription for the given user and device.
+     *
+     * @param userId     the user ID
+     * @param userType   the user type
+     * @param deviceId   the unique device identifier
+     * @param endpoint   the push endpoint URL
+     * @param p256dh     the p256dh encryption key
+     * @param authSecret the auth secret
+     * @return a new {@link UserPushSubscription}
+     */
     public static UserPushSubscription register(Long userId, UserType userType, String deviceId, String endpoint,
             String p256dh, String authSecret) {
         UserPushSubscription subscription = new UserPushSubscription();
@@ -89,6 +102,13 @@ public class UserPushSubscription {
         return subscription;
     }
 
+    /**
+     * Refreshes the subscription with updated endpoint and encryption keys.
+     *
+     * @param endpoint   the new push endpoint URL
+     * @param p256dh     the new p256dh key
+     * @param authSecret the new auth secret
+     */
     public void refresh(String endpoint, String p256dh, String authSecret) {
         this.endpoint = endpoint;
         this.p256dh = p256dh;
@@ -97,6 +117,10 @@ public class UserPushSubscription {
         this.updatedAt = HighDate.mockInstant();
     }
 
+    /**
+     * Marks this subscription as having a successful push delivery.
+     * Resets the error state and updates the last push timestamp.
+     */
     public void markPushSuccess() {
         this.active = true;
         this.lastPushAt = HighDate.mockInstant();
@@ -104,11 +128,21 @@ public class UserPushSubscription {
         this.updatedAt = HighDate.mockInstant();
     }
 
+    /**
+     * Marks this subscription as having a failed push delivery.
+     *
+     * @param errorMessage the error description
+     */
     public void markPushFailure(String errorMessage) {
         this.lastError = errorMessage;
         this.updatedAt = HighDate.mockInstant();
     }
 
+    /**
+     * Deactivates this subscription with a given reason.
+     *
+     * @param reason the deactivation reason (e.g. "用户主动取消订阅")
+     */
     public void deactivate(String reason) {
         this.active = false;
         this.lastError = reason;

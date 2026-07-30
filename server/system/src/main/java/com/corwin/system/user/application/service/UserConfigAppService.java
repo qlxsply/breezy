@@ -16,7 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 用户配置应用服务 (实现 Overlay 覆盖逻辑)
+ * Application service for user configuration with overlay semantics.
+ * Merges user-specific overrides on top of system default configuration values.
  *
  * @author Corwin 2026/3/30
  */
@@ -34,8 +35,12 @@ public class UserConfigAppService {
 
 
     /**
-     * 获取用户合并后的配置 (用户覆盖值 > 系统默认值)
-     * 支持 userId 为 null (游客模式)
+     * Returns the merged configuration for a user.
+     * User-specific override values take precedence over system defaults.
+     * Supports guest mode when userId is null.
+     *
+     * @param userId the user ID, or null for guest mode
+     * @return a list of merged user configuration views
      */
     public List<UserConfigView> getMergedConfigs(Long userId) {
         List<StoredConfig> configs = configStore.findByLevel(ConfigLevel.USER);
@@ -70,7 +75,12 @@ public class UserConfigAppService {
     }
 
     /**
-     * 更新用户个性化配置
+     * Updates a personalized configuration value for a user.
+     * Validates that the config code is personalized and the value passes validation.
+     *
+     * @param userId the user ID (must not be null)
+     * @param code   the configuration code
+     * @param value  the new configuration value
      */
     @Transactional
     public void updateMyConfig(Long userId, String code, String value) {

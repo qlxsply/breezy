@@ -5,52 +5,35 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
- * 资源类型。
+ * Resource type enumeration for the system resource tree.
  *
- * <p>
- * 用于统一描述管理后台资源树中的节点类型。
- * </p>
+ * <p>Defines the types of nodes in the admin resource hierarchy. Each type has
+ * specific rules about which child types it can contain and whether it can bind
+ * permission codes.</p>
  *
- * <p>
- * 资源树结构约束：
- * </p>
- *
+ * <p>Resource tree structure constraints:</p>
  * <pre>
- * DIRECTORY 目录
- * ├── DIRECTORY 子目录
- * └── MENU      菜单
+ * DIRECTORY
+ * ├── DIRECTORY
+ * └── MENU
  *
- * MENU 菜单
- * ├── MENU      子菜单
- * ├── FUNCTION  功能
- * └── BUTTON    按钮
+ * MENU
+ * ├── MENU
+ * ├── FUNCTION
+ * └── BUTTON
  *
- * FUNCTION 功能
- * └── BUTTON    按钮
+ * FUNCTION
+ * └── BUTTON
  *
- * BUTTON 按钮
- * └── 不允许有任何资源子节点
+ * BUTTON
+ * └── (no children allowed)
  * </pre>
  *
- * <p>
- * 说明：
- * </p>
- *
+ * <p>Key notes:</p>
  * <ul>
- *     <li>DIRECTORY：目录资源，主要用于导航分组或资源分组。</li>
- *     <li>MENU：菜单资源，通常对应一个前端路由页面或菜单入口。</li>
- *     <li>FUNCTION：功能资源，通常表示菜单下的子页面能力、隐藏页面能力或功能分组。</li>
- *     <li>BUTTON：按钮资源，权限控制的最小 UI 操作节点。</li>
- * </ul>
- *
- * <p>
- * 注意：
- * </p>
- *
- * <ul>
- *     <li>权限码 permission 不是资源树节点。</li>
- *     <li>只有 BUTTON 类型资源可以绑定权限码。</li>
- *     <li>权限码通过 {@link ResourcePermission} 进行绑定。</li>
+ *   <li>Permission codes are not resource tree nodes.</li>
+ *   <li>Only BUTTON-type resources can bind permissions.</li>
+ *   <li>Permission bindings are managed via {@link ResourcePermission}.</li>
  * </ul>
  *
  * @author Corwin
@@ -58,43 +41,30 @@ import com.corwin.framework.dict.DictTagType;
 public enum ResourceType implements DictEnumDefinition {
 
     /**
-     * 目录。
+     * Directory: a navigational grouping node.
      *
-     * <p>
-     * 目录通常不对应具体页面，只用于菜单分组。
-     * 目录下面只能挂载目录或菜单。
-     * </p>
+     * <p>Does not correspond to a page. Can only contain sub-directories or menus.</p>
      */
     DIRECTORY("目录", DictTagColor.SLATE, DictTagType.INFO),
 
     /**
-     * 菜单。
+     * Menu: a navigational entry typically linked to a front-end route.
      *
-     * <p>
-     * 菜单通常对应一个前端页面、路由入口或可见导航项。
-     * 菜单下面可以挂载子菜单、功能或按钮。
-     * </p>
+     * <p>Can contain sub-menus, functions, or buttons.</p>
      */
     MENU("菜单", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
 
     /**
-     * 功能。
+     * Function: a sub-page capability or feature group under a menu.
      *
-     * <p>
-     * 功能表示菜单下的子页面能力、隐藏能力、功能分组或业务能力。
-     * 功能下面只能挂载按钮。
-     * </p>
+     * <p>Can only contain buttons.</p>
      */
     FUNCTION("功能", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
 
     /**
-     * 按钮。
+     * Button: the leaf-level UI action node.
      *
-     * <p>
-     * 按钮是资源树的最低层级节点。
-     * 按钮下面不允许再挂载资源节点。
-     * 只有按钮可以绑定一个或多个 API 权限码。
-     * </p>
+     * <p>No children allowed. Only buttons can bind permission codes.</p>
      */
     BUTTON("按钮", DictTagColor.WARNING_ORANGE, DictTagType.WARNING);
 
@@ -111,10 +81,10 @@ public enum ResourceType implements DictEnumDefinition {
     }
 
     /**
-     * 判断当前类型是否允许挂载指定类型的子资源。
+     * Checks whether this resource type can have a child of the given type.
      *
-     * @param childType 子资源类型
-     * @return true 表示允许挂载，false 表示不允许挂载
+     * @param childType the child resource type to check
+     * @return true if this type can contain the specified child type
      */
     public boolean canHaveChild(ResourceType childType) {
         if (childType == null) {
@@ -130,50 +100,42 @@ public enum ResourceType implements DictEnumDefinition {
     }
 
     /**
-     * 判断当前类型是否可以拥有子资源。
+     * Checks whether this resource type can have any child resources.
      *
-     * @return true 表示可以拥有子资源，false 表示不能拥有子资源
+     * @return true if this type can have children
      */
     public boolean canHaveChildren() {
         return this != BUTTON;
     }
 
     /**
-     * 判断当前类型是否允许绑定权限码。
+     * Checks whether this resource type can bind permission codes.
      *
-     * <p>
-     * 当前模型中，只有按钮资源允许绑定权限码。
-     * </p>
+     * <p>In the current model, only BUTTON-type resources can bind permissions.</p>
      *
-     * @return true 表示允许绑定权限码，false 表示不允许绑定权限码
+     * @return true if this type can bind permission codes
      */
     public boolean canBindPermission() {
         return this == BUTTON;
     }
 
     /**
-     * 判断当前类型是否是导航类资源。
+     * Checks whether this resource type is a navigational resource.
      *
-     * <p>
-     * DIRECTORY 和 MENU 通常参与左侧菜单树、顶部菜单树或导航树渲染。
-     * FUNCTION 和 BUTTON 通常不直接作为主导航项展示。
-     * </p>
+     * <p>DIRECTORY and MENU typically participate in sidebar or top navigation rendering.</p>
      *
-     * @return true 表示是导航类资源，false 表示不是导航类资源
+     * @return true if this type is navigational
      */
     public boolean isNavigationResource() {
         return this == DIRECTORY || this == MENU;
     }
 
     /**
-     * 判断当前类型是否是页面或页面能力类资源。
+     * Checks whether this resource type is page-like (menu or function).
      *
-     * <p>
-     * MENU 通常表示页面入口。
-     * FUNCTION 通常表示菜单下的子页面、隐藏页面或功能分组。
-     * </p>
+     * <p>MENU represents a page entry point. FUNCTION represents a sub-page or feature group.</p>
      *
-     * @return true 表示是页面或页面能力类资源
+     * @return true if this type is page-like
      */
     public boolean isPageLikeResource() {
         return this == MENU || this == FUNCTION;

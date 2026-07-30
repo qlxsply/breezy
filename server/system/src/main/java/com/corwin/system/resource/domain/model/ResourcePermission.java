@@ -7,60 +7,19 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * 资源权限码关系。
+ * Entity representing the binding between a resource (button) and a permission code.
  *
- * <p>
- * 用于描述资源按钮与权限码之间的绑定关系。
- * </p>
+ * <p>In the resource model, the resource tree is represented by {@link Resource} and
+ * permission codes by {@link Permission}. This entity establishes the many-to-many
+ * relationship between them.</p>
  *
- * <p>
- * 当前资源模型中，资源树由 {@link Resource} 表示，权限码由 {@link Permission} 表示。
- * 本实体负责建立二者之间的关联关系。
- * </p>
- *
- * <p>
- * 关系说明：
- * </p>
- *
+ * <p>Key notes:</p>
  * <ul>
- *     <li>{@code resourceId}：关联 {@link Resource#getId()}。</li>
- *     <li>{@code permissionId}：关联 {@link Permission#getId()}。</li>
- *     <li>业务上要求 {@code resourceId} 对应的资源类型必须是 {@link ResourceType#BUTTON}。</li>
- *     <li>一个按钮资源可以绑定一个或多个权限码。</li>
- *     <li>一个权限码可以被多个按钮资源复用。</li>
+ *   <li>A {@code resourceId} must point to a {@link ResourceType#BUTTON} resource.</li>
+ *   <li>A button resource can be bound to one or more permission codes.</li>
+ *   <li>A permission code can be reused across multiple button resources.</li>
+ *   <li>This entity only persists the binding; type validation should be done by domain services.</li>
  * </ul>
- *
- * <p>
- * 注意：
- * </p>
- *
- * <ul>
- *     <li>permission 不是资源树节点。</li>
- *     <li>permission 不应该作为 {@link ResourceType} 的一种类型。</li>
- *     <li>只有 BUTTON 类型资源允许绑定权限码。</li>
- *     <li>本实体只保存绑定关系，不负责校验资源类型。</li>
- *     <li>资源类型校验应由领域服务完成。</li>
- * </ul>
- *
- *
- * <p>
- * 示例：
- * </p>
- *
- * <pre>
- * Resource:
- *   id = 1001
- *   code = system.user.create
- *   resourceType = BUTTON
- *
- * Permission:
- *   id = 2001
- *   code = system:user:create
- *
- * ResourcePermission:
- *   resourceId = 1001
- *   permissionId = 2001
- * </pre>
  *
  * @author Corwin
  */
@@ -73,74 +32,39 @@ import java.time.Instant;
 public class ResourcePermission {
 
     /**
-     * 主键 ID。
+     * Primary key ID.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 资源 ID。
+     * Resource ID referencing {@link Resource#getId()}.
      *
-     * <p>
-     * 关联 {@link Resource#getId()}。
-     * </p>
-     *
-     * <p>
-     * 业务约束：
-     * </p>
-     *
-     * <ul>
-     *     <li>该资源必须存在。</li>
-     *     <li>该资源必须启用。</li>
-     *     <li>该资源类型必须是 {@link ResourceType#BUTTON}。</li>
-     * </ul>
-     *
-     * <p>
-     * 不在本实体中直接使用 {@code @ManyToOne}，是为了保持领域模型简单，
-     * 避免资源树加载时产生不必要的级联查询。
-     * </p>
+     * <p>Business constraints: the referenced resource must exist, be enabled,
+     * and be of type {@link ResourceType#BUTTON}. No {@code @ManyToOne} is used
+     * to avoid unnecessary cascade queries when loading the resource tree.</p>
      */
     @Column(name = "resource_id", nullable = false)
     private Long resourceId;
 
     /**
-     * 权限码 ID。
+     * Permission code ID referencing {@link Permission#getId()}.
      *
-     * <p>
-     * 关联 {@link Permission#getId()}。
-     * </p>
-     *
-     * <p>
-     * 权限码的具体业务编码、名称、用户范围等信息由 {@link Permission} 维护。
-     * 本实体只保存按钮资源与权限码之间的绑定关系。
-     * </p>
-     *
-     * <p>
-     * 业务约束：
-     * </p>
-     *
-     * <ul>
-     *     <li>该权限码必须存在。</li>
-     *     <li>该权限码必须启用。</li>
-     * </ul>
+     * <p>Business constraints: the referenced permission must exist and be enabled.</p>
      */
     @Column(name = "permission_id", nullable = false)
     private Long permissionId;
 
     /**
-     * 是否系统内置绑定关系。
-     *
-     * <p>
-     * 系统内置绑定关系通常由初始化脚本、XML 资源定义或系统启动导入流程生成。
-     * 这类绑定关系一般不允许普通用户删除。
-     * </p>
+     * Whether this binding is system-defined. System bindings are typically
+     * created by initialization scripts and should not be deleted by regular users.
      */
     @Column(name = "system_builtin", nullable = false)
     private Boolean systemBuiltin;
 
     /**
-     * 创建时间。
+     * Creation timestamp.
      */
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -152,11 +76,11 @@ public class ResourcePermission {
     }
 
     /**
-     * 创建资源权限码绑定关系。
+     * Creates a resource-permission binding.
      *
-     * @param resourceId    资源 ID，业务上必须对应 BUTTON 类型资源
-     * @param permissionId  权限码 ID，对应 {@link Permission#getId()}
-     * @param systemBuiltin 是否系统内置绑定关系
+     * @param resourceId    resource ID (must reference a BUTTON-type resource)
+     * @param permissionId  permission code ID
+     * @param systemBuiltin whether this binding is system-defined
      */
     public ResourcePermission(Long resourceId, Long permissionId, Boolean systemBuiltin) {
         this.resourceId = requireNonNull(resourceId, "资源 ID 不能为空");
@@ -166,29 +90,29 @@ public class ResourcePermission {
     }
 
     /**
-     * 判断当前绑定关系是否属于指定资源。
+     * Checks whether this binding belongs to the specified resource.
      *
-     * @param resourceId 资源 ID
-     * @return true 表示当前绑定关系属于指定资源
+     * @param resourceId the resource ID to test against
+     * @return true if this binding belongs to the given resource
      */
     public boolean belongsToResource(Long resourceId) {
         return this.resourceId != null && this.resourceId.equals(resourceId);
     }
 
     /**
-     * 判断当前绑定关系是否指向指定权限码。
+     * Checks whether this binding points to the specified permission code.
      *
-     * @param permissionId 权限码 ID
-     * @return true 表示当前绑定关系指向指定权限码
+     * @param permissionId the permission ID to test against
+     * @return true if this binding points to the given permission
      */
     public boolean pointsToPermission(Long permissionId) {
         return this.permissionId != null && this.permissionId.equals(permissionId);
     }
 
     /**
-     * 判断当前绑定关系是否为系统内置。
+     * Checks whether this binding is system-defined.
      *
-     * @return true 表示系统内置绑定关系
+     * @return true if this is a system-defined binding
      */
     public boolean isSystemBuiltin() {
         return Boolean.TRUE.equals(this.systemBuiltin);

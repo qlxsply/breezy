@@ -6,11 +6,17 @@ import com.corwin.system.task.domain.model.TaskStatus;
 import java.util.List;
 
 /**
- * 任务配置仓储接口
- * 
+ * Repository interface for {@link TaskConfig} persistence operations.
+ *
  * @author Corwin 2026/3/30
  */
 public interface TaskConfigRepository extends DomainRepository<TaskConfig, String> {
     
+    /**
+     * Returns all task configurations matching the given status.
+     *
+     * @param taskStatus the status to filter by
+     * @return the list of matching task configurations
+     */
     List<TaskConfig> findAllByTaskStatus(TaskStatus taskStatus);
 }

@@ -18,6 +18,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
+ * Collector that manages a JFR (Java Flight Recorder) streaming session to monitor
+ * GC pauses, exceptions, thread park, and monitor contention events.
+ *
  * @author Corwin 2026/4/16
  */
 @Slf4j
@@ -39,6 +42,12 @@ public class JfrCollector {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Starts a JFR recording stream. Enables GC events by default; additionally enables
+     * exception, thread park, and monitor events when deep mode is configured.
+     *
+     * @param config the diagnostic config controlling deep mode
+     */
     public synchronized void start(DiagnosticConfig config) {
         stop();
         reset();
@@ -66,6 +75,9 @@ public class JfrCollector {
         });
     }
 
+    /**
+     * Stops the JFR recording stream and releases resources.
+     */
     public synchronized void stop() {
         RecordingStream current = recordingStream;
         recordingStream = null;
@@ -79,19 +91,38 @@ public class JfrCollector {
         workerThread = null;
     }
 
+    /**
+     * Checks whether the JFR recording stream is currently active.
+     *
+     * @return true if the stream is running
+     */
     public boolean isRunning() {
         return running.get();
     }
 
+    /**
+     * Checks whether JFR is available in the current JVM. Always returns true as JFR
+     * is built into JDK 21+.
+     *
+     * @return true
+     */
     public boolean isAvailable() {
         return true;
     }
 
+    /**
+     * Returns a snapshot of the current JFR event counters.
+     *
+     * @return the current JfrSnapshot
+     */
     public JfrSnapshot snapshot() {
         return new JfrSnapshot(running.get(), gcEventCount.sum(), gcPauseTimeMs.sum(), exceptionEventCount.sum(),
                 threadParkEventCount.sum(), monitorBlockedEventCount.sum());
     }
 
+    /**
+     * Resets all JFR event counters to zero.
+     */
     public void reset() {
         gcEventCount.reset();
         gcPauseTimeMs.reset();

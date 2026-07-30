@@ -5,6 +5,8 @@ import com.corwin.framework.event.model.AsyncEvent;
 import java.util.Objects;
 
 /**
+ * Domain event representing a single method invocation, carrying timing, success status,
+ * and exception details. Implements {@code AsyncEvent} for asynchronous processing.
  * @author Corwin 2026/3/25
  */
 public record MethodStatInvocationEvent(

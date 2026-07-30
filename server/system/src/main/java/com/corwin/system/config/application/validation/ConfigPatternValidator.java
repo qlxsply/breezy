@@ -17,6 +17,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Validator for CLIENT_IP_MODE and AUTH_WHITELIST configuration values.
+ * Ensures the client IP mode string is a valid enum value and the
+ * auth whitelist JSON can be parsed and compiled into whitelist rules.
+ *
  * @author Corwin 2026/3/11
  */
 @Order(20)
@@ -24,6 +28,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ConfigPatternValidator implements ConfigValueValidator {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supports(StoredConfig config) {
         if (config == null) {
@@ -34,6 +41,9 @@ public class ConfigPatternValidator implements ConfigValueValidator {
                 || DefaultConfigKeys.AUTH_WHITELIST.name().equals(code);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate(StoredConfig config, String rawValue) {
         if (config == null) {

@@ -5,6 +5,8 @@ import com.corwin.framework.constant.UserType;
 import java.time.Instant;
 
 /**
+ * Response DTO for an end-user profile.
+ *
  * @author Corwin 2026/4/19
  */
 public record UserProfileRes(

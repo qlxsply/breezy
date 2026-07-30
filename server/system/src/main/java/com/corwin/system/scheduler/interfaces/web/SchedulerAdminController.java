@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 閸斻劍鈧椒鎹㈤崝锛勵吀閻炲棙甯堕崚璺烘珤閵? *
+ * REST controller for scheduler job administration (list, detail, pause, resume, cancel, trigger, delete).
  *
  * @author Corwin 2026/4/15
  */
@@ -35,18 +35,21 @@ public class SchedulerAdminController {
     private final SchedulerQueryAppService queryAppService;
     private final SchedulerCommandAppService commandAppService;
 
+    /** Lists all non-deleted jobs with runtime status. */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.view"})
     public ApiResponse<List<SchedulerJobRes>> list() {
         return ApiResponse.ok(queryAppService.listJobs().stream().map(SchedulerAdminController::toRes).toList());
     }
 
+    /** Returns detailed information for a single job. */
     @GetMapping("/{jobId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.view"})
     public ApiResponse<SchedulerJobDetailRes> detail(@PathVariable String jobId) {
         return ApiResponse.ok(toDetailRes(queryAppService.getJob(jobId)));
     }
 
+    /** Paginated execution history for a specific job. */
     @PostMapping("/{jobId}/executions")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.view"})
     public ApiResponse<PageData<SchedulerJobExecutionRes>> executions(@PathVariable String jobId,
@@ -57,6 +60,7 @@ public class SchedulerAdminController {
                 page.elements().stream().map(SchedulerAdminController::toExecutionRes).toList()));
     }
 
+    /** Pauses a scheduled job. */
     @PostMapping("/{jobId}/pause")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.pause"})
     public ApiResponse<Boolean> pause(@PathVariable String jobId) {
@@ -64,6 +68,7 @@ public class SchedulerAdminController {
         return ApiResponse.ok(true);
     }
 
+    /** Resumes a paused job. */
     @PostMapping("/{jobId}/resume")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.resume"})
     public ApiResponse<Boolean> resume(@PathVariable String jobId) {
@@ -71,6 +76,7 @@ public class SchedulerAdminController {
         return ApiResponse.ok(true);
     }
 
+    /** Cancels a scheduled job. */
     @PostMapping("/{jobId}/cancel")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.cancel"})
     public ApiResponse<Boolean> cancel(@PathVariable String jobId) {
@@ -78,6 +84,7 @@ public class SchedulerAdminController {
         return ApiResponse.ok(true);
     }
 
+    /** Triggers an immediate job execution. */
     @PostMapping("/{jobId}/trigger")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.trigger"})
     public ApiResponse<Boolean> trigger(@PathVariable String jobId) {
@@ -85,6 +92,7 @@ public class SchedulerAdminController {
         return ApiResponse.ok(true);
     }
 
+    /** Soft-deletes a job. */
     @DeleteMapping("/{jobId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"scheduler.job.delete"})
     public ApiResponse<Boolean> delete(@PathVariable String jobId) {

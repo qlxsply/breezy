@@ -29,6 +29,9 @@ public class WebPushVapidService {
 
     private final ConfigStore configStore;
 
+    /**
+     * Ensures VAPID key pair exists, generating one if missing.
+     */
     public synchronized void ensureVapidKeys() {
         ensureBouncyCastleProvider();
 
@@ -46,11 +49,22 @@ public class WebPushVapidService {
         updateConfig(SystemConfigKeys.WEB_PUSH_VAPID_PRIVATE_KEY, generatedPrivate);
     }
 
+    /**
+     * Returns the VAPID public key, generating keys if not yet available.
+     *
+     * @return the Base64-encoded VAPID public key
+     */
     public String getPublicKey() {
         ensureVapidKeys();
         return ConfigRegistry.stringV(SystemConfigKeys.WEB_PUSH_VAPID_PUBLIC_KEY);
     }
 
+    /**
+     * Creates a new {@link PushService} configured with the stored VAPID keys.
+     *
+     * @return a configured PushService instance
+     * @throws GeneralSecurityException if key initialization fails
+     */
     public PushService newPushService() throws GeneralSecurityException {
         ensureBouncyCastleProvider();
         ensureVapidKeys();
@@ -60,6 +74,9 @@ public class WebPushVapidService {
         return new PushService(publicKey, privateKey, subject);
     }
 
+    /**
+     * Ensures the BouncyCastle security provider is registered.
+     */
     public void ensureProviderReady() {
         ensureBouncyCastleProvider();
     }

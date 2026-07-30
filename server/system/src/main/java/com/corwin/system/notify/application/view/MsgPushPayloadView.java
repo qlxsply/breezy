@@ -1,8 +1,17 @@
 package com.corwin.system.notify.application.view;
 
 /**
- * SSE 推送消息载荷。
+ * Payload view for SSE-pushed messages sent to the client in real-time.
  *
+ * @param eventId              the delivery event ID
+ * @param notificationId       the associated notification ID
+ * @param msgType              the message type
+ * @param title                the message title
+ * @param content              the message content
+ * @param route                the front-end route
+ * @param priority             the priority level
+ * @param panelAutoOpen        whether to auto-open the notification panel
+ * @param osNotificationEnabled whether to send OS-level notification
  * @author Corwin 2026/3/19
  */
 public record MsgPushPayloadView(

@@ -1,6 +1,8 @@
 package com.corwin.system.methodstat.application.view;
 
 /**
+ * View object representing aggregated method invocation statistics, including call counts,
+ * success/failure rates across recent time windows, and duration percentiles.
  * @author Corwin 2026/3/25
  */
 public record MethodStatStatsView(

@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.application.event;
 
 /**
- * 动态任务取消请求事件。
+ * Event fired when a job cancellation is requested.
  *
  * @author Corwin 2026/4/15
  */

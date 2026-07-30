@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 动态任务引导启动器。
+ * Bootstrap component that recovers and registers all scheduled jobs on application context refresh.
  *
  * @author Corwin 2026/4/15
  */
@@ -21,6 +21,7 @@ public class SchedulerBootstrap implements ApplicationListener<ContextRefreshedE
     private final SchedulerRuntimeRegistrar runtimeRegistrar;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
+    /** Recovers all enabled jobs when the root application context is refreshed (runs once). */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (event.getApplicationContext().getParent() != null) {

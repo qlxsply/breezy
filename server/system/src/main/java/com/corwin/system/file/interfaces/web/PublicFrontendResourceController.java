@@ -20,6 +20,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 
 /**
+ * Public controller for serving frontend static resources (JS, CSS, images, etc.).
+ * All endpoints are unauthenticated ({@link PermitAll}) and serve files from
+ * the app-resources directory with caching headers.
+ *
  * @author Corwin 2026/6/15
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -30,6 +34,13 @@ public class PublicFrontendResourceController {
 
     private final FrontendResourceQueryService frontendResourceQueryService;
 
+    /**
+     * Serves a frontend resource file. The path is resolved and streamed
+     * to the HTTP response with appropriate content type and caching headers.
+     *
+     * @param resourcePath the wildcard resource path (may include subdirectories)
+     * @param response     the HTTP response to write to
+     */
     @GetMapping("/{*resourcePath}")
     @PermitAll
     public void view(@PathVariable String resourcePath, HttpServletResponse response) throws Exception {

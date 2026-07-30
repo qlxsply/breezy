@@ -1,6 +1,9 @@
 package com.corwin.system.file.published;
 
 /**
+ * Represents commonly used internal file types with predefined content types,
+ * default file extensions, and human-readable descriptions.
+ *
  * @author Corwin 2026/4/16
  */
 public enum InternalFileType {

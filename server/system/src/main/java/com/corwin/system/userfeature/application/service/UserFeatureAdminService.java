@@ -29,6 +29,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for user feature administration.
+ *
+ * <p>Provides use-case orchestration for managing product applications, user application packages,
+ * package access bindings, and per-user access overrides in the admin console.</p>
+ *
  * @author Corwin 2026/6/14
  */
 @Service
@@ -50,6 +55,11 @@ public class UserFeatureAdminService {
     private final UserFeatureAccessService userFeatureAccessService;
     private final ApiPermissionCache apiPermissionCache;
 
+    /**
+     * Returns all applications as a flat catalog view with features and permission counts.
+     *
+     * @return list of application views
+     */
     public List<UserFeatureApplicationView> applications() {
         Map<Long, List<UserFeatureItemView>> featuresByApplicationId = featureViewsByApplicationId();
         Map<Long, Integer> permissionCountByApplicationId = permissionCountByApplicationId();
@@ -63,6 +73,14 @@ public class UserFeatureAdminService {
                         featuresByApplicationId.getOrDefault(application.getId(), List.of()))).toList();
     }
 
+    /**
+     * Paginates product applications with optional keyword and enabled filter.
+     *
+     * @param keyword optional keyword filter
+     * @param enabled optional enabled status filter
+     * @param spec    the page specification
+     * @return paginated application views
+     */
     public PageData<UserFeatureApplicationView> pageApplications(String keyword, Boolean enabled, PageSpec spec) {
         PageData<ProductApplication> page = productApplicationRepository.page(keyword, enabled,
                 PageSpecSorts.apply(spec));
@@ -70,11 +88,24 @@ public class UserFeatureAdminService {
                 page.totalElements(), page.elements().stream().map(item -> getApplication(item.getId())).toList());
     }
 
+    /**
+     * Gets a single application view by its ID.
+     *
+     * @param id the application ID
+     * @return the application view
+     */
     public UserFeatureApplicationView getApplication(Long id) {
         return applications().stream().filter(item -> Objects.equals(item.id(), id)).findFirst()
                 .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Enables or disables a product application.
+     *
+     * @param id      the application ID
+     * @param enabled true to enable, false to disable
+     * @return true on success
+     */
     @Transactional
     public boolean updateApplicationStatus(Long id, boolean enabled) {
         ProductApplication application = productApplicationRepository.findById(id)
@@ -89,6 +120,11 @@ public class UserFeatureAdminService {
         return true;
     }
 
+    /**
+     * Returns all user application packages with their full application/feature access details.
+     *
+     * @return list of package views
+     */
     public List<UserFeaturePackageView> packages() {
         Map<Long, ProductApplication> applicationById = productApplicationRepository.findAll().stream()
                 .filter(item -> item.getId() != null).collect(
@@ -110,6 +146,14 @@ public class UserFeatureAdminService {
                         featureAccessesByPackageId.getOrDefault(pkg.getId(), List.of()))).toList();
     }
 
+    /**
+     * Paginates user application packages with optional keyword and enabled filter.
+     *
+     * @param keyword optional keyword filter
+     * @param enabled optional enabled status filter
+     * @param spec    the page specification
+     * @return paginated package views
+     */
     public PageData<UserFeaturePackageView> pagePackages(String keyword, Boolean enabled, PageSpec spec) {
         PageData<UserApplicationPackage> page = userApplicationPackageRepository.page(keyword, enabled,
                 PageSpecSorts.apply(spec));
@@ -117,11 +161,23 @@ public class UserFeatureAdminService {
                 page.totalElements(), page.elements().stream().map(item -> getPackage(item.getId())).toList());
     }
 
+    /**
+     * Gets a single package view by its ID.
+     *
+     * @param id the package ID
+     * @return the package view
+     */
     public UserFeaturePackageView getPackage(Long id) {
         return packages().stream().filter(item -> Objects.equals(item.id(), id)).findFirst()
                 .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Creates a new user application package with its application/feature accesses.
+     *
+     * @param cmd the package creation command
+     * @return the created package view
+     */
     @Transactional
     public UserFeaturePackageView createPackage(SaveUserFeaturePackageCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -138,6 +194,13 @@ public class UserFeatureAdminService {
         return getPackage(entity.getId());
     }
 
+    /**
+     * Updates an existing user application package.
+     *
+     * @param id  the package ID
+     * @param cmd the package update command
+     * @return the updated package view
+     */
     @Transactional
     public UserFeaturePackageView updatePackage(Long id, SaveUserFeaturePackageCommand cmd) {
         BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
@@ -159,6 +222,13 @@ public class UserFeatureAdminService {
         return getPackage(entity.getId());
     }
 
+    /**
+     * Enables or disables a user application package.
+     *
+     * @param id      the package ID
+     * @param enabled true to enable, false to disable
+     * @return true on success
+     */
     @Transactional
     public boolean updatePackageStatus(Long id, boolean enabled) {
         UserApplicationPackage entity = userApplicationPackageRepository.findById(id)
@@ -173,6 +243,12 @@ public class UserFeatureAdminService {
         return true;
     }
 
+    /**
+     * Deletes a user application package and all its associated access records and members.
+     *
+     * @param id the package ID
+     * @return true on success
+     */
     @Transactional
     public boolean deletePackage(Long id) {
         UserApplicationPackage entity = userApplicationPackageRepository.findById(id)
@@ -185,6 +261,12 @@ public class UserFeatureAdminService {
         return true;
     }
 
+    /**
+     * Gets the full user feature management view for a user, including inherited and effective access.
+     *
+     * @param userId the user ID
+     * @return the user management view
+     */
     public UserFeatureUserManagementView getUserManagement(Long userId) {
         var user = webUserRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
         String account = resolveAccount(userId);
@@ -256,6 +338,14 @@ public class UserFeatureAdminService {
         return new UserFeatureUserManagementView(String.valueOf(userId), account, packageIds, packages, applications);
     }
 
+    /**
+     * Saves the full user feature management configuration.
+     * <p>Replaces package memberships, application overrides, and feature overrides atomically.</p>
+     *
+     * @param userId the user ID
+     * @param cmd    the user management command
+     * @return true on success
+     */
     @Transactional
     public boolean saveUserManagement(Long userId, SaveUserFeatureUserManagementCommand cmd) {
         webUserRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
@@ -283,6 +373,12 @@ public class UserFeatureAdminService {
         return true;
     }
 
+    /**
+     * Persists the application/feature access bindings for a package, replacing any existing bindings.
+     *
+     * @param packageId the package ID
+     * @param commands  the application access commands
+     */
     private void savePackageAccesses(Long packageId,
             List<SaveUserFeaturePackageCommand.ApplicationAccessCommand> commands) {
         userPackageFeatureAccessRepository.deleteByPackageId(packageId);
@@ -333,6 +429,13 @@ public class UserFeatureAdminService {
         apiPermissionCache.clearAll();
     }
 
+    /**
+     * Builds a list of {@link UserApplicationOverride} entities from the given commands, validating application existence.
+     *
+     * @param userId   the user ID
+     * @param commands the application override commands
+     * @return list of application override entities
+     */
     private List<UserApplicationOverride> buildApplicationOverrides(Long userId,
             List<ApplicationOverrideCommand> commands) {
         if (commands == null || commands.isEmpty()) {
@@ -359,6 +462,13 @@ public class UserFeatureAdminService {
         return result;
     }
 
+    /**
+     * Builds a list of {@link UserFeatureOverride} entities from the given commands, validating feature existence.
+     *
+     * @param userId   the user ID
+     * @param commands the feature override commands
+     * @return list of feature override entities
+     */
     private List<UserFeatureOverride> buildFeatureOverrides(Long userId, List<FeatureOverrideCommand> commands) {
         if (commands == null || commands.isEmpty()) {
             return List.of();
@@ -388,6 +498,9 @@ public class UserFeatureAdminService {
         return result;
     }
 
+    /**
+     * Assembles a {@link UserFeaturePackageView} from the raw entities and pre-fetched reference data.
+     */
     private UserFeaturePackageView toPackageView(UserApplicationPackage pkg,
             Map<Long, ProductApplication> applicationById, Map<Long, List<UserFeatureItemView>> featuresByApplicationId,
             List<UserPackageApplicationAccess> applicationAccesses, List<UserPackageFeatureAccess> featureAccesses) {
@@ -414,6 +527,9 @@ public class UserFeatureAdminService {
                 Boolean.TRUE.equals(pkg.getDefaultPackage()), accessViews);
     }
 
+    /**
+     * Groups feature item views by application ID, sorted by display order.
+     */
     private Map<Long, List<UserFeatureItemView>> featureViewsByApplicationId() {
         Map<Long, List<String>> permissionCodesByFeatureId = permissionCodesByFeatureId();
         return productFeatureRepository.findAll().stream()
@@ -429,6 +545,9 @@ public class UserFeatureAdminService {
                                 Collectors.toList())));
     }
 
+    /**
+     * Counts permission bindings grouped by application ID.
+     */
     private Map<Long, Integer> permissionCountByApplicationId() {
         return productFeaturePermissionBindingRepository.findAll().stream()
                 .filter(item -> item.getApplicationId() != null).collect(
@@ -436,6 +555,9 @@ public class UserFeatureAdminService {
                                 Collectors.collectingAndThen(Collectors.counting(), Long::intValue)));
     }
 
+    /**
+     * Maps each feature ID to its list of bound permission codes.
+     */
     private Map<Long, List<String>> permissionCodesByFeatureId() {
         List<ProductFeaturePermissionBinding> bindings = productFeaturePermissionBindingRepository.findAll();
         LinkedHashSet<Long> permissionIds = bindings.stream().map(ProductFeaturePermissionBinding::getPermissionId)
@@ -458,6 +580,10 @@ public class UserFeatureAdminService {
                         LinkedHashMap::new));
     }
 
+    /**
+     * Summarizes the aggregate feature access scope per application from a collection of package application accesses.
+     * <p>FULL takes precedence over PARTIAL when both exist for the same application.</p>
+     */
     private Map<Long, String> summarizePackageScopeByApplicationId(Collection<UserPackageApplicationAccess> accesses) {
         Map<Long, String> result = new LinkedHashMap<>();
         for (UserPackageApplicationAccess access : accesses) {
@@ -473,6 +599,9 @@ public class UserFeatureAdminService {
         return result;
     }
 
+    /**
+     * Resolves and validates a list of raw package ID strings into a set of valid Long IDs.
+     */
     private Set<Long> resolvePackageIds(List<String> packageIds) {
         if (packageIds == null || packageIds.isEmpty()) {
             return Set.of();
@@ -488,6 +617,9 @@ public class UserFeatureAdminService {
         return Set.copyOf(result);
     }
 
+    /**
+     * Resolves the user's account name (username identity) or falls back to the user ID string.
+     */
     private String resolveAccount(Long userId) {
         return webUserIdentityRepository.findFirstByUserIdAndIdentityType(userId, WebUserIdentityType.USERNAME)
                 .map(WebUserIdentity::getIdentityValue).orElse(String.valueOf(userId));

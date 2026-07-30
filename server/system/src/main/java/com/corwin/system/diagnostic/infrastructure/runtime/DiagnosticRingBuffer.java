@@ -6,6 +6,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * A thread-safe ring buffer with configurable capacity that retains the most recently added items.
+ *
+ * @param <T> the element type
  * @author Corwin 2026/4/16
  */
 public class DiagnosticRingBuffer<T> {
@@ -13,15 +16,30 @@ public class DiagnosticRingBuffer<T> {
     private final ArrayDeque<T> deque = new ArrayDeque<>();
     private int capacity;
 
+    /**
+     * Creates a ring buffer with the given initial capacity.
+     *
+     * @param capacity the maximum number of items to retain
+     */
     public DiagnosticRingBuffer(int capacity) {
         this.capacity = Math.max(1, capacity);
     }
 
+    /**
+     * Reconfigures the maximum capacity, trimming excess items if necessary.
+     *
+     * @param capacity the new capacity
+     */
     public synchronized void configureCapacity(int capacity) {
         this.capacity = Math.max(1, capacity);
         trimIfNecessary();
     }
 
+    /**
+     * Adds an item to the end of the buffer, trimming old items if the capacity is exceeded.
+     *
+     * @param item the item to add; null items are ignored
+     */
     public synchronized void add(T item) {
         if (item == null) {
             return;
@@ -30,6 +48,12 @@ public class DiagnosticRingBuffer<T> {
         trimIfNecessary();
     }
 
+    /**
+     * Returns the most recent items up to the given limit, in reverse chronological order (newest first).
+     *
+     * @param limit the maximum number of items to return
+     * @return a list of recent items
+     */
     public synchronized List<T> latest(int limit) {
         if (deque.isEmpty()) {
             return List.of();
@@ -46,10 +70,18 @@ public class DiagnosticRingBuffer<T> {
         return List.copyOf(result);
     }
 
+    /**
+     * Returns the single most recently added item, or null if the buffer is empty.
+     *
+     * @return the latest item, or null
+     */
     public synchronized T latest() {
         return deque.peekLast();
     }
 
+    /**
+     * Removes all items from the buffer.
+     */
     public synchronized void clear() {
         deque.clear();
     }

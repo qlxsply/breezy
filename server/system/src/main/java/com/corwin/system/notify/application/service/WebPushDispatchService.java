@@ -34,12 +34,20 @@ public class WebPushDispatchService {
     private final MessageDeliveryRepository messageDeliveryRepository;
     private final WebPushVapidService webPushVapidService;
 
+    /**
+     * Asynchronously dispatches a Web Push for the given delivery.
+     *
+     * @param deliveryId the delivery record ID
+     */
     @Async("taskExecutor")
     @Transactional
     public void dispatchAsync(Long deliveryId) {
         dispatchWithRetry(deliveryId, true);
     }
 
+    /**
+     * Scheduled task that retries PENDING deliveries that have not yet been sent.
+     */
     @Scheduled(fixedDelayString = "${breezy.msg.push.retry-delay-ms:20000}")
     @Transactional
     public void retryPendingDeliveries() {

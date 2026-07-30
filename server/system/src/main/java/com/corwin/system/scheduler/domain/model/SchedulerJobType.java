@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 任务类型。
+ * Enum representing the type of a scheduled job.
  *
  * @author Corwin 2026/4/15
  */

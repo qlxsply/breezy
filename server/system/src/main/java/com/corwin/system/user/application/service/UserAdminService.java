@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Application service for admin user management operations including
+ * CRUD, pagination, password reset, and batch status updates.
+ *
  * @author Corwin 2026/1/22
  */
 @Service
@@ -46,14 +49,33 @@ public class UserAdminService {
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
 
+    /**
+     * Returns all users ordered by ID ascending.
+     *
+     * @return a list of all users
+     */
     public List<User> list() {
         return userRepository.findAllByOrderByIdAsc();
     }
 
+    /**
+     * Paginates users with optional status and username filters.
+     *
+     * @param status       optional status filter
+     * @param usernameLike optional username fuzzy match
+     * @param spec         the pagination specification
+     * @return a page of users
+     */
     public PageData<User> page(UserStatus status, String usernameLike, PageSpec spec) {
         return userRepository.page(status, usernameLike, PageSpecSorts.apply(spec));
     }
 
+    /**
+     * Creates a new admin user with the given credentials and optional role assignments.
+     *
+     * @param cmd the create command containing username, nickname, password, and role IDs
+     * @return the created user entity
+     */
     @Transactional
     public User create(CreateUserCommand cmd) {
         String username = normalizeUsername(cmd.username());
@@ -72,6 +94,13 @@ public class UserAdminService {
         return saved;
     }
 
+    /**
+     * Updates the nickname and/or status of an existing user.
+     *
+     * @param id  the user ID
+     * @param cmd the update command containing new nickname and status
+     * @return the updated user entity
+     */
     @Transactional
     public User update(Long id, UpdateUserCommand cmd) {
         BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
@@ -83,6 +112,11 @@ public class UserAdminService {
         return userRepository.save(user);
     }
 
+    /**
+     * Resets a user's password to the default value, forcing a password change on next login.
+     *
+     * @param id the user ID
+     */
     @Transactional
     public void resetPassword(Long id) {
         BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
@@ -92,6 +126,11 @@ public class UserAdminService {
         userRepository.save(user);
     }
 
+    /**
+     * Updates the status of multiple users in batch.
+     *
+     * @param cmd the batch update command containing user IDs and the target status
+     */
     @Transactional
     public void batchUpdateStatus(BatchUpdateUserStatusCommand cmd) {
         BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
@@ -104,6 +143,11 @@ public class UserAdminService {
         }
     }
 
+    /**
+     * Resets passwords for multiple users in batch.
+     *
+     * @param cmd the batch command containing user IDs
+     */
     @Transactional
     public void batchResetPassword(BatchUserIdsCommand cmd) {
         BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
@@ -112,10 +156,21 @@ public class UserAdminService {
         }
     }
 
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param id the user ID
+     * @return the user entity
+     */
     public User get(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Deletes a user and their associated role assignments.
+     *
+     * @param id the user ID
+     */
     @Transactional
     public void delete(Long id) {
         BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
@@ -124,6 +179,11 @@ public class UserAdminService {
         userRepository.delete(user);
     }
 
+    /**
+     * Deletes multiple users in batch.
+     *
+     * @param cmd the batch command containing user IDs
+     */
     @Transactional
     public void batchDelete(BatchUserIdsCommand cmd) {
         BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);

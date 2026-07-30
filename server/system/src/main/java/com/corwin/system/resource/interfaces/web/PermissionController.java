@@ -19,6 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for permission queries.
+ *
+ * <p>Provides endpoints for listing assignable permissions and retrieving
+ * the current user's granted permissions and details.</p>
+ *
  * @author Corwin 2026/1/22
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -29,6 +34,11 @@ public class PermissionController {
 
     private final PermissionService permissionService;
 
+    /**
+     * Lists all permissions assignable to admin roles.
+     *
+     * @return the list of permissions
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view", "rol.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {
@@ -37,12 +47,23 @@ public class PermissionController {
                 .toList());
     }
 
+    /**
+     * Returns the permission codes granted to the current admin user.
+     *
+     * @return the current user's permission codes
+     */
     @GetMapping("/me")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<MyPermissionsRes> myPermissions() {
         return ApiResponse.ok(new MyPermissionsRes(permissionService.permissionCodesForCurrent().stream().toList()));
     }
 
+    /**
+     * Returns detailed permission info for the current admin user,
+     * including username, role names, and permission codes.
+     *
+     * @return the current user's permission details
+     */
     @GetMapping("/me/details")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
     public ApiResponse<MyPermissionsDetailRes> myPermissionsDetails() {

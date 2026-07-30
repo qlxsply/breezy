@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.domain.model;
 
 /**
- * 任务运行状态。
+ * Enum representing the runtime status of a scheduled job.
  *
  * @author Corwin 2026/4/15
  */

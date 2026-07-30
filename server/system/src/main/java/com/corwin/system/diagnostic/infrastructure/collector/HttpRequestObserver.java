@@ -19,6 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
+ * Observer that tracks HTTP request metrics including in-flight count, duration, status codes,
+ * URI-level aggregates, and latency percentiles. Emits diagnostic events for slow/error requests.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
@@ -41,10 +44,24 @@ public class HttpRequestObserver {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Records the start of an HTTP request by incrementing the in-flight counter.
+     */
     public void onRequestStarted() {
         inFlightRequests.incrementAndGet();
     }
 
+    /**
+     * Records the completion of an HTTP request and updates all relevant counters and aggregates.
+     * Emits slow request and error request events when thresholds are exceeded.
+     *
+     * @param method           the HTTP method
+     * @param uri              the request URI
+     * @param status           the HTTP response status code
+     * @param durationMs       the request duration in milliseconds
+     * @param error            the error if the request failed, or null
+     * @param slowThresholdMs  the slow request threshold in milliseconds
+     */
     public void onRequestCompleted(String method, String uri, int status, long durationMs, Throwable error,
                                    long slowThresholdMs) {
         inFlightRequests.updateAndGet(current -> Math.max(0, current - 1));
@@ -79,6 +96,12 @@ public class HttpRequestObserver {
         trimUriStatsIfNecessary();
     }
 
+    /**
+     * Returns a snapshot of aggregated HTTP metrics including status distribution, URI stats,
+     * and latency percentiles.
+     *
+     * @return the current HttpSnapshot
+     */
     public HttpSnapshot snapshot() {
         long total = totalRequests.sum();
         long totalDuration = totalDurationMs.sum();
@@ -98,6 +121,9 @@ public class HttpRequestObserver {
                 slowRequestCount.sum(), errorRequestCount.sum(), statusDistribution, p95, p99, topUris);
     }
 
+    /**
+     * Resets all HTTP metrics and URI aggregates to their initial state.
+     */
     public void reset() {
         inFlightRequests.set(0);
         totalRequests.reset();

@@ -17,6 +17,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for user feature access evaluation.
+ *
+ * <p>Provides use-case orchestration for determining which applications and features
+ * a specific user can access, resolving package grants and user-level overrides.</p>
+ *
  * @author Corwin 2026/6/14
  */
 @Service
@@ -35,6 +40,12 @@ public class UserFeatureAccessService {
     private final PermissionRepository permissionRepository;
     private final WebUserRepository webUserRepository;
 
+    /**
+     * Returns the list of applications accessible by the given user after resolving package grants and overrides.
+     *
+     * @param userId the user ID
+     * @return list of accessible applications
+     */
     public List<ProductApplication> accessibleApplicationsForUser(Long userId) {
         requireExternalUser(userId);
         UserFeatureAccessSnapshot snapshot = buildSnapshot(userId);
@@ -45,11 +56,23 @@ public class UserFeatureAccessService {
                 .filter(application -> snapshot.accessibleApplicationIds().contains(application.getId())).toList();
     }
 
+    /**
+     * Returns the IDs of features effectively accessible by the user after resolving all grants and overrides.
+     *
+     * @param userId the user ID
+     * @return list of effective feature IDs
+     */
     public List<Long> effectiveFeatureIdsForUser(Long userId) {
         requireExternalUser(userId);
         return buildSnapshot(userId).effectiveFeatureIds();
     }
 
+    /**
+     * Returns the set of permission codes granted to the user through accessible features.
+     *
+     * @param userId the user ID
+     * @return set of permission codes scoped to external users
+     */
     public Set<String> permissionCodesForExternalUser(Long userId) {
         requireExternalUser(userId);
         UserFeatureAccessSnapshot snapshot = buildSnapshot(userId);
@@ -80,6 +103,11 @@ public class UserFeatureAccessService {
         return Set.copyOf(result);
     }
 
+    /**
+     * Assigns all enabled default packages to the user if not already assigned.
+     *
+     * @param userId the user ID
+     */
     public void assignDefaultPackagesToUser(Long userId) {
         requireExternalUser(userId);
         List<UserApplicationPackage> defaults = userApplicationPackageRepository.findByDefaultPackageTrueAndEnabledTrue();
@@ -97,6 +125,9 @@ public class UserFeatureAccessService {
         }
     }
 
+    /**
+     * Builds an access snapshot for the user by resolving all enabled packages, overrides, and feature grants.
+     */
     private UserFeatureAccessSnapshot buildSnapshot(Long userId) {
         List<ProductApplication> applications = productApplicationRepository.findAll().stream()
                 .filter(application -> Boolean.TRUE.equals(application.getEnabled()))
@@ -186,6 +217,9 @@ public class UserFeatureAccessService {
                 Set.copyOf(accessibleApplicationIds));
     }
 
+    /**
+     * Determines whether an application is accessible for a user based on override and package access state.
+     */
     private boolean resolveApplicationAccessible(UserApplicationOverride applicationOverride,
             List<UserPackageApplicationAccess> packageAccesses) {
         if (applicationOverride != null) {
@@ -199,6 +233,9 @@ public class UserFeatureAccessService {
         return !packageAccesses.isEmpty();
     }
 
+    /**
+     * Determines whether a specific feature is accessible for a user by evaluating application/feature overrides and package grants.
+     */
     private boolean featureAccessible(Long featureId, UserApplicationOverride applicationOverride,
             List<UserPackageApplicationAccess> packageAccesses, Set<Long> packageFeatureIds,
             UserFeatureOverride featureOverride) {
@@ -224,6 +261,9 @@ public class UserFeatureAccessService {
         return featureOverride != null && featureOverride.getOverrideType() == UserAccessOverrideType.ENABLE && !packageAccesses.isEmpty();
     }
 
+    /**
+     * Resolves the IDs of enabled packages that the user is a member of.
+     */
     private List<Long> resolveEnabledPackageIds(Long userId) {
         List<Long> packageIds = userApplicationPackageMemberRepository.findByUserId(userId).stream()
                 .map(UserApplicationPackageMember::getPackageId).filter(Objects::nonNull).distinct().toList();
@@ -235,12 +275,18 @@ public class UserFeatureAccessService {
                 .filter(Objects::nonNull).toList();
     }
 
+    /**
+     * Validates that the given user ID refers to an existing external user.
+     */
     private void requireExternalUser(Long userId) {
         BizAssert.notNull(userId, BaseError.INVALID_PARAMETER);
         WebUser user = webUserRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
         BizAssert.notNull(user.getId(), BaseError.INVALID_PARAMETER);
     }
 
+    /**
+     * Internal snapshot holding resolved application and feature access state for a user.
+     */
     private record UserFeatureAccessSnapshot(
             List<ProductApplication> applicationsInOrder,
             List<Long> effectiveFeatureIds,

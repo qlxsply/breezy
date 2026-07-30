@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link DictItemRepository}.
+ * <p>Delegates all persistence operations to the underlying JpaRepository.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @Repository

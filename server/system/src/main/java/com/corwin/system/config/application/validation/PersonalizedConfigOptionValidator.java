@@ -13,6 +13,10 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 
 /**
+ * Validator for personalized user configuration options such as time zone,
+ * date/time format, and decimal format. Ensures the selected option exists
+ * in the dictionary and that time zone values are valid Java ZoneIds.
+ *
  * @author Corwin 2026/3/13
  */
 @Order(30)
@@ -22,6 +26,9 @@ public class PersonalizedConfigOptionValidator implements ConfigValueValidator {
 
     private final DictQueryService dictQueryService;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean supports(StoredConfig config) {
         if (config == null) {
@@ -34,6 +41,9 @@ public class PersonalizedConfigOptionValidator implements ConfigValueValidator {
                 || DefaultConfigKeys.USER_DECIMAL_FORMAT.name().equals(code);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate(StoredConfig config, String rawValue) {
         if (config == null) {

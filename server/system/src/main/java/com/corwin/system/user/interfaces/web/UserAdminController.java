@@ -32,6 +32,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for admin user management operations including
+ * CRUD, pagination, password reset, role assignment, and batch operations.
+ *
  * @author Corwin 2026/1/22
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -43,12 +46,23 @@ public class UserAdminController {
     private final UserAdminService userAdminService;
     private final UserRoleService userRoleService;
 
+    /**
+     * Returns all users ordered by ID ascending.
+     *
+     * @return a list of all users
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
     public ApiResponse<List<UserRes>> list() {
         return ApiResponse.ok(userAdminService.list().stream().map(UserAdminController::toDto).toList());
     }
 
+    /**
+     * Creates a new admin user with the given credentials and optional role assignments.
+     *
+     * @param req the create user request
+     * @return the created user
+     */
     @PostMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.add"})
     @Audit(resource = AuditResource.USER, action = AuditAction.CREATE, level = AuditLevel.HIGH)
@@ -57,12 +71,24 @@ public class UserAdminController {
         return ApiResponse.ok(toDto(userAdminService.create(cmd)));
     }
 
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param id the user ID
+     * @return the user
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
     public ApiResponse<UserRes> get(@PathVariable Long id) {
         return ApiResponse.ok(toDto(userAdminService.get(id)));
     }
 
+    /**
+     * Paginates users with optional status and username filters.
+     *
+     * @param req the page request with optional filters
+     * @return a paginated result of users
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
     public ApiResponse<PageResult<UserRes>> page(@RequestBody UserPageReq req) {
@@ -70,6 +96,13 @@ public class UserAdminController {
         return ApiResponse.ok(PageResult.of(page, UserAdminController::toDto));
     }
 
+    /**
+     * Updates the nickname and/or status of an existing user.
+     *
+     * @param id  the user ID
+     * @param req the update request
+     * @return the updated user
+     */
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.edit"})
     @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -78,6 +111,12 @@ public class UserAdminController {
         return ApiResponse.ok(toDto(userAdminService.update(id, cmd)));
     }
 
+    /**
+     * Updates the status of multiple users in batch.
+     *
+     * @param req the batch status update request
+     * @return true if successful
+     */
     @PutMapping("/batch/status")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.edit"})
     @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -87,6 +126,12 @@ public class UserAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Resets a user's password to the default value.
+     *
+     * @param id the user ID
+     * @return true if successful
+     */
     @PostMapping("/{id}/reset-password")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.pwd.reset"})
     @Audit(resource = AuditResource.USER, action = AuditAction.RESET_PASSWORD, level = AuditLevel.CRITICAL)
@@ -95,6 +140,12 @@ public class UserAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Resets passwords for multiple users in batch.
+     *
+     * @param req the batch request containing user IDs
+     * @return true if successful
+     */
     @PostMapping("/batch/reset-password")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.pwd.reset"})
     @Audit(resource = AuditResource.USER, action = AuditAction.RESET_PASSWORD, level = AuditLevel.CRITICAL)
@@ -103,12 +154,25 @@ public class UserAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Returns the role IDs assigned to a given user.
+     *
+     * @param id the user ID
+     * @return a list of role ID strings
+     */
     @GetMapping("/{id}/roles")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.role.view"})
     public ApiResponse<List<String>> userRoles(@PathVariable Long id) {
         return ApiResponse.ok(userRoleService.userRoles(id).stream().map(String::valueOf).toList());
     }
 
+    /**
+     * Replaces all role assignments for a user.
+     *
+     * @param id  the user ID
+     * @param req the request containing the new role IDs
+     * @return true if successful
+     */
     @PutMapping("/{id}/roles")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.perm.edit"})
     @Audit(resource = AuditResource.USER_ROLE, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
@@ -117,6 +181,12 @@ public class UserAdminController {
         return ApiResponse.ok(userRoleService.updateUserRoles(id, cmd));
     }
 
+    /**
+     * Deletes a user and their associated role assignments.
+     *
+     * @param id the user ID
+     * @return true if successful
+     */
     @DeleteMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.del"})
     @Audit(resource = AuditResource.USER, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)
@@ -125,6 +195,12 @@ public class UserAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Deletes multiple users in batch.
+     *
+     * @param req the batch request containing user IDs
+     * @return true if successful
+     */
     @PostMapping("/batch/delete")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.del"})
     @Audit(resource = AuditResource.USER, action = AuditAction.DELETE, level = AuditLevel.CRITICAL)

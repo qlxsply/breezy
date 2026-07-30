@@ -3,6 +3,8 @@ package com.corwin.system.resource.interfaces.web.req;
 import com.corwin.system.resource.domain.model.ResourceType;
 
 /**
+ * Request DTO for creating or updating a system resource.
+ *
  * @author Corwin 2026/6/29
  */
 public record SaveSystemResourceReq(

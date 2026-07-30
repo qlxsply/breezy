@@ -30,6 +30,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for permission code queries and resolution.
+ *
+ * <p>Provides methods to retrieve permission codes for the current user or a
+ * specific user, compute role-derived permission IDs, and list assignable
+ * permissions for internal (ADMIN) users.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @Service
@@ -44,6 +50,11 @@ public class PermissionService {
     private final ResourceRepository resourceRepository;
     private final UserFeatureAccessService userFeatureAccessService;
 
+    /**
+     * Returns detailed permission information for the currently authenticated user.
+     *
+     * @return the permission detail view including username, role names, and permission codes
+     */
     public MyPermissionsDetailView getPermissionDetailForCurrent() {
         Long userId = CtxUtil.getPrincipal().userId();
         String username = CtxUtil.getPrincipal().username();
@@ -60,6 +71,11 @@ public class PermissionService {
                 permissionCodes);
     }
 
+    /**
+     * Returns the set of permission codes granted to the current authenticated user.
+     *
+     * @return the set of permission codes (empty for guests or unauthenticated users)
+     */
     public Set<String> permissionCodesForCurrent() {
         UserType userType = CtxUtil.getPrincipal().userType();
         if (userType == null || userType == UserType.GUEST) {
@@ -72,6 +88,13 @@ public class PermissionService {
         return permissionCodesForUser(userId, userType);
     }
 
+    /**
+     * Returns the set of permission codes granted to a specific user.
+     *
+     * @param userId   the user ID
+     * @param userType the user type (ADMIN or USER)
+     * @return the set of permission codes
+     */
     public Set<String> permissionCodesForUser(Long userId, UserType userType) {
         if (userType == UserType.USER) {
             return userFeatureAccessService.permissionCodesForExternalUser(userId);
@@ -98,6 +121,11 @@ public class PermissionService {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * Returns all permissions that can be assigned to internal (ADMIN) roles.
+     *
+     * @return the sorted list of ADMIN-scoped permissions
+     */
     public List<Permission> assignablePermissionsForInternal() {
         return permissionRepository.findAll().stream()
                 .filter(permission -> permission.getUserScope() == UserType.ADMIN)

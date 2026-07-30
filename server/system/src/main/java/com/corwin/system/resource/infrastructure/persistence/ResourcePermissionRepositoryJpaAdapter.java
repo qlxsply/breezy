@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link ResourcePermissionRepository}.
+ *
+ * <p>Delegates all CRUD operations to the underlying {@link ResourcePermissionJpaRepository}.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @Repository

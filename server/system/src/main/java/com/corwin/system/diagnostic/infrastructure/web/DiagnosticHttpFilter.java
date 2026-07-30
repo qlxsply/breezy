@@ -16,6 +16,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
+ * Servlet filter that intercepts HTTP requests to collect request metrics (duration, status, errors)
+ * and emit diagnostic events when the HTTP diagnostic item is enabled.
+ *
  * @author Corwin 2026/4/16
  */
 @Component
@@ -29,6 +32,9 @@ public class DiagnosticHttpFilter extends OncePerRequestFilter implements Ordere
         this.httpRequestObserver = httpRequestObserver;
     }
 
+    /**
+     * Measures request duration and reports metrics to HttpRequestObserver when HTTP monitoring is enabled.
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -57,16 +63,31 @@ public class DiagnosticHttpFilter extends OncePerRequestFilter implements Ordere
         }
     }
 
+    /**
+     * Returns the filter order, set to HIGHEST_PRECEDENCE + 3 to run early in the chain.
+     *
+     * @return the order value
+     */
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE + 3;
     }
 
+    /**
+     * Disables filtering on async dispatches to avoid double-measurement.
+     *
+     * @return true
+     */
     @Override
     protected boolean shouldNotFilterAsyncDispatch() {
         return true;
     }
 
+    /**
+     * Disables filtering on error dispatches to avoid double-measurement.
+     *
+     * @return true
+     */
     @Override
     protected boolean shouldNotFilterErrorDispatch() {
         return true;

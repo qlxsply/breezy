@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * In-memory implementation of DiagnosticSessionRepository backed by an AtomicReference.
+ *
  * @author Corwin 2026/4/16
  */
 @Repository

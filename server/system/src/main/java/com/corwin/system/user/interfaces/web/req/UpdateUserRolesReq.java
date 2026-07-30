@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.util.List;
 
 /**
+ * Request object for replacing all role assignments for a user.
+ *
  * @author Corwin 2026/1/23
  */
 @Getter

@@ -6,6 +6,8 @@ import com.corwin.system.dict.domain.model.DictValueType;
 import java.util.List;
 
 /**
+ * Command for updating an existing dictionary type and its items.
+ *
  * @author Corwin 2026/3/15
  */
 public record UpdateDictTypeCommand(

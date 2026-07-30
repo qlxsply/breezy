@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA-based adapter implementation of {@link DictTypeRepository}.
+ * <p>Delegates persistence operations to JpaRepository and MyBatis mapper for complex queries.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @Repository

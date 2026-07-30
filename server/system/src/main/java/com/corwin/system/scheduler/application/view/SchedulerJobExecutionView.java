@@ -6,6 +6,8 @@ import com.corwin.system.scheduler.domain.model.SchedulerTriggerType;
 import java.time.Instant;
 
 /**
+ * View of a single job execution record.
+ *
  * @author Corwin 2026/4/15
  */
 public record SchedulerJobExecutionView(

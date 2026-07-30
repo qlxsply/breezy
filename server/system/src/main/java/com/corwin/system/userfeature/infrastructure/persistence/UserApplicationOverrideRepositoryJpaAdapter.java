@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link UserApplicationOverrideRepository}.
+ *
  * @author Corwin 2026/6/14
  */
 @Repository

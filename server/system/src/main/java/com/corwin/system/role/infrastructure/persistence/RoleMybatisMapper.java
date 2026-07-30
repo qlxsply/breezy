@@ -7,13 +7,21 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 角色 MyBatis 查询 Mapper。
+ * MyBatis mapper for paginated role queries with dynamic filters.
  *
  * @author Corwin 2026/7/28
  */
 @Mapper
 public interface RoleMybatisMapper {
 
+    /**
+     * Paginated query with keyword and enabled filter.
+     *
+     * @param keyword keyword pattern for code/name search
+     * @param enabled optional enabled filter
+     * @param spec    pagination specification
+     * @return paginated role data
+     */
     PageData<Role> page(@Param("keyword") String keyword, @Param("enabled") Boolean enabled,
             @Param("spec") PageSpec spec);
 }

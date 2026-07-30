@@ -6,6 +6,8 @@ import com.corwin.system.userfeature.domain.model.ProductFeature;
 import java.util.List;
 
 /**
+ * Domain repository for product features (application capabilities).
+ *
  * @author Corwin 2026/6/14
  */
 public interface ProductFeatureRepository extends DomainRepository<ProductFeature, Long> {

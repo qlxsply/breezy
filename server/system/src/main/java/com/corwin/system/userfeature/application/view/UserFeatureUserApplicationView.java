@@ -6,6 +6,9 @@ import com.corwin.system.userfeature.domain.model.UserAccessOverrideType;
 import java.util.List;
 
 /**
+ * View object representing an application in the user feature management context,
+ * with inherited/effective visibility and access scope details.
+ *
  * @author Corwin 2026/6/14
  */
 public record UserFeatureUserApplicationView(

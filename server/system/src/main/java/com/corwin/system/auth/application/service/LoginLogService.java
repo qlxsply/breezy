@@ -23,6 +23,8 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Service for recording and querying login/logout event audit logs.
+ *
  * @author Corwin 2026/1/23
  */
 @Slf4j
@@ -32,6 +34,9 @@ public class LoginLogService {
 
     private final LoginLogRepository loginLogRepository;
 
+    /**
+     * Records a successful login event for the given user.
+     */
     public void logLoginSuccess(User user) {
         if (user == null) {
             return;
@@ -39,18 +44,30 @@ public class LoginLogService {
         save(LoginEventType.LOGIN_SUCCESS, true, user.getId(), user.getUsername(), null);
     }
 
+    /**
+     * Records a failed login attempt for the given account.
+     */
     public void logLoginFailure(String account, String message) {
         save(LoginEventType.LOGIN_FAILURE, false, null, account, message);
     }
 
+    /**
+     * Records a successful logout event.
+     */
     public void logLogoutSuccess(Long userId, String account) {
         save(LoginEventType.LOGOUT, true, userId, account, null);
     }
 
+    /**
+     * Records a failed logout event.
+     */
     public void logLogoutFailure(Long userId, String account, String message) {
         save(LoginEventType.LOGOUT, false, userId, account, message);
     }
 
+    /**
+     * Performs a paginated query of login logs with optional filters.
+     */
     public PageData<LoginEvent> page(String userAccount, Instant startAt, Instant endAt, PageSpec spec) {
         String account = StrUtil.trimToNull(userAccount);
         PageSpec resolved = PageSpecSorts.apply(spec);
@@ -60,6 +77,9 @@ public class LoginLogService {
         return loginLogRepository.pageByQuery(query, resolved);
     }
 
+    /**
+     * Queries a user's own login activities (login success and logout events).
+     */
     public PageData<LoginEvent> pageOwnLoginActivities(String userAccount, PageSpec spec) {
         String account = StrUtil.trimToNull(userAccount);
         PageSpec resolved = withDefaultSort(spec);
@@ -68,6 +88,9 @@ public class LoginLogService {
         return loginLogRepository.pageByQuery(query, resolved);
     }
 
+    /**
+     * Lists recent login activities for the given account, up to the specified limit.
+     */
     public List<LoginEvent> listRecentLoginActivities(String userAccount, int limit) {
         String account = StrUtil.trimToNull(userAccount);
         if (account == null) {

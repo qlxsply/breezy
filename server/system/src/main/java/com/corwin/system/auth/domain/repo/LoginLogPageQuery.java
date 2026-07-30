@@ -6,7 +6,7 @@ import java.util.List;
 import java.time.Instant;
 
 /**
- * 登录日志分页查询条件。
+ * Page query criteria for filtering login log entries.
  *
  * @author Corwin 2026/4/15
  */

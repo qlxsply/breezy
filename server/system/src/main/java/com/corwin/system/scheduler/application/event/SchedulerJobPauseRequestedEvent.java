@@ -1,7 +1,7 @@
 package com.corwin.system.scheduler.application.event;
 
 /**
- * 动态任务暂停请求事件。
+ * Event fired when a job pause is requested.
  *
  * @author Corwin 2026/4/15
  */

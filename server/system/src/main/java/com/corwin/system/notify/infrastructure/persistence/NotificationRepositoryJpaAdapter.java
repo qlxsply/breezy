@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * JPA adapter implementation of {@link NotificationRepository}.
+ * <p>Delegates standard CRUD operations to {@link NotificationJpaRepository}
+ * and dynamic page queries to {@link NotificationMybatisMapper}.</p>
+ *
  * @author Corwin 2026/3/30
  */
 @Repository

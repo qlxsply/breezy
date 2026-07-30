@@ -6,9 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
+ * Spring Data JPA repository for {@link WebUserRestriction} entity.
+ *
  * @author Corwin 2026/5/11
  */
 public interface WebUserRestrictionJpaRepository extends JpaRepository<WebUserRestriction, Long> {
 
+    /**
+     * Find all restrictions associated with the given user ID.
+     *
+     * @param userId the user ID
+     * @return list of restrictions
+     */
     List<WebUserRestriction> findByUserId(Long userId);
 }

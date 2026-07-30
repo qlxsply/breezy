@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 任务系统引导启动器
- * 确保先扫描同步定义，后装载任务
+ * Bootstrap listener that initializes the task system on application startup.
+ * First synchronizes task definitions, then starts all published tasks.
  *
  * @author Corwin 2026/3/30
  */
@@ -23,6 +23,12 @@ public class TaskBootstrap implements ApplicationListener<ContextRefreshedEvent>
     private final TaskAppService taskAppService;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
+    /**
+     * Handles the {@link ContextRefreshedEvent} to perform task system initialization.
+     * Only processes the root application context to avoid duplicate execution.
+     *
+     * @param event the context refreshed event
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         // 仅处理根容器的刷新事件，避免多级容器重复执行

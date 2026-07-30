@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 娴犺濮熺粻锛勬倞閹貉冨煑閸? *
+ * REST controller for task administration operations.
+ * Provides endpoints for listing, configuring, publishing, stopping, and running tasks.
+ *
  * @author Corwin 2026/3/30
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -26,12 +28,24 @@ public class TaskAdminController {
 
     private final TaskAppService taskAppService;
 
+    /**
+     * Retrieves a list of all non-removed tasks.
+     *
+     * @return the list of task responses
+     */
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"task.view"})
     public ApiResponse<List<TaskRes>> list() {
         return ApiResponse.ok(taskAppService.listTasks().stream().map(TaskAdminController::toRes).toList());
     }
 
+    /**
+     * Updates the cron expression configuration for a task.
+     *
+     * @param code the task code
+     * @param req  the request containing the new cron expression
+     * @return true if the update succeeded
+     */
     @PutMapping("/{code}/config")
     @Authorize(userType = UserType.ADMIN, permissions = {"task.edit"})
     public ApiResponse<Boolean> updateConfig(@PathVariable String code, @RequestBody UpdateTaskConfigReq req) {
@@ -39,6 +53,12 @@ public class TaskAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Publishes a task, activating its scheduled execution.
+     *
+     * @param code the task code
+     * @return true if the publish succeeded
+     */
     @PostMapping("/{code}/publish")
     @Authorize(userType = UserType.ADMIN, permissions = {"task.publish"})
     public ApiResponse<Boolean> publish(@PathVariable String code) {
@@ -46,6 +66,12 @@ public class TaskAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Stops a running task and disables its schedule.
+     *
+     * @param code the task code
+     * @return true if the stop succeeded
+     */
     @PostMapping("/{code}/stop")
     @Authorize(userType = UserType.ADMIN, permissions = {"task.publish"})
     public ApiResponse<Boolean> stop(@PathVariable String code) {
@@ -53,6 +79,12 @@ public class TaskAdminController {
         return ApiResponse.ok(true);
     }
 
+    /**
+     * Immediately executes a task once, regardless of its schedule status.
+     *
+     * @param code the task code
+     * @return true if the execution was triggered
+     */
     @PostMapping("/{code}/run")
     @Authorize(userType = UserType.ADMIN, permissions = {"task.run"})
     public ApiResponse<Boolean> run(@PathVariable String code) {

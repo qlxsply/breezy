@@ -19,6 +19,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for building the admin menu resource tree.
+ *
+ * <p>Resolves the menu hierarchy visible to the current admin user based on
+ * their assigned roles and resource permissions. Supports both super admin
+ * (full tree) and role-constrained views.</p>
+ *
  * @author Corwin 2026/6/29
  */
 @Service
@@ -30,6 +36,14 @@ public class AdminMenuResourceService {
     private final RoleResourceRepository roleResourceRepository;
     private final UserRoleRepository userRoleRepository;
 
+    /**
+     * Builds the admin menu resource tree for the currently authenticated admin user.
+     *
+     * <p>Super admins receive the full resource tree; role-constrained admins receive
+     * only the resources assigned to their roles, including ancestor nodes.</p>
+     *
+     * @return the admin menu resources view
+     */
     public AdminMenuResourcesView currentAdminMenuResources() {
         Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
         if (principalOptional.isEmpty()) {

@@ -1,6 +1,8 @@
 package com.corwin.system.resource.application.view;
 
 /**
+ * View object representing a single tool page entry.
+ *
  * @author Corwin 2026/6/6
  */
 public record UserToolPageView(

@@ -37,6 +37,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
+ * Application service for internal (admin) user authentication: login,
+ * logout, password change, and session management.
+ *
  * @author Corwin 2026/1/22
  */
 @Service
@@ -53,6 +56,12 @@ public class AuthService {
     private final AuthPrincipalAuthenticator authPrincipalAuthenticator;
     private final SecurityContextService securityContextService;
 
+    /**
+     * Authenticates a user with the given credentials and creates a login session.
+     *
+     * @param cmd the login command containing account and password
+     * @return the login view with token and user info
+     */
     public LoginView login(LoginCommand cmd) {
         BizAssert.notNull(cmd, AuthError.BAD_CREDENTIALS);
         String account = cmd.account();
@@ -98,11 +107,20 @@ public class AuthService {
         }
     }
 
+    /**
+     * Returns the currently authenticated user's info, or null if not authenticated.
+     */
     public AuthUserView currentUser() {
         return securityContextService.currentOptional().flatMap(principal -> userRepository.findById(principal.userId())
                 .map(user -> toAuthView(user, principal.userType()))).orElse(null);
     }
 
+    /**
+     * Changes the current user's password after validating the old password.
+     *
+     * @param cmd the change password command
+     * @return true if successful
+     */
     public boolean changePassword(ChangePasswordCommand cmd) {
         BizAssert.notBlank(cmd.oldPassword(), AuthError.BAD_CREDENTIALS);
         passwordPolicyService.validate(cmd.newPassword());
@@ -119,6 +137,11 @@ public class AuthService {
         return true;
     }
 
+    /**
+     * Logs out the current user by revoking the active session.
+     *
+     * @return true if logout was processed
+     */
     public boolean logout() {
         AuthPrincipal principal = securityContextService.current();
         String tokenHash = CtxUtil.getTokenHash();

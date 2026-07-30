@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
+ * Application service for dictionary type and item administration.
+ * <p>Handles CRUD operations, sorting, status toggling, and draft-based batch item synchronization.</p>
+ *
  * @author Corwin 2026/3/15
  */
 @Service
@@ -52,6 +55,9 @@ public class DictAdminService {
     private final DictTypeRepository dictTypeRepository;
     private final DictItemRepository dictItemRepository;
 
+    /**
+     * Lists all dictionary types, optionally filtered by keyword matching code or name.
+     */
     public List<DictTypeView> listTypes(String keyword) {
         List<DictType> types = dictTypeRepository.findAllByOrderByNameAsc();
         if (keyword == null || keyword.isBlank()) {
@@ -62,16 +68,25 @@ public class DictAdminService {
                 .map(this::toTypeView).toList();
     }
 
+    /**
+     * Paginates dictionary types with optional code and name filtering.
+     */
     public PageData<DictTypeView> pageTypes(String code, String name, PageSpec spec) {
         PageData<DictType> page = dictTypeRepository.page(code, name, PageSpecSorts.apply(spec));
         return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
                 page.totalElements(), page.elements().stream().map(this::toTypeView).toList());
     }
 
+    /**
+     * Gets a dictionary type by its id.
+     */
     public DictTypeView getType(String id) {
         return toTypeView(getTypeEntity(id));
     }
 
+    /**
+     * Creates a new dictionary type together with its initial items.
+     */
     @Transactional
     public DictTypeView createType(CreateDictTypeCommand cmd) {
         String code = normalizeCode(cmd.code());
@@ -86,6 +101,9 @@ public class DictAdminService {
         return toTypeView(entity);
     }
 
+    /**
+     * Updates an existing dictionary type along with its items.
+     */
     @Transactional
     public DictTypeView updateType(String id, UpdateDictTypeCommand cmd) {
         DictType entity = getTypeEntity(id);
@@ -99,6 +117,9 @@ public class DictAdminService {
         return toTypeView(entity);
     }
 
+    /**
+     * Enables or disables a dictionary type.
+     */
     @Transactional
     public boolean updateTypeStatus(String id, boolean enabled) {
         DictType entity = getTypeEntity(id);
@@ -111,6 +132,9 @@ public class DictAdminService {
         return true;
     }
 
+    /**
+     * Deletes a dictionary type and all its items.
+     */
     @Transactional
     public boolean deleteType(String id) {
         DictType entity = getTypeEntity(id);
@@ -120,12 +144,18 @@ public class DictAdminService {
         return true;
     }
 
+    /**
+     * Lists all items of a given dictionary type.
+     */
     public List<DictItemView> listItems(String typeId) {
         DictType type = getTypeEntity(typeId);
         return dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId()).stream()
                 .map(this::toItemView).toList();
     }
 
+    /**
+     * Creates a new dictionary item under the specified type.
+     */
     @Transactional
     public DictItemView createItem(String typeId, CreateDictItemCommand cmd) {
         DictType type = getTypeEntity(typeId);
@@ -149,6 +179,9 @@ public class DictAdminService {
         return toItemView(item);
     }
 
+    /**
+     * Updates an existing dictionary item.
+     */
     @Transactional
     public DictItemView updateItem(String itemId, UpdateDictItemCommand cmd) {
         DictItem item = getItemEntity(itemId);
@@ -173,6 +206,9 @@ public class DictAdminService {
         return toItemView(item);
     }
 
+    /**
+     * Enables or disables a dictionary item.
+     */
     @Transactional
     public boolean updateItemStatus(String itemId, boolean enabled) {
         DictItem item = getItemEntity(itemId);
@@ -186,6 +222,9 @@ public class DictAdminService {
         return true;
     }
 
+    /**
+     * Deletes a dictionary item if it has no children.
+     */
     @Transactional
     public boolean deleteItem(String itemId) {
         DictItem item = getItemEntity(itemId);
@@ -194,6 +233,9 @@ public class DictAdminService {
         return true;
     }
 
+    /**
+     * Reorders items of a dictionary type according to the given id list.
+     */
     @Transactional
     public boolean sortItems(String typeId, List<String> itemIds) {
         DictType type = getTypeEntity(typeId);
@@ -218,6 +260,9 @@ public class DictAdminService {
         return true;
     }
 
+    /**
+     * Synchronizes the draft-based item list of a dictionary type: creates new items, updates existing ones, and deletes removed ones.
+     */
     private void syncTypeItems(DictType type, List<SaveDictTypeItemCommand> itemCommands, String operator) {
         List<SaveDictTypeItemCommand> safeCommands = itemCommands == null ? List.of() : itemCommands;
         List<DictItem> existingItems = dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId());
@@ -267,6 +312,9 @@ public class DictAdminService {
         }
     }
 
+    /**
+     * Ensures only the specified item is marked as default within the dictionary type.
+     */
     private void normalizeDefaultItem(String dictTypeId, String keepId, String operator) {
         for (DictItem existing : dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(dictTypeId)) {
             if (keepId != null && existing.getId().equals(keepId)) {
@@ -279,14 +327,23 @@ public class DictAdminService {
         }
     }
 
+    /**
+     * Retrieves the dict type entity by id, throwing NOT_FOUND if absent.
+     */
     private DictType getTypeEntity(String id) {
         return dictTypeRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Retrieves the dict item entity by id, throwing NOT_FOUND if absent.
+     */
     private DictItem getItemEntity(String id) {
         return dictItemRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     }
 
+    /**
+     * Validates the parent item assignment: checks structure type, existence, and circular reference.
+     */
     private void validateParent(DictType type, String parentItemId, String currentItemId) {
         if (parentItemId == null || parentItemId.isBlank()) {
             return;
@@ -302,6 +359,9 @@ public class DictAdminService {
         assertNoCircularParent(parent.getId(), currentItemId);
     }
 
+    /**
+     * Normalizes and validates the draft item payloads from client input.
+     */
     private Map<String, DraftItemPayload> normalizeDraftItems(DictType type, List<SaveDictTypeItemCommand> items,
             Map<String, DictItem> existingById) {
         Map<String, DraftItemPayload> payloadByClientKey = new LinkedHashMap<>();
@@ -338,6 +398,9 @@ public class DictAdminService {
         return payloadByClientKey;
     }
 
+    /**
+     * Validates parent-child relationships among draft items to prevent cycles and invalid references.
+     */
     private void validateDraftItemRelations(DictType type, Map<String, DraftItemPayload> payloadByClientKey) {
         if (type.getStructureType() != DictStructureType.TREE) {
             for (DraftItemPayload payload : payloadByClientKey.values()) {
@@ -362,6 +425,9 @@ public class DictAdminService {
         }
     }
 
+    /**
+     * Resolves the actual parent item id from the client-side parent key.
+     */
     private String resolveParentItemId(String parentClientKey, Map<String, DictItem> entityByClientKey, String selfId) {
         DictItem parent = entityByClientKey.get(parentClientKey);
         BizAssert.notNull(parent, BaseError.INVALID_PARAMETER);
@@ -369,6 +435,9 @@ public class DictAdminService {
         return parent.getId();
     }
 
+    /**
+     * Traverses the parent chain to ensure no circular parent relationship is formed.
+     */
     private void assertNoCircularParent(String parentItemId, String currentItemId) {
         String cursor = parentItemId;
         while (cursor != null && !cursor.isBlank()) {

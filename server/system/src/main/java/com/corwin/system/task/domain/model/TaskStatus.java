@@ -1,8 +1,8 @@
 package com.corwin.system.task.domain.model;
 
 /**
- * 任务执行配置状态
- * 
+ * Represents the runtime status of a task configuration.
+ *
  * @author Corwin 2026/3/30
  */
 public enum TaskStatus {

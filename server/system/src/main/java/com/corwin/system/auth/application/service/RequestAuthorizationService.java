@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 /**
+ * Service that performs runtime authorization checks against the current
+ * security context, enforcing user type and permission requirements.
+ *
  * @author Corwin 2026/4/19
  */
 @Service
@@ -20,11 +23,18 @@ public class RequestAuthorizationService {
         this.securityContextService = securityContextService;
     }
 
+    /**
+     * Checks that the current user is authenticated and optionally matches the given user type.
+     */
     public void checkAuthenticated(UserType userType) {
         AuthPrincipal principal = securityContextService.current();
         checkUserType(principal, userType);
     }
 
+    /**
+     * Checks that the current user is authenticated, matches the given user type,
+     * and possesses the required permission codes.
+     */
     public void checkAuthorized(UserType userType, String[] permissions, boolean anyPermission) {
         AuthPrincipal principal = securityContextService.current();
         checkUserType(principal, userType);

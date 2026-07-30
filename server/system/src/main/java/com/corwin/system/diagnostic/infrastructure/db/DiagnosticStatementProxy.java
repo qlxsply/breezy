@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * JDBC proxy that intercepts Statement method calls to record SQL execution metrics
+ * via SqlExecutionObserver. Supports prepared, callable, and batch statements.
+ *
  * @author Corwin 2026/4/16
  */
 public final class DiagnosticStatementProxy implements InvocationHandler {
@@ -36,6 +39,16 @@ public final class DiagnosticStatementProxy implements InvocationHandler {
         this.sqlExecutionObserver = sqlExecutionObserver;
     }
 
+    /**
+     * Wraps a Statement (or PreparedStatement/CallableStatement) with a diagnostic proxy.
+     *
+     * @param dataSourceName      the data source name
+     * @param statement           the original statement to wrap
+     * @param preparedSql         the prepared SQL for PreparedStatement, or null
+     * @param runtimeManager      the runtime manager for checking collection state
+     * @param sqlExecutionObserver the SQL execution observer
+     * @return a proxied Statement, or null if the input statement was null
+     */
     public static Statement wrap(String dataSourceName, Statement statement, String preparedSql,
                                  DiagnosticRuntimeManager runtimeManager,
                                  SqlExecutionObserver sqlExecutionObserver) {
@@ -48,6 +61,9 @@ public final class DiagnosticStatementProxy implements InvocationHandler {
                 new DiagnosticStatementProxy(dataSourceName, statement, preparedSql, runtimeManager, sqlExecutionObserver));
     }
 
+    /**
+     * Intercepts execute methods on the statement to record timing and errors.
+     */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();

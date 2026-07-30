@@ -13,9 +13,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
- * 本地文件系统存储提供者。
- * <p>
- * 实现摘要分片存储逻辑。
+ * Local filesystem storage provider.
+ * <p>Implements hash-sharded directory storage logic using the first 20 characters
+ * of the content hash to create a 4-level directory hierarchy.</p>
  *
  * @author Corwin 2026/2/23
  */
@@ -24,7 +24,7 @@ import java.nio.file.StandardCopyOption;
 public class LocalStorageProvider {
 
     /**
-     * 获取基础路径
+     * Returns the base storage directory, creating it if it does not exist.
      */
     public Path getBasePath() {
         String path = ConfigRegistry.stringV(SystemConfigKeys.STORAGE_BASE_PATH);
@@ -40,7 +40,8 @@ public class LocalStorageProvider {
     }
 
     /**
-     * 获取临时文件目录
+     * Returns the temporary file directory under the base storage path,
+     * creating it if it does not exist.
      */
     public Path getTempPath() {
         Path tempPath = getBasePath().resolve("temp");
@@ -55,7 +56,7 @@ public class LocalStorageProvider {
     }
 
     /**
-     * 写入文件
+     * Writes a file to the storage directory. Creates intermediate directories as needed.
      */
     public void write(String relativePath, String fileName, InputStream stream) throws IOException {
         Path fullDir = getBasePath().resolve(relativePath);
@@ -67,7 +68,7 @@ public class LocalStorageProvider {
     }
 
     /**
-     * 删除文件
+     * Deletes a file from the storage directory.
      */
     public void delete(String relativePath, String fileName) throws IOException {
         Path targetFile = getBasePath().resolve(relativePath).resolve(fileName);
@@ -75,7 +76,7 @@ public class LocalStorageProvider {
     }
 
     /**
-     * 读取文件
+     * Opens an input stream to read a file from the storage directory.
      */
     public InputStream read(String relativePath, String fileName) throws IOException {
         Path targetFile = getBasePath().resolve(relativePath).resolve(fileName);
@@ -83,7 +84,9 @@ public class LocalStorageProvider {
     }
 
     /**
-     * 生成相对路径：取摘要前 20 个字符，每 5 个一组，形成 4 级目录。
+     * Generates a sharded relative path from a content hash.
+     * Takes the first 20 characters and groups them into 4 levels of 5 characters each.
+     * Falls back to "default" if the hash is too short.
      */
     public String generateRelativePath(String hash) {
         if (hash == null || hash.length() < 20) {

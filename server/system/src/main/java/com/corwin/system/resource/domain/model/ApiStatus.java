@@ -5,6 +5,10 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * API lifecycle status enumeration.
+ *
+ * <p>Represents the states an API can be in: draft, active, disabled, or deleted.</p>
+ *
  * @author Corwin 2026/1/23
  */
 public enum ApiStatus implements DictEnumDefinition {

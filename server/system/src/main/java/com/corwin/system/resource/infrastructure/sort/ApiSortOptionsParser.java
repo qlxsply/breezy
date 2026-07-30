@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * API 排序配置 JSON 解析器。
+ * Parser for API sort configuration JSON.
+ *
+ * <p>Validates, normalizes, and parses the sort options JSON associated with an API,
+ * producing a {@link SortRule} that defines allowed sort fields and default sort orders.</p>
  *
  * @author Corwin 2026/7/29
  */
@@ -27,6 +30,12 @@ public final class ApiSortOptionsParser {
     private ApiSortOptionsParser() {
     }
 
+    /**
+     * Validates and normalizes a sort options JSON string.
+     *
+     * @param json the raw JSON string
+     * @return the trimmed JSON string if valid, or null if blank
+     */
     public static String normalize(String json) {
         String normalized = StrUtil.trimToNull(json);
         if (normalized == null) {
@@ -36,6 +45,13 @@ public final class ApiSortOptionsParser {
         return normalized;
     }
 
+    /**
+     * Parses a sort options JSON string into a {@link SortRule}.
+     *
+     * @param json the sort options JSON string
+     * @return the parsed SortRule, or a disabled rule if the input is blank or sorting is disabled
+     * @throws BizException if the JSON structure is invalid
+     */
     public static SortRule parse(String json) {
         String normalized = StrUtil.trimToNull(json);
         if (normalized == null) {
@@ -57,6 +73,12 @@ public final class ApiSortOptionsParser {
         return new SortRule(true, allowedFields, defaults);
     }
 
+    /**
+     * Parses the allowed fields list into a field-to-column mapping.
+     *
+     * @param allowed the list of allowed sort field payloads
+     * @return a map of field name to column expression
+     */
     private static Map<String, String> parseAllowed(List<ApiSortableFieldPayload> allowed) {
         Map<String, String> result = new LinkedHashMap<>();
         if (allowed == null) {
@@ -77,6 +99,13 @@ public final class ApiSortOptionsParser {
         return result;
     }
 
+    /**
+     * Parses the default sort specifications from the payload.
+     *
+     * @param defaults the list of default sort payloads
+     * @param allowed  the allowed field-to-column mapping for validation
+     * @return the list of default sort specifications
+     */
     private static List<SortSpec> parseDefaults(List<ApiDefaultSortPayload> defaults, Map<String, String> allowed) {
         List<SortSpec> result = new ArrayList<>();
         if (defaults == null) {
@@ -96,6 +125,12 @@ public final class ApiSortOptionsParser {
         return result;
     }
 
+    /**
+     * Parses a sort direction string into a {@link SortDirection} enum.
+     *
+     * @param direction the direction string ("ASC" or "DESC")
+     * @return the corresponding SortDirection, defaulting to ASC if blank
+     */
     private static SortDirection parseDirection(String direction) {
         String normalized = StrUtil.trimToNull(direction);
         if (normalized == null) {
@@ -108,12 +143,23 @@ public final class ApiSortOptionsParser {
         }
     }
 
+    /**
+     * Validates that a string is a valid identifier.
+     *
+     * @param value  the identifier to validate
+     * @param prefix the error message prefix
+     */
     private static void validateIdentifier(String value, String prefix) {
         if (value == null || !value.matches(IDENTIFIER_PATTERN)) {
             throw new BizException(prefix + value, BaseError.INVALID_PARAMETER);
         }
     }
 
+    /**
+     * Validates that a string is a valid column reference.
+     *
+     * @param value the column reference to validate
+     */
     private static void validateColumn(String value) {
         if (value == null || !value.matches(COLUMN_PATTERN)) {
             throw new BizException("Invalid sort column: " + value, BaseError.INVALID_PARAMETER);

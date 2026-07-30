@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 
 /**
+ * Snapshot of JVM runtime state including memory, class loading, CPU, and garbage collection metrics.
+ *
  * @author Corwin 2026/4/16
  */
 public record JvmSnapshot(
@@ -27,6 +29,9 @@ public record JvmSnapshot(
         long gcCollectionTimeMs
 ) {
 
+    /**
+     * Compact constructor that normalises null collections to immutable empty lists.
+     */
     public JvmSnapshot {
         inputArguments = inputArguments == null ? List.of() : List.copyOf(inputArguments);
         memoryPools = memoryPools == null ? List.of() : List.copyOf(memoryPools);

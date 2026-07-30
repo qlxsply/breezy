@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Application service for role-resource grant management.
+ *
  * @author Corwin 2026/6/29
  */
 @Service
@@ -43,6 +45,12 @@ public class RoleGrantService {
     private final ApiPermissionCache apiPermissionCache;
     private final InternalPermissionSessionService internalPermissionSessionService;
 
+    /**
+     * Returns the currently granted resource IDs for a given role.
+     *
+     * @param roleId the role ID
+     * @return selection view with the list of resource IDs
+     */
     public RoleGrantSelectionView roleGrantSelection(Long roleId) {
         requireRole(roleId);
         List<Long> resourceIds = roleResourceRepository.findByRoleId(roleId).stream()
@@ -53,6 +61,11 @@ public class RoleGrantService {
         return new RoleGrantSelectionView(resourceIds);
     }
 
+    /**
+     * Returns all visible resources available for granting, sorted by parent and sort order.
+     *
+     * @return list of grantable resource views
+     */
     public List<RoleGrantResourceView> grantResources() {
         return resourceRepository.findAll().stream()
                 .filter(resource -> resource.getId() != null)
@@ -62,6 +75,13 @@ public class RoleGrantService {
                 .toList();
     }
 
+    /**
+     * Updates the granted resources for a role, clears permission cache and kicks out affected sessions.
+     *
+     * @param roleId the role ID
+     * @param cmd    the grant update command containing resource IDs
+     * @return true on success
+     */
     @Transactional
     public boolean updateRoleGrant(Long roleId, UpdateRoleGrantCommand cmd) {
         requireRole(roleId);

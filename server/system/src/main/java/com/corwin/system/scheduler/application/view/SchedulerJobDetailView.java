@@ -7,6 +7,8 @@ import com.corwin.system.scheduler.domain.model.SchedulerJobType;
 import java.time.Instant;
 
 /**
+ * Detailed view of a scheduled job including definition and runtime state.
+ *
  * @author Corwin 2026/4/15
  */
 public record SchedulerJobDetailView(

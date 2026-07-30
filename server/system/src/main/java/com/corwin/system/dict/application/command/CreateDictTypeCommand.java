@@ -6,6 +6,8 @@ import com.corwin.system.dict.domain.model.DictValueType;
 import java.util.List;
 
 /**
+ * Command for creating a new dictionary type with initial items.
+ *
  * @author Corwin 2026/3/15
  */
 public record CreateDictTypeCommand(

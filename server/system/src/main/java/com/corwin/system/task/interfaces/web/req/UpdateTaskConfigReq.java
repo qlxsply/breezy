@@ -1,7 +1,9 @@
 package com.corwin.system.task.interfaces.web.req;
 
 /**
- * 更新任务配置请求 DTO
+ * Request DTO for updating a task's cron configuration.
+ *
+ * @param cronExpr the new cron expression for scheduling
  *
  * @author Corwin 2026/3/30
  */

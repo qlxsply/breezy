@@ -30,6 +30,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
+ * REST controller for external (web) user authentication: login, refresh,
+ * current user info, logout, and password change.
+ *
  * @author Corwin 2026/1/22
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -45,6 +48,9 @@ public class AuthController {
         this.userConfigAppService = userConfigAppService;
     }
 
+    /**
+     * Authenticates a web user with account and password.
+     */
     @PostMapping("/login")
     @PermitAll
     public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
@@ -53,6 +59,9 @@ public class AuthController {
                 result.refreshTokenExpiresAt(), toAuthDto(result.user())));
     }
 
+    /**
+     * Refreshes an expired access token using a refresh token.
+     */
     @PostMapping("/refresh")
     @PermitAll
     public ApiResponse<RefreshTokenResponseRes> refresh(@RequestBody RefreshTokenReq req) {
@@ -61,18 +70,27 @@ public class AuthController {
                 result.accessTokenExpiresAt(), result.refreshTokenExpiresAt()));
     }
 
+    /**
+     * Returns the currently authenticated web user's information.
+     */
     @GetMapping("/me")
     @Authenticated(userType = UserType.USER)
     public ApiResponse<AuthUserRes> me() {
         return ApiResponse.ok(toAuthDto(webUserAuthService.currentUser()));
     }
 
+    /**
+     * Logs out the current web user by clearing the session.
+     */
     @PostMapping("/logout")
     @Authenticated(userType = UserType.USER)
     public ApiResponse<Boolean> logout() {
         return ApiResponse.ok(webUserAuthService.logout());
     }
 
+    /**
+     * Changes the current web user's password.
+     */
     @PutMapping("/password")
     @Authenticated(userType = UserType.USER)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {

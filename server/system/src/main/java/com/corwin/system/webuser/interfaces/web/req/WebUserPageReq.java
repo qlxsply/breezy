@@ -4,6 +4,8 @@ import com.corwin.framework.web.request.PageRuleRequest;
 import com.corwin.framework.web.request.SortRuleRequest;
 
 /**
+ * Page request DTO for external user listing with keyword and status filter.
+ *
  * @author Corwin 2026/5/11
  */
 public record WebUserPageReq(

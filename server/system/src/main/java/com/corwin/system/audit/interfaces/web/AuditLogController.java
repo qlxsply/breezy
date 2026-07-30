@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * REST controller for audit log management.
+ * Provides endpoints for paginated listing and single-record retrieval,
+ * restricted to ADMIN users with the {@code audit.log.view} permission.
+ *
  * @author Corwin 2026/4/19
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
@@ -29,6 +33,12 @@ public class AuditLogController {
 
     private final AuditLogService auditLogService;
 
+    /**
+     * Paginated listing of audit logs with dynamic filters.
+     *
+     * @param req the page request with filter and sort parameters
+     * @return a paginated result of {@link AuditLogRes} items
+     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"audit.log.view"})
     public ApiResponse<PageResult<AuditLogRes>> page(@RequestBody AuditLogPageReq req) {
@@ -38,6 +48,12 @@ public class AuditLogController {
         return ApiResponse.ok(PageResult.of(page, AuditLogController::toRes));
     }
 
+    /**
+     * Retrieves a single audit log by its ID.
+     *
+     * @param id the audit log primary key
+     * @return the matching {@link AuditLogRes}
+     */
     @GetMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"audit.log.view"})
     public ApiResponse<AuditLogRes> get(@PathVariable("id") Long id) {

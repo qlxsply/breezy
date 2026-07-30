@@ -5,7 +5,7 @@ import com.corwin.system.file.published.OwnerType;
 import java.time.LocalDateTime;
 
 /**
- * 存储节点视图（文件或文件夹）。
+ * View object representing a storage node, which can be either a file or a folder.
  *
  * @author Corwin 2026/2/23
  */

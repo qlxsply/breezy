@@ -5,6 +5,7 @@ import com.corwin.framework.dict.DictTagColor;
 import com.corwin.framework.dict.DictTagType;
 
 /**
+ * Enum representing the lifecycle status of a refresh token.
  *
  * @author Corwin 2026/4/19
  */
