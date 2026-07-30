@@ -20,11 +20,7 @@ import com.corwin.system.userfeature.application.view.UserFeatureApplicationView
 import com.corwin.system.userfeature.application.view.UserFeatureItemView;
 import com.corwin.system.userfeature.application.view.UserFeaturePackageView;
 import com.corwin.system.userfeature.application.view.UserFeatureUserManagementView;
-import com.corwin.system.userfeature.interfaces.web.req.SaveUserFeaturePackageReq;
-import com.corwin.system.userfeature.interfaces.web.req.SaveUserFeatureUserManagementReq;
-import com.corwin.system.userfeature.interfaces.web.req.UpdateUserFeatureStatusReq;
-import com.corwin.system.userfeature.interfaces.web.req.UserFeatureApplicationPageReq;
-import com.corwin.system.userfeature.interfaces.web.req.UserFeaturePackagePageReq;
+import com.corwin.system.userfeature.interfaces.web.req.*;
 import com.corwin.system.userfeature.interfaces.web.res.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -57,9 +53,8 @@ public class UserFeatureAdminController {
     @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view"})
     public ApiResponse<PageResult<UserFeatureApplicationRes>> pageApplications(
             @RequestBody UserFeatureApplicationPageReq req) {
-        var page = userFeatureAdminService.pageApplications(req == null ? null : req.keyword(),
-                req == null ? null : req.enabled(),
-                PageSpecFactory.of(req == null ? null : req.page(), req == null ? null : req.sort()));
+        var page = userFeatureAdminService.pageApplications(req.keyword(), req.enabled(),
+                PageSpecFactory.of(req.page(), req.sort()));
         return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toApplicationRes));
     }
 
@@ -111,9 +106,8 @@ public class UserFeatureAdminController {
     @PostMapping("/packages/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.view"})
     public ApiResponse<PageResult<UserFeaturePackageRes>> pagePackages(@RequestBody UserFeaturePackagePageReq req) {
-        var page = userFeatureAdminService.pagePackages(req == null ? null : req.keyword(),
-                req == null ? null : req.enabled(),
-                PageSpecFactory.of(req == null ? null : req.page(), req == null ? null : req.sort()));
+        var page = userFeatureAdminService.pagePackages(req.keyword(), req.enabled(),
+                PageSpecFactory.of(req.page(), req.sort()));
         return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toPackageRes));
     }
 
@@ -170,7 +164,8 @@ public class UserFeatureAdminController {
     @Authorize(userType = UserType.ADMIN, permissions = {"ufp.edit"})
     @Audit(resource = AuditResource.NORMAL_FEATURE, action = AuditAction.UPDATE, description = "更新用户应用包状态",
             level = AuditLevel.HIGH)
-    public ApiResponse<Boolean> updatePackageStatus(@PathVariable Long id, @RequestBody UpdateUserFeatureStatusReq req) {
+    public ApiResponse<Boolean> updatePackageStatus(@PathVariable Long id,
+            @RequestBody UpdateUserFeatureStatusReq req) {
         return ApiResponse.ok(userFeatureAdminService.updatePackageStatus(id, req.enabled()));
     }
 

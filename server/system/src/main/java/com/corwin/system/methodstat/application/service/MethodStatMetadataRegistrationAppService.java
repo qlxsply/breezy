@@ -12,6 +12,7 @@ import java.util.Objects;
 
 /**
  * Application service for registering method metadata when a method is first intercepted.
+ *
  * @author Corwin 2026/3/25
  */
 @Service
@@ -23,6 +24,7 @@ public class MethodStatMetadataRegistrationAppService {
 
     /**
      * Register metadata for a method descriptor, creating a default switch state if none exists.
+     *
      * @param descriptor the method descriptor to register
      * @return the registered metadata
      */

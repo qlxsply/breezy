@@ -1,20 +1,20 @@
 package com.corwin.system.resource.interfaces.web;
 
-import com.corwin.system.audit.domain.model.AuditLevel;
-import com.corwin.system.audit.published.Audit;
+import com.corwin.framework.constant.UserType;
+import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.application.service.PermissionService;
 import com.corwin.system.resource.application.view.MyPermissionsDetailView;
 import com.corwin.system.resource.domain.model.Permission;
-import com.corwin.system.resource.published.ApiMeta;
-import com.corwin.system.resource.published.ApiModuleCode;
 import com.corwin.system.resource.interfaces.web.res.MyPermissionsDetailRes;
 import com.corwin.system.resource.interfaces.web.res.MyPermissionsRes;
 import com.corwin.system.resource.interfaces.web.res.PermissionRes;
-import com.corwin.system.auth.published.Authorize;
-import com.corwin.framework.constant.UserType;
-import com.corwin.framework.web.response.ApiResponse;
+import com.corwin.system.resource.published.ApiMeta;
+import com.corwin.system.resource.published.ApiModuleCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -42,9 +42,9 @@ public class PermissionController {
     @GetMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view", "rol.perm.edit"}, anyPermission = true)
     public ApiResponse<List<PermissionRes>> list() {
-        return ApiResponse.ok(permissionService.assignablePermissionsForInternal().stream()
-                .map(PermissionController::toRes)
-                .toList());
+        return ApiResponse.ok(
+                permissionService.assignablePermissionsForInternal().stream().map(PermissionController::toRes)
+                        .toList());
     }
 
     /**

@@ -29,15 +29,12 @@ public class ApiSortRuleProvider implements SortRuleProvider {
     @Override
     public SortRule getRule(HttpServletRequest request, HandlerMethod handlerMethod) {
         ApiMethod method = resolveMethod(request.getMethod());
-        ApiMethod method = resolveMethod(request.getMethod());
         String pathPattern = resolvePathPattern(request);
         if (method == null || pathPattern == null) {
             return SortRule.disabled();
         }
         return apiRepository.findFirstByProtocolAndHttpMethodAndPathPattern(ApiProtocol.HTTP, method, pathPattern)
-                .map(Api::getSortOptionsJson)
-                .map(ApiSortOptionsParser::parse)
-                .orElseGet(SortRule::disabled);
+                .map(Api::getSortOptionsJson).map(ApiSortOptionsParser::parse).orElseGet(SortRule::disabled);
     }
 
     /**

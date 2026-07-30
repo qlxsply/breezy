@@ -1,18 +1,19 @@
 package com.corwin.system.methodstat.application.service;
 
+import com.corwin.framework.error.BaseError;
+import com.corwin.framework.error.BizAssert;
+import com.corwin.framework.error.BizException;
 import com.corwin.system.methodstat.application.view.MethodStatGlobalSwitchView;
 import com.corwin.system.methodstat.application.view.MethodStatMethodSwitchView;
 import com.corwin.system.methodstat.domain.model.MethodStatKey;
 import com.corwin.system.methodstat.domain.repo.MethodStatAggregateRepository;
 import com.corwin.system.methodstat.domain.repo.MethodStatMetadataRepository;
-import com.corwin.framework.error.BaseError;
-import com.corwin.framework.error.BizAssert;
-import com.corwin.framework.error.BizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
  * Application service for managing global and per-method switches and clearing statistics data.
+ *
  * @author Corwin 2026/3/25
  */
 @Service
@@ -25,6 +26,7 @@ public class MethodStatManageAppService {
 
     /**
      * Retrieve the current global switch state.
+     *
      * @return the global switch view
      */
     public MethodStatGlobalSwitchView getGlobalSwitch() {
@@ -33,6 +35,7 @@ public class MethodStatManageAppService {
 
     /**
      * Set the global switch state and return the updated view.
+     *
      * @param enabled true to enable, false to disable
      * @return updated global switch view
      */
@@ -43,6 +46,7 @@ public class MethodStatManageAppService {
 
     /**
      * Retrieve the per-method switch state for the given key.
+     *
      * @param keyValue the method key string
      * @return the method switch view
      */
@@ -54,8 +58,9 @@ public class MethodStatManageAppService {
 
     /**
      * Set the per-method switch state for the given key.
+     *
      * @param keyValue the method key string
-     * @param enabled the new enabled state
+     * @param enabled  the new enabled state
      * @return updated method switch view
      */
     public MethodStatMethodSwitchView setMethodSwitch(String keyValue, boolean enabled) {
@@ -67,6 +72,7 @@ public class MethodStatManageAppService {
 
     /**
      * Set the switch state for all registered methods at once.
+     *
      * @param enabled the new enabled state for all methods
      */
     public void setAllMethodSwitch(boolean enabled) {
@@ -75,6 +81,7 @@ public class MethodStatManageAppService {
 
     /**
      * Clear aggregated statistics for a specific method by its key.
+     *
      * @param keyValue the method key string
      */
     public void clearMethodStats(String keyValue) {

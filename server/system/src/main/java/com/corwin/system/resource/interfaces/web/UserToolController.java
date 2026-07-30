@@ -47,7 +47,7 @@ public class UserToolController {
     }
 
     private UserToolPageRes toRes(UserToolPageView view) {
-        return new UserToolPageRes(view.id(), view.name(), view.icon(), view.description(), view.code(),
-                view.path(), view.component(), view.sortNo(), view.level(), view.enabled(), view.guestAccess());
+        return new UserToolPageRes(view.id(), view.name(), view.icon(), view.description(), view.code(), view.path(),
+                view.component(), view.sortNo(), view.level(), view.enabled(), view.guestAccess());
     }
 }

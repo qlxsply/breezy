@@ -67,9 +67,10 @@ public class SystemResourceAdminController {
     @PostMapping
     @Authorize(userType = UserType.ADMIN, permissions = {"res.add"})
     public ApiResponse<SystemResourceDetailRes> create(@RequestBody SaveSystemResourceReq req) {
-        return ApiResponse.ok(toDetailRes(systemResourceAdminService.create(req.parentId(), req.code(), req.name(),
-                req.resourceType(), req.path(), req.component(), req.icon(), req.sortNo(), req.visible(),
-                req.enabled(), req.defaultEntry(), req.systemBuiltin(), req.remark())));
+        return ApiResponse.ok(toDetailRes(
+                systemResourceAdminService.create(req.parentId(), req.code(), req.name(), req.resourceType(),
+                        req.path(), req.component(), req.icon(), req.sortNo(), req.visible(), req.enabled(),
+                        req.defaultEntry(), req.systemBuiltin(), req.remark())));
     }
 
     /**
@@ -82,9 +83,10 @@ public class SystemResourceAdminController {
     @PutMapping("/{id}")
     @Authorize(userType = UserType.ADMIN, permissions = {"res.edit"})
     public ApiResponse<SystemResourceDetailRes> update(@PathVariable Long id, @RequestBody SaveSystemResourceReq req) {
-        return ApiResponse.ok(toDetailRes(systemResourceAdminService.update(id, req.parentId(), req.code(), req.name(),
-                req.resourceType(), req.path(), req.component(), req.icon(), req.sortNo(), req.visible(),
-                req.enabled(), req.defaultEntry(), req.systemBuiltin(), req.remark())));
+        return ApiResponse.ok(toDetailRes(
+                systemResourceAdminService.update(id, req.parentId(), req.code(), req.name(), req.resourceType(),
+                        req.path(), req.component(), req.icon(), req.sortNo(), req.visible(), req.enabled(),
+                        req.defaultEntry(), req.systemBuiltin(), req.remark())));
     }
 
     /**
@@ -122,8 +124,8 @@ public class SystemResourceAdminController {
     @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.edit"})
     public ApiResponse<Boolean> updatePermissions(@PathVariable Long resourceId,
             @RequestBody UpdateSystemResourcePermissionsReq req) {
-        return ApiResponse.ok(systemResourceAdminService.updatePermissions(resourceId,
-                req == null ? null : req.permissionIds()));
+        return ApiResponse.ok(
+                systemResourceAdminService.updatePermissions(resourceId, req == null ? null : req.permissionIds()));
     }
 
     private SystemResourceTreeItemRes toTreeRes(SystemResourceTreeItemView view) {

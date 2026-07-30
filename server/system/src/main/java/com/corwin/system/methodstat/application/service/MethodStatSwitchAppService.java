@@ -13,6 +13,7 @@ import java.util.Objects;
 
 /**
  * Application service for managing global and per-method statistics collection switches.
+ *
  * @author Corwin 2026/3/25
  */
 @Service
@@ -26,6 +27,7 @@ public class MethodStatSwitchAppService {
 
     /**
      * Check whether the global statistics collection switch is currently enabled.
+     *
      * @return true if global collection is enabled
      */
     public boolean isGlobalEnabled() {
@@ -35,6 +37,7 @@ public class MethodStatSwitchAppService {
     /**
      * Enable or disable the global statistics collection. When enabling, all pointcut metadata
      * is collected first; when disabling, all stored data is cleared.
+     *
      * @param enabled true to enable global collection, false to disable
      */
     public void setGlobalEnabled(boolean enabled) {
@@ -54,6 +57,7 @@ public class MethodStatSwitchAppService {
 
     /**
      * Check whether the per-method statistics switch is enabled for the given key.
+     *
      * @param key the method identifier
      * @return true if the method switch is enabled, defaults to false
      */
@@ -64,7 +68,8 @@ public class MethodStatSwitchAppService {
 
     /**
      * Ensure a method switch state exists, creating it with the given default if absent.
-     * @param key the method identifier
+     *
+     * @param key            the method identifier
      * @param defaultEnabled default enabled state used when no existing state is found
      * @return the effective enabled state
      */
@@ -79,7 +84,8 @@ public class MethodStatSwitchAppService {
 
     /**
      * Explicitly set the per-method switch state and update metadata accordingly.
-     * @param key the method identifier
+     *
+     * @param key     the method identifier
      * @param enabled the new enabled state
      */
     public void setMethodEnabled(MethodStatKey key, boolean enabled) {
@@ -92,6 +98,7 @@ public class MethodStatSwitchAppService {
     /**
      * Determine whether collection is effectively enabled for the given key,
      * requiring both the global switch and the per-method switch to be enabled.
+     *
      * @param key the method identifier
      * @return true if both global and method switches are enabled
      */

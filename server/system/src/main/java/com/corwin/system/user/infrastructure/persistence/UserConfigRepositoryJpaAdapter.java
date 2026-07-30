@@ -94,19 +94,4 @@ public class UserConfigRepositoryJpaAdapter implements UserConfigRepository {
         return repo.findByUserIdAndConfigCode(userId, configCode);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<UserConfig> findByConfigCode(String configCode) {
-        return repo.findByConfigCode(configCode);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<UserConfig> findByConfigCodeAndConfigValue(String configCode, String configValue) {
-        return repo.findByConfigCodeAndConfigValue(configCode, configValue);
-    }
 }

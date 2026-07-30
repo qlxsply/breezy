@@ -11,20 +11,11 @@ import com.corwin.system.audit.published.Audit;
 import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
-import com.corwin.system.user.application.command.BatchUpdateUserStatusCommand;
-import com.corwin.system.user.application.command.BatchUserIdsCommand;
-import com.corwin.system.user.application.command.CreateUserCommand;
-import com.corwin.system.user.application.command.UpdateUserCommand;
-import com.corwin.system.user.application.command.UpdateUserRolesCommand;
+import com.corwin.system.user.application.command.*;
 import com.corwin.system.user.application.service.UserAdminService;
 import com.corwin.system.user.application.service.UserRoleService;
 import com.corwin.system.user.domain.model.User;
-import com.corwin.system.user.interfaces.web.req.BatchUpdateUserStatusReq;
-import com.corwin.system.user.interfaces.web.req.BatchUserIdsReq;
-import com.corwin.system.user.interfaces.web.req.CreateUserReq;
-import com.corwin.system.user.interfaces.web.req.UpdateUserReq;
-import com.corwin.system.user.interfaces.web.req.UpdateUserRolesReq;
-import com.corwin.system.user.interfaces.web.req.UserPageReq;
+import com.corwin.system.user.interfaces.web.req.*;
 import com.corwin.system.user.interfaces.web.res.UserRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +58,8 @@ public class UserAdminController {
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.add"})
     @Audit(resource = AuditResource.USER, action = AuditAction.CREATE, level = AuditLevel.HIGH)
     public ApiResponse<UserRes> create(@RequestBody CreateUserReq req) {
-        CreateUserCommand cmd = new CreateUserCommand(req.getUsername(), req.getNickname(), req.getPassword(), req.getRoleIds());
+        CreateUserCommand cmd = new CreateUserCommand(req.getUsername(), req.getNickname(), req.getPassword(),
+                req.getRoleIds());
         return ApiResponse.ok(toDto(userAdminService.create(cmd)));
     }
 

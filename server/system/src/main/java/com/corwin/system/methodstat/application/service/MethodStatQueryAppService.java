@@ -20,6 +20,7 @@ import java.util.Locale;
 
 /**
  * Application service for querying method invocation statistics with pagination, filtering, and sorting.
+ *
  * @author Corwin 2026/3/25
  */
 @Service
@@ -36,12 +37,13 @@ public class MethodStatQueryAppService {
 
     /**
      * Retrieve a paginated list of method statistics, filtered by method name and sorted by the given field.
-     * @param methodName optional method name filter
-     * @param matchMode matching mode (EXACT or fuzzy)
-     * @param sortBy field to sort by
+     *
+     * @param methodName    optional method name filter
+     * @param matchMode     matching mode (EXACT or fuzzy)
+     * @param sortBy        field to sort by
      * @param sortDirection sort direction (ASC or DESC)
-     * @param pageNo page number (1-based)
-     * @param pageSize page size
+     * @param pageNo        page number (1-based)
+     * @param pageSize      page size
      * @return paginated method statistics
      */
     public PageData<MethodStatStatsView> pageStats(String methodName, String matchMode, String sortBy,
@@ -53,9 +55,9 @@ public class MethodStatQueryAppService {
         return page(all, pageNo, pageSize);
     }
 
-    @MethodStat
     /**
      * Retrieve detailed statistics for a specific method by its key.
+     *
      * @param key the method key string
      * @return the method statistics view
      */
@@ -70,7 +72,8 @@ public class MethodStatQueryAppService {
 
     /**
      * Convert metadata and its aggregate snapshot into a complete stats view.
-     * @param metadata the method metadata
+     *
+     * @param metadata  the method metadata
      * @param nowMillis current timestamp for window calculations
      * @return the stats view
      */
@@ -94,6 +97,7 @@ public class MethodStatQueryAppService {
 
     /**
      * Create an empty snapshot with zero values for the given key.
+     *
      * @param key the method key
      * @return empty snapshot
      */
@@ -104,9 +108,10 @@ public class MethodStatQueryAppService {
 
     /**
      * Check if a method name matches the filter based on exact or fuzzy matching.
+     *
      * @param currentMethodName the actual method name
-     * @param methodName the filter value
-     * @param matchMode matching mode (EXACT or fuzzy)
+     * @param methodName        the filter value
+     * @param matchMode         matching mode (EXACT or fuzzy)
      * @return true if the method name matches the filter
      */
     private boolean matchesMethodName(String currentMethodName, String methodName, String matchMode) {
@@ -123,7 +128,8 @@ public class MethodStatQueryAppService {
 
     /**
      * Build a comparator for method stats views based on the specified sort field and direction.
-     * @param sortBy the field to sort by
+     *
+     * @param sortBy        the field to sort by
      * @param sortDirection sort direction (ASC or DESC)
      * @return configured comparator
      */
@@ -166,6 +172,7 @@ public class MethodStatQueryAppService {
 
     /**
      * Normalize a string value by trimming it; returns null if blank or null.
+     *
      * @param value the input value
      * @return normalized value or null
      */
@@ -182,8 +189,9 @@ public class MethodStatQueryAppService {
 
     /**
      * Apply in-memory pagination on a list.
-     * @param all the full list of items
-     * @param pageNo page number (1-based)
+     *
+     * @param all      the full list of items
+     * @param pageNo   page number (1-based)
      * @param pageSize items per page
      * @return paginated result
      */
