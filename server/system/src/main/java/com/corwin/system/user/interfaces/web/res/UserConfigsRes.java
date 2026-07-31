@@ -1,7 +1,5 @@
 package com.corwin.system.user.interfaces.web.res;
 
-import com.corwin.framework.config.ConfigValueType;
-
 /**
  * Response DTO for a user configuration entry.
  *
@@ -10,7 +8,7 @@ import com.corwin.framework.config.ConfigValueType;
 public record UserConfigsRes(
         String code,
         String description,
-        ConfigValueType valueType,
+        String valueType,
         String value
 ) {
 }

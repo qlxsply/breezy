@@ -10,39 +10,18 @@ import java.time.Instant;
 
 /**
  * Unified API response envelope.
- * <p>
- * All REST endpoints return this structure, providing a consistent
- * contract with success flag, business code, message, timestamp,
- * trace ID, and optional data payload.
  *
  * @param <T> the data type
  * @author Corwin 2025/10/12
  */
 @Getter
 public class ApiResponse<T> {
-    /**
-     * Whether the request was processed successfully
-     */
+
     private boolean success;
-    /**
-     * Business code (distinct from HTTP status code)
-     */
     private String code;
-    /**
-     * Human-readable message
-     */
     private String msg;
-    /**
-     * Response timestamp
-     */
     private Instant timestamp;
-    /**
-     * Trace ID for distributed tracing
-     */
     private String traceId;
-    /**
-     * Response data payload
-     */
     private T data;
 
     public static ApiResponse<Object> ok() {
@@ -66,14 +45,9 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> okWithCode(T data, String code, String msg) {
-        ApiResponse<T> r = new ApiResponse<>();
-        r.success = true;
-        r.code = code;
-        r.msg = msg;
-        r.data = data;
-        r.timestamp = HighDate.mockInstant();
-        r.traceId = CtxUtil.getTraceId();
-        return r;
+        ApiResponse<T> response = base(true, code, msg);
+        response.data = data;
+        return response;
     }
 
     public static <T> ApiResponse<T> fail(ErrorCode ec) {
@@ -81,13 +55,22 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> fail(String code, String msg) {
-        ApiResponse<T> r = new ApiResponse<>();
-        r.success = false;
-        r.code = code;
-        r.msg = msg;
-        r.timestamp = HighDate.mockInstant();
-        r.traceId = CtxUtil.getTraceId();
-        return r;
+        return base(false, code, msg);
     }
 
+    public static <T> ApiResponse<T> fail(T data, String code, String msg) {
+        ApiResponse<T> response = base(false, code, msg);
+        response.data = data;
+        return response;
+    }
+
+    private static <T> ApiResponse<T> base(boolean success, String code, String msg) {
+        ApiResponse<T> response = new ApiResponse<>();
+        response.success = success;
+        response.code = code;
+        response.msg = msg;
+        response.timestamp = HighDate.mockInstant();
+        response.traceId = CtxUtil.getTraceId();
+        return response;
+    }
 }

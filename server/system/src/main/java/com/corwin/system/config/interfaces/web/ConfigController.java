@@ -1,11 +1,7 @@
 package com.corwin.system.config.interfaces.web;
 
-import com.corwin.framework.config.StoredConfig;
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.error.BaseError;
-import com.corwin.framework.error.BizAssert;
-import com.corwin.framework.web.auth.AuthPrincipal;
-import com.corwin.framework.web.ctx.CtxUtil;
+import com.corwin.framework.web.filter.SensitiveRequestBody;
 import com.corwin.framework.web.request.PageSpecFactory;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.framework.web.response.PageResult;
@@ -14,181 +10,96 @@ import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditResource;
 import com.corwin.system.audit.published.Audit;
 import com.corwin.system.auth.published.Authorize;
-import com.corwin.system.config.application.command.UpdateConfigValueCommand;
-import com.corwin.system.config.application.service.ConfigAdminService;
-import com.corwin.system.config.application.view.ConfigClientIpPreviewView;
-import com.corwin.system.config.application.view.ConfigTimeOffsetPreviewView;
-import com.corwin.system.config.interfaces.web.req.ConfigClientIpPreviewReq;
+import com.corwin.system.config.application.command.ResetConfigCommand;
+import com.corwin.system.config.application.command.UpdateConfigCommand;
+import com.corwin.system.config.application.command.ValidateConfigCommand;
+import com.corwin.system.config.application.service.ConfigCommandService;
+import com.corwin.system.config.application.service.ConfigQueryService;
+import com.corwin.system.config.application.view.ConfigChangeView;
+import com.corwin.system.config.application.view.ConfigManagementView;
+import com.corwin.system.config.application.view.ConfigValidationView;
 import com.corwin.system.config.interfaces.web.req.ConfigPageReq;
-import com.corwin.system.config.interfaces.web.req.ConfigTimeOffsetPreviewReq;
+import com.corwin.system.config.interfaces.web.req.ResetConfigReq;
 import com.corwin.system.config.interfaces.web.req.UpdateConfigReq;
-import com.corwin.system.config.interfaces.web.res.ConfigClientIpPreviewRes;
+import com.corwin.system.config.interfaces.web.req.ValidateConfigReq;
+import com.corwin.system.config.interfaces.web.res.ConfigChangeRes;
 import com.corwin.system.config.interfaces.web.res.ConfigRes;
-import com.corwin.system.config.interfaces.web.res.ConfigTimeOffsetPreviewRes;
-import com.corwin.system.notify.application.service.NotificationDispatcher;
-import com.corwin.system.notify.interfaces.web.req.PreviewMsgPushReq;
-import com.corwin.system.notify.published.MsgType;
+import com.corwin.system.config.interfaces.web.res.ConfigValidationRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for system configuration management.
- * Provides endpoints for listing, updating, and previewing system configurations
- * including client IP resolution and time offset.
- *
- * @author Corwin 2026/5/5
+ * @author Corwin 2026/7/31
  */
-@ApiMeta(module = ApiModuleCode.SYSTEM)
 @RestController
-@RequestMapping("/api/sys/configs")
 @RequiredArgsConstructor
+@RequestMapping("/api/sys/configs")
+@ApiMeta(module = ApiModuleCode.SYSTEM)
 public class ConfigController {
 
-    private final ConfigAdminService appService;
-    private final NotificationDispatcher notificationDispatcher;
+    private final ConfigQueryService configQueryService;
+    private final ConfigCommandService configCommandService;
 
-    /**
-     * List configurations with pagination and optional fuzzy search by code or description.
-     *
-     * @param req the page request with optional codeLike and descriptionLike filters
-     * @return paginated configuration entries
-     */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
-    public ApiResponse<PageResult<ConfigRes>> list(@RequestBody ConfigPageReq req) {
-        var page = appService.page(req.codeLike(), req.descriptionLike(), PageSpecFactory.of(req.page(), null));
-        return ApiResponse.ok(PageResult.of(page, this::toRes));
+    public ApiResponse<PageResult<ConfigRes>> page(@Valid @RequestBody ConfigPageReq req) {
+        var page = configQueryService.page(req.keyword(), req.module(), req.group(),
+                PageSpecFactory.of(req.page(), null));
+        return ApiResponse.ok(PageResult.of(page, ConfigController::toRes));
     }
 
-    /**
-     * Update the value of a configuration identified by its code.
-     *
-     * @param code the configuration code
-     * @param req  the request containing the new value
-     * @return true if the update was successful
-     */
-    @PutMapping("/{code}")
+    @GetMapping("/{configKey}")
+    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
+    public ApiResponse<ConfigRes> detail(@PathVariable String configKey) {
+        return ApiResponse.ok(toRes(configQueryService.detail(configKey)));
+    }
+
+    @PostMapping("/{configKey}/validate")
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.edit"})
-    @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
-    public ApiResponse<Boolean> updateValue(@PathVariable String code, @RequestBody UpdateConfigReq req) {
-        boolean result = appService.updateValue(new UpdateConfigValueCommand(code, req.value()));
-        return ApiResponse.ok(result);
+    @SensitiveRequestBody
+    public ApiResponse<ConfigValidationRes> validate(@PathVariable String configKey,
+            @Valid @RequestBody ValidateConfigReq req) {
+        var view = configCommandService.validate(new ValidateConfigCommand(configKey, req.value()));
+        return ApiResponse.ok(toRes(view));
     }
 
-    /**
-     * Preview the resolved client IP based on the specified resolution mode and request headers.
-     *
-     * @param req     the preview request specifying the resolution mode
-     * @param request the HTTP servlet request to extract header information
-     * @return the client IP preview result
-     */
-    @PostMapping("/preview/client-ip")
-    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
-    public ApiResponse<ConfigClientIpPreviewRes> previewClientIp(@RequestBody ConfigClientIpPreviewReq req,
-            HttpServletRequest request) {
-        ConfigClientIpPreviewView view = appService.previewClientIp(req.mode(), request.getRemoteAddr(),
-                request.getHeader("X-Real-IP"), request.getHeader("X-Forwarded-For"),
-                request.getHeader("CF-Connecting-IP"), request.getHeader("True-Client-IP"));
-        return ApiResponse.ok(toClientIpPreviewRes(view));
+    @PutMapping("/{configKey}")
+    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.edit"})
+    @SensitiveRequestBody
+    @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH, recordRequest = false)
+    public ApiResponse<ConfigChangeRes> update(@PathVariable String configKey,
+            @Valid @RequestBody UpdateConfigReq req) {
+        var view = configCommandService.update(
+                new UpdateConfigCommand(configKey, req.expectedRevision(), req.reason(), req.value()));
+        return ApiResponse.ok(toRes(view));
     }
 
-    /**
-     * Preview the time offset calculation based on the provided offset seconds or target epoch millis.
-     *
-     * @param req the preview request with offset or target timestamp
-     * @return the time offset preview result
-     */
-    @PostMapping("/preview/time-offset")
-    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
-    public ApiResponse<ConfigTimeOffsetPreviewRes> previewTimeOffset(@RequestBody ConfigTimeOffsetPreviewReq req) {
-        ConfigTimeOffsetPreviewView view = appService.previewTimeOffset(req.offsetSeconds(), req.targetEpochMillis());
-        return ApiResponse.ok(toTimeOffsetPreviewRes(view));
+    @PostMapping("/{configKey}/reset-default")
+    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.edit"})
+    @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH, recordRequest = false)
+    public ApiResponse<ConfigChangeRes> resetDefault(@PathVariable String configKey,
+            @Valid @RequestBody ResetConfigReq req) {
+        var view = configCommandService.resetDefault(
+                new ResetConfigCommand(configKey, req.expectedRevision(), req.reason()));
+        return ApiResponse.ok(toRes(view));
     }
 
-    /**
-     * Preview message push notification by dispatching a test notification
-     * with the given route, priority, and delivery options.
-     *
-     * @param req the preview message push request
-     * @return a confirmation message indicating the preview was sent
-     */
-    @PostMapping("/preview/msg-push")
-    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.preview.push"})
-    public ApiResponse<String> previewMsgPush(@RequestBody PreviewMsgPushReq req) {
-        if (req == null) {
-            req = new PreviewMsgPushReq(null, null, null, null, null, null, null);
-        }
-
-        Long userId = currentUserId();
-        UserType userType = CtxUtil.getPrincipal().userType();
-        MsgType resolvedType = resolveMsgType(req.msgType());
-        String title = "[Config Preview] Message Push Test";
-        String content = "This preview message is used to verify route, priority, and client display.";
-
-        notificationDispatcher.dispatchPreview(userId, userType, resolvedType, title, content, req.route(),
-                req.priority(), req.sseEnabled(), req.webPushEnabled(), req.panelAutoOpen(),
-                req.osNotificationEnabled());
-
-        return ApiResponse.ok("Preview message sent, msgType=" + resolvedType.name());
+    private static ConfigRes toRes(ConfigManagementView view) {
+        return new ConfigRes(view.key(), view.module(), view.group(), view.title(), view.description(),
+                view.schemaVersion(), view.persistedRevision(), view.effectiveRevision(), view.configured(),
+                view.activationPolicy(), view.editPolicy(), view.source(), view.status(), view.pendingRestart(),
+                view.effectiveValue(), view.persistedValue(), view.defaultValue(), view.fields(),
+                view.sensitiveValuePresence(), view.editorId(), view.loadWarning());
     }
 
-    private ConfigRes toRes(StoredConfig config) {
-        return new ConfigRes(config.code(), config.scope(), config.description(), config.valueType(), config.value(),
-                config.level(), config.personalized());
+    private static ConfigValidationRes toRes(ConfigValidationView view) {
+        return new ConfigValidationRes(view.valid(), view.violations());
     }
 
-    private ConfigClientIpPreviewRes toClientIpPreviewRes(ConfigClientIpPreviewView view) {
-        return new ConfigClientIpPreviewRes(view.mode(), view.resolvedIp(), view.remoteAddr(), view.xRealIp(),
-                view.xForwardedFor(), view.cfConnectingIp(), view.trueClientIp());
-    }
-
-    private ConfigTimeOffsetPreviewRes toTimeOffsetPreviewRes(ConfigTimeOffsetPreviewView view) {
-        return new ConfigTimeOffsetPreviewRes(view.serverNowEpochMillis(), view.targetEpochMillis(),
-                view.calculatedOffsetSeconds(), view.offsetSeconds(), view.mockedEpochMillis());
-    }
-
-    /**
-     * Resolve the message type from a raw string input, defaulting to BUSINESS_EVENT.
-     *
-     * @param raw the raw message type string
-     * @return the resolved MsgType enum
-     */
-    private MsgType resolveMsgType(String raw) {
-        if (raw == null || raw.isBlank()) {
-            return MsgType.BUSINESS_EVENT;
-        }
-        String normalized = raw.trim().toUpperCase();
-        switch (normalized) {
-            case "SYSTEM" -> {
-                return MsgType.SYSTEM_EVENT;
-            }
-            case "BUSINESS" -> {
-                return MsgType.BUSINESS_EVENT;
-            }
-            case "TODO", "TODO_REMINDER" -> {
-                return MsgType.TODO_REMINDER;
-            }
-        }
-        try {
-            return MsgType.valueOf(normalized);
-        } catch (IllegalArgumentException ex) {
-            return MsgType.BUSINESS_EVENT;
-        }
-    }
-
-    /**
-     * Retrieve the current authenticated user ID from the request context.
-     *
-     * @return the current user ID
-     * @throws com.corwin.framework.error.BizException if the user is not authenticated
-     */
-    private Long currentUserId() {
-        AuthPrincipal principal = CtxUtil.getPrincipal();
-        Long userId = principal == null ? null : principal.userId();
-        BizAssert.notNull(userId, BaseError.FORBIDDEN);
-        return userId;
+    private static ConfigChangeRes toRes(ConfigChangeView view) {
+        return new ConfigChangeRes(view.key(), view.persistedRevision(), view.pendingRestart());
     }
 }

@@ -5,7 +5,6 @@ package com.corwin.bootstrap.application;
  */
 public enum BootstrapTaskKey {
     SCHEMA_SYNC("schema"),
-    CONFIG_SYNC("config"),
     API_SYNC("api"),
     RESOURCE_SYNC("resource"),
     DICTIONARY_SYNC("dict"),

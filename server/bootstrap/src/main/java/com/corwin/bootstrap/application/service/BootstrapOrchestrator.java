@@ -16,7 +16,6 @@ import java.util.List;
 public class BootstrapOrchestrator {
 
     private final BootstrapSchemaSyncService schemaSyncService;
-    private final BootstrapConfigSyncService configSyncService;
     private final BootstrapDictionarySyncService dictionarySyncService;
     private final BootstrapApiSyncService apiSyncService;
     private final BootstrapResourceSyncService resourceSyncService;
@@ -28,11 +27,6 @@ public class BootstrapOrchestrator {
         BootstrapTaskReport schemaReport = schemaSyncService.run(dryRun);
         reports.add(schemaReport);
         if (!schemaReport.success()) {
-            return reports;
-        }
-        BootstrapTaskReport configReport = configSyncService.run(dryRun);
-        reports.add(configReport);
-        if (!configReport.success()) {
             return reports;
         }
         BootstrapTaskReport dictReport = dictionarySyncService.run(dryRun);
@@ -62,7 +56,6 @@ public class BootstrapOrchestrator {
     public BootstrapTaskReport runTask(BootstrapTaskKey task, boolean dryRun) {
         return switch (task) {
             case SCHEMA_SYNC -> schemaSyncService.run(dryRun);
-            case CONFIG_SYNC -> configSyncService.run(dryRun);
             case DICTIONARY_SYNC -> dictionarySyncService.run(dryRun);
             case API_SYNC -> apiSyncService.run(dryRun);
             case RESOURCE_SYNC -> resourceSyncService.run(dryRun);

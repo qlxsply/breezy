@@ -1,7 +1,9 @@
 package com.corwin.schemaforge.infrastructure.liquibase;
 
-import com.corwin.config.BusinessConfigKeys;
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
+import com.corwin.schemaforge.config.SchemaForgeConfigSpecs;
+import com.corwin.schemaforge.config.SchemaForgeConfigSpecs.DdlPolicy;
+import com.corwin.schemaforge.config.SchemaForgeConfigSpecs.QualifierMode;
 import liquibase.change.Change;
 import liquibase.changelog.ChangeSet;
 import liquibase.database.Database;
@@ -45,8 +47,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * SchemaForge Liquibase 引擎，负责快照、DDL、Diff 的内存流生成。
- *
+ * SchemaForge Liquibase 寮曟搸锛岃礋璐ｅ揩鐓с€丏DL銆丏iff 鐨勫唴瀛樻祦鐢熸垚銆? *
  * @author Corwin 2026/2/24
  */
 @Slf4j
@@ -80,7 +81,8 @@ public class LiquibaseEngine {
     public DdlResult generateDdl(Connection connection, Set<String> selectedTableNames, Set<String> selectedViewNames) {
         try {
             SnapshotContext context = buildSnapshotContext(connection, selectedTableNames, selectedViewNames);
-            String sql = renderSql(context.diffResult(), context.database());
+            DdlPolicy policy = ddlPolicy();
+            String sql = renderSql(context.diffResult(), context.database(), new DiffOutputControl(), policy);
             return new DdlResult(sql.getBytes(StandardCharsets.UTF_8), context.database().getShortName(),
                     databaseVersion(context.database()), schemaName(context.database()));
         } catch (Exception e) {
@@ -100,11 +102,12 @@ public class LiquibaseEngine {
             Database sourceDatabase = sourceSnapshot.getDatabase();
             String targetQualifier = resolveDatabaseQualifier(targetDatabase, targetQualifierHint);
             String sourceQualifier = resolveDatabaseQualifier(sourceDatabase, sourceQualifierHint);
-            DdlQualifierMode qualifierMode = resolveDdlQualifierMode();
+            DdlPolicy policy = ddlPolicy();
+            QualifierMode qualifierMode = policy.qualifierMode();
             DiffOutputControl outputControl = buildOutputControlForSnapshots(qualifierMode, sourceQualifier,
                     targetQualifier);
-            String sql = renderSql(diffResult, sourceDatabase, outputControl);
-            if (qualifierMode == DdlQualifierMode.ALWAYS_SOURCE) {
+            String sql = renderSql(diffResult, sourceDatabase, outputControl, policy);
+            if (qualifierMode == QualifierMode.ALWAYS_SOURCE) {
                 sql = alignSqlQualifierToSource(sql, sourceQualifier, targetQualifier);
             }
             return new DdlResult(sql.getBytes(StandardCharsets.UTF_8), sourceDatabase.getShortName(),
@@ -122,7 +125,8 @@ public class LiquibaseEngine {
                     .compare(targetDatabase, referenceDatabase, new CompareControl());
 
             String xml = renderChangeLogXml(diffResult);
-            String sql = renderSql(diffResult, referenceDatabase);
+            DdlPolicy policy = ddlPolicy();
+            String sql = renderSql(diffResult, referenceDatabase, new DiffOutputControl(), policy);
             return new CompareResult(diffResult.getMissingObjects().size(), diffResult.getUnexpectedObjects().size(),
                     diffResult.getChangedObjects().size(), xml, sql);
         } catch (Exception e) {
@@ -260,23 +264,20 @@ public class LiquibaseEngine {
         return output.toString(StandardCharsets.UTF_8);
     }
 
-    private String renderSql(DiffResult diffResult, Database targetDatabase) {
-        return renderSql(diffResult, targetDatabase, new DiffOutputControl());
-    }
-
-    private String renderSql(DiffResult diffResult, Database targetDatabase, DiffOutputControl outputControl) {
+    private String renderSql(DiffResult diffResult, Database targetDatabase, DiffOutputControl outputControl,
+            DdlPolicy policy) {
         DiffToChangeLog diffToChangeLog = new DiffToChangeLog(diffResult, outputControl);
         StringBuilder builder = new StringBuilder();
         for (ChangeSet changeSet : diffToChangeLog.generateChangeSets()) {
             for (Change change : changeSet.getChanges()) {
                 Sql[] sqlArray = SqlGeneratorFactory.getInstance().generateSql(change, targetDatabase);
-                appendSql(builder, sqlArray);
+                appendSql(builder, sqlArray, policy.formatEnabled());
             }
         }
         return builder.toString().trim();
     }
 
-    private void appendSql(StringBuilder builder, Sql[] sqlArray) {
+    private void appendSql(StringBuilder builder, Sql[] sqlArray, boolean formatEnabled) {
         if (sqlArray == null || sqlArray.length == 0) {
             return;
         }
@@ -290,7 +291,7 @@ public class LiquibaseEngine {
                 continue;
             }
             sqlText = sqlText.trim();
-            sqlText = formatSqlIfEnabled(sqlText);
+            sqlText = formatSqlIfEnabled(sqlText, formatEnabled);
             builder.append(sqlText);
             String delimiter = sql.getEndDelimiter();
             if (delimiter == null || delimiter.isBlank()) {
@@ -304,8 +305,8 @@ public class LiquibaseEngine {
         }
     }
 
-    private String formatSqlIfEnabled(String sqlText) {
-        if (!isDdlFormatEnabled()) {
+    private String formatSqlIfEnabled(String sqlText, boolean formatEnabled) {
+        if (!formatEnabled) {
             return sqlText;
         }
         try {
@@ -315,23 +316,12 @@ public class LiquibaseEngine {
             }
             return formatted.trim();
         } catch (Exception e) {
-            log.warn("SchemaForge DDL 格式化失败，回退原始 SQL", e);
+            log.warn("SchemaForge DDL 鏍煎紡鍖栧け璐ワ紝鍥為€€鍘熷 SQL", e);
             return sqlText;
         }
     }
 
-    private DdlQualifierMode resolveDdlQualifierMode() {
-        try {
-            String raw = ConfigRegistry.stringV(BusinessConfigKeys.SCHEMAFORGE_DDL_QUALIFIER_MODE);
-            return DdlQualifierMode.from(raw);
-        } catch (Exception e) {
-            log.warn("读取配置 {} 失败，默认使用 ALWAYS_SOURCE",
-                    BusinessConfigKeys.SCHEMAFORGE_DDL_QUALIFIER_MODE.name(), e);
-            return DdlQualifierMode.ALWAYS_SOURCE;
-        }
-    }
-
-    private DiffOutputControl buildOutputControlForSnapshots(DdlQualifierMode qualifierMode, String sourceQualifier,
+    private DiffOutputControl buildOutputControlForSnapshots(QualifierMode qualifierMode, String sourceQualifier,
             String targetQualifier) {
         DiffOutputControl outputControl = new DiffOutputControl();
         switch (qualifierMode) {
@@ -405,35 +395,8 @@ public class LiquibaseEngine {
         return qualifier.trim();
     }
 
-    private enum DdlQualifierMode {
-        AUTO,
-        ALWAYS_SOURCE,
-        NEVER;
-
-        private static DdlQualifierMode from(String value) {
-            if (value == null || value.isBlank()) {
-                return ALWAYS_SOURCE;
-            }
-            String normalized = value.trim().toUpperCase(Locale.ROOT);
-            if ("ALWAYS_TARGET".equals(normalized)) {
-                return ALWAYS_SOURCE;
-            }
-            try {
-                return DdlQualifierMode.valueOf(normalized);
-            } catch (IllegalArgumentException e) {
-                return ALWAYS_SOURCE;
-            }
-        }
-    }
-
-    private boolean isDdlFormatEnabled() {
-        try {
-            return ConfigRegistry.booleanV(BusinessConfigKeys.SCHEMAFORGE_DDL_FORMAT_ENABLED);
-        } catch (Exception e) {
-            log.warn("读取配置 {} 失败，默认启用 SQL 格式化", BusinessConfigKeys.SCHEMAFORGE_DDL_FORMAT_ENABLED.name(),
-                    e);
-            return true;
-        }
+    private DdlPolicy ddlPolicy() {
+        return Configs.get(SchemaForgeConfigSpecs.DDL_POLICY);
     }
 
     private String databaseVersion(Database database) {

@@ -112,26 +112,6 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
-        <id>dict-type-config-value-type</id>
-        <code>CONFIG_VALUE_TYPE</code>
-        <name>配置值类型</name>
-        <description>系统配置值类型。</description>
-        <enumClass>com.corwin.framework.config.ConfigValueType</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
-        <id>dict-type-config-level</id>
-        <code>CONFIG_LEVEL</code>
-        <name>配置级别</name>
-        <description>系统配置级别。</description>
-        <enumClass>com.corwin.framework.config.ConfigLevel</enumClass>
-        <valueType>STRING</valueType>
-        <structureType>FLAT</structureType>
-        <enabled>true</enabled>
-    </dictionary>
-    <dictionary>
         <id>dict-type-database-type</id>
         <code>DATABASE_TYPE</code>
         <name>数据库类型</name>
@@ -384,8 +364,8 @@
     <dictionary>
         <id>dict-type-user-decimal-format</id>
         <code>USER_DECIMAL_FORMAT</code>
-        <name>小数格式</name>
-        <description>用户可选小数格式。</description>
+        <name>数字符号组合</name>
+        <description>用户可选的千分位与小数点组合。</description>
         <enumClass>com.corwin.framework.config.UserDecimalFormatOption</enumClass>
         <valueType>STRING</valueType>
         <structureType>FLAT</structureType>

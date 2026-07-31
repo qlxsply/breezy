@@ -67,10 +67,12 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 摘要表读写统一收敛到 `com.corwin.framework.config.BootstrapDigestStore`
     - 业务模块仅依赖框架抽象，不再在 `com.corwin` 业务包侧维护该表 SQL
     - 启动引导摘要由独立 bootstrap 初始化流程维护，不再依赖 `com.corwin.system.bootstrap` 包内能力
-- 系统配置存储（`sys_config`）
-    - 表结构、初始化同步与数据库访问统一收敛到 `com.corwin.framework.config`
-    - 业务模块不再维护 `sys_config` 的实体与仓储实现，仅通过框架 `ConfigStore` 访问配置
-    - 后端管理接口仍输出 `personalized` 字段，内部由 `ConfigLevel.USER` 映射得到
+- 统一配置管理重构目标（`sys_config_value`）
+    - framework 只提供配置定义、发现、启动加载抽象、不可变快照和运行时注册表，不持有系统表、SQL 或业务实体
+    - system 配置域负责 `sys_config_value` 的启动期 JDBC 加载、运行期持久化和统一管理 API
+    - 数据库只保存管理员覆盖值或重置状态标记；没有覆盖值时直接使用代码中的安全默认值
+    - 用户个性化覆盖值继续由 `sys_user_config` 管理，其公共默认值由统一配置注册表提供
+    - 详细方案与开发步骤见 `server/framework/config-tech.md`
 
 ### 管理后台页面区域命名约定
 
@@ -303,7 +305,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 - `com.corwin.framework`（框架与基础能力）
     - 统一响应/异常/权限注解、分页模型、JSON 序列化、过滤器、配置注册等
     - 启动摘要存储能力：`BootstrapDigestStore` 提供统一的 `sys_bootstrap_digest` 访问入口
-    - 系统配置存储能力：`ConfigStore` 提供统一的 `sys_config` 查询与更新入口
+    - 统一配置目标能力：提供 `ConfigSpec`、`ConfigSpecCatalog`、`ConfigRegistry` 和启动加载 SPI；具体配置表读写归 system 配置域
     - 通用缓存能力：`com.corwin.framework.cache` 提供 `CacheTemplate`、`LOCAL` 本地缓存实现，以及 `REDIS` / `LOCAL_REDIS` 扩展位；第一版支持 `STRING`、`OBJECT`、`HASH`、`LIST`、`SET`、`SORTED_SET`
     - 通用异步事件能力：统一 `AsyncEventPublisher/@AsyncEventListener` 编程模型，支持 `publish/publishAt/publishAfter`，支持 `IN_MEMORY` 与 `IN_MEMORY_DURABLE`（启动恢复）模式，并保留 Kafka/RabbitMQ 传输扩展位
     - 数据库方言通过 `AbstractDatabaseDialect` 提供公共 SQL 默认实现；启动期数据库配置由 `DbConfigEnvironmentPostProcessor` 预加载，运行期配置读写通过 `ConfigStore` 统一收口
@@ -587,7 +589,7 @@ cd web; npm run build
 - 前端 API 基地址：`web/src/api/http.ts` 中的 `API_BASE_URL`
 - 日志配置：`server/src/main/resources/log4j2-spring.xml`
 - 文件上传默认限制：`50MB`（`spring.servlet.multipart.max-file-size` / `max-request-size`）
-- JSON 工具内容转文件阈值：`JSONFMT_CONTENT_FILE_THRESHOLD`（字节，默认 61440）
+- JSON 工具内容转文件阈值：`jsonfmt.storage.policy.contentFileThresholdBytes`（字节，默认 61440）
 - 系统文件预览最大字节数：`SYSTEM_FILE_PREVIEW_MAX_SIZE`（默认 5242880）
 - 日志过滤器排除路径前缀：`LOGGING_FILTER_EXCLUDE_PREFIXES`（默认 `[/static/, /actuator, /favicon.ico]`）
 - 日志过滤器流式路径前缀：`LOGGING_FILTER_STREAM_PREFIXES`（默认 `[/api/sse/]`，并且始终识别 `Accept: text/event-stream`）
@@ -641,6 +643,7 @@ cd web; npm run build
 
 ### 真实时间使用登记（real*）
 
+- `server/system/src/main/java/com/corwin/system/config/application/service/ConfigCommandService.java`：配置覆盖值的修改时间属于系统运行元数据
 - `server/system/src/main/java/com/corwin/system/application/service/ConfigAdminService.java`：`previewTimeOffset`
   需要以服务器真实当前时间作为偏移预览基准
 - `server/src/main/java/com/corwin/framework/config/JdbcBootstrapDigestStore.java`：`save` 写入引导摘要更新时间，属于系统运行时元数据
@@ -973,8 +976,8 @@ cd web; npm run build
   - `bootstrap-init-config.yaml`：控制台引导器初始化配置草案
 - 设计原则：
   - `resources.xml`、`dictionaries.xml`、`bootstrap-init-config.yaml` 的权威副本统一归 `bootstrap`
-  - `ConfigKeys` / `BreezyConfigKeys` 继续作为配置项定义源
-  - 初始化配置文件只负责默认值覆盖，不替代配置定义
+  - 各领域 `ConfigSpec` 作为配置结构与代码默认值的唯一来源
+  - 引导程序只创建配置表结构，不写入或覆盖配置值
   - 敏感信息通过环境变量注入，不写入仓库
 ## 后端打包与 Bootstrap 初始化边界
 
@@ -989,29 +992,29 @@ cd web; npm run build
 ```
 
 - `bootstrap` 运行时只打包初始化定义所需的 `bootstarp/resources.xml`、`bootstarp/resources.xsd`、`bootstarp/dictionaries.xml`、`bootstarp/dictionaries.xsd`。
-- `bootstrap-init-config.yaml` 不再作为运行时配置源；配置项默认值以 `ConfigDefinition` 实现为准，包括 `ConfigKeys` 与 `BreezyConfigKeys`。
+- `bootstrap-init-config.yaml` 不再作为运行时配置源；配置项默认值统一由各领域 `ConfigSpec` 提供。
 - 固定系统账号与账号只以 `DefaultUser` 为权威定义源。首次创建 `admin` 时由控制台交互输入密码，并按当前密码策略默认值做基础校验。
-- `bootstrap` 控制台不再提供配置种子覆盖任务；`sys_config` 的定义同步由 `BootstrapConfigSyncService` 根据 `ConfigDefinitionProvider` 与默认值装配逻辑处理。
+- `bootstrap` 控制台不再提供配置种子或配置定义同步任务；统一配置表只由 schema 初始化创建，运行期缺失覆盖值时直接使用代码默认值。
 
 ## Bootstrap 控制台引导更新（2026-04）
 
 - 应用初始化统一收口到 `server/bootstrap`，不再依赖 `business` 内部启动触发器。
 - 引导程序只提供控制台交互，不增加前端页面。
-- 初始化默认值不再依赖 `bootstrap-init-config.yaml`：
-  - 系统配置默认值直接来自 `ConfigKeys`、`BreezyConfigKeys` 的 `ConfigDefinition`
-  - 固定用户直接来自 `DefaultUser`
+- 配置默认值不再由 bootstrap 初始化：
+  - 运行期配置默认值由各领域 `ConfigSpec` 直接提供
+  - 固定用户仍直接来自 `DefaultUser`
 - 新增“建库/建表检查”引导能力：根据数据源解析数据库类型，按 JPA 实体定义检查并创建缺失表，已存在表则输出列差异。
 - `sys_bootstrap_digest` 及相关摘要跳过机制已移除，所有初始化动作都由引导程序控制台菜单显式触发。
 - Bootstrap 中必须直接执行的 SQL 统一按数据库类型放在 `server/bootstrap/src/main/resources/bootstarp/sql/<database>/`；普通查询与更新优先使用 JPA。
 ## Bootstrap 当前初始化范围（2026-05）
 
-- 当前引导顺序为：数据库与表结构初始化 -> 配置项初始化 -> 数据字典初始化。
+- 当前引导顺序为：数据库与表结构初始化 -> 数据字典初始化。
 - 数据字典定义文件为 `server/bootstrap/src/main/resources/bootstarp/dictionaries.xml`，格式由同目录 `dictionaries.xsd` 约束。
 - 每个字典类型必须显式提供 `enumClass`，并且该类必须实现 `com.corwin.framework.dict.DictEnumDefinition`。
 - 引导程序初始化数据字典时，会先清空 `sys_dict_item`、`sys_dict_type`，再根据 `dictionaries.xml` 解析出的枚举项整批重建。
 - `DictUsageRef` 及其相关接口、服务、控制器、持久化实现已移除，不再参与系统初始化与运行期逻辑。
 ## Bootstrap API 与权限初始化（2026-05）
-- 当前引导顺序扩展为：数据库与表结构初始化 -> 配置项初始化 -> 数据字典初始化 -> API 与权限码初始化。
+- 当前引导顺序扩展为：数据库与表结构初始化 -> 数据字典初始化 -> API 与权限码初始化。
 - API 初始化不再依赖预生成 SQL，改为在 `bootstrap` 模块内扫描 `@RestController`。
 - Controller 必须标注 `com.corwin.system.resource.published.ApiMeta`，且该注解现在只保留 `module` 属性。
 - 接口路径与请求方法由 `@RequestMapping`、`@GetMapping`、`@PostMapping`、`@PutMapping`、`@DeleteMapping`、`@PatchMapping` 解析得到。
@@ -1021,7 +1024,7 @@ cd web; npm run build
 - 权限码初始化会根据 `@Authorize.permissions` 收集并 upsert 到 `sys_permission`，不会清空已有权限表数据。
 ## Bootstrap 资源与用户功能初始化（2026-05）
 
-- 当前引导顺序扩展为：数据库与表结构初始化 -> 系统配置初始化 -> 数据字典初始化 -> API 与权限初始化 -> 资源初始化。
+- 当前引导顺序扩展为：数据库与表结构初始化 -> 数据字典初始化 -> API 与权限初始化 -> 资源初始化。
 - 账号资源定义文件为 `server/bootstrap/src/main/resources/bootstarp/resources.xml`，结构由同目录 `resources.xsd` 约束。
 - `resources.xml` 当前不直接声明 API 绑定，而是通过 `sys_resource + sys_resource_permission` 维护后台资源树与按钮权限码关系。
 - 管理后台产品心智与后续菜单管理设计统一采用 `目录 -> 菜单 -> 功能 -> 按钮 -> 权限码`：
@@ -1041,7 +1044,7 @@ cd web; npm run build
 
 ## Bootstrap 默认用户初始化（2026-05）
 
-- 当前引导顺序继续扩展为：数据库与表结构初始化 -> 系统配置初始化 -> 数据字典初始化 -> API 与权限初始化 -> 资源初始化 -> 默认用户初始化 -> 系统文件逻辑目录初始化。
+- 当前引导顺序继续扩展为：数据库与表结构初始化 -> 数据字典初始化 -> API 与权限初始化 -> 资源初始化 -> 默认用户初始化 -> 系统文件逻辑目录初始化。
 - 默认保留用户统一以 `com.corwin.system.user.domain.model.DefaultUser` 为权威定义源。
 - 引导程序会按固定 ID 同步以下保留账号：
   - `1-5` 为 `SYSTEM` 类型保留账号
@@ -1056,3 +1059,58 @@ cd web; npm run build
 - 系统文件逻辑目录初始化已从运行期 `ApplicationRunner` 移动到 `bootstrap` 引导流程，不再由应用服务启动时自动执行。
 - 引导程序会在默认用户初始化之后，按 `com.corwin.system.file.published.FilePurpose` 为 `APPLICATION/system` 创建顶层用途目录。
 - 当前只补齐缺失目录：目录已存在则跳过，不删除、不重建、不覆盖现有数据。
+
+## 统一配置管理重构
+
+### 一、需求背景
+
+当前系统以单字段作为配置最小单位，默认值、数据库种子、类型解析、校验和前端编辑逻辑分散。密码策略、审计策略、Web Push 等天然属于同一业务规则的字段无法作为完整资源原子查询、校验和更新，现有分类型缓存也难以继续承载结构化配置。
+
+### 二、当前现状
+
+- framework 同时承担配置抽象、具体配置定义、`sys_config` SQL 和静态分类型缓存。
+- system 通过旧 `ConfigStore`、JPA 实体和多个按 code 校验器管理配置。
+- business 配置集中在跨领域的 `com.corwin.config` 包中。
+- 用户偏好默认值与用户覆盖值已经存在，但默认值仍使用旧字段配置模型。
+- 配置事务提交和内存刷新边界、敏感字段脱敏及并发 revision 更新需要统一处理。
+
+### 三、目标
+
+- 将配置最小单位改为强类型业务配置资源。
+- 代码提供配置定义和安全默认值，数据库只保存管理员覆盖值或重置状态标记。
+- Bean 实例化前完成配置发现、覆盖值加载和不可变快照注册。
+- 配置更新通过完整资源校验、乐观锁持久化和事务提交后原子刷新完成。
+- 统一使用 `cfg.view`、`cfg.edit`，不增加配置资源级权限。
+- 用户个性化配置继续独立保存用户覆盖值，公共注册表负责提供用户偏好默认值。
+- framework 保持纯抽象，system 负责配置表与管理用例，business 配置回归各自领域。
+
+### 四、技术方案
+
+- framework 新增 `ConfigSpec<T>`、`ConfigSpecProvider`、`ConfigSpecCatalog`、`ConfigSnapshot<T>`、`ConfigRegistry`、`Configs` 和启动加载 SPI。
+- system 新建 `sys_config_value` 实体、仓储、启动期 JDBC loader、查询服务、命令服务和管理 API。
+- 数据库无覆盖记录时直接使用代码默认值；重置时保留单调递增的 revision 状态标记，并忽略记录内容、读取当前代码默认值。
+- 配置策略拆分为编辑策略和生效策略，支持动态生效与重启生效。
+- 敏感字段查询只返回是否已配置，更新时支持保留、替换和清除语义。
+- 用户偏好默认值聚合为公共配置资源，`UserConfigAppService` 按“用户覆盖值 > 公共默认值”合并。
+- 数字格式拆分两个维度：用户个性化只保留千分位与小数点组合（`COMMA_DOT`/`PLAIN_DOT`/`DOT_COMMA`），小数位数与舍入模式由系统资源 `system.format.decimal-policy` 统一管理。
+- 完整技术模型、API、表结构、异常规则和验收标准见 `server/framework/config-tech.md`。
+
+### 五、任务拆分
+
+| 任务编号 | 任务内容 | 状态 |
+| --- | --- | --- |
+| T1 | 重构 framework 配置定义、Catalog、Codec、Snapshot、Registry 和强类型读取基础 | 已完成 |
+| T2 | 实现启动加载 SPI、EnvironmentPostProcessor 与 system JDBC loader | 已完成 |
+| T3 | 新建 `sys_config_value` 持久化模型并同步 bootstrap schema，移除旧配置种子同步 | 已完成 |
+| T4 | 实现配置查询、更新、校验、乐观锁、提交后刷新、重置和敏感字段处理 | 已完成 |
+| T5 | 重构后端配置管理 API，统一 `cfg.view` 与 `cfg.edit` 权限 | 已完成 |
+| T6 | 迁移 framework/system 配置资源、消费方和用户偏好默认值 | 已完成 |
+| T7 | 迁移 business 配置并删除旧分类型配置体系和 `com.corwin.config` | 已完成 |
+| T8 | 完成后端编译、空配置表启动和关键配置流程验证 | 待验证 |
+
+### 六、执行规则
+
+- 一次只执行一个任务。
+- 每个任务完成后必须恢复后端可编译状态并暂停，等待用户确认。
+- 不兼容旧配置数据、旧表结构和旧字段级配置 API。
+- 当前任务范围只包含后端，前端改造另行安排。

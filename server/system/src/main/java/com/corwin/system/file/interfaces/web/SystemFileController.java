@@ -1,12 +1,11 @@
 package com.corwin.system.file.interfaces.web;
 
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.constant.UserType;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.response.ApiResponse;
 import com.corwin.system.auth.published.Authorize;
-import com.corwin.system.config.application.config.SystemConfigKeys;
 import com.corwin.system.file.application.command.StorageQueryCommand;
 import com.corwin.system.file.application.command.StorageSortBy;
 import com.corwin.system.file.application.command.StorageSortOrder;
@@ -15,6 +14,7 @@ import com.corwin.system.file.application.service.FileQueryService;
 import com.corwin.system.file.application.service.FileService;
 import com.corwin.system.file.application.view.LogicalPhysicalFileView;
 import com.corwin.system.file.application.view.StorageNodeView;
+import com.corwin.system.file.config.SystemFileConfigSpecs;
 import com.corwin.system.file.domain.model.LogicalFile;
 import com.corwin.system.file.domain.model.PhysicalFile;
 import com.corwin.system.file.infrastructure.storage.LocalStorageProvider;
@@ -28,7 +28,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -53,32 +59,18 @@ public class SystemFileController {
     private final FileQueryService fileQueryService;
     private final LocalStorageProvider storageProvider;
 
-    /**
-     * Uploads a file for a given purpose and optional owner.
-     *
-     * @param purpose the business purpose category
-     * @param ownerId the owner identifier (defaults to "system" if absent)
-     * @param file    the uploaded multipart file
-     * @return the logical file ID of the uploaded file
-     */
     @PostMapping("/upload")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.file.upload"})
     public ApiResponse<String> upload(@RequestParam FilePurpose purpose, @RequestParam(required = false) String ownerId,
             @RequestParam("file") MultipartFile file) throws Exception {
-
         String effectiveOwnerId = (ownerId == null || ownerId.isBlank()) ? "system" : ownerId;
         UploadFileCommand cmd = new UploadFileCommand(OwnerType.APPLICATION, effectiveOwnerId, null,
                 file.getOriginalFilename(), file.getContentType());
-
         try (InputStream is = file.getInputStream()) {
             return ApiResponse.ok(fileService.uploadFile(cmd, is, purpose));
         }
     }
 
-    /**
-     * Streams file content for online preview. Checks the file size against the
-     * configured preview size limit before streaming.
-     */
     @GetMapping("/view/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.preview"})
     public void view(@PathVariable String fileId, HttpServletResponse response) throws Exception {
@@ -86,33 +78,25 @@ public class SystemFileController {
         LogicalFile logicalFile = fileView.logicalFile();
         PhysicalFile pf = fileView.physicalFile();
 
-        long previewLimit = ConfigRegistry.longV(SystemConfigKeys.SYSTEM_FILE_PREVIEW_MAX_SIZE);
+        long previewLimit = Configs.snapshot(SystemFileConfigSpecs.PREVIEW).value().maxSizeBytes();
         if (previewLimit > 0 && pf.getFileSize() != null && pf.getFileSize() > previewLimit) {
             throw new BizException("文件大小超过预览限制", BaseError.ILLEGAL_ARGUMENT);
         }
 
         String contentType = fileQueryService.resolveContentType(logicalFile.getFileName(), pf.getContentType());
         response.setContentType(contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE);
-
         try (InputStream is = storageProvider.read(pf.getRelativePath(), pf.getFileName());
                 OutputStream os = response.getOutputStream()) {
             is.transferTo(os);
         }
     }
 
-    /**
-     * Returns metadata for a single file.
-     */
     @GetMapping("/meta/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.preview"})
     public ApiResponse<StorageNodeView> meta(@PathVariable String fileId) {
         return ApiResponse.ok(fileQueryService.getFileMetadata(fileId));
     }
 
-    /**
-     * Downloads a file with Content-Disposition attachment header.
-     * Supports UTF-8 encoded file names for international compatibility.
-     */
     @GetMapping("/download/{fileId}")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.download"})
     public void download(@PathVariable String fileId, HttpServletResponse response) throws Exception {
@@ -128,35 +112,24 @@ public class SystemFileController {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + asciiFallback + "\"; filename*=UTF-8''" + encodedFileName);
         response.setContentLengthLong(pf.getFileSize());
-
         try (InputStream is = storageProvider.read(pf.getRelativePath(), pf.getFileName());
                 OutputStream os = response.getOutputStream()) {
             is.transferTo(os);
         }
     }
 
-    /**
-     * Returns metadata for multiple files in a single request.
-     */
     @PostMapping("/metadata/batch")
     @Authorize(userType = UserType.ADMIN, permissions = {"sys.file.metadata.batch"})
     public ApiResponse<List<StorageNodeView>> getMetadataBatch(@RequestBody List<String> ids) {
         return ApiResponse.ok(fileQueryService.getMetadataBatch(ids));
     }
 
-    /**
-     * Lists all file metadata for the admin console.
-     */
     @GetMapping("/admin/list")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.view"})
     public ApiResponse<List<StorageNodeView>> adminList() {
         return ApiResponse.ok(fileQueryService.listAllFileMetadata());
     }
 
-    /**
-     * Lists storage nodes for the admin console with keyword filtering,
-     * recursive traversal, and sorting options.
-     */
     @PostMapping("/admin/nodes")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.view"})
     public ApiResponse<List<StorageNodeView>> adminNodes(@RequestBody StorageListReq req) {
@@ -170,20 +143,14 @@ public class SystemFileController {
         return ApiResponse.ok(fileQueryService.listAdminContent(query));
     }
 
-    /**
-     * Returns the physical file details for a given logical file, including
-     * the absolute filesystem path.
-     */
     @GetMapping("/admin/logical-files/{logicalFileId}/physical")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.phys.view"})
     public ApiResponse<PhysicalFileDetailRes> physicalDetail(@PathVariable String logicalFileId) {
         LogicalPhysicalFileView fileView = fileQueryService.getLogicalPhysicalFile(logicalFileId);
         LogicalFile logicalFile = fileView.logicalFile();
         PhysicalFile physicalFile = fileView.physicalFile();
-
         String absolutePath = storageProvider.getBasePath().resolve(physicalFile.getRelativePath())
                 .resolve(physicalFile.getFileName()).toAbsolutePath().normalize().toString();
-
         PhysicalFileDetailRes detail = new PhysicalFileDetailRes(logicalFile.getId(), logicalFile.getFileName(),
                 logicalFile.getOwnerType(), logicalFile.getOwnerId(), logicalFile.getParentId(), physicalFile.getId(),
                 physicalFile.getHash(), physicalFile.getRelativePath(), absolutePath, physicalFile.getFileName(),
@@ -192,9 +159,6 @@ public class SystemFileController {
         return ApiResponse.ok(detail);
     }
 
-    /**
-     * Lists all logical file references pointing to a given physical file.
-     */
     @PostMapping("/admin/physical/{physicalFileId}/logical-refs")
     @Authorize(userType = UserType.ADMIN, permissions = {"sfl.ref.view"})
     public ApiResponse<List<StorageNodeView>> logicalRefs(@PathVariable String physicalFileId,

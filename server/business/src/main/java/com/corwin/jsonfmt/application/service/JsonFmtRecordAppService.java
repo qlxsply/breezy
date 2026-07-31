@@ -1,7 +1,6 @@
 package com.corwin.jsonfmt.application.service;
 
-import com.corwin.config.BusinessConfigKeys;
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizAssert;
 import com.corwin.framework.error.BizException;
@@ -14,6 +13,7 @@ import com.corwin.jsonfmt.application.command.JsonFmtRecordReorderCommand;
 import com.corwin.jsonfmt.application.command.JsonFmtRecordSaveCommand;
 import com.corwin.jsonfmt.application.view.JsonFmtRecordDetailView;
 import com.corwin.jsonfmt.application.view.JsonFmtRecordListItemView;
+import com.corwin.jsonfmt.config.JsonFmtConfigSpecs;
 import com.corwin.jsonfmt.domain.error.JsonFmtError;
 import com.corwin.jsonfmt.domain.model.JsonFmtRecord;
 import com.corwin.jsonfmt.domain.repo.JsonFmtRecordRepository;
@@ -40,12 +40,10 @@ import java.util.*;
 public class JsonFmtRecordAppService {
 
     private static final int NAME_MAX_LENGTH = 128;
-    private static final int DEFAULT_CONTENT_FILE_THRESHOLD = 61440;
     private static final DateTimeFormatter DEFAULT_NAME_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final JsonFmtRecordRepository recordRepository;
     private final FileCommandPort fileService;
-
 
     public List<JsonFmtRecordListItemView> list(Long userId, String keyword) {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
@@ -68,7 +66,6 @@ public class JsonFmtRecordAppService {
     public JsonFmtRecordDetailView save(Long userId, JsonFmtRecordSaveCommand command) {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         BizAssert.notNull(command, BaseError.MISSING_PARAMETER);
-
         String content = normalizeContent(command.content());
         validateContent(content);
         boolean storeInFile = shouldStoreInFile(content);
@@ -86,8 +83,7 @@ public class JsonFmtRecordAppService {
                     throw ex;
                 }
             }
-            JsonFmtRecord record = JsonFmtRecord.createInline(userId, name, content, 0);
-            return toDetailView(createAsTop(record));
+            return toDetailView(createAsTop(JsonFmtRecord.createInline(userId, name, content, 0)));
         }
 
         JsonFmtRecord record = recordRepository.findByIdAndUserId(recordId, userId)
@@ -123,13 +119,11 @@ public class JsonFmtRecordAppService {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         BizAssert.notNull(command, BaseError.MISSING_PARAMETER);
         BizAssert.notBlank(command.id(), BaseError.MISSING_PARAMETER);
-
         String name = trimToNull(command.name());
         if (name == null) {
             BizAssert.fail(JsonFmtError.JSONFMT_RECORD_NAME_REQUIRED);
         }
         validateName(name);
-
         JsonFmtRecord record = recordRepository.findByIdAndUserId(command.id(), userId)
                 .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
         record.rename(name);
@@ -140,7 +134,6 @@ public class JsonFmtRecordAppService {
     public void reorder(Long userId, JsonFmtRecordReorderCommand command) {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         BizAssert.notNull(command, BaseError.MISSING_PARAMETER);
-
         List<String> orderedIds = command.orderedIds();
         BizAssert.notEmpty(orderedIds, JsonFmtError.JSONFMT_RECORD_ORDER_INVALID);
 
@@ -157,20 +150,15 @@ public class JsonFmtRecordAppService {
         if (uniqueIds.size() != normalizedIds.size()) {
             BizAssert.fail(JsonFmtError.JSONFMT_RECORD_ORDER_INVALID);
         }
-
         List<JsonFmtRecord> records = recordRepository.findByUserIdAndIdIn(userId, uniqueIds);
         if (records.size() != uniqueIds.size()) {
             BizAssert.fail(JsonFmtError.JSONFMT_RECORD_ORDER_INVALID);
         }
         Map<String, JsonFmtRecord> recordMap = new LinkedHashMap<>();
-        for (JsonFmtRecord record : records) {
-            recordMap.put(record.getId(), record);
-        }
-
+        records.forEach(record -> recordMap.put(record.getId(), record));
         List<JsonFmtRecord> reordered = new ArrayList<>(normalizedIds.size());
         for (int i = 0; i < normalizedIds.size(); i++) {
-            String id = normalizedIds.get(i);
-            JsonFmtRecord record = recordMap.get(id);
+            JsonFmtRecord record = recordMap.get(normalizedIds.get(i));
             if (record == null) {
                 BizAssert.fail(JsonFmtError.JSONFMT_RECORD_ORDER_INVALID);
             }
@@ -184,7 +172,6 @@ public class JsonFmtRecordAppService {
     public void delete(Long userId, String recordId) {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         BizAssert.notBlank(recordId, BaseError.MISSING_PARAMETER);
-
         JsonFmtRecord record = recordRepository.findByIdAndUserId(recordId, userId)
                 .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
         deleteRecord(record);
@@ -196,7 +183,6 @@ public class JsonFmtRecordAppService {
         BizAssert.notNull(userId, BaseError.FORBIDDEN);
         BizAssert.notNull(command, BaseError.MISSING_PARAMETER);
         BizAssert.notEmpty(command.recordIds(), JsonFmtError.JSONFMT_RECORD_DELETE_INVALID);
-
         LinkedHashSet<String> idSet = new LinkedHashSet<>();
         for (String id : command.recordIds()) {
             String trimmed = trimToNull(id);
@@ -206,15 +192,11 @@ public class JsonFmtRecordAppService {
             idSet.add(trimmed);
         }
         BizAssert.notEmpty(idSet, JsonFmtError.JSONFMT_RECORD_DELETE_INVALID);
-
         List<JsonFmtRecord> records = recordRepository.findByUserIdAndIdIn(userId, idSet);
         if (records.size() != idSet.size()) {
             BizAssert.fail(JsonFmtError.JSONFMT_RECORD_NOT_FOUND);
         }
-
-        for (JsonFmtRecord record : records) {
-            deleteRecord(record);
-        }
+        records.forEach(this::deleteRecord);
         reorderAfterDelete(userId);
     }
 
@@ -266,9 +248,9 @@ public class JsonFmtRecordAppService {
         LocalDate today = HighDate.mockDate();
         Instant startAt = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Instant endAt = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-        long seq = recordRepository.countByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(userId, startAt,
+        long sequence = recordRepository.countByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(userId, startAt,
                 endAt) + 1;
-        return today.format(DEFAULT_NAME_DATE) + "_" + seq;
+        return today.format(DEFAULT_NAME_DATE) + "_" + sequence;
     }
 
     private void validateName(String name) {
@@ -302,10 +284,7 @@ public class JsonFmtRecordAppService {
             return true;
         }
         String unescaped = tryUnescapeJson(content);
-        if (unescaped == null) {
-            return false;
-        }
-        return canParseJson(unescaped);
+        return unescaped != null && canParseJson(unescaped);
     }
 
     private boolean canParseJson(String content) {
@@ -325,14 +304,8 @@ public class JsonFmtRecordAppService {
     }
 
     private boolean shouldStoreInFile(String content) {
-        long threshold = resolveContentFileThreshold();
-        int length = content.getBytes(StandardCharsets.UTF_8).length;
-        return length >= threshold;
-    }
-
-    private long resolveContentFileThreshold() {
-        int threshold = ConfigRegistry.intV(BusinessConfigKeys.JSONFMT_CONTENT_FILE_THRESHOLD);
-        return threshold > 0 ? threshold : DEFAULT_CONTENT_FILE_THRESHOLD;
+        long threshold = Configs.get(JsonFmtConfigSpecs.STORAGE_POLICY).contentFileThresholdBytes();
+        return content.getBytes(StandardCharsets.UTF_8).length >= threshold;
     }
 
     private String createContentFile(String content) {
@@ -366,8 +339,7 @@ public class JsonFmtRecordAppService {
         if (fileId == null || fileId.isBlank()) {
             return record.getContent();
         }
-        byte[] content = fileService.readFileContent(fileId);
-        return new String(content, StandardCharsets.UTF_8);
+        return new String(fileService.readFileContent(fileId), StandardCharsets.UTF_8);
     }
 
     private String trimToNull(String value) {

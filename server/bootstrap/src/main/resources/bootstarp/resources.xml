@@ -40,11 +40,6 @@
                             <permission code="cfg.edit"/>
                         </permissions>
                     </button>
-                    <button code="config-system-preview-push" name="推送配置预览" sortNo="30" visible="true">
-                        <permissions>
-                            <permission code="cfg.preview.push"/>
-                        </permissions>
-                    </button>
                 </buttons>
             </menu>
 

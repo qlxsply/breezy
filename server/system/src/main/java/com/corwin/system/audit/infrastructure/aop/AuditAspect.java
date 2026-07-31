@@ -1,6 +1,6 @@
 package com.corwin.system.audit.infrastructure.aop;
 
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.error.SysException;
@@ -11,7 +11,7 @@ import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.audit.application.command.AuditRecordCommand;
 import com.corwin.system.audit.application.service.AuditLogService;
-import com.corwin.system.config.application.config.SystemConfigKeys;
+import com.corwin.system.audit.config.SystemAuditConfigSpecs;
 import com.corwin.system.resource.domain.model.ApiMethod;
 import com.corwin.system.resource.domain.model.ApiProtocol;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,10 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * AOP aspect that intercepts methods annotated with {@link Audit @Audit}.
- * Captures request/response context, timing, and outcome, then builds
- * an {@link AuditRecordCommand} and delegates to {@link AuditLogService}
- * for persistence.
+ * Captures audited method execution and delegates persistence to {@link AuditLogService}.
  *
  * @author Corwin 2026/7/30
  */
@@ -53,23 +50,13 @@ public class AuditAspect {
         this.auditLogService = auditLogService;
     }
 
-    /**
-     * Around advice that wraps the annotated method execution with audit logging.
-     * Records the start time, proceeds with the method, captures the result or
-     * exception, then builds an audit record with request metadata, sanitized
-     * payloads, and execution duration.
-     *
-     * @param joinPoint the AOP join point for the intercepted method
-     * @return the result of the proxied method invocation
-     * @throws Throwable if the proxied method throws an exception
-     */
     @Around("@annotation(com.corwin.system.audit.published.Audit)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
         Class<?> targetClass = resolveTargetClass(joinPoint, method);
-
         AuditOperation operation = annotationResolver.resolve(method, targetClass);
-        if (operation == null || !ConfigRegistry.booleanV(SystemConfigKeys.AUDIT_ENABLED)) {
+        var auditPolicy = Configs.snapshot(SystemAuditConfigSpecs.AUDIT_POLICY).value();
+        if (operation == null || !auditPolicy.enabled()) {
             return joinPoint.proceed();
         }
 
@@ -89,28 +76,26 @@ public class AuditAspect {
         } finally {
             Instant endedAt = HighDate.mockInstant();
             long durationMs = Math.max(0L, HighDate.betweenMillis(startedAt, endedAt));
-
             auditLogService.record(new AuditRecordCommand(CtxUtil.getTraceId(), readRequestId(request), currentUserId(),
                     currentUsername(), currentUserType(), operation.applicationCode(), ApiProtocol.HTTP,
                     resolveHttpMethod(request), resolvePathPattern(request), resolveRequestUri(request),
                     serializePermissionCodes(), operation.resource(), operation.action(), operation.description(),
                     operation.level(), CtxUtil.getClientIp(), readUserAgent(request),
                     operation.recordRequest() ? payloadSanitizer.summarizeRequestParameters(
-                            request == null ? null : request.getParameterMap()) : null,
-                    operation.recordRequest() ? payloadSanitizer.summarizeRequestBody(joinPoint.getArgs()) : null,
-                    success && operation.recordResponse() ? payloadSanitizer.summarizeResponseBody(result) : null,
+                            request == null ? null : request.getParameterMap(), auditPolicy) : null,
+                    operation.recordRequest() ? payloadSanitizer.summarizeRequestBody(joinPoint.getArgs(), auditPolicy)
+                            : null,
+                    success && operation.recordResponse()
+                            ? payloadSanitizer.summarizeResponseBody(result, auditPolicy) : null,
                     success, resolveErrorCode(throwable),
-                    throwable == null ? null : payloadSanitizer.summarizeErrorMessage(throwable), startedAt, endedAt,
-                    durationMs, endedAt));
+                    throwable == null ? null : payloadSanitizer.summarizeErrorMessage(throwable, auditPolicy),
+                    startedAt, endedAt, durationMs, endedAt));
         }
     }
 
     private Class<?> resolveTargetClass(ProceedingJoinPoint joinPoint, Method method) {
         Object target = joinPoint.getTarget();
-        if (target == null) {
-            return method.getDeclaringClass();
-        }
-        return target.getClass();
+        return target == null ? method.getDeclaringClass() : target.getClass();
     }
 
     private HttpServletRequest currentRequest() {
@@ -122,17 +107,11 @@ public class AuditAspect {
     }
 
     private String readRequestId(HttpServletRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return StrUtil.trimToNull(request.getHeader("X-Request-Id"));
+        return request == null ? null : StrUtil.trimToNull(request.getHeader("X-Request-Id"));
     }
 
     private String readUserAgent(HttpServletRequest request) {
-        if (request == null) {
-            return null;
-        }
-        return StrUtil.trimToNull(request.getHeader("User-Agent"));
+        return request == null ? null : StrUtil.trimToNull(request.getHeader("User-Agent"));
     }
 
     private ApiMethod resolveHttpMethod(HttpServletRequest request) {
@@ -167,10 +146,7 @@ public class AuditAspect {
         }
         String requestUri = StrUtil.trimToNull(request.getRequestURI());
         String queryString = StrUtil.trimToNull(request.getQueryString());
-        if (requestUri == null || queryString == null) {
-            return requestUri;
-        }
-        return requestUri + "?" + queryString;
+        return requestUri == null || queryString == null ? requestUri : requestUri + "?" + queryString;
     }
 
     private Long currentUserId() {
@@ -185,10 +161,7 @@ public class AuditAspect {
 
     private String currentUserType() {
         AuthPrincipal principal = CtxUtil.getPrincipal();
-        if (principal == null || principal.userType() == null) {
-            return null;
-        }
-        return principal.userType().name();
+        return principal == null || principal.userType() == null ? null : principal.userType().name();
     }
 
     private String serializePermissionCodes() {

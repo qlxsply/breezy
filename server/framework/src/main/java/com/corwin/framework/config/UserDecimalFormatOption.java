@@ -3,23 +3,36 @@ package com.corwin.framework.config;
 import com.corwin.framework.dict.DictEnumDefinition;
 
 /**
- * User-selectable decimal number format options.
+ * 用户可选的千分位与小数点组合。
  *
- * @author Corwin 2026/5/5
+ * <p>该枚举只表达“千分位 + 小数点”的符号组合，不再承载小数位数和舍入模式；
+ * 小数位数与舍入模式由系统配置资源 {@code system.format.decimal-policy} 统一管理。
+ *
+ * @author Corwin 2026/7/31
  */
 public enum UserDecimalFormatOption implements DictEnumDefinition {
-    COMMA_2("千分位，两位小数", "#,##0.00"),
-    COMMA_3("千分位，三位小数", "#,##0.000"),
-    PLAIN_2("无千分位，两位小数", "0.00"),
-    PLAIN_3("无千分位，三位小数", "0.000"),
-    PLAIN_4("无千分位，四位小数", "0.0000");
+
+    /**
+     * 千分位逗号、小数点：1,234.56
+     */
+    COMMA_DOT("千分位逗号、小数点", ",", "."),
+    /**
+     * 无千分位、小数点：1234.56
+     */
+    PLAIN_DOT("无千分位、小数点", "", "."),
+    /**
+     * 千分位点、逗号小数点：1.234,56
+     */
+    DOT_COMMA("千分位点、逗号小数点", ".", ",");
 
     private final String label;
-    private final String pattern;
+    private final String groupingSeparator;
+    private final String decimalSeparator;
 
-    UserDecimalFormatOption(String label, String pattern) {
+    UserDecimalFormatOption(String label, String groupingSeparator, String decimalSeparator) {
         this.label = label;
-        this.pattern = pattern;
+        this.groupingSeparator = groupingSeparator;
+        this.decimalSeparator = decimalSeparator;
     }
 
     @Override
@@ -29,16 +42,24 @@ public enum UserDecimalFormatOption implements DictEnumDefinition {
 
     @Override
     public String itemValue() {
-        return pattern;
+        return name();
     }
 
-    public String pattern() {
-        return pattern;
+    public String groupingSeparator() {
+        return groupingSeparator;
+    }
+
+    public String decimalSeparator() {
+        return decimalSeparator;
+    }
+
+    public boolean groupingUsed() {
+        return !groupingSeparator.isEmpty();
     }
 
     public static UserDecimalFormatOption fromCode(String code) {
         if (code == null || code.isBlank()) {
-            return COMMA_2;
+            return COMMA_DOT;
         }
         String normalized = code.trim();
         for (UserDecimalFormatOption option : values()) {
@@ -46,10 +67,6 @@ public enum UserDecimalFormatOption implements DictEnumDefinition {
                 return option;
             }
         }
-        return COMMA_2;
-    }
-
-    public static String patternOf(String code) {
-        return fromCode(code).pattern();
+        return COMMA_DOT;
     }
 }

@@ -1,16 +1,16 @@
 package com.corwin.system.notify.application.service;
 
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.constant.UserType;
 import com.corwin.system.notify.application.view.PushHealthDeliveryView;
 import com.corwin.system.notify.application.view.PushHealthSubscriptionView;
 import com.corwin.system.notify.application.view.PushHealthView;
-import com.corwin.system.config.application.config.SystemConfigKeys;
+import com.corwin.system.notify.config.SystemNotifyConfigSpecs;
 import com.corwin.system.notify.domain.model.MessageDelivery;
-import com.corwin.system.notify.published.MsgType;
 import com.corwin.system.notify.domain.model.UserPushSubscription;
 import com.corwin.system.notify.domain.repo.MessageDeliveryRepository;
 import com.corwin.system.notify.domain.repo.UserPushSubscriptionRepository;
+import com.corwin.system.notify.published.MsgType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ public class PushHealthAppService {
     private final UserPushSubscriptionRepository userPushSubscriptionRepository;
     private final MessageDeliveryRepository messageDeliveryRepository;
     private final NotificationDispatcher notificationDispatcher;
-    private final WebPushVapidService webPushVapidService;
 
     /**
      * Queries the push health status for the specified user, including subscription
@@ -49,8 +48,6 @@ public class PushHealthAppService {
         if (userId == null || userType == null) {
             return new PushHealthView(false, "", 0, 0, null, null, "", List.of(), null);
         }
-
-        webPushVapidService.ensureVapidKeys();
 
         List<UserPushSubscription> subscriptions = userPushSubscriptionRepository
                 .findByUserIdAndUserTypeOrderByUpdatedAtDesc(userId, userType);
@@ -70,12 +67,11 @@ public class PushHealthAppService {
         PushHealthDeliveryView latestDelivery = messageDeliveryRepository
                 .findFirstByUserIdAndUserTypeOrderByIdDesc(userId, userType).map(this::toDeliveryView).orElse(null);
 
-        String vapidSubject = ConfigRegistry.stringV(SystemConfigKeys.WEB_PUSH_VAPID_SUBJECT);
-        boolean vapidReady = !isBlank(ConfigRegistry.stringV(SystemConfigKeys.WEB_PUSH_VAPID_PUBLIC_KEY)) && !isBlank(
-                ConfigRegistry.stringV(SystemConfigKeys.WEB_PUSH_VAPID_PRIVATE_KEY));
+        var webPush = Configs.get(SystemNotifyConfigSpecs.WEB_PUSH);
+        boolean vapidReady = !isBlank(webPush.publicKey()) && !isBlank(webPush.privateKey());
 
-        return new PushHealthView(vapidReady, vapidSubject, activeCount, inactiveCount, latestUpdatedAt, latestPushAt,
-                latestError, subscriptionViews, latestDelivery);
+        return new PushHealthView(vapidReady, webPush.subject(), activeCount, inactiveCount, latestUpdatedAt,
+                latestPushAt, latestError, subscriptionViews, latestDelivery);
     }
 
     /**

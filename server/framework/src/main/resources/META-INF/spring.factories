@@ -1,2 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-com.corwin.framework.config.DatabaseConfigRegistryEnvironmentPostProcessor
+com.corwin.framework.config.bootstrap.ConfigBootstrapEnvironmentPostProcessor

@@ -1,19 +1,18 @@
 package com.corwin.system.notify.application.service;
 
-import com.corwin.framework.config.ConfigRegistry;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.constant.UserType;
-import com.corwin.framework.json.Json;
-import com.corwin.system.config.application.config.SystemConfigKeys;
-import com.corwin.system.notify.published.MsgType;
 import com.corwin.system.notify.application.port.MessageDispatchPort;
 import com.corwin.system.notify.application.result.MessageDispatchResult;
 import com.corwin.system.notify.application.view.MsgPushPayloadView;
+import com.corwin.system.notify.config.SystemNotifyConfigSpecs;
+import com.corwin.system.notify.config.SystemNotifyConfigSpecs.MessageTypeConfig;
 import com.corwin.system.notify.domain.model.MessageDelivery;
 import com.corwin.system.notify.domain.model.MsgPriority;
 import com.corwin.system.notify.domain.model.Notification;
 import com.corwin.system.notify.domain.repo.MessageDeliveryRepository;
 import com.corwin.system.notify.domain.repo.NotificationRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.corwin.system.notify.published.MsgType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,11 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.List;
-
 /**
- * Core dispatcher that orchestrates notification creation, message delivery
- * persistence, and real-time push via SSE and Web Push channels.
+ * Core dispatcher that orchestrates notification persistence and push channels.
  *
  * @author Corwin 2026/3/16
  */
@@ -56,26 +52,9 @@ public class NotificationDispatcher implements MessageDispatchPort {
         return toResult(outcome.delivery(), outcome.notificationId());
     }
 
-    /**
-     * Dispatches a preview message with explicit behavior overrides (used for health checks).
-     *
-     * @param userId               the target user ID
-     * @param userType             the target user type
-     * @param type                 the message type
-     * @param title                the message title
-     * @param content              the message content
-     * @param route                the front-end route
-     * @param priority             the priority override
-     * @param sseEnabled           whether SSE push is enabled
-     * @param webPushEnabled       whether Web Push is enabled
-     * @param panelAutoOpen        whether to auto-open the notification panel
-     * @param osNotificationEnabled whether to send OS-level notification
-     * @return the created delivery record
-     */
     @Transactional
     public MessageDelivery dispatchPreview(Long userId, UserType userType, MsgType type, String title, String content,
-            String route,
-            String priority, Boolean sseEnabled, Boolean webPushEnabled, Boolean panelAutoOpen,
+            String route, String priority, Boolean sseEnabled, Boolean webPushEnabled, Boolean panelAutoOpen,
             Boolean osNotificationEnabled) {
         ResolvedMsgBehavior behavior = resolvePreviewBehavior(type, route, priority, sseEnabled, webPushEnabled,
                 panelAutoOpen, osNotificationEnabled);
@@ -83,9 +62,7 @@ public class NotificationDispatcher implements MessageDispatchPort {
     }
 
     private DispatchOutcome dispatchWithBehavior(Long userId, UserType userType, MsgType type, String title,
-            String content,
-            ResolvedMsgBehavior behavior, String bizType, String bizId) {
-
+            String content, ResolvedMsgBehavior behavior, String bizType, String bizId) {
         Notification notification = new Notification(userId, userType, title, content, type.name(),
                 behavior.priority().name(), behavior.route());
         notification = notificationRepository.save(notification);
@@ -140,7 +117,6 @@ public class NotificationDispatcher implements MessageDispatchPort {
             webPushDispatchService.dispatchAsync(deliveryId);
             return;
         }
-
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -157,18 +133,18 @@ public class NotificationDispatcher implements MessageDispatchPort {
         MsgPriority resolvedPriority = resolvePriorityOrDefault(priority, baseBehavior.priority());
         String resolvedRoute = normalizeRoute(route, baseBehavior.route());
         boolean hasPriorityOverride = priority != null && !priority.isBlank();
-
         boolean resolvedSseEnabled = sseEnabled != null ? sseEnabled : baseBehavior.sseEnabled();
-        boolean resolvedWebPushEnabled = webPushEnabled != null ? webPushEnabled : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.webPushEnabled());
-        boolean resolvedPanelAutoOpen = panelAutoOpen != null ? panelAutoOpen : (hasPriorityOverride ? resolvedPriority != MsgPriority.LOW : baseBehavior.panelAutoOpen());
-        boolean resolvedOsNotificationEnabled = osNotificationEnabled != null ? osNotificationEnabled : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.osNotificationEnabled());
-
+        boolean resolvedWebPushEnabled = webPushEnabled != null ? webPushEnabled
+                : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.webPushEnabled());
+        boolean resolvedPanelAutoOpen = panelAutoOpen != null ? panelAutoOpen
+                : (hasPriorityOverride ? resolvedPriority != MsgPriority.LOW : baseBehavior.panelAutoOpen());
+        boolean resolvedOsNotificationEnabled = osNotificationEnabled != null ? osNotificationEnabled
+                : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.osNotificationEnabled());
         if (resolvedPriority == MsgPriority.HIGH) {
             resolvedWebPushEnabled = true;
             resolvedPanelAutoOpen = true;
             resolvedOsNotificationEnabled = true;
         }
-
         return new ResolvedMsgBehavior(resolvedRoute, resolvedPriority, resolvedSseEnabled, resolvedWebPushEnabled,
                 resolvedPanelAutoOpen, resolvedOsNotificationEnabled);
     }
@@ -196,64 +172,52 @@ public class NotificationDispatcher implements MessageDispatchPort {
     }
 
     private ResolvedMsgBehavior resolveBehavior(MsgType type, String fallbackRoute) {
-        MsgType domainType = toDomainMsgType(type);
-        MsgTypeConfigModel defaultConfig = MsgTypeConfigModel.defaultFor(domainType);
-        MsgPriority priority = MsgPriority.valueOf(defaultConfig.getPriority());
-        String route = defaultConfig.getRoute();
-        boolean sseEnabled = true;
-        boolean webPushEnabled = priority == MsgPriority.HIGH;
-        boolean panelAutoOpen = priority != MsgPriority.LOW;
-        boolean osNotificationEnabled = priority == MsgPriority.HIGH;
-
-        for (MsgTypeConfigModel config : loadConfigs()) {
-            MsgType resolvedType = config.resolveMsgTypeOrNull();
-            if (resolvedType != domainType) {
-                continue;
-            }
-            priority = config.resolvePriority(priority);
-            route = config.normalizeRoute(domainType);
-            sseEnabled = config.resolveSseEnabled(true);
-            webPushEnabled = config.resolveWebPushEnabled(priority == MsgPriority.HIGH);
-            panelAutoOpen = config.resolvePanelAutoOpen(priority != MsgPriority.LOW);
-            osNotificationEnabled = config.resolveOsNotificationEnabled(priority == MsgPriority.HIGH);
-            break;
-        }
-
+        var messageTypes = Configs.snapshot(SystemNotifyConfigSpecs.MESSAGE_TYPES).value();
+        MessageTypeConfig config = messageTypes.items().stream()
+                .filter(item -> item.msgType() == type)
+                .findFirst()
+                .orElseGet(() -> defaultConfig(type));
+        MsgPriority priority = config.priority();
+        String route = normalizeConfiguredRoute(config.route(), defaultRoute(type));
         if ((route == null || route.isBlank()) && fallbackRoute != null && !fallbackRoute.isBlank()) {
             route = fallbackRoute.trim();
         }
         if (route == null || route.isBlank() || !route.startsWith("/")) {
-            route = defaultConfig.getRoute();
+            route = defaultRoute(type);
         }
 
+        boolean webPushEnabled = config.webPushEnabled();
+        boolean panelAutoOpen = config.panelAutoOpen();
+        boolean osNotificationEnabled = config.osNotificationEnabled();
         if (priority == MsgPriority.HIGH) {
             webPushEnabled = true;
             panelAutoOpen = true;
             osNotificationEnabled = true;
         }
-
-        return new ResolvedMsgBehavior(route, priority, sseEnabled, webPushEnabled, panelAutoOpen,
+        return new ResolvedMsgBehavior(route, priority, config.sseEnabled(), webPushEnabled, panelAutoOpen,
                 osNotificationEnabled);
     }
 
-    private List<MsgTypeConfigModel> loadConfigs() {
-        return ConfigRegistry.customV(SystemConfigKeys.MSG_TYPE_CONFIGS, raw -> {
-            if (raw == null || raw.isBlank()) {
-                return List.<MsgTypeConfigModel>of();
-            }
-            return Json.parse(raw, new TypeReference<>() {
-            });
-        });
+    private MessageTypeConfig defaultConfig(MsgType type) {
+        return SystemNotifyConfigSpecs.MESSAGE_TYPES.defaultValue().items().stream()
+                .filter(item -> item.msgType() == type)
+                .findFirst()
+                .orElseThrow();
     }
 
-    private MsgType toDomainMsgType(MsgType type) {
-        return MsgType.valueOf(type.name());
+    private String normalizeConfiguredRoute(String route, String fallback) {
+        String normalized = route == null ? "" : route.trim();
+        if ("/todo-all".equals(normalized)) {
+            normalized = "/todo/all";
+        }
+        return normalized.isBlank() || !normalized.startsWith("/") ? fallback : normalized;
     }
 
-    private record DispatchOutcome(
-            Long notificationId,
-            MessageDelivery delivery
-    ) {
+    private String defaultRoute(MsgType type) {
+        return defaultConfig(type).route();
+    }
+
+    private record DispatchOutcome(Long notificationId, MessageDelivery delivery) {
     }
 
     private record ResolvedMsgBehavior(

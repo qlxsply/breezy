@@ -1,7 +1,5 @@
 package com.corwin.system.user.application.view;
 
-import com.corwin.framework.config.ConfigValueType;
-
 /**
  * View object representing a user configuration entry with code, description, value type, and value.
  *
@@ -10,7 +8,7 @@ import com.corwin.framework.config.ConfigValueType;
 public record UserConfigView(
         String code,
         String description,
-        ConfigValueType valueType,
+        String valueType,
         String value
 ) {
 }

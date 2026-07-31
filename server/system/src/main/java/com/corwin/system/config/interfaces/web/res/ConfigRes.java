@@ -1,23 +1,47 @@
 package com.corwin.system.config.interfaces.web.res;
 
-import com.corwin.framework.config.ConfigLevel;
-import com.corwin.framework.config.ConfigScope;
-import com.corwin.framework.config.ConfigValueType;
+import com.corwin.framework.config.definition.ConfigActivationPolicy;
+import com.corwin.framework.config.definition.ConfigEditPolicy;
+import com.corwin.framework.config.definition.ConfigFieldSpec;
+import com.corwin.framework.config.runtime.ConfigValueSource;
+import com.corwin.system.config.application.view.ConfigManagementStatus;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Response DTO for a single configuration entry.
- * Exposes code, scope, description, value type, current value, level,
- * and whether the config supports personalization.
- *
- * @author Corwin 2026/5/5
+ * @author Corwin 2026/7/31
  */
 public record ConfigRes(
-        String code,
-        ConfigScope scope,
+        String key,
+        String module,
+        String group,
+        String title,
         String description,
-        ConfigValueType valueType,
-        String value,
-        ConfigLevel level,
-        boolean personalized
+        int schemaVersion,
+        long persistedRevision,
+        long effectiveRevision,
+        boolean configured,
+        ConfigActivationPolicy activationPolicy,
+        ConfigEditPolicy editPolicy,
+        ConfigValueSource source,
+        ConfigManagementStatus status,
+        boolean pendingRestart,
+        JsonNode effectiveValue,
+        JsonNode persistedValue,
+        JsonNode defaultValue,
+        List<ConfigFieldSpec> fields,
+        Map<String, Boolean> sensitiveValuePresence,
+        String editorId,
+        String loadWarning
 ) {
+
+    public ConfigRes {
+        effectiveValue = effectiveValue.deepCopy();
+        persistedValue = persistedValue.deepCopy();
+        defaultValue = defaultValue.deepCopy();
+        fields = List.copyOf(fields);
+        sensitiveValuePresence = Map.copyOf(sensitiveValuePresence);
+    }
 }

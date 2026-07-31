@@ -1,6 +1,6 @@
 package com.corwin.reminder.application.service;
 
-import com.corwin.framework.config.DefaultConfigWrapper;
+import com.corwin.framework.config.runtime.Configs;
 import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
@@ -15,6 +15,7 @@ import com.corwin.reminder.domain.model.RecurrenceRuleFrequency;
 import com.corwin.reminder.domain.model.ScheduleEvent;
 import com.corwin.reminder.domain.model.ScheduleEventStatus;
 import com.corwin.reminder.domain.repo.ScheduleEventRepository;
+import com.corwin.system.user.config.SystemUserConfigSpecs;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 
 /**
- *
  * @author Corwin 2026/1/12
  */
 @Service
@@ -36,27 +36,25 @@ public class ScheduleAppService {
     @Transactional
     public Long upsert(UpsertScheduleCommand cmd) {
         Objects.requireNonNull(cmd, "cmd required");
-
         RecurrenceRule rule = toRule(cmd.rule());
-
         String tz = cmd.eventTimeZoneId();
         if (tz == null || tz.isBlank()) {
-            tz = DefaultConfigWrapper.timeZone().getID();
+            tz = Configs.get(SystemUserConfigSpecs.USER_PREFERENCE_DEFAULTS).timeZone().zoneId();
         }
 
-        ScheduleEvent e;
+        ScheduleEvent event;
         if (cmd.id() == null) {
-            e = ScheduleEvent.create(cmd.title(), cmd.startTime(), cmd.endTime(), tz, rule, cmd.advanceSecondsList(),
-                    cmd.note());
-            e.assignOwner(currentUserId());
+            event = ScheduleEvent.create(cmd.title(), cmd.startTime(), cmd.endTime(), tz, rule,
+                    cmd.advanceSecondsList(), cmd.note());
+            event.assignOwner(currentUserId());
         } else {
-            e = repo.findById(cmd.id())
+            event = repo.findById(cmd.id())
                     .orElseThrow(() -> new IllegalArgumentException("schedule not found: " + cmd.id()));
-            e.update(cmd.title(), cmd.startTime(), cmd.endTime(), tz, rule, cmd.advanceSecondsList(), cmd.note());
+            event.update(cmd.title(), cmd.startTime(), cmd.endTime(), tz, rule, cmd.advanceSecondsList(), cmd.note());
         }
-        repo.save(e);
-        eventPublisher.publishEvent(ScheduleReminderChangedEvent.updated(e.getId()));
-        return e.getId();
+        repo.save(event);
+        eventPublisher.publishEvent(ScheduleReminderChangedEvent.updated(event.getId()));
+        return event.getId();
     }
 
     public ScheduleEvent get(Long id) {
@@ -69,47 +67,46 @@ public class ScheduleAppService {
 
     @Transactional
     public void pause(Long id) {
-        ScheduleEvent e = get(id);
-        e.pause();
-        repo.save(e);
+        ScheduleEvent event = get(id);
+        event.pause();
+        repo.save(event);
         eventPublisher.publishEvent(ScheduleReminderChangedEvent.removed(id));
     }
 
     @Transactional
     public void activate(Long id) {
-        ScheduleEvent e = get(id);
-        e.activate();
-        repo.save(e);
+        ScheduleEvent event = get(id);
+        event.activate();
+        repo.save(event);
         eventPublisher.publishEvent(ScheduleReminderChangedEvent.updated(id));
     }
 
     @Transactional
     public void cancel(Long id) {
-        ScheduleEvent e = get(id);
-        e.cancel();
-        repo.save(e);
+        ScheduleEvent event = get(id);
+        event.cancel();
+        repo.save(event);
         eventPublisher.publishEvent(ScheduleReminderChangedEvent.removed(id));
     }
 
-    private RecurrenceRule toRule(UpsertScheduleCommand.RuleCommand r) {
-        Objects.requireNonNull(r, "rule required");
-        RecurrenceRuleFrequency f = Objects.requireNonNull(r.frequency(), "frequency required");
-
-        return switch (f) {
+    private RecurrenceRule toRule(UpsertScheduleCommand.RuleCommand rule) {
+        Objects.requireNonNull(rule, "rule required");
+        RecurrenceRuleFrequency frequency = Objects.requireNonNull(rule.frequency(), "frequency required");
+        return switch (frequency) {
             case ONCE -> RecurrenceRule.once();
-            case DAILY -> RecurrenceRule.daily(nvl(r.interval()), r.until());
-            case WEEKLY -> RecurrenceRule.weekly(nvl(r.interval()),
-                    Objects.requireNonNull(r.daysOfWeek(), "daysOfWeek required"), r.until());
-            case MONTHLY -> RecurrenceRule.monthly(nvl(r.interval()),
-                    Objects.requireNonNull(r.dayOfMonth(), "dayOfMonth required"), r.until());
-            case YEARLY -> RecurrenceRule.yearly(nvl(r.interval()),
-                    Objects.requireNonNull(r.monthOfYear(), "monthOfYear required"),
-                    Objects.requireNonNull(r.dayOfMonth(), "dayOfMonth required"), r.until());
+            case DAILY -> RecurrenceRule.daily(nvl(rule.interval()), rule.until());
+            case WEEKLY -> RecurrenceRule.weekly(nvl(rule.interval()),
+                    Objects.requireNonNull(rule.daysOfWeek(), "daysOfWeek required"), rule.until());
+            case MONTHLY -> RecurrenceRule.monthly(nvl(rule.interval()),
+                    Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"), rule.until());
+            case YEARLY -> RecurrenceRule.yearly(nvl(rule.interval()),
+                    Objects.requireNonNull(rule.monthOfYear(), "monthOfYear required"),
+                    Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"), rule.until());
         };
     }
 
     private int nvl(Integer interval) {
-        return (interval == null || interval <= 0) ? 1 : interval;
+        return interval == null || interval <= 0 ? 1 : interval;
     }
 
     private Long currentUserId() {
