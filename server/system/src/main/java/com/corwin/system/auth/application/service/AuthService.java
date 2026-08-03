@@ -79,7 +79,7 @@ public class AuthService {
                 BizAssert.fail(AuthError.BAD_CREDENTIALS);
             }
 
-            if (authConfigService.internalSingleLoginEnabled()) {
+            if (authConfigService.adminSingleLoginEnabled()) {
                 kickOutActiveSessions(user);
             }
 
@@ -87,7 +87,7 @@ public class AuthService {
             String rawToken = opaqueTokenService.generateToken();
             String tokenHash = opaqueTokenService.hash(rawToken);
             Instant now = HighDate.mockInstant();
-            Instant expiresAt = now.plus(authConfigService.internalSessionTtl());
+            Instant expiresAt = now.plus(authConfigService.adminSessionTtl());
 
             LoginSession session = new LoginSession(user.getId(), newTokenId(), tokenHash,
                     com.corwin.framework.web.ctx.CtxUtil.getClientIp(), currentUserAgent(),

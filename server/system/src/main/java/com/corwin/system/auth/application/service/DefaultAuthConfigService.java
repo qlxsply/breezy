@@ -2,10 +2,8 @@ package com.corwin.system.auth.application.service;
 
 import com.corwin.framework.config.runtime.Configs;
 import com.corwin.system.auth.config.SystemAuthConfigSpecs;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -14,26 +12,14 @@ import java.time.Duration;
 @Service
 public class DefaultAuthConfigService implements AuthConfigService {
 
-    private static final String JWT_SECRET_PROPERTY = "breezy.auth.jwt-secret";
-
-    private final String jwtSecret;
-
-    public DefaultAuthConfigService(Environment environment) {
-        String configuredSecret = environment.getRequiredProperty(JWT_SECRET_PROPERTY).trim();
-        if (configuredSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalStateException(JWT_SECRET_PROPERTY + " must contain at least 32 UTF-8 bytes");
-        }
-        jwtSecret = configuredSecret;
+    @Override
+    public Duration adminSessionTtl() {
+        return Duration.ofSeconds(config().adminSessionTtlSeconds());
     }
 
     @Override
-    public Duration internalSessionTtl() {
-        return Duration.ofSeconds(config().internalSessionTtlSeconds());
-    }
-
-    @Override
-    public boolean internalSingleLoginEnabled() {
-        return config().internalSingleLoginEnabled();
+    public boolean adminSingleLoginEnabled() {
+        return config().adminSingleLoginEnabled();
     }
 
     @Override
@@ -47,28 +33,28 @@ public class DefaultAuthConfigService implements AuthConfigService {
     }
 
     @Override
-    public Duration externalAccessTokenTtl() {
-        return Duration.ofSeconds(config().externalAccessTokenTtlSeconds());
+    public Duration userAccessTokenTtl() {
+        return Duration.ofSeconds(config().userAccessTokenTtlSeconds());
     }
 
     @Override
-    public Duration externalRefreshTokenTtl() {
-        return Duration.ofSeconds(config().externalRefreshTokenTtlSeconds());
+    public Duration userRefreshTokenTtl() {
+        return Duration.ofSeconds(config().userRefreshTokenTtlSeconds());
     }
 
     @Override
-    public Duration externalAccessTokenRefreshSkew() {
-        return Duration.ofSeconds(config().externalAccessTokenRefreshSkewSeconds());
+    public Duration userAccessTokenRefreshSkew() {
+        return Duration.ofSeconds(config().userAccessTokenRefreshSkewSeconds());
     }
 
     @Override
-    public String externalJwtSecret() {
-        return jwtSecret;
+    public String userJwtSecret() {
+        return config().userJwtSecret();
     }
 
     @Override
-    public String externalJwtIssuer() {
-        return config().externalJwtIssuer();
+    public String userJwtIssuer() {
+        return config().userJwtIssuer();
     }
 
     private SystemAuthConfigSpecs.AuthenticationConfig config() {

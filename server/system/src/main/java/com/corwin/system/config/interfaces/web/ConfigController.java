@@ -9,6 +9,7 @@ import com.corwin.system.audit.domain.model.AuditAction;
 import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditResource;
 import com.corwin.system.audit.published.Audit;
+import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.auth.published.Authorize;
 import com.corwin.system.config.application.command.ResetConfigCommand;
 import com.corwin.system.config.application.command.UpdateConfigCommand;
@@ -16,6 +17,7 @@ import com.corwin.system.config.application.command.ValidateConfigCommand;
 import com.corwin.system.config.application.service.ConfigCommandService;
 import com.corwin.system.config.application.service.ConfigQueryService;
 import com.corwin.system.config.application.view.ConfigChangeView;
+import com.corwin.system.config.application.view.ConfigEffectiveView;
 import com.corwin.system.config.application.view.ConfigManagementView;
 import com.corwin.system.config.application.view.ConfigValidationView;
 import com.corwin.system.config.interfaces.web.req.ConfigPageReq;
@@ -23,6 +25,7 @@ import com.corwin.system.config.interfaces.web.req.ResetConfigReq;
 import com.corwin.system.config.interfaces.web.req.UpdateConfigReq;
 import com.corwin.system.config.interfaces.web.req.ValidateConfigReq;
 import com.corwin.system.config.interfaces.web.res.ConfigChangeRes;
+import com.corwin.system.config.interfaces.web.res.ConfigEffectiveRes;
 import com.corwin.system.config.interfaces.web.res.ConfigRes;
 import com.corwin.system.config.interfaces.web.res.ConfigValidationRes;
 import com.corwin.system.resource.published.ApiMeta;
@@ -55,6 +58,12 @@ public class ConfigController {
     @Authorize(userType = UserType.ADMIN, permissions = {"cfg.view"})
     public ApiResponse<ConfigRes> detail(@PathVariable String configKey) {
         return ApiResponse.ok(toRes(configQueryService.detail(configKey)));
+    }
+
+    @GetMapping("/effective/{configKey}")
+    @Authenticated
+    public ApiResponse<ConfigEffectiveRes> effective(@PathVariable String configKey) {
+        return ApiResponse.ok(toRes(configQueryService.effective(configKey)));
     }
 
     @PostMapping("/{configKey}/validate")
@@ -97,6 +106,10 @@ public class ConfigController {
 
     private static ConfigValidationRes toRes(ConfigValidationView view) {
         return new ConfigValidationRes(view.valid(), view.violations());
+    }
+
+    private static ConfigEffectiveRes toRes(ConfigEffectiveView view) {
+        return new ConfigEffectiveRes(view.key(), view.title(), view.description(), view.effectiveValue());
     }
 
     private static ConfigChangeRes toRes(ConfigChangeView view) {

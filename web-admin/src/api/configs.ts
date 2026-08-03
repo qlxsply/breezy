@@ -1,10 +1,10 @@
-// /src/api/configs.ts
 import type {
-  ClientIpMode,
-  ConfigClientIpPreviewRes,
+  ConfigChangeResult,
+  ConfigEffectiveResult,
   ConfigItem,
-  ConfigTimeOffsetPreviewRes,
   ConfigType,
+  ConfigValidationResult,
+  JsonValue,
 } from "../types/config-admin";
 import type { PageResult } from "../types/page";
 import { get, post, put } from "./http";
@@ -12,14 +12,16 @@ import { get, post, put } from "./http";
 const BASE = "/sys/configs";
 
 export function listConfigs(params?: {
-  codeLike?: string;
-  descriptionLike?: string;
+  keyword?: string;
+  module?: string;
+  group?: string;
   pageNo?: number;
   pageSize?: number;
 }): Promise<PageResult<ConfigItem>> {
   return post<PageResult<ConfigItem>>(`${BASE}/page`, {
-    codeLike: params?.codeLike?.trim() || undefined,
-    descriptionLike: params?.descriptionLike?.trim() || undefined,
+    keyword: params?.keyword?.trim() || undefined,
+    module: params?.module?.trim() || undefined,
+    group: params?.group?.trim() || undefined,
     page: {
       pageNo: params?.pageNo,
       pageSize: params?.pageSize,
@@ -27,19 +29,33 @@ export function listConfigs(params?: {
   });
 }
 
-export function updateConfigValue(code: string, value: string): Promise<boolean> {
-  return put<boolean>(`${BASE}/${encodeURIComponent(code)}`, { value });
+export function getConfig(configKey: string): Promise<ConfigItem> {
+  return get<ConfigItem>(`${BASE}/${encodeURIComponent(configKey)}`);
 }
 
-export function previewClientIp(mode: ClientIpMode): Promise<ConfigClientIpPreviewRes> {
-  return post<ConfigClientIpPreviewRes>(`${BASE}/preview/client-ip`, { mode });
+export function getEffectiveConfig(configKey: string): Promise<ConfigEffectiveResult> {
+  return get<ConfigEffectiveResult>(`${BASE}/effective/${encodeURIComponent(configKey)}`);
 }
 
-export function previewTimeOffset(params: {
-  offsetSeconds: number;
-  targetEpochMillis?: number;
-}): Promise<ConfigTimeOffsetPreviewRes> {
-  return post<ConfigTimeOffsetPreviewRes>(`${BASE}/preview/time-offset`, params);
+export function validateConfig(
+  configKey: string,
+  value: JsonValue,
+): Promise<ConfigValidationResult> {
+  return post<ConfigValidationResult>(`${BASE}/${encodeURIComponent(configKey)}/validate`, { value });
+}
+
+export function updateConfig(
+  configKey: string,
+  body: { expectedRevision: number; reason?: string; value: JsonValue },
+): Promise<ConfigChangeResult> {
+  return put<ConfigChangeResult>(`${BASE}/${encodeURIComponent(configKey)}`, body);
+}
+
+export function resetConfigDefault(
+  configKey: string,
+  body: { expectedRevision: number; reason?: string },
+): Promise<ConfigChangeResult> {
+  return post<ConfigChangeResult>(`${BASE}/${encodeURIComponent(configKey)}/reset-default`, body);
 }
 
 export interface UserConfigItem {
@@ -68,6 +84,17 @@ export interface PasswordPolicyConfig {
   passwordForceChangeOnReset: boolean;
 }
 
-export function getPasswordPolicyConfig(): Promise<PasswordPolicyConfig> {
-  return get<PasswordPolicyConfig>(`${BASE}/password-policy`);
+export async function getPasswordPolicyConfig(): Promise<PasswordPolicyConfig> {
+  const result = await getEffectiveConfig("system.security.password-policy");
+  const value = result.effectiveValue as Record<string, JsonValue>;
+  return {
+    passwordMinLength: Number(value.minLength),
+    passwordRequireDigit: Boolean(value.requireDigit),
+    passwordRequireLetter: Boolean(value.requireLetter),
+    passwordRequireUpper: Boolean(value.requireUpper),
+    passwordRequireLower: Boolean(value.requireLower),
+    passwordRequireSpecial: Boolean(value.requireSpecial),
+    passwordForceChangeOnFirstLogin: Boolean(value.forceChangeOnFirstLogin),
+    passwordForceChangeOnReset: Boolean(value.forceChangeOnReset),
+  };
 }

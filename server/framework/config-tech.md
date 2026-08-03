@@ -983,9 +983,9 @@ public record UserPreferenceDefaultsConfig(
 数字显示格式拆分为两个配置维度：
 
 - 用户个性化：`UserDecimalFormatOption` 只表达「千分位 + 小数点」符号组合，可选值 `COMMA_DOT`（1,234.56）、`PLAIN_DOT`（1234.56）、`DOT_COMMA`（1.234,56）。
-- 系统全局：`system.format.decimal-policy` 统一管理小数位数（`scale`）与舍入模式（`roundingMode`）。
+- 系统全局：`framework.format.decimal-policy` 统一管理小数位数（`scale`）与舍入模式（`roundingMode`）。
 
-未来若出现金额、汇率等多场景差异，可在 `system.format` 下按场景扩展独立策略资源，当前仅提供一套通用策略。
+未来若出现金额、汇率等多场景差异，可在 `framework.format` 下按场景扩展独立策略资源，当前仅提供一套通用策略。
 
 ### 17.3 最终值合并
 
@@ -1054,6 +1054,7 @@ public record UserPreferenceDefaultsConfig(
 | `framework.web.client-ip` | `CLIENT_IP_MODE` | 客户端 IP 解析策略 |
 | `framework.web.auth-whitelist` | `AUTH_WHITELIST` | 鉴权白名单 |
 | `framework.web.logging-filter` | 两个 Logging Filter 路径配置 | 聚合日志过滤策略 |
+| `framework.format.decimal-policy` | 小数位数与舍入模式 | 系统通用数字策略 |
 
 framework 具体定义可以位于 framework 对应能力包，但不得包含 system 业务配置。
 
@@ -1068,7 +1069,6 @@ framework 具体定义可以位于 framework 对应能力包，但不得包含 s
 | `system.notify.sse` | `SSE_TICKET_TTL_SECONDS` | SSE ticket 策略 |
 | `system.notify.web-push` | VAPID 三字段 | Web Push 配置 |
 | `system.notify.message-types` | `MSG_TYPE_CONFIGS` | 消息类型行为配置 |
-| `system.format.decimal-policy` | 小数位数与舍入模式 | 系统通用数字策略 |
 | `system.user.preference-defaults` | 4 个 USER 配置 | 用户偏好公共默认值 |
 
 认证配置必须先统一当前两套 code 语义，再建立单一聚合定义。基础 JWT 主密钥优先保留在部署 Environment，不进入公共数据库配置。

@@ -1,4 +1,4 @@
-package com.corwin.system.format.config;
+package com.corwin.framework.config;
 
 import java.math.RoundingMode;
 

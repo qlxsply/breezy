@@ -6,7 +6,7 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * 用户可选的千分位与小数点组合。
  *
  * <p>该枚举只表达“千分位 + 小数点”的符号组合，不再承载小数位数和舍入模式；
- * 小数位数与舍入模式由系统配置资源 {@code system.format.decimal-policy} 统一管理。
+ * 小数位数与舍入模式由系统配置资源 {@code framework.format.decimal-policy} 统一管理。
  *
  * @author Corwin 2026/7/31
  */

@@ -49,9 +49,8 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
             String rawToken = resolveToken(authorization);
             AuthPrincipal principal;
             if (!rawToken.isBlank()) {
-                principal = isJwt(rawToken)
-                        ? authenticator.authenticateExternalToken(rawToken)
-                        : authenticator.authenticateInternalToken(rawToken);
+                principal = isJwt(rawToken) ? authenticator.authenticateUserToken(
+                        rawToken) : authenticator.authenticateAdminToken(rawToken);
                 String tokenHash = opaqueTokenService.hash(rawToken);
                 CtxUtil.setPrincipal(principal);
                 CtxUtil.setTokenHash(tokenHash);

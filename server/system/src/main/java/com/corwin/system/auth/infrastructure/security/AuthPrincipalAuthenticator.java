@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Authenticator component that resolves raw tokens (internal opaque, external JWT,
+ * Authenticator component that resolves raw tokens (admin opaque, user JWT,
  * or SSE ticket) into {@link AuthPrincipal} objects, with caching and validation
  * against the user and session stores.
  *
@@ -51,8 +51,8 @@ public class AuthPrincipalAuthenticator {
     private final WebUserJwtTokenService webUserJwtTokenService;
 
     public AuthPrincipalAuthenticator(AuthSessionCacheService authSessionCacheService,
-            LoginSessionRepository loginSessionRepository,
-            UserRepository userRepository, PermissionService permissionService, AuthConfigService authConfigService,
+            LoginSessionRepository loginSessionRepository, UserRepository userRepository,
+            PermissionService permissionService, AuthConfigService authConfigService,
             OpaqueTokenService opaqueTokenService, WebUserRepository webUserRepository,
             WebUserRestrictionService webUserRestrictionService, WebUserJwtTokenService webUserJwtTokenService) {
         this.authSessionCacheService = authSessionCacheService;
@@ -67,14 +67,14 @@ public class AuthPrincipalAuthenticator {
     }
 
     /**
-     * Authenticates an internal (opaque) token by looking up the session hash,
+     * Authenticates an admin (opaque) token by looking up the session hash,
      * validating session state and user status, and returning the cached or
      * freshly-built principal.
      *
      * @param rawToken the raw opaque token
      * @return the authenticated principal
      */
-    public AuthPrincipal authenticateInternalToken(String rawToken) {
+    public AuthPrincipal authenticateAdminToken(String rawToken) {
         String tokenHash = opaqueTokenService.hash(rawToken);
         Optional<AuthPrincipal> cached = authSessionCacheService.get(tokenHash);
         if (cached.isPresent()) {
@@ -113,13 +113,13 @@ public class AuthPrincipalAuthenticator {
     }
 
     /**
-     * Authenticates an external JWT token by parsing and validating the
+     * Authenticates an user JWT token by parsing and validating the
      * web user JWT payload, user status, token version, and restrictions.
      *
      * @param rawToken the raw JWT string
      * @return the authenticated principal
      */
-    public AuthPrincipal authenticateExternalToken(String rawToken) {
+    public AuthPrincipal authenticateUserToken(String rawToken) {
         WebUserJwtTokenService.WebUserJwtPayload payload = webUserJwtTokenService.parse(rawToken);
         if (payload.userId() == null || payload.userType() != UserType.USER) {
             throw new BizException(AuthError.INVALID_TOKEN);
@@ -132,7 +132,8 @@ public class AuthPrincipalAuthenticator {
         if (payload.tokenVersion() == null || !payload.tokenVersion().equals(user.getTokenVersion())) {
             throw new BizException(AuthError.TOKEN_REVOKED);
         }
-        if (payload.issuedAt() == null || (user.getTokenNotBefore() != null && payload.issuedAt().isBefore(user.getTokenNotBefore()))) {
+        if (payload.issuedAt() == null || (user.getTokenNotBefore() != null && payload.issuedAt()
+                .isBefore(user.getTokenNotBefore()))) {
             throw new BizException(AuthError.TOKEN_REVOKED);
         }
         if (webUserRestrictionService.hasLoginRestriction(user.getId())) {
@@ -155,9 +156,8 @@ public class AuthPrincipalAuthenticator {
             throw new BizException(AuthError.INVALID_TOKEN);
         }
         UserType userType = payload.userType();
-        Set<String> permissionCodes = userType == null || userType == UserType.GUEST
-                ? Set.of()
-                : permissionService.permissionCodesForUser(payload.userId(), userType);
+        Set<String> permissionCodes = userType == null || userType == UserType.GUEST ? Set.of() : permissionService.permissionCodesForUser(
+                payload.userId(), userType);
         return new AuthPrincipal(payload.userId(), payload.userAccount(), userType,
                 DefaultUser.isAdmin(payload.userId()), permissionCodes);
     }

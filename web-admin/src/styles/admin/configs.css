@@ -1,23 +1,150 @@
-.configs-code-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.configs-title-cell {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.configs-code-text,
-.configs-meta-code {
-  color: var(--color-text-muted);
-  font-family: var(--font-family-mono);
-}
-
-.configs-value-text {
-  display: block;
+.configs-title-cell strong {
   overflow: hidden;
+  color: var(--color-text-primary);
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.configs-action-cell {
+.configs-code-text {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.configs-drawer-content {
   display: flex;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.configs-json-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.configs-json-panel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+}
+
+.configs-json-panel:last-child {
+  grid-column: 1 / -1;
+}
+
+.configs-json-panel__title {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-surface-soft);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.configs-json-panel pre {
+  min-height: 120px;
+  max-height: 320px;
+  margin: 0;
+  overflow: auto;
+  padding: 14px;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.configs-editor-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
+}
+
+.configs-editor-form > .bz-form-item {
+  min-width: 0;
+  margin: 0;
+}
+
+.configs-editor-form > .bz-form-item:has(.bz-text-field__textarea) {
+  grid-column: 1 / -1;
+}
+
+.configs-editor-field .bz-form-item__label {
+  display: flex;
+  margin-bottom: 7px;
+}
+
+.configs-editor-field .bz-form-item__label > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.configs-editor-field .bz-form-item__label code {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.configs-editor-field .bz-form-item__content,
+.configs-editor-field .bz-input,
+.configs-editor-field .bz-select,
+.configs-editor-field .bz-text-field {
+  width: 100%;
+}
+
+.configs-editor-field.is-error .bz-input,
+.configs-editor-field.is-error .bz-select,
+.configs-editor-field.is-error .bz-text-field__control {
+  border-color: var(--color-danger-600);
+}
+
+.configs-editor-field.is-error .bz-form-item__meta {
+  color: var(--color-danger-600);
+}
+
+.configs-required {
+  color: var(--color-danger-600);
+  font-style: normal;
+}
+
+.configs-global-errors {
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-danger-600) 38%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-600);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+  .configs-json-grid,
+  .configs-editor-form {
+    grid-template-columns: 1fr;
+  }
+
+  .configs-json-panel:last-child,
+  .configs-editor-form > .bz-form-item:has(.bz-text-field__textarea) {
+    grid-column: auto;
+  }
 }

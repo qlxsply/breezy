@@ -12,6 +12,7 @@ import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.error.BaseError;
 import com.corwin.framework.error.BizException;
+import com.corwin.system.config.application.view.ConfigEffectiveView;
 import com.corwin.system.config.application.view.ConfigManagementStatus;
 import com.corwin.system.config.application.view.ConfigManagementView;
 import com.corwin.system.config.domain.model.ConfigValue;
@@ -62,6 +63,15 @@ public class ConfigQueryService {
         ConfigSpec<?> spec = requireSpec(configKey);
         ConfigValue storedValue = configValueRepository.findByConfigKey(spec.key().value()).orElse(null);
         return toView(spec, storedValue);
+    }
+
+    @Transactional(readOnly = true)
+    public ConfigEffectiveView effective(String configKey) {
+        ConfigSpec<?> spec = requireSpec(configKey);
+        ConfigSnapshot<?> snapshot = ConfigRegistry.snapshot(spec);
+        JsonNode effectiveValue = ConfigValueTreeSupport.redact(ConfigJsonCodec.valueToTree(snapshot.value()),
+                spec.fields());
+        return new ConfigEffectiveView(spec.key().value(), spec.title(), spec.description(), effectiveValue);
     }
 
     private boolean matches(ConfigSpec<?> spec, String keyword, String module, String group) {

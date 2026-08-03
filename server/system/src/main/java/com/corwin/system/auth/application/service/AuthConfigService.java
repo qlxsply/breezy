@@ -11,14 +11,14 @@ import java.time.Duration;
 public interface AuthConfigService {
 
     /**
-     * Returns the TTL for internal (admin) login sessions.
+     * Returns the TTL for admin login sessions.
      */
-    Duration internalSessionTtl();
+    Duration adminSessionTtl();
 
     /**
-     * Returns whether single login enforcement (kick previous session) is enabled for internal users.
+     * Returns whether single login enforcement (kick previous session) is enabled for admin account.
      */
-    boolean internalSingleLoginEnabled();
+    boolean adminSingleLoginEnabled();
 
     /**
      * Returns the TTL for cached session data.
@@ -31,27 +31,27 @@ public interface AuthConfigService {
     Duration lastAccessRefreshInterval();
 
     /**
-     * Returns the TTL for external (web user) access tokens.
+     * Returns the TTL for user access tokens.
      */
-    Duration externalAccessTokenTtl();
+    Duration userAccessTokenTtl();
 
     /**
-     * Returns the TTL for external (web user) refresh tokens.
+     * Returns the TTL for user refresh tokens.
      */
-    Duration externalRefreshTokenTtl();
+    Duration userRefreshTokenTtl();
 
     /**
      * Returns the refresh skew duration for access token expiry checks.
      */
-    Duration externalAccessTokenRefreshSkew();
+    Duration userAccessTokenRefreshSkew();
 
     /**
-     * Returns the JWT signing secret for external user tokens.
+     * Returns the JWT signing secret for user tokens.
      */
-    String externalJwtSecret();
+    String userJwtSecret();
 
     /**
-     * Returns the JWT issuer for external user tokens.
+     * Returns the JWT issuer for user tokens.
      */
-    String externalJwtIssuer();
+    String userJwtIssuer();
 }

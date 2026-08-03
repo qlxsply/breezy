@@ -37,9 +37,9 @@ public class WebUserJwtTokenService {
      */
     public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
         Instant now = HighDate.mockInstant();
-        Instant expiresAt = now.plus(authConfigService.externalAccessTokenTtl());
+        Instant expiresAt = now.plus(authConfigService.userAccessTokenTtl());
         String token = Jwts.builder().subject(String.valueOf(principal.userId()))
-                           .issuer(authConfigService.externalJwtIssuer()).issuedAt(Date.from(now))
+                           .issuer(authConfigService.userJwtIssuer()).issuedAt(Date.from(now))
                            .expiration(Date.from(expiresAt)).claim("uid", principal.userId())
                            .claim("account", principal.username()).claim("type", principal.userType().name())
                            .claim("ver", tokenVersion)
@@ -73,7 +73,7 @@ public class WebUserJwtTokenService {
     }
 
     private SecretKey secretKey() {
-        byte[] secret = authConfigService.externalJwtSecret().getBytes(StandardCharsets.UTF_8);
+        byte[] secret = authConfigService.userJwtSecret().getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(secret);
     }
 }

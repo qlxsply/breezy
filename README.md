@@ -1092,7 +1092,7 @@ cd web; npm run build
 - 配置策略拆分为编辑策略和生效策略，支持动态生效与重启生效。
 - 敏感字段查询只返回是否已配置，更新时支持保留、替换和清除语义。
 - 用户偏好默认值聚合为公共配置资源，`UserConfigAppService` 按“用户覆盖值 > 公共默认值”合并。
-- 数字格式拆分两个维度：用户个性化只保留千分位与小数点组合（`COMMA_DOT`/`PLAIN_DOT`/`DOT_COMMA`），小数位数与舍入模式由系统资源 `system.format.decimal-policy` 统一管理。
+- 数字格式拆分两个维度：用户个性化只保留千分位与小数点组合（`COMMA_DOT`/`PLAIN_DOT`/`DOT_COMMA`），小数位数与舍入模式由系统资源 `framework.format.decimal-policy` 统一管理。
 - 完整技术模型、API、表结构、异常规则和验收标准见 `server/framework/config-tech.md`。
 
 ### 五、任务拆分

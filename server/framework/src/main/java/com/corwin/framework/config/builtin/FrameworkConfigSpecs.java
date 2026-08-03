@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.corwin.framework.config.definition.ConfigFieldSpecs.required;
+
 /**
  * @author Corwin 2026/7/31
  */
@@ -17,55 +19,39 @@ public final class FrameworkConfigSpecs {
 
     public static final ConfigSpec<TimeOffsetConfig> TIME_OFFSET = new SimpleConfigSpec<>(
             new ConfigKey("framework.time.offset"), "framework", "time", "时间偏移",
-            "业务模拟时间相对服务器真实时间的偏移量", TimeOffsetConfig.class,
-            new TimeOffsetConfig(0), 1, 10, ConfigActivationPolicy.DYNAMIC,
-            ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
-            List.of(field("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 10)), "default",
-            FrameworkConfigSpecs::validateTimeOffset, FrameworkConfigSpecs::validateTimeOffset
-    );
+            "业务模拟时间相对服务器真实时间的偏移量", TimeOffsetConfig.class, new TimeOffsetConfig(0), 1, 10,
+            ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
+            List.of(required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 10)), "default",
+            FrameworkConfigSpecs::validateTimeOffset, FrameworkConfigSpecs::validateTimeOffset);
 
     public static final ConfigSpec<ClientIpConfig> CLIENT_IP = new SimpleConfigSpec<>(
-            new ConfigKey("framework.web.client-ip"), "framework", "web", "客户端 IP",
-            "客户端 IP 请求头解析方式", ClientIpConfig.class,
-            new ClientIpConfig(ClientIpMode.REMOTE_ADDR), 1, 10, ConfigActivationPolicy.DYNAMIC,
+            new ConfigKey("framework.web.client-ip"), "framework", "web", "客户端 IP", "客户端 IP 请求头解析方式",
+            ClientIpConfig.class, new ClientIpConfig(ClientIpMode.REMOTE_ADDR), 1, 10, ConfigActivationPolicy.DYNAMIC,
             ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.FAIL_STARTUP,
-            List.of(new ConfigFieldSpec("mode", "解析模式", "客户端 IP 解析模式", ConfigFieldType.ENUM,
-                    true, false, false, 10, "", null, null, null, null,
-                    List.of(ClientIpMode.values()).stream()
-                            .map(value -> new ConfigOptionItem(value.name(), value.name()))
-                            .toList())),
-            "default", FrameworkConfigSpecs::validateClientIp, FrameworkConfigSpecs::validateClientIp
-    );
+            List.of(new ConfigFieldSpec("mode", "解析模式", "客户端 IP 解析模式", ConfigFieldType.ENUM, true, false,
+                    false, 10, "", null, null, null, null, List.of(ClientIpMode.values()).stream()
+                    .map(value -> new ConfigOptionItem(value.name(), value.name())).toList())), "default",
+            FrameworkConfigSpecs::validateClientIp, FrameworkConfigSpecs::validateClientIp);
 
     public static final ConfigSpec<AuthWhitelistConfig> AUTH_WHITELIST = new SimpleConfigSpec<>(
             new ConfigKey("framework.web.auth-whitelist"), "framework", "web", "鉴权白名单",
-            "无需登录即可访问的路径规则", AuthWhitelistConfig.class,
-            new AuthWhitelistConfig(List.of(
-                    new AuthWhitelistItem("EXACT", "/api/auth/login"),
-                    new AuthWhitelistItem("EXACT", "/api/auth/logout"),
-                    new AuthWhitelistItem("EXACT", "/api/auth/me"),
+            "无需登录即可访问的路径规则", AuthWhitelistConfig.class, new AuthWhitelistConfig(
+            List.of(new AuthWhitelistItem("EXACT", "/api/auth/login"),
+                    new AuthWhitelistItem("EXACT", "/api/auth/logout"), new AuthWhitelistItem("EXACT", "/api/auth/me"),
                     new AuthWhitelistItem("ANT", "/api/public/frontend-resources/**"),
-                    new AuthWhitelistItem("EXACT", "/h2-console"),
-                    new AuthWhitelistItem("ANT", "/h2-console/**")
-            )), 1, 20, ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE,
-            ConfigInvalidValuePolicy.FAIL_STARTUP,
-            List.of(field("rules", "白名单规则", ConfigFieldType.OBJECT, 10)), "auth-whitelist",
-            FrameworkConfigSpecs::validateWhitelist, FrameworkConfigSpecs::validateWhitelist
-    );
+                    new AuthWhitelistItem("EXACT", "/h2-console"), new AuthWhitelistItem("ANT", "/h2-console/**"))), 1,
+            20, ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.FAIL_STARTUP,
+            List.of(required("rules", "白名单规则", ConfigFieldType.OBJECT, 10)), "auth-whitelist",
+            FrameworkConfigSpecs::validateWhitelist, FrameworkConfigSpecs::validateWhitelist);
 
     public static final ConfigSpec<LoggingFilterConfig> LOGGING_FILTER = new SimpleConfigSpec<>(
             new ConfigKey("framework.web.logging-filter"), "framework", "web", "请求日志过滤",
             "请求日志排除路径和流式响应路径", LoggingFilterConfig.class,
-            new LoggingFilterConfig(
-                    List.of("/static/", "/actuator", "/favicon.ico"),
-                    List.of("/api/sse/")
-            ), 1, 30, ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE,
-            ConfigInvalidValuePolicy.USE_DEFAULT,
-            List.of(
-                    field("excludePrefixes", "日志排除路径", ConfigFieldType.STRING_LIST, 10),
-                    field("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)
-            ), "default", FrameworkConfigSpecs::validateLogging, FrameworkConfigSpecs::validateLogging
-    );
+            new LoggingFilterConfig(List.of("/static/", "/actuator", "/favicon.ico"), List.of("/api/sse/")), 1, 30,
+            ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
+            List.of(required("excludePrefixes", "日志排除路径", ConfigFieldType.STRING_LIST, 10),
+                    required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)), "default",
+            FrameworkConfigSpecs::validateLogging, FrameworkConfigSpecs::validateLogging);
 
     public record TimeOffsetConfig(long offsetSeconds) {
     }
@@ -99,9 +85,8 @@ public final class FrameworkConfigSpecs {
     }
 
     private static List<ConfigViolation> validateClientIp(ClientIpConfig value) {
-        return value != null && value.mode() != null
-                ? List.of()
-                : List.of(violation("mode", "REQUIRED", "客户端 IP 解析模式不能为空"));
+        return value != null && value.mode() != null ? List.of() : List.of(
+                violation("mode", "REQUIRED", "客户端 IP 解析模式不能为空"));
     }
 
     private static List<ConfigViolation> validateWhitelist(AuthWhitelistConfig value) {
@@ -111,8 +96,9 @@ public final class FrameworkConfigSpecs {
         Set<String> supportedTypes = Set.of("EXACT", "ANT", "PATH_PATTERN");
         for (int index = 0; index < value.rules().size(); index++) {
             AuthWhitelistItem item = value.rules().get(index);
-            if (item == null || item.type() == null || !supportedTypes.contains(item.type())
-                    || item.pattern() == null || item.pattern().isBlank() || !item.pattern().startsWith("/")) {
+            if (item == null || item.type() == null || !supportedTypes.contains(
+                    item.type()) || item.pattern() == null || item.pattern().isBlank() || !item.pattern()
+                    .startsWith("/")) {
                 return List.of(violation("rules[" + index + "]", "INVALID_RULE", "鉴权白名单规则无效"));
             }
         }
@@ -141,11 +127,6 @@ public final class FrameworkConfigSpecs {
                 return;
             }
         }
-    }
-
-    private static ConfigFieldSpec field(String path, String title, ConfigFieldType type, int order) {
-        return new ConfigFieldSpec(path, title, "", type, true, false, false, order, "",
-                null, null, null, null, List.of());
     }
 
     private static ConfigViolation violation(String path, String code, String message) {
