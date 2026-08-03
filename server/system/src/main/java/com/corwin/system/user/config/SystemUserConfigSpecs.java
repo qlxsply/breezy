@@ -24,7 +24,8 @@ public final class SystemUserConfigSpecs {
             List.of(requiredEnum("timeZone", "默认时区", UserTimeZoneOption.values(), 10),
                     requiredEnum("dateTimeFormat", "默认日期时间格式", UserDateTimeFormatOption.values(), 20),
                     requiredEnum("dateFormat", "默认日期格式", UserDateFormatOption.values(), 30),
-                    requiredEnum("decimalFormat", "默认数字符号组合", UserDecimalFormatOption.values(), 40)), "default",
+                    requiredEnum("decimalFormat", "默认数字符号组合", UserDecimalFormatOption.values(), 40)),
+            "user-preference-defaults",
             value -> List.of(), value -> List.of());
 
     public record UserPreferenceDefaults(

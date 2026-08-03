@@ -21,6 +21,7 @@ import com.corwin.system.config.application.view.ConfigEffectiveView;
 import com.corwin.system.config.application.view.ConfigManagementView;
 import com.corwin.system.config.application.view.ConfigValidationView;
 import com.corwin.system.config.interfaces.web.req.ConfigPageReq;
+import com.corwin.system.config.interfaces.web.req.BatchResetConfigReq;
 import com.corwin.system.config.interfaces.web.req.ResetConfigReq;
 import com.corwin.system.config.interfaces.web.req.UpdateConfigReq;
 import com.corwin.system.config.interfaces.web.req.ValidateConfigReq;
@@ -33,6 +34,8 @@ import com.corwin.system.resource.published.ApiModuleCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author Corwin 2026/7/31
@@ -94,6 +97,18 @@ public class ConfigController {
         var view = configCommandService.resetDefault(
                 new ResetConfigCommand(configKey, req.expectedRevision(), req.reason()));
         return ApiResponse.ok(toRes(view));
+    }
+
+    @PostMapping("/batch-reset-default")
+    @Authorize(userType = UserType.ADMIN, permissions = {"cfg.edit"})
+    @Audit(resource = AuditResource.CONFIG, action = AuditAction.UPDATE, level = AuditLevel.HIGH, recordRequest = false)
+    public ApiResponse<List<ConfigChangeRes>> batchResetDefault(@Valid @RequestBody BatchResetConfigReq req) {
+        var commands = req.items().stream()
+                .map(item -> new ResetConfigCommand(item.configKey(), item.expectedRevision(), req.reason()))
+                .toList();
+        return ApiResponse.ok(configCommandService.resetDefaults(commands).stream()
+                .map(ConfigController::toRes)
+                .toList());
     }
 
     private static ConfigRes toRes(ConfigManagementView view) {

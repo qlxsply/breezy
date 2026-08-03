@@ -1,19 +1,5 @@
-.configs-title-cell {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.configs-title-cell strong {
-  overflow: hidden;
-  color: var(--color-text-primary);
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .configs-code-text {
+  display: block;
   overflow: hidden;
   color: var(--color-text-muted);
   font-family: var(--font-family-mono);
@@ -22,129 +8,218 @@
   white-space: nowrap;
 }
 
-.configs-drawer-content {
+.config-manage-drawer .admin-entity-drawer__body {
+  background: var(--color-bg-surface-soft);
+}
+
+.config-manage-drawer .role-manage-shell {
+  gap: var(--space-4);
+}
+
+.config-value-table-wrap {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.configs-json-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-.configs-json-panel {
   min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  flex-direction: column;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.config-custom-editor {
+  display: grid;
+  gap: 16px;
+}
+
+.config-preview-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-left: 10px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.config-preview-title strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.config-preview-title span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.config-value-table {
+  width: 100%;
+  min-width: 760px;
+  border-spacing: 0;
+  border-collapse: separate;
+  table-layout: fixed;
+  border: 1px solid var(--color-border-table);
+  border-radius: 0;
   background: var(--color-bg-surface);
 }
 
-.configs-json-panel:last-child {
-  grid-column: 1 / -1;
-}
-
-.configs-json-panel__title {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-surface-soft);
+.config-value-table th,
+.config-value-table td {
+  padding: 10px 12px;
+  border-right: 1px solid var(--color-border-table);
+  border-bottom: 1px solid var(--color-border-table);
   color: var(--color-text-secondary);
   font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.config-value-table th {
+  background: var(--color-bg-surface-soft);
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
-.configs-json-panel pre {
-  min-height: 120px;
-  max-height: 320px;
-  margin: 0;
-  overflow: auto;
-  padding: 14px;
-  color: var(--color-text-primary);
+.config-value-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.config-value-table th:last-child,
+.config-value-table td:last-child {
+  border-right: 0;
+}
+
+.config-value-table th:nth-child(1) {
+  width: 24%;
+}
+
+.config-value-table th:nth-child(2) {
+  width: 20%;
+}
+
+.config-value-table th:nth-child(3) {
+  width: 15%;
+}
+
+.config-value-table .mono {
+  color: var(--color-text-muted);
   font-family: var(--font-family-mono);
   font-size: 12px;
-  line-height: 1.65;
-  white-space: pre-wrap;
-  word-break: break-word;
+  word-break: break-all;
 }
 
-.configs-editor-form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 24px;
-}
-
-.configs-editor-form > .bz-form-item {
-  min-width: 0;
-  margin: 0;
-}
-
-.configs-editor-form > .bz-form-item:has(.bz-text-field__textarea) {
-  grid-column: 1 / -1;
-}
-
-.configs-editor-field .bz-form-item__label {
-  display: flex;
-  margin-bottom: 7px;
-}
-
-.configs-editor-field .bz-form-item__label > span {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 7px;
-}
-
-.configs-editor-field .bz-form-item__label code {
-  overflow: hidden;
-  color: var(--color-text-muted);
-  font-size: 11px;
-  font-weight: 400;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.configs-editor-field .bz-form-item__content,
-.configs-editor-field .bz-input,
-.configs-editor-field .bz-select,
-.configs-editor-field .bz-text-field {
+.config-value-table .bz-input,
+.config-value-table .bz-select,
+.config-value-table .bz-text-field {
   width: 100%;
 }
 
-.configs-editor-field.is-error .bz-input,
-.configs-editor-field.is-error .bz-select,
-.configs-editor-field.is-error .bz-text-field__control {
-  border-color: var(--color-danger-600);
+.config-manage-drawer .config-value-table-wrap .bz-input,
+.config-manage-drawer .config-value-table-wrap .bz-select,
+.config-manage-drawer .config-value-table-wrap .bz-text-field__control,
+.config-manage-drawer .config-value-table-wrap .bz-button {
+  border-radius: 0;
 }
 
-.configs-editor-field.is-error .bz-form-item__meta {
-  color: var(--color-danger-600);
-}
-
-.configs-required {
-  color: var(--color-danger-600);
-  font-style: normal;
-}
-
-.configs-global-errors {
-  padding: 10px 14px;
-  border: 1px solid color-mix(in srgb, var(--color-danger-600) 38%, transparent);
-  border-radius: var(--radius-md);
+.config-value-table tr.is-error td:last-child {
   background: var(--color-danger-soft);
+}
+
+.config-value-table tr.is-current td {
+  background: var(--color-bg-surface-selected);
+}
+
+.config-preview-result {
+  color: var(--primary-color) !important;
+  font-weight: var(--font-weight-semibold);
+}
+
+.config-field-error {
+  margin-top: 5px;
   color: var(--color-danger-600);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 12px;
+}
+
+.config-action-column {
+  width: 84px !important;
+}
+
+.config-message-table {
+  min-width: 1080px;
+}
+
+.config-vapid-table th:nth-child(1) {
+  width: 190px;
+}
+
+.config-vapid-table th:nth-child(2) {
+  width: 300px;
+}
+
+.config-setting-table th:nth-child(1) {
+  width: 220px;
+}
+
+.config-setting-table th:nth-child(2) {
+  width: 42%;
+}
+
+.config-preview-table th:nth-child(1),
+.config-time-preview-table th:nth-child(1),
+.config-preference-date-table th:nth-child(1),
+.config-preference-decimal-table th:nth-child(1) {
+  width: 180px;
+}
+
+.config-rounding-comparison-table {
+  min-width: 920px;
+}
+
+.config-rounding-comparison-table th:nth-child(1) {
+  width: 180px;
+}
+
+.config-rounding-comparison-table th:nth-child(2),
+.config-rounding-comparison-table th:nth-child(3),
+.config-rounding-comparison-table th:nth-child(4) {
+  width: 150px;
+}
+
+.config-change-table {
+  min-width: 0;
+}
+
+.config-change-table th:first-child {
+  width: 140px;
+}
+
+.config-change-table td {
+  padding: 8px 12px;
+}
+
+.config-message-table th:nth-child(1) {
+  width: 130px;
+}
+
+.config-message-table th:nth-child(2) {
+  width: 220px;
+}
+
+.config-message-table th:nth-child(3) {
+  width: 120px;
+}
+
+.config-message-table th:nth-child(n + 4) {
+  width: 110px;
+  text-align: center;
+}
+
+.config-message-table td:nth-child(n + 4) {
+  text-align: center;
 }
 
 @media (max-width: 760px) {
-  .configs-json-grid,
-  .configs-editor-form {
-    grid-template-columns: 1fr;
+  .config-manage-drawer .role-info-table {
+    min-width: 860px;
   }
 
-  .configs-json-panel:last-child,
-  .configs-editor-form > .bz-form-item:has(.bz-text-field__textarea) {
-    grid-column: auto;
+  .config-value-table {
+    min-width: 720px;
   }
 }

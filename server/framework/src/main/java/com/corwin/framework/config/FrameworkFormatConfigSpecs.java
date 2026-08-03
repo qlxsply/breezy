@@ -22,7 +22,7 @@ public final class FrameworkFormatConfigSpecs {
             ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
             List.of(requiredRange("scale", "小数位数", ConfigFieldType.INTEGER, 10, BigDecimal.ZERO,
                             BigDecimal.valueOf(20)),
-                    requiredEnum("roundingMode", "舍入模式", DecimalRoundingMode.values(), 20)), "default",
+                    requiredEnum("roundingMode", "舍入模式", DecimalRoundingMode.values(), 20)), "decimal-policy",
             FrameworkFormatConfigSpecs::validateDecimalPolicy, FrameworkFormatConfigSpecs::validateDecimalPolicy);
 
     public record DecimalPolicyConfig(

@@ -21,7 +21,7 @@ public final class FrameworkConfigSpecs {
             new ConfigKey("framework.time.offset"), "framework", "time", "时间偏移",
             "业务模拟时间相对服务器真实时间的偏移量", TimeOffsetConfig.class, new TimeOffsetConfig(0), 1, 10,
             ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
-            List.of(required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 10)), "default",
+            List.of(required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 10)), "time-offset",
             FrameworkConfigSpecs::validateTimeOffset, FrameworkConfigSpecs::validateTimeOffset);
 
     public static final ConfigSpec<ClientIpConfig> CLIENT_IP = new SimpleConfigSpec<>(

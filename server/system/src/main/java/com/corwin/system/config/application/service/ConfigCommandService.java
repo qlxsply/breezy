@@ -28,6 +28,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -85,6 +86,21 @@ public class ConfigCommandService {
 
     @Transactional
     public ConfigChangeView resetDefault(ResetConfigCommand command) {
+        return resetDefaultValue(command);
+    }
+
+    @Transactional
+    public List<ConfigChangeView> resetDefaults(List<ResetConfigCommand> commands) {
+        var configKeys = new HashSet<String>();
+        for (ResetConfigCommand command : commands) {
+            if (!configKeys.add(command.configKey())) {
+                throw new BizException("Duplicate config key: " + command.configKey(), BaseError.INVALID_PARAMETER);
+            }
+        }
+        return commands.stream().map(this::resetDefaultValue).toList();
+    }
+
+    private ConfigChangeView resetDefaultValue(ResetConfigCommand command) {
         if (command.expectedRevision() < 0) {
             throw new BizException("Invalid config reset command", BaseError.INVALID_PARAMETER);
         }

@@ -6,7 +6,7 @@ import type {
   ConfigValidationResult,
   JsonValue,
 } from "../types/config-admin";
-import type { PageResult } from "../types/page";
+import type { PageResult, PageRule } from "../types/page";
 import { get, post, put } from "./http";
 
 const BASE = "/sys/configs";
@@ -15,17 +15,13 @@ export function listConfigs(params?: {
   keyword?: string;
   module?: string;
   group?: string;
-  pageNo?: number;
-  pageSize?: number;
+  page?: PageRule;
 }): Promise<PageResult<ConfigItem>> {
   return post<PageResult<ConfigItem>>(`${BASE}/page`, {
     keyword: params?.keyword?.trim() || undefined,
     module: params?.module?.trim() || undefined,
     group: params?.group?.trim() || undefined,
-    page: {
-      pageNo: params?.pageNo,
-      pageSize: params?.pageSize,
-    },
+    page: params?.page,
   });
 }
 
@@ -56,6 +52,16 @@ export function resetConfigDefault(
   body: { expectedRevision: number; reason?: string },
 ): Promise<ConfigChangeResult> {
   return post<ConfigChangeResult>(`${BASE}/${encodeURIComponent(configKey)}/reset-default`, body);
+}
+
+export function batchResetConfigDefaults(
+  items: Array<{ configKey: string; expectedRevision: number }>,
+  reason?: string,
+): Promise<ConfigChangeResult[]> {
+  return post<ConfigChangeResult[]>(`${BASE}/batch-reset-default`, {
+    items,
+    reason: reason?.trim() || undefined,
+  });
 }
 
 export interface UserConfigItem {

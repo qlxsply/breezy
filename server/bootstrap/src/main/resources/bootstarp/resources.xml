@@ -40,6 +40,11 @@
                             <permission code="cfg.edit"/>
                         </permissions>
                     </button>
+                    <button code="config-system-batch-reset-default" name="批量重置默认值" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="cfg.edit"/>
+                        </permissions>
+                    </button>
                 </buttons>
             </menu>
 
