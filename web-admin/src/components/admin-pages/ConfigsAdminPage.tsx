@@ -302,7 +302,7 @@ export function ConfigsAdminPage() {
     {
       key: "key",
       title: "配置键",
-      minWidth: 280,
+      width: 320,
       render: (row) => <span className="configs-code-text">{row.key}</span>,
     },
     { key: "title", title: "配置名称", minWidth: 180, render: (row) => row.title },
