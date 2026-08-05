@@ -658,7 +658,7 @@ create table sys_config_value
 (
     config_key     varchar(160) not null,
     content        text         not null,
-    schema_version integer      not null,
+    schema_version int          not null,
     revision       bigint       not null,
     configured     bit          not null,
     updated_by     bigint,

@@ -1,9 +1,9 @@
 import type { UserConfigItem } from "./types";
 
-const DEFAULT_DATE_TIME_CODE = "YYYY_MM_DD_HH_MM_SS";
-const DEFAULT_DATE_CODE = "YYYY_MM_DD";
-const DEFAULT_DECIMAL_CODE = "COMMA_2";
-const DEFAULT_TIME_ZONE_CODE = "ASIA_SHANGHAI";
+const DEFAULT_DATE_TIME_CODE = "yyyy-MM-dd HH:mm:ss";
+const DEFAULT_DATE_CODE = "yyyy-MM-dd";
+const DEFAULT_DECIMAL_CODE = "COMMA_DOT";
+const DEFAULT_TIME_ZONE_CODE = "Asia/Shanghai";
 const DATE_TIME_INPUT_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 const DATE_TIME_WITH_SECONDS_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
 
@@ -17,6 +17,33 @@ export interface UserConfigOptionItem {
   value: string;
 }
 
+export interface DateTimeFormatOption {
+  value: string;
+  label: string;
+  minutePattern: string;
+  secondPattern: string;
+  minuteExample: string;
+  secondExample: string;
+  locale?: string;
+  includesTimeZone?: boolean;
+}
+
+export interface DateTimeFormatCandidate {
+  value: string;
+  label: string;
+  pattern: string;
+  example: string;
+  precision: DateTimePrecision;
+}
+
+export interface DateFormatOption {
+  value: string;
+  label: string;
+  pattern: string;
+  example: string;
+  locale?: string;
+}
+
 export type DateTimePrecision = "minute" | "second";
 
 export const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
@@ -27,25 +54,47 @@ export const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
   { code: "AMERICA_NEW_YORK", value: "America/New_York" },
 ];
 
-export const USER_DATE_TIME_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  { code: "YYYY_MM_DD_HH_MM_SS", value: "yyyy-MM-dd HH:mm:ss" },
-  { code: "YYYY_SLASH_MM_DD_HH_MM_SS", value: "yyyy/MM/dd HH:mm:ss" },
-  { code: "DD_SLASH_MM_YYYY_HH_MM_SS", value: "dd/MM/yyyy HH:mm:ss" },
-  { code: "MM_DD_YYYY_HH_MM", value: "MM-dd-yyyy HH:mm" },
+export const DATE_TIME_FORMAT_OPTIONS: DateTimeFormatOption[] = [
+  {value: "YMD_DASH_24H", label: "年-月-日 24小时制", locale: "zh-CN", minutePattern: "yyyy-MM-dd HH:mm", secondPattern: "yyyy-MM-dd HH:mm:ss", minuteExample: "2026-08-05 14:58", secondExample: "2026-08-05 14:58:36"},
+  {value: "YMD_CHINESE_24H", label: "中文年月日 24小时制", locale: "zh-CN", minutePattern: "yyyy年M月d日 HH:mm", secondPattern: "yyyy年M月d日 HH:mm:ss", minuteExample: "2026年8月5日 14:58", secondExample: "2026年8月5日 14:58:36"},
+  {value: "YMD_SLASH_24H", label: "年/月/日 24小时制", locale: "zh-CN", minutePattern: "yyyy/MM/dd HH:mm", secondPattern: "yyyy/MM/dd HH:mm:ss", minuteExample: "2026/08/05 14:58", secondExample: "2026/08/05 14:58:36"},
+  {value: "ISO_8601_OFFSET", label: "ISO 8601（包含时区）", minutePattern: "yyyy-MM-dd'T'HH:mmXXX", secondPattern: "yyyy-MM-dd'T'HH:mm:ssXXX", minuteExample: "2026-08-05T14:58+08:00", secondExample: "2026-08-05T14:58:36+08:00", includesTimeZone: true},
+  {value: "DMY_SLASH_24H", label: "日/月/年 24小时制", locale: "en-GB", minutePattern: "dd/MM/yyyy HH:mm", secondPattern: "dd/MM/yyyy HH:mm:ss", minuteExample: "05/08/2026 14:58", secondExample: "05/08/2026 14:58:36"},
+  {value: "MDY_SLASH_12H", label: "月/日/年 12小时制", locale: "en-US", minutePattern: "MM/dd/yyyy h:mm a", secondPattern: "MM/dd/yyyy h:mm:ss a", minuteExample: "08/05/2026 2:58 PM", secondExample: "08/05/2026 2:58:36 PM"},
+  {value: "ENGLISH_MONTH_12H", label: "英文月份 12小时制", locale: "en-US", minutePattern: "MMM d, yyyy h:mm a", secondPattern: "MMM d, yyyy h:mm:ss a", minuteExample: "Aug 5, 2026 2:58 PM", secondExample: "Aug 5, 2026 2:58:36 PM"},
+  {value: "COMPACT_24H", label: "紧凑格式", minutePattern: "yyyyMMdd HHmm", secondPattern: "yyyyMMdd HHmmss", minuteExample: "20260805 1458", secondExample: "20260805 145836"},
 ];
 
-export const USER_DATE_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  { code: "YYYY_MM_DD", value: "yyyy-MM-dd" },
-  { code: "YYYY_SLASH_MM_DD", value: "yyyy/MM/dd" },
-  { code: "DD_SLASH_MM_YYYY", value: "dd/MM/yyyy" },
-  { code: "MM_DD_YYYY", value: "MM-dd-yyyy" },
+export const DATE_TIME_FORMAT_CANDIDATES: DateTimeFormatCandidate[] = DATE_TIME_FORMAT_OPTIONS.flatMap((option) => [
+  {value: `${option.value}_MINUTE`, label: `${option.label}（精确到分钟）`, pattern: option.minutePattern, example: option.minuteExample, precision: "minute"},
+  {value: `${option.value}_SECOND`, label: `${option.label}（精确到秒）`, pattern: option.secondPattern, example: option.secondExample, precision: "second"},
+]);
+
+export const DATE_FORMAT_OPTIONS: DateFormatOption[] = [
+  {value: "YMD_DASH", label: "年-月-日", pattern: "yyyy-MM-dd", example: "2026-08-05"},
+  {value: "YMD_SLASH", label: "年/月/日", pattern: "yyyy/MM/dd", example: "2026/08/05"},
+  {value: "YMD_CHINESE", label: "中文年月日", pattern: "yyyy年M月d日", example: "2026年8月5日", locale: "zh-CN"},
+  {value: "DMY_SLASH", label: "日/月/年", pattern: "dd/MM/yyyy", example: "05/08/2026", locale: "en-GB"},
+  {value: "MDY_SLASH", label: "月/日/年", pattern: "MM/dd/yyyy", example: "08/05/2026", locale: "en-US"},
+  {value: "EN_MONTH_SHORT", label: "英文月份简写", pattern: "MMM d, yyyy", example: "Aug 5, 2026", locale: "en-US"},
+  {value: "EN_DAY_MONTH_SHORT", label: "日 英文月份 年", pattern: "d MMM yyyy", example: "5 Aug 2026", locale: "en-GB"},
+  {value: "COMPACT", label: "紧凑格式", pattern: "yyyyMMdd", example: "20260805"},
 ];
+
+export const USER_DATE_TIME_FORMAT_OPTIONS: UserConfigOptionItem[] = DATE_TIME_FORMAT_CANDIDATES.map((option) => ({
+  code: option.value,
+  value: option.pattern,
+}));
+
+export const USER_DATE_FORMAT_OPTIONS: UserConfigOptionItem[] = DATE_FORMAT_OPTIONS.map((option) => ({
+  code: option.value,
+  value: option.pattern,
+}));
 
 export const USER_DECIMAL_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  { code: "COMMA_2", value: "#,##0.00" },
-  { code: "COMMA_3", value: "#,##0.000" },
-  { code: "PLAIN_2", value: "0.00" },
-  { code: "PLAIN_4", value: "0.0000" },
+  { code: "COMMA_DOT", value: "COMMA_DOT" },
+  { code: "PLAIN_DOT", value: "PLAIN_DOT" },
+  { code: "DOT_COMMA", value: "DOT_COMMA" },
 ];
 
 const formatterState: { configs: UserConfigItem[] } = {
@@ -70,12 +119,18 @@ function findValue(
     return fallback;
   }
 
-  const matched = options.find((item) => item.code === code.trim());
+  const matched = options.find((item) => item.code === code.trim() || item.value === code.trim());
   return matched?.value || fallback;
 }
 
 export function resolveUserTimeZoneCode(code: string | null | undefined): string {
-  return findValue(USER_TIME_ZONE_OPTIONS, code, "Asia/Shanghai");
+  const candidate = findValue(USER_TIME_ZONE_OPTIONS, code, code?.trim() || "Asia/Shanghai");
+  try {
+    new Intl.DateTimeFormat("zh-CN", {timeZone: candidate}).format(new Date());
+    return candidate;
+  } catch {
+    return "Asia/Shanghai";
+  }
 }
 
 export function resolveUserDateTimeFormatCode(code: string | null | undefined): string {
@@ -87,7 +142,7 @@ export function resolveUserDateFormatCode(code: string | null | undefined): stri
 }
 
 export function resolveUserDecimalFormatCode(code: string | null | undefined): string {
-  return findValue(USER_DECIMAL_FORMAT_OPTIONS, code, "#,##0.00");
+  return findValue(USER_DECIMAL_FORMAT_OPTIONS, code, "COMMA_DOT");
 }
 
 function getConfigValue(code: string): string | undefined {
@@ -143,7 +198,8 @@ export function formatDateTimeInputValue(
   if (!value) return "";
   const parts = parseDateTimeInput(String(value).trim());
   if (!parts) return "";
-  return applyPatternToParts(parts, pattern);
+  const timeZone = getUserTimeZone();
+  return applyPattern(new Date(zonedDateTimeToEpochMillis(parts, timeZone)), pattern, timeZone);
 }
 
 export function formatDate(value: string | number | Date | null | undefined): string {
@@ -160,17 +216,13 @@ export function formatDecimal(value: number | string | null | undefined): string
   const num = typeof value === "number" ? value : Number.parseFloat(value);
   if (Number.isNaN(num)) return "-";
 
-  const pattern = resolveUserDecimalFormatCode(
+  const format = resolveUserDecimalFormatCode(
     getConfigValue(USER_DECIMAL_FORMAT) || DEFAULT_DECIMAL_CODE,
   );
-  const parts = pattern.split(".");
-  const fractionDigits = parts.length > 1 ? parts[1].length : 0;
-  const useGrouping = pattern.includes(",");
-
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-    useGrouping,
+  return num.toLocaleString(format === "DOT_COMMA" ? "de-DE" : "en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: format !== "PLAIN_DOT",
   });
 }
 
@@ -289,22 +341,45 @@ function toDate(value: unknown): Date | null {
   return null;
 }
 
+export function formatDateByPattern(date: Date, pattern: string, timeZone: string): string {
+  return applyPattern(date, pattern, timeZone);
+}
+
+export function formatUserPreferenceDate(
+  date: Date,
+  timeZoneCode: string,
+  patternCode: string,
+  dateOnly: boolean,
+): string {
+  const timeZone = resolveUserTimeZoneCode(timeZoneCode);
+  const pattern = dateOnly
+    ? resolveUserDateFormatCode(patternCode)
+    : resolveUserDateTimeFormatCode(patternCode);
+  return applyPattern(date, pattern, timeZone);
+}
+
 function applyPattern(date: Date, pattern: string, timeZone: string): string {
   const parts = getZonedParts(date, timeZone);
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const hour12 = parts.hour % 12 || 12;
   const map: Record<string, string | number> = {
     yyyy: parts.year,
+    MMM: monthNames[parts.month - 1],
     MM: pad(parts.month),
+    M: parts.month,
     dd: pad(parts.day),
+    d: parts.day,
     HH: pad(parts.hour),
+    h: hour12,
     mm: pad(parts.minute),
     ss: pad(parts.second),
+    a: parts.hour < 12 ? "AM" : "PM",
+    XXX: formatTimeZoneOffset(date, timeZone),
   };
 
-  let result = pattern;
-  for (const key of Object.keys(map)) {
-    result = result.replace(key, String(map[key]));
-  }
-  return result;
+  return pattern
+    .replace(/yyyy|MMM|MM|dd|HH|mm|ss|XXX|M|d|h|a/g, (token) => String(map[token]))
+    .replaceAll("'", "");
 }
 
 function pad(value: number): string {
@@ -327,23 +402,6 @@ function parseDateTimeInput(value: string): DateTimeParts | null {
     minute: Number(min),
     second: Number(sec ?? "0"),
   };
-}
-
-function applyPatternToParts(parts: DateTimeParts, pattern: string): string {
-  const map: Record<string, string | number> = {
-    yyyy: parts.year,
-    MM: pad(parts.month),
-    dd: pad(parts.day),
-    HH: pad(parts.hour),
-    mm: pad(parts.minute),
-    ss: pad(parts.second),
-  };
-
-  let result = pattern;
-  for (const key of Object.keys(map)) {
-    result = result.replace(key, String(map[key]));
-  }
-  return result;
 }
 
 function getZonedParts(date: Date, timeZone: string): DateTimeParts {
@@ -374,6 +432,14 @@ function getZonedParts(date: Date, timeZone: string): DateTimeParts {
     minute: Number(values.minute ?? "0"),
     second: Number(values.second ?? "0"),
   };
+}
+
+function formatTimeZoneOffset(date: Date, timeZone: string): string {
+  const epochMillis = Math.floor(date.getTime() / 1000) * 1000;
+  const totalMinutes = Math.round(timeZoneOffsetMillis(timeZone, epochMillis) / 60_000);
+  const sign = totalMinutes < 0 ? "-" : "+";
+  const absoluteMinutes = Math.abs(totalMinutes);
+  return `${sign}${pad(Math.floor(absoluteMinutes / 60))}:${pad(absoluteMinutes % 60)}`;
 }
 
 function zonedDateTimeToEpochMillis(parts: DateTimeParts, timeZone: string): number {

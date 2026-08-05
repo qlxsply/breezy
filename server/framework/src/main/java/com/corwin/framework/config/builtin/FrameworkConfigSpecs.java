@@ -50,7 +50,7 @@ public final class FrameworkConfigSpecs {
             new LoggingFilterConfig(List.of("/static/", "/actuator", "/favicon.ico"), List.of("/api/sse/")), 1, 30,
             ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
             List.of(required("excludePrefixes", "日志排除路径", ConfigFieldType.STRING_LIST, 10),
-                    required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)), "default",
+                    required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)), "logging-filter",
             FrameworkConfigSpecs::validateLogging, FrameworkConfigSpecs::validateLogging);
 
     public record TimeOffsetConfig(long offsetSeconds) {

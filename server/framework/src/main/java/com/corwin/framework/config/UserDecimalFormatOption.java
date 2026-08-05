@@ -1,6 +1,8 @@
 package com.corwin.framework.config;
 
 import com.corwin.framework.dict.DictEnumDefinition;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * 用户可选的千分位与小数点组合。
@@ -41,6 +43,7 @@ public enum UserDecimalFormatOption implements DictEnumDefinition {
     }
 
     @Override
+    @JsonValue
     public String itemValue() {
         return name();
     }
@@ -57,13 +60,14 @@ public enum UserDecimalFormatOption implements DictEnumDefinition {
         return !groupingSeparator.isEmpty();
     }
 
+    @JsonCreator
     public static UserDecimalFormatOption fromCode(String code) {
         if (code == null || code.isBlank()) {
             return COMMA_DOT;
         }
         String normalized = code.trim();
         for (UserDecimalFormatOption option : values()) {
-            if (option.name().equals(normalized)) {
+            if (option.itemValue().equals(normalized)) {
                 return option;
             }
         }

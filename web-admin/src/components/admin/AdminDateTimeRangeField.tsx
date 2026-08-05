@@ -6,6 +6,7 @@ import {
   getUserDateTimeFormatPattern,
   getUserTimeZone,
   resolveDateTimePrecision,
+  resolveUserDateTimeFormatCode,
   resolveUserTimeZoneCode,
 } from "@admin/core/formatter";
 import { usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
@@ -73,7 +74,7 @@ export function AdminDateTimeRangeField({
   const configs = usePersonalizedConfigs();
   const dateTimePattern = useMemo(() => {
     const configured = configs.find((item) => item.code === "USER_DATE_TIME_FORMAT")?.value?.trim();
-    return configured ? resolvePattern(configured) : getUserDateTimeFormatPattern();
+    return configured ? resolveUserDateTimeFormatCode(configured) : getUserDateTimeFormatPattern();
   }, [configs]);
   const precision = useMemo(() => resolveDateTimePrecision(dateTimePattern), [dateTimePattern]);
   const timeZone = useMemo(() => {
@@ -1296,15 +1297,6 @@ function toDateString(year: number, month: number, day: number): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
-}
-
-function resolvePattern(value: string): string {
-  if (value === "YYYY_MM_DD_HH_MM_SS") return "yyyy-MM-dd HH:mm:ss";
-  if (value === "YYYY_SLASH_MM_DD_HH_MM_SS") return "yyyy/MM/dd HH:mm:ss";
-  if (value === "DD_SLASH_MM_YYYY_HH_MM_SS") return "dd/MM/yyyy HH:mm:ss";
-  if (value === "MM_DD_YYYY_HH_MM") return "MM-dd-yyyy HH:mm";
-  if (value === "YYYY_MM_DD_HH_MM") return "yyyy-MM-dd HH:mm";
-  return value || "yyyy-MM-dd HH:mm:ss";
 }
 
 function pad(value: number | string): string {

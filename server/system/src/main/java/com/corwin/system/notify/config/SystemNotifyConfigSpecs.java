@@ -95,9 +95,6 @@ public final class SystemNotifyConfigSpecs {
     private static List<ConfigViolation> validateMessageTypes(MessageTypeConfigs value) {
         var violations = new ArrayList<ConfigViolation>();
         var types = new HashSet<MsgType>();
-        if (value.items().isEmpty()) {
-            return List.of(new ConfigViolation("items", "REQUIRED", "消息类型配置不能为空"));
-        }
         for (int index = 0; index < value.items().size(); index++) {
             MessageTypeConfig item = value.items().get(index);
             if (item == null || item.msgType() == null || item.priority() == null || !types.add(item.msgType())) {
@@ -107,11 +104,6 @@ public final class SystemNotifyConfigSpecs {
             if (item.route() != null && !item.route().isBlank() && !item.route().startsWith("/")) {
                 violations.add(
                         new ConfigViolation("items[" + index + "].route", "INVALID_ROUTE", "消息路由必须以 / 开头"));
-            }
-        }
-        for (MsgType type : MsgType.values()) {
-            if (!types.contains(type)) {
-                violations.add(new ConfigViolation("items", "MISSING_TYPE", "缺少消息类型配置: " + type.name()));
             }
         }
         return violations;

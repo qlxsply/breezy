@@ -1,5 +1,7 @@
 package com.corwin.framework.config;
 
+import com.corwin.framework.dict.DictEnumDefinition;
+
 import java.math.RoundingMode;
 
 /**
@@ -7,7 +9,7 @@ import java.math.RoundingMode;
  *
  * @author Corwin 2026/7/31
  */
-public enum DecimalRoundingMode {
+public enum DecimalRoundingMode implements DictEnumDefinition {
 
     HALF_UP("四舍五入", RoundingMode.HALF_UP),
     HALF_DOWN("五舍六入", RoundingMode.HALF_DOWN),
@@ -25,6 +27,7 @@ public enum DecimalRoundingMode {
         this.roundingMode = roundingMode;
     }
 
+    @Override
     public String label() {
         return label;
     }

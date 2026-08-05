@@ -18,8 +18,8 @@ public final class SystemUserConfigSpecs {
     public static final ConfigSpec<UserPreferenceDefaults> USER_PREFERENCE_DEFAULTS = new SimpleConfigSpec<>(
             new ConfigKey("system.user.preference-defaults"), "system", "user", "用户偏好默认值",
             "用户未设置个人偏好时使用的公共默认值", UserPreferenceDefaults.class,
-            new UserPreferenceDefaults(UserTimeZoneOption.ASIA_SHANGHAI, UserDateTimeFormatOption.YYYY_MM_DD_HH_MM_SS,
-                    UserDateFormatOption.YYYY_MM_DD, UserDecimalFormatOption.COMMA_DOT), 1, 10,
+            new UserPreferenceDefaults(UserTimeZoneOption.ASIA_SHANGHAI, UserDateTimeFormatOption.YMD_DASH_24H_SECOND,
+                    UserDateFormatOption.YMD_DASH, UserDecimalFormatOption.COMMA_DOT), 1, 10,
             ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
             List.of(requiredEnum("timeZone", "默认时区", UserTimeZoneOption.values(), 10),
                     requiredEnum("dateTimeFormat", "默认日期时间格式", UserDateTimeFormatOption.values(), 20),

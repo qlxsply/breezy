@@ -70,20 +70,20 @@ public class UserConfigAppService {
     private Map<String, String> publicDefaults() {
         var defaults = Configs.get(SystemUserConfigSpecs.USER_PREFERENCE_DEFAULTS);
         var values = new LinkedHashMap<String, String>();
-        values.put(UserConfigCodes.TIME_ZONE, defaults.timeZone().name());
-        values.put(UserConfigCodes.DATE_TIME_FORMAT, defaults.dateTimeFormat().name());
-        values.put(UserConfigCodes.DATE_FORMAT, defaults.dateFormat().name());
-        values.put(UserConfigCodes.DECIMAL_FORMAT, defaults.decimalFormat().name());
+        values.put(UserConfigCodes.TIME_ZONE, defaults.timeZone().itemValue());
+        values.put(UserConfigCodes.DATE_TIME_FORMAT, defaults.dateTimeFormat().itemValue());
+        values.put(UserConfigCodes.DATE_FORMAT, defaults.dateFormat().itemValue());
+        values.put(UserConfigCodes.DECIMAL_FORMAT, defaults.decimalFormat().itemValue());
         return values;
     }
 
     private void validateValue(String code, String value) {
         boolean valid = switch (code) {
-            case UserConfigCodes.TIME_ZONE -> enumContains(com.corwin.framework.config.UserTimeZoneOption.values(), value);
-            case UserConfigCodes.DATE_TIME_FORMAT -> enumContains(
+            case UserConfigCodes.TIME_ZONE -> dictContains(com.corwin.framework.config.UserTimeZoneOption.values(), value);
+            case UserConfigCodes.DATE_TIME_FORMAT -> dictContains(
                     com.corwin.framework.config.UserDateTimeFormatOption.values(), value);
-            case UserConfigCodes.DATE_FORMAT -> enumContains(com.corwin.framework.config.UserDateFormatOption.values(), value);
-            case UserConfigCodes.DECIMAL_FORMAT -> enumContains(
+            case UserConfigCodes.DATE_FORMAT -> dictContains(com.corwin.framework.config.UserDateFormatOption.values(), value);
+            case UserConfigCodes.DECIMAL_FORMAT -> dictContains(
                     com.corwin.framework.config.UserDecimalFormatOption.values(), value);
             default -> false;
         };
@@ -92,8 +92,8 @@ public class UserConfigAppService {
         }
     }
 
-    private boolean enumContains(Enum<?>[] values, String code) {
-        return java.util.Arrays.stream(values).anyMatch(value -> value.name().equals(code));
+    private boolean dictContains(com.corwin.framework.dict.DictEnumDefinition[] values, String itemValue) {
+        return java.util.Arrays.stream(values).anyMatch(value -> value.itemValue().equals(itemValue));
     }
 
     private String description(String code) {

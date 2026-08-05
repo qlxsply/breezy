@@ -7,10 +7,10 @@ import {
   resolveUserTimeZoneCode,
 } from "./user-config-options";
 
-const DEFAULT_DATE_TIME_CODE = "YYYY_MM_DD_HH_MM_SS";
-const DEFAULT_DATE_CODE = "YYYY_MM_DD";
-const DEFAULT_DECIMAL_CODE = "COMMA_2";
-const DEFAULT_TIME_ZONE_CODE = "ASIA_SHANGHAI";
+const DEFAULT_DATE_TIME_CODE = "yyyy-MM-dd HH:mm:ss";
+const DEFAULT_DATE_CODE = "yyyy-MM-dd";
+const DEFAULT_DECIMAL_CODE = "COMMA_DOT";
+const DEFAULT_TIME_ZONE_CODE = "Asia/Shanghai";
 const DATE_TIME_INPUT_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 const DATE_TIME_WITH_SECONDS_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
 const USER_DATE_TIME_FORMAT = "USER_DATE_TIME_FORMAT";
@@ -69,19 +69,13 @@ export function formatDecimal(value: number | string | null | undefined): string
   const num = typeof value === "number" ? value : parseFloat(value);
   if (isNaN(num)) return "-";
 
-  const pattern = resolveUserDecimalFormatCode(
+  const format = resolveUserDecimalFormatCode(
     getConfigValue(USER_DECIMAL_FORMAT) || DEFAULT_DECIMAL_CODE,
   );
-
-  // Simple parser for #,##0.00 style
-  const parts = pattern.split(".");
-  const fractionDigits = parts.length > 1 ? parts[1].length : 0;
-  const useGrouping = pattern.includes(",");
-
-  return num.toLocaleString(undefined, {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-    useGrouping,
+  return num.toLocaleString(format === "DOT_COMMA" ? "de-DE" : "en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: format !== "PLAIN_DOT",
   });
 }
 
@@ -164,21 +158,25 @@ function toDate(value: unknown): Date | null {
 
 function applyPattern(date: Date, pattern: string, timeZone: string): string {
   const parts = getZonedParts(date, timeZone);
-
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const hour12 = parts.hour % 12 || 12;
   const map: Record<string, string | number> = {
     yyyy: parts.year,
+    MMM: monthNames[parts.month - 1],
     MM: pad(parts.month),
+    M: parts.month,
     dd: pad(parts.day),
+    d: parts.day,
     HH: pad(parts.hour),
+    h: hour12,
     mm: pad(parts.minute),
     ss: pad(parts.second),
+    a: parts.hour < 12 ? "AM" : "PM",
+    XXX: formatTimeZoneOffset(date, timeZone),
   };
-
-  let res = pattern;
-  for (const key in map) {
-    res = res.replace(key, String(map[key]));
-  }
-  return res;
+  return pattern
+    .replace(/yyyy|MMM|MM|dd|HH|mm|ss|XXX|M|d|h|a/g, (token) => String(map[token]))
+    .replaceAll("'", "");
 }
 
 function pad(n: number): string {
@@ -238,6 +236,14 @@ function getZonedParts(date: Date, timeZone: string): DateTimeParts {
     minute: Number(values.minute ?? "0"),
     second: Number(values.second ?? "0"),
   };
+}
+
+function formatTimeZoneOffset(date: Date, timeZone: string): string {
+  const epochMillis = Math.floor(date.getTime() / 1000) * 1000;
+  const totalMinutes = Math.round(timeZoneOffsetMillis(timeZone, epochMillis) / 60_000);
+  const sign = totalMinutes < 0 ? "-" : "+";
+  const absoluteMinutes = Math.abs(totalMinutes);
+  return `${sign}${pad(Math.floor(absoluteMinutes / 60))}:${pad(absoluteMinutes % 60)}`;
 }
 
 function zonedDateTimeToEpochMillis(parts: DateTimeParts, timeZone: string): number {

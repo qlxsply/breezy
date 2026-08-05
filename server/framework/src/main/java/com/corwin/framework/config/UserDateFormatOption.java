@@ -1,6 +1,8 @@
 package com.corwin.framework.config;
 
 import com.corwin.framework.dict.DictEnumDefinition;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * User-selectable date format options.
@@ -8,10 +10,14 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * @author Corwin 2026/5/5
  */
 public enum UserDateFormatOption implements DictEnumDefinition {
-    YYYY_MM_DD("年-月-日", "yyyy-MM-dd"),
-    YYYY_SLASH_MM_DD("年/月/日", "yyyy/MM/dd"),
-    DD_SLASH_MM_YYYY("日/月/年", "dd/MM/yyyy"),
-    MM_DD_YYYY("月-日-年", "MM-dd-yyyy");
+    YMD_DASH("年-月-日", "yyyy-MM-dd"),
+    YMD_SLASH("年/月/日", "yyyy/MM/dd"),
+    YMD_CHINESE("中文年月日", "yyyy年M月d日"),
+    DMY_SLASH("日/月/年", "dd/MM/yyyy"),
+    MDY_SLASH("月/日/年", "MM/dd/yyyy"),
+    EN_MONTH_SHORT("英文月份简写", "MMM d, yyyy"),
+    EN_DAY_MONTH_SHORT("日 英文月份 年", "d MMM yyyy"),
+    COMPACT("紧凑格式", "yyyyMMdd");
 
     private final String label;
     private final String pattern;
@@ -27,6 +33,7 @@ public enum UserDateFormatOption implements DictEnumDefinition {
     }
 
     @Override
+    @JsonValue
     public String itemValue() {
         return pattern;
     }
@@ -35,17 +42,18 @@ public enum UserDateFormatOption implements DictEnumDefinition {
         return pattern;
     }
 
+    @JsonCreator
     public static UserDateFormatOption fromCode(String code) {
         if (code == null || code.isBlank()) {
-            return YYYY_MM_DD;
+            return YMD_DASH;
         }
         String normalized = code.trim();
         for (UserDateFormatOption option : values()) {
-            if (option.name().equals(normalized)) {
+            if (option.itemValue().equals(normalized)) {
                 return option;
             }
         }
-        return YYYY_MM_DD;
+        return YMD_DASH;
     }
 
     public static String patternOf(String code) {

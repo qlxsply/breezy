@@ -122,10 +122,10 @@ const dateFormatOptions = ref<OptionItem[]>([]);
 const decimalFormatOptions = ref<OptionItem[]>([]);
 
 const form = reactive({
-  USER_TIME_ZONE: "ASIA_SHANGHAI",
-  USER_DATE_TIME_FORMAT: "YYYY_MM_DD_HH_MM_SS",
-  USER_DATE_FORMAT: "YYYY_MM_DD",
-  USER_DECIMAL_FORMAT: "COMMA_2",
+  USER_TIME_ZONE: "Asia/Shanghai",
+  USER_DATE_TIME_FORMAT: "yyyy-MM-dd HH:mm:ss",
+  USER_DATE_FORMAT: "yyyy-MM-dd",
+  USER_DECIMAL_FORMAT: "COMMA_DOT",
 });
 
 void Promise.all([loadOptions(), reload()]);
@@ -223,11 +223,11 @@ function applyConfigs(configs: Array<{ code: string; value: string }>) {
 function toOptions(
   items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
 ): OptionItem[] {
-  return items.map((item) => ({ label: item.itemLabel, value: item.itemCode || item.itemValue }));
+  return items.map((item) => ({ label: item.itemLabel, value: item.itemValue }));
 }
 
-function toStaticOptions(items: Array<{ label: string; code: string }>): OptionItem[] {
-  return items.map((item) => ({ label: item.label, value: item.code }));
+function toStaticOptions(items: Array<{ label: string; value: string }>): OptionItem[] {
+  return items.map((item) => ({ label: item.label, value: item.value }));
 }
 </script>
 

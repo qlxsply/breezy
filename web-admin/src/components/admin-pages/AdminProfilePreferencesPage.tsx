@@ -9,6 +9,8 @@ import {
 } from "@admin/components/admin";
 import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
 import {
+  formatDateByPattern,
+  getUserTimeZone,
   resolveUserDateFormatCode,
   resolveUserDateTimeFormatCode,
   resolveUserDecimalFormatCode,
@@ -27,29 +29,11 @@ interface OptionItem {
   value: string;
 }
 
-function applyPattern(date: Date, pattern: string): string {
-  const map: Record<string, string> = {
-    yyyy: String(date.getFullYear()),
-    MM: String(date.getMonth() + 1).padStart(2, "0"),
-    dd: String(date.getDate()).padStart(2, "0"),
-    HH: String(date.getHours()).padStart(2, "0"),
-    mm: String(date.getMinutes()).padStart(2, "0"),
-    ss: String(date.getSeconds()).padStart(2, "0"),
-  };
-  let result = pattern;
-  for (const key of Object.keys(map)) {
-    result = result.replace(key, map[key]);
-  }
-  return result;
-}
-
-function formatDecimalByPattern(value: number, pattern: string): string {
-  const parts = pattern.split(".");
-  const fractionDigits = parts.length > 1 ? parts[1].length : 0;
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-    useGrouping: pattern.includes(","),
+function formatDecimalByPattern(value: number, format: string): string {
+  return value.toLocaleString(format === "DOT_COMMA" ? "de-DE" : "en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: format !== "PLAIN_DOT",
   });
 }
 
@@ -64,12 +48,12 @@ function resolveStaticLabel(
 
 function buildDateTimeSampleLabel(code: string | undefined, fallbackLabel: string): string {
   if (!code) return fallbackLabel;
-  return applyPattern(new Date(), resolveUserDateTimeFormatCode(code)) || fallbackLabel;
+  return formatDateByPattern(new Date(), resolveUserDateTimeFormatCode(code), getUserTimeZone()) || fallbackLabel;
 }
 
 function buildDateSampleLabel(code: string | undefined, fallbackLabel: string): string {
   if (!code) return fallbackLabel;
-  return applyPattern(new Date(), resolveUserDateFormatCode(code)) || fallbackLabel;
+  return formatDateByPattern(new Date(), resolveUserDateFormatCode(code), getUserTimeZone()) || fallbackLabel;
 }
 
 function buildDecimalSampleLabel(code: string | undefined, fallbackLabel: string): string {
@@ -83,7 +67,7 @@ function buildOptions(
 ): OptionItem[] {
   return items.map((item) => ({
     label: labelFn(item.itemCode, item.itemLabel),
-    value: item.itemCode || item.itemValue,
+    value: item.itemValue,
   }));
 }
 
@@ -92,10 +76,10 @@ export function AdminProfilePreferencesPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    USER_TIME_ZONE: "ASIA_SHANGHAI",
-    USER_DATE_TIME_FORMAT: "YYYY_MM_DD_HH_MM_SS",
-    USER_DATE_FORMAT: "YYYY_MM_DD",
-    USER_DECIMAL_FORMAT: "COMMA_2",
+    USER_TIME_ZONE: "Asia/Shanghai",
+    USER_DATE_TIME_FORMAT: "yyyy-MM-dd HH:mm:ss",
+    USER_DATE_FORMAT: "yyyy-MM-dd",
+    USER_DECIMAL_FORMAT: "COMMA_DOT",
   });
 
   const [timeZoneOptions, setTimeZoneOptions] = useState<OptionItem[]>([]);
@@ -139,7 +123,7 @@ export function AdminProfilePreferencesPage() {
               <BzSelect
                 modelValue={form.USER_TIME_ZONE}
                 onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "ASIA_SHANGHAI" }))
+                  setForm((prev) => ({ ...prev, USER_TIME_ZONE: value || "Asia/Shanghai" }))
                 }
               >
                 {timeZoneOptions.map((option) => (
@@ -162,7 +146,7 @@ export function AdminProfilePreferencesPage() {
                 onValueChange={(value) =>
                   setForm((prev) => ({
                     ...prev,
-                    USER_DATE_TIME_FORMAT: value || "YYYY_MM_DD_HH_MM_SS",
+                    USER_DATE_TIME_FORMAT: value || "yyyy-MM-dd HH:mm:ss",
                   }))
                 }
               >
@@ -184,7 +168,7 @@ export function AdminProfilePreferencesPage() {
               <BzSelect
                 modelValue={form.USER_DATE_FORMAT}
                 onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "YYYY_MM_DD" }))
+                  setForm((prev) => ({ ...prev, USER_DATE_FORMAT: value || "yyyy-MM-dd" }))
                 }
               >
                 {dateFormatOptions.map((option) => (
@@ -205,7 +189,7 @@ export function AdminProfilePreferencesPage() {
               <BzSelect
                 modelValue={form.USER_DECIMAL_FORMAT}
                 onValueChange={(value) =>
-                  setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_2" }))
+                  setForm((prev) => ({ ...prev, USER_DECIMAL_FORMAT: value || "COMMA_DOT" }))
                 }
               >
                 {decimalFormatOptions.map((option) => (
@@ -262,16 +246,16 @@ export function AdminProfilePreferencesPage() {
       );
     } catch {
       setTimeZoneOptions(
-        USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+        USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
       );
       setDateTimeFormatOptions(
-        USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+        USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
       );
       setDateFormatOptions(
-        USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+        USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
       );
       setDecimalFormatOptions(
-        USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.code })),
+        USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
       );
     }
   }

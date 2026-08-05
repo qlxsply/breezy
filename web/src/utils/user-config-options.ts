@@ -17,40 +17,39 @@ export const USER_TIME_ZONE_OPTIONS: UserConfigOptionItem[] = [
 ];
 
 export const USER_DATE_TIME_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  {
-    code: "YYYY_MM_DD_HH_MM_SS",
-    label: "2026-06-04 14:30:45 (年-月-日 24小时)",
-    value: "yyyy-MM-dd HH:mm:ss",
-  },
-  {
-    code: "YYYY_SLASH_MM_DD_HH_MM_SS",
-    label: "2026/06/04 14:30:45 (年/月/日 24小时)",
-    value: "yyyy/MM/dd HH:mm:ss",
-  },
-  {
-    code: "DD_SLASH_MM_YYYY_HH_MM_SS",
-    label: "04/06/2026 14:30:45 (日/月/年 24小时)",
-    value: "dd/MM/yyyy HH:mm:ss",
-  },
-  {
-    code: "MM_DD_YYYY_HH_MM",
-    label: "06-04-2026 14:30 (月-日-年 24小时)",
-    value: "MM-dd-yyyy HH:mm",
-  },
+  {code: "YMD_DASH_24H_MINUTE", label: "2026-08-05 14:58（年-月-日 24小时制，精确到分钟）", value: "yyyy-MM-dd HH:mm"},
+  {code: "YMD_DASH_24H_SECOND", label: "2026-08-05 14:58:36（年-月-日 24小时制，精确到秒）", value: "yyyy-MM-dd HH:mm:ss"},
+  {code: "YMD_CHINESE_24H_MINUTE", label: "2026年8月5日 14:58（中文年月日 24小时制，精确到分钟）", value: "yyyy年M月d日 HH:mm"},
+  {code: "YMD_CHINESE_24H_SECOND", label: "2026年8月5日 14:58:36（中文年月日 24小时制，精确到秒）", value: "yyyy年M月d日 HH:mm:ss"},
+  {code: "YMD_SLASH_24H_MINUTE", label: "2026/08/05 14:58（年/月/日 24小时制，精确到分钟）", value: "yyyy/MM/dd HH:mm"},
+  {code: "YMD_SLASH_24H_SECOND", label: "2026/08/05 14:58:36（年/月/日 24小时制，精确到秒）", value: "yyyy/MM/dd HH:mm:ss"},
+  {code: "ISO_8601_OFFSET_MINUTE", label: "2026-08-05T14:58+08:00（ISO 8601，精确到分钟）", value: "yyyy-MM-dd'T'HH:mmXXX"},
+  {code: "ISO_8601_OFFSET_SECOND", label: "2026-08-05T14:58:36+08:00（ISO 8601，精确到秒）", value: "yyyy-MM-dd'T'HH:mm:ssXXX"},
+  {code: "DMY_SLASH_24H_MINUTE", label: "05/08/2026 14:58（日/月/年 24小时制，精确到分钟）", value: "dd/MM/yyyy HH:mm"},
+  {code: "DMY_SLASH_24H_SECOND", label: "05/08/2026 14:58:36（日/月/年 24小时制，精确到秒）", value: "dd/MM/yyyy HH:mm:ss"},
+  {code: "MDY_SLASH_12H_MINUTE", label: "08/05/2026 2:58 PM（月/日/年 12小时制，精确到分钟）", value: "MM/dd/yyyy h:mm a"},
+  {code: "MDY_SLASH_12H_SECOND", label: "08/05/2026 2:58:36 PM（月/日/年 12小时制，精确到秒）", value: "MM/dd/yyyy h:mm:ss a"},
+  {code: "ENGLISH_MONTH_12H_MINUTE", label: "Aug 5, 2026 2:58 PM（英文月份 12小时制，精确到分钟）", value: "MMM d, yyyy h:mm a"},
+  {code: "ENGLISH_MONTH_12H_SECOND", label: "Aug 5, 2026 2:58:36 PM（英文月份 12小时制，精确到秒）", value: "MMM d, yyyy h:mm:ss a"},
+  {code: "COMPACT_24H_MINUTE", label: "20260805 1458（紧凑格式，精确到分钟）", value: "yyyyMMdd HHmm"},
+  {code: "COMPACT_24H_SECOND", label: "20260805 145836（紧凑格式，精确到秒）", value: "yyyyMMdd HHmmss"},
 ];
 
 export const USER_DATE_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  { code: "YYYY_MM_DD", label: "2026-06-04 (年-月-日)", value: "yyyy-MM-dd" },
-  { code: "YYYY_SLASH_MM_DD", label: "2026/06/04 (年/月/日)", value: "yyyy/MM/dd" },
-  { code: "DD_SLASH_MM_YYYY", label: "04/06/2026 (日/月/年)", value: "dd/MM/yyyy" },
-  { code: "MM_DD_YYYY", label: "06-04-2026 (月-日-年)", value: "MM-dd-yyyy" },
+  {code: "YMD_DASH", label: "2026-08-05（年-月-日）", value: "yyyy-MM-dd"},
+  {code: "YMD_SLASH", label: "2026/08/05（年/月/日）", value: "yyyy/MM/dd"},
+  {code: "YMD_CHINESE", label: "2026年8月5日（中文年月日）", value: "yyyy年M月d日"},
+  {code: "DMY_SLASH", label: "05/08/2026（日/月/年）", value: "dd/MM/yyyy"},
+  {code: "MDY_SLASH", label: "08/05/2026（月/日/年）", value: "MM/dd/yyyy"},
+  {code: "EN_MONTH_SHORT", label: "Aug 5, 2026（英文月份简写）", value: "MMM d, yyyy"},
+  {code: "EN_DAY_MONTH_SHORT", label: "5 Aug 2026（日 英文月份 年）", value: "d MMM yyyy"},
+  {code: "COMPACT", label: "20260805（紧凑格式）", value: "yyyyMMdd"},
 ];
 
 export const USER_DECIMAL_FORMAT_OPTIONS: UserConfigOptionItem[] = [
-  { code: "COMMA_2", label: "1,234.56 (千分位，两位小数)", value: "#,##0.00" },
-  { code: "COMMA_3", label: "1,234.567 (千分位，三位小数)", value: "#,##0.000" },
-  { code: "PLAIN_2", label: "1234.56 (无千分位，两位小数)", value: "0.00" },
-  { code: "PLAIN_4", label: "1234.5678 (无千分位，四位小数)", value: "0.0000" },
+  {code: "COMMA_DOT", label: "1,234.56（千分位逗号、小数点）", value: "COMMA_DOT"},
+  {code: "PLAIN_DOT", label: "1234.56（无千分位、小数点）", value: "PLAIN_DOT"},
+  {code: "DOT_COMMA", label: "1.234,56（千分位点、逗号小数点）", value: "DOT_COMMA"},
 ];
 
 function findValue(
@@ -59,7 +58,7 @@ function findValue(
   fallback: string,
 ): string {
   if (!code) return fallback;
-  const matched = options.find((item) => item.code === code.trim());
+  const matched = options.find((item) => item.code === code.trim() || item.value === code.trim());
   return matched?.value || fallback;
 }
 
@@ -74,7 +73,13 @@ function findLabel(
 }
 
 export function resolveUserTimeZoneCode(code: string | null | undefined): string {
-  return findValue(USER_TIME_ZONE_OPTIONS, code, "Asia/Shanghai");
+  const candidate = findValue(USER_TIME_ZONE_OPTIONS, code, code?.trim() || "Asia/Shanghai");
+  try {
+    new Intl.DateTimeFormat("zh-CN", {timeZone: candidate}).format(new Date());
+    return candidate;
+  } catch {
+    return "Asia/Shanghai";
+  }
 }
 
 export function resolveUserDateTimeFormatCode(code: string | null | undefined): string {
@@ -86,7 +91,7 @@ export function resolveUserDateFormatCode(code: string | null | undefined): stri
 }
 
 export function resolveUserDecimalFormatCode(code: string | null | undefined): string {
-  return findValue(USER_DECIMAL_FORMAT_OPTIONS, code, "#,##0.00");
+  return findValue(USER_DECIMAL_FORMAT_OPTIONS, code, "COMMA_DOT");
 }
 
 export function resolveUserConfigLabel(
@@ -97,10 +102,10 @@ export function resolveUserConfigLabel(
     return findLabel(USER_TIME_ZONE_OPTIONS, value, "中国上海 (UTC+08:00)");
   }
   if (code === "USER_DATE_TIME_FORMAT") {
-    return findLabel(USER_DATE_TIME_FORMAT_OPTIONS, value, "2026-06-04 14:30:45 (年-月-日 24小时)");
+    return findLabel(USER_DATE_TIME_FORMAT_OPTIONS, value, "2026-08-05 14:58:36（年-月-日 24小时制，精确到秒）");
   }
   if (code === "USER_DATE_FORMAT") {
-    return findLabel(USER_DATE_FORMAT_OPTIONS, value, "2026-06-04 (年-月-日)");
+    return findLabel(USER_DATE_FORMAT_OPTIONS, value, "2026-08-05（年-月-日）");
   }
   if (code === "USER_DECIMAL_FORMAT") {
     return findLabel(USER_DECIMAL_FORMAT_OPTIONS, value, "1,234.56 (千分位，两位小数)");
