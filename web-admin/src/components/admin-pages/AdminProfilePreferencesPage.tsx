@@ -1,7 +1,7 @@
 "use client";
 
-import { updateMyConfig } from "@admin/api/configs";
-import { batchListDictOptions } from "@admin/api/dicts";
+import {getMyConfigs, updateMyConfig} from "@admin/api/configs";
+import {listPublicDictOptions, type PublicDictItem} from "@admin/api/dicts";
 import {
   type AdminDetailSection,
   AdminDetailTable,
@@ -10,18 +10,10 @@ import {
 import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
 import {
   formatDateByPattern,
-  getUserTimeZone,
-  resolveUserDateFormatCode,
-  resolveUserDateTimeFormatCode,
-  resolveUserDecimalFormatCode,
-  USER_DATE_FORMAT_OPTIONS,
-  USER_DATE_TIME_FORMAT_OPTIONS,
-  USER_DECIMAL_FORMAT_OPTIONS,
-  USER_TIME_ZONE_OPTIONS,
-  type UserConfigOptionItem,
+  resolveUserTimeZoneCode,
 } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import { ensureAuthLoaded, usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
+import {applyPersonalizedConfigs, usePersonalizedConfigs} from "@admin/core/registry/auth-registry";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface OptionItem {
@@ -37,39 +29,12 @@ function formatDecimalByPattern(value: number, format: string): string {
   });
 }
 
-function resolveStaticLabel(
-  code: string | undefined,
-  fallbackLabel: string,
-  items: UserConfigOptionItem[],
-): string {
-  const matched = items.find((item) => item.code === (code || "").trim());
-  return matched?.value || fallbackLabel;
-}
-
-function buildDateTimeSampleLabel(code: string | undefined, fallbackLabel: string): string {
-  if (!code) return fallbackLabel;
-  return formatDateByPattern(new Date(), resolveUserDateTimeFormatCode(code), getUserTimeZone()) || fallbackLabel;
-}
-
-function buildDateSampleLabel(code: string | undefined, fallbackLabel: string): string {
-  if (!code) return fallbackLabel;
-  return formatDateByPattern(new Date(), resolveUserDateFormatCode(code), getUserTimeZone()) || fallbackLabel;
-}
-
-function buildDecimalSampleLabel(code: string | undefined, fallbackLabel: string): string {
-  if (!code) return fallbackLabel;
-  return formatDecimalByPattern(1234567.8912, resolveUserDecimalFormatCode(code)) || fallbackLabel;
-}
-
-function buildOptions(
-  items: Array<{ itemCode?: string; itemLabel: string; itemValue: string }>,
-  labelFn: (code: string | undefined, fallback: string) => string,
-): OptionItem[] {
-  return items.map((item) => ({
-    label: labelFn(item.itemCode, item.itemLabel),
-    value: item.itemValue,
-  }));
-}
+const PREFERENCE_DICT_CODES = [
+  "USER_TIME_ZONE",
+  "USER_DATE_TIME_FORMAT",
+  "USER_DATE_FORMAT",
+  "USER_DECIMAL_FORMAT",
+] as const;
 
 export function AdminProfilePreferencesPage() {
   const configs = usePersonalizedConfigs();
@@ -82,10 +47,7 @@ export function AdminProfilePreferencesPage() {
     USER_DECIMAL_FORMAT: "COMMA_DOT",
   });
 
-  const [timeZoneOptions, setTimeZoneOptions] = useState<OptionItem[]>([]);
-  const [dateTimeFormatOptions, setDateTimeFormatOptions] = useState<OptionItem[]>([]);
-  const [dateFormatOptions, setDateFormatOptions] = useState<OptionItem[]>([]);
-  const [decimalFormatOptions, setDecimalFormatOptions] = useState<OptionItem[]>([]);
+  const [dictItems, setDictItems] = useState<Record<string, PublicDictItem[]>>({});
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -93,6 +55,34 @@ export function AdminProfilePreferencesPage() {
     loadedRef.current = true;
     void Promise.all([loadOptions(), reload()]);
   }, []);
+
+  const preferenceOptions = useMemo(() => {
+    const now = new Date();
+    const timeZone = resolveUserTimeZoneCode(form.USER_TIME_ZONE);
+    return {
+      timeZone: (dictItems.USER_TIME_ZONE || []).map((item) => ({
+        label: item.itemLabel,
+        value: item.itemValue,
+      })),
+      dateTime: (dictItems.USER_DATE_TIME_FORMAT || []).map((item) => ({
+        label: formatDateByPattern(now, item.itemValue, timeZone),
+        value: item.itemValue,
+      })),
+      date: (dictItems.USER_DATE_FORMAT || []).map((item) => ({
+        label: formatDateByPattern(now, item.itemValue, timeZone),
+        value: item.itemValue,
+      })),
+      decimal: (dictItems.USER_DECIMAL_FORMAT || []).map((item) => ({
+        label: formatDecimalByPattern(1234567.8912, item.itemValue),
+        value: item.itemValue,
+      })),
+    } satisfies Record<string, OptionItem[]>;
+  }, [dictItems, form.USER_TIME_ZONE]);
+
+  const timeZoneOptions = preferenceOptions.timeZone;
+  const dateTimeFormatOptions = preferenceOptions.dateTime;
+  const dateFormatOptions = preferenceOptions.date;
+  const decimalFormatOptions = preferenceOptions.decimal;
 
   const currentLabels = useMemo(
     () => ({
@@ -226,43 +216,20 @@ export function AdminProfilePreferencesPage() {
 
   async function loadOptions() {
     try {
-      const result = await batchListDictOptions([
-        "USER_TIME_ZONE",
-        "USER_DATE_TIME_FORMAT",
-        "USER_DATE_FORMAT",
-        "USER_DECIMAL_FORMAT",
-      ]);
-      setTimeZoneOptions(
-        buildOptions(result.USER_TIME_ZONE || [], (code, fallback) =>
-          resolveStaticLabel(code, fallback, USER_TIME_ZONE_OPTIONS),
-        ),
-      );
-      setDateTimeFormatOptions(
-        buildOptions(result.USER_DATE_TIME_FORMAT || [], buildDateTimeSampleLabel),
-      );
-      setDateFormatOptions(buildOptions(result.USER_DATE_FORMAT || [], buildDateSampleLabel));
-      setDecimalFormatOptions(
-        buildOptions(result.USER_DECIMAL_FORMAT || [], buildDecimalSampleLabel),
-      );
-    } catch {
-      setTimeZoneOptions(
-        USER_TIME_ZONE_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
-      );
-      setDateTimeFormatOptions(
-        USER_DATE_TIME_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
-      );
-      setDateFormatOptions(
-        USER_DATE_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
-      );
-      setDecimalFormatOptions(
-        USER_DECIMAL_FORMAT_OPTIONS.map((item) => ({ label: item.value, value: item.value })),
-      );
+      const entries = await Promise.all(PREFERENCE_DICT_CODES.map(async (code) => [
+        code,
+        await listPublicDictOptions(code),
+      ] as const));
+      setDictItems(Object.fromEntries(entries));
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "个性化配置候选项加载失败");
     }
   }
 
   async function reload() {
-    await ensureAuthLoaded(true);
-    applyConfigs(configs);
+    const latestConfigs = await getMyConfigs();
+    applyPersonalizedConfigs(latestConfigs);
+    applyConfigs(latestConfigs);
   }
 
   function applyConfigs(items: Array<{ code: string; value: string }>) {

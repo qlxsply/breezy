@@ -4,6 +4,15 @@ import { del, get, post, put } from "./http";
 
 const TYPE_BASE = "/sys/dicts/types";
 const QUERY_BASE = "/sys/dicts";
+const PUBLIC_QUERY_BASE = "/public/dicts";
+
+export interface PublicDictItem {
+  itemCode: string;
+  itemLabel: string;
+  itemValue: string;
+  tagColor: string | null;
+  tagType: string | null;
+}
 
 export interface DictTypePageRequest {
   keyword?: string;
@@ -97,6 +106,10 @@ export function sortDictItems(typeId: string, itemIds: string[]): Promise<boolea
 
 export function listDictOptions(code: string): Promise<DictItem[]> {
   return get<DictItem[]>(`${QUERY_BASE}/${encodeURIComponent(code)}/items`);
+}
+
+export function listPublicDictOptions(code: string): Promise<PublicDictItem[]> {
+  return get<PublicDictItem[]>(`${PUBLIC_QUERY_BASE}/${encodeURIComponent(code)}/items`);
 }
 
 export function batchListDictOptions(codes: string[]): Promise<Record<string, DictItem[]>> {

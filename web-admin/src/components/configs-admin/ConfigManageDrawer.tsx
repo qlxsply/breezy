@@ -1,6 +1,6 @@
 "use client";
 
-import {batchListDictOptions} from "@admin/api/dicts";
+import {listPublicDictOptions} from "@admin/api/dicts";
 import {AdminEntityDrawer} from "@admin/components/admin/AdminEntityDrawer";
 import {AdminDateTimeField} from "@admin/components/admin/AdminDateTimeField";
 import {BzAlert} from "@admin/components/bz/BzAlert";
@@ -313,13 +313,12 @@ export function ConfigManageDrawer({
     if (!open || item?.editorId !== "user-preference-defaults") return;
     let active = true;
     setUserPreferenceOptions({});
-    const codes = Object.values(USER_PREFERENCE_DICT_CODES);
-    void batchListDictOptions(codes).then((result) => {
+    void Promise.all(Object.entries(USER_PREFERENCE_DICT_CODES).map(async ([path, code]) => {
+      const items = await listPublicDictOptions(code);
+      return [path, items.map((option) => ({value: option.itemValue, label: option.itemLabel}))] as const;
+    })).then((options) => {
       if (!active) return;
-      setUserPreferenceOptions(Object.fromEntries(Object.entries(USER_PREFERENCE_DICT_CODES).map(([path, code]) => [
-        path,
-        (result[code] || []).map((option) => ({value: option.itemValue, label: option.itemLabel})),
-      ])));
+      setUserPreferenceOptions(Object.fromEntries(options));
     }).catch(() => {
       if (!active) return;
       setUserPreferenceOptions(Object.fromEntries(item.fields.map((field) => [field.path, field.options])));

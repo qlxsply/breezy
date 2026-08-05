@@ -141,11 +141,10 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import { listDictOptions } from "../api/dicts";
+import {listPublicDictOptions, type PublicDictItem} from "../api/dicts";
 import { listTodos } from "../api/todo";
 import TodoDetailDialog from "../components/todo/TodoDetailDialog.vue";
 import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
-import type { DictItem } from "../types/dict-admin";
 import type { TodoItem, TodoStatus } from "../types/todo";
 import { formatDateTime } from "../utils/formatter";
 import { message } from "../utils/message";
@@ -158,7 +157,7 @@ const rows = ref<TodoItem[]>([]);
 const total = ref(0);
 const pageNo = ref(1);
 const pageSize = 20;
-const todoStatusItems = ref<DictItem[]>([]);
+const todoStatusItems = ref<PublicDictItem[]>([]);
 
 const keyword = ref("");
 const status = ref<TodoStatus | "">("");
@@ -179,7 +178,7 @@ const statusOptions = computed(() =>
 
 async function loadStatusDict() {
   try {
-    todoStatusItems.value = await listDictOptions("TODO_TASK_STATUS");
+    todoStatusItems.value = await listPublicDictOptions("TODO_TASK_STATUS");
   } catch {
     todoStatusItems.value = [];
   }

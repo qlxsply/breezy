@@ -1,6 +1,7 @@
 package com.corwin.system.user.application.service;
 
 import com.corwin.framework.config.runtime.Configs;
+import com.corwin.system.dict.application.service.DictQueryService;
 import com.corwin.system.user.application.view.UserConfigView;
 import com.corwin.system.user.config.SystemUserConfigSpecs;
 import com.corwin.system.user.config.UserConfigCodes;
@@ -31,6 +32,7 @@ public class UserConfigAppService {
     );
 
     private final UserConfigRepository userConfigRepository;
+    private final DictQueryService dictQueryService;
 
     public List<UserConfigView> getMergedConfigs(Long userId) {
         Map<String, String> defaults = publicDefaults();
@@ -78,22 +80,7 @@ public class UserConfigAppService {
     }
 
     private void validateValue(String code, String value) {
-        boolean valid = switch (code) {
-            case UserConfigCodes.TIME_ZONE -> dictContains(com.corwin.framework.config.UserTimeZoneOption.values(), value);
-            case UserConfigCodes.DATE_TIME_FORMAT -> dictContains(
-                    com.corwin.framework.config.UserDateTimeFormatOption.values(), value);
-            case UserConfigCodes.DATE_FORMAT -> dictContains(com.corwin.framework.config.UserDateFormatOption.values(), value);
-            case UserConfigCodes.DECIMAL_FORMAT -> dictContains(
-                    com.corwin.framework.config.UserDecimalFormatOption.values(), value);
-            default -> false;
-        };
-        if (!valid) {
-            throw new IllegalArgumentException("个性化配置值无效: " + code);
-        }
-    }
-
-    private boolean dictContains(com.corwin.framework.dict.DictEnumDefinition[] values, String itemValue) {
-        return java.util.Arrays.stream(values).anyMatch(value -> value.itemValue().equals(itemValue));
+        dictQueryService.assertValidValue(code, value);
     }
 
     private String description(String code) {

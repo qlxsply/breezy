@@ -98,7 +98,7 @@
 import { computed, reactive, ref } from "vue";
 
 import { updateMyConfig } from "../api/configs";
-import { batchListDictOptions } from "../api/dicts";
+import { listPublicDictOptions } from "../api/dicts";
 import { ensureAuthLoaded, useAuthUser, usePersonalizedConfigs } from "../registry/auth.registry";
 import { hasUserPermissionCode } from "../registry/user-tool-permissions.registry";
 import { message } from "../utils/message";
@@ -132,16 +132,16 @@ void Promise.all([loadOptions(), reload()]);
 
 async function loadOptions() {
   try {
-    const result = await batchListDictOptions([
-      "USER_TIME_ZONE",
-      "USER_DATE_TIME_FORMAT",
-      "USER_DATE_FORMAT",
-      "USER_DECIMAL_FORMAT",
+    const [timeZones, dateTimes, dates, decimals] = await Promise.all([
+      listPublicDictOptions("USER_TIME_ZONE"),
+      listPublicDictOptions("USER_DATE_TIME_FORMAT"),
+      listPublicDictOptions("USER_DATE_FORMAT"),
+      listPublicDictOptions("USER_DECIMAL_FORMAT"),
     ]);
-    timeZoneOptions.value = toOptions(result.USER_TIME_ZONE || []);
-    dateTimeFormatOptions.value = toOptions(result.USER_DATE_TIME_FORMAT || []);
-    dateFormatOptions.value = toOptions(result.USER_DATE_FORMAT || []);
-    decimalFormatOptions.value = toOptions(result.USER_DECIMAL_FORMAT || []);
+    timeZoneOptions.value = toOptions(timeZones);
+    dateTimeFormatOptions.value = toOptions(dateTimes);
+    dateFormatOptions.value = toOptions(dates);
+    decimalFormatOptions.value = toOptions(decimals);
     if (timeZoneOptions.value.length === 0)
       timeZoneOptions.value = toStaticOptions(USER_TIME_ZONE_OPTIONS);
     if (dateTimeFormatOptions.value.length === 0) {

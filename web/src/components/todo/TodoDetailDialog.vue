@@ -124,9 +124,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 
-import { listDictOptions } from "../../api/dicts";
+import {listPublicDictOptions, type PublicDictItem} from "../../api/dicts";
 import { fetchTodoAttachmentView, getTodoAttachmentMetadata } from "../../api/todo";
-import type { DictItem } from "../../types/dict-admin";
 import type { TodoAttachmentMeta, TodoItem, TodoStatus } from "../../types/todo";
 import { formatDateTime } from "../../utils/formatter";
 import { message } from "../../utils/message";
@@ -152,7 +151,7 @@ interface DetailAttachmentItem {
 const detailLoading = ref(false);
 const detailAttachments = ref<DetailAttachmentItem[]>([]);
 const detailBlobUrls = new Set<string>();
-const todoStatusItems = ref<DictItem[]>([]);
+const todoStatusItems = ref<PublicDictItem[]>([]);
 
 const previewVisible = ref(false);
 const previewSrc = ref("");
@@ -284,7 +283,7 @@ function statusText(value: TodoStatus): string {
 
 async function loadStatusDict() {
   try {
-    todoStatusItems.value = await listDictOptions("TODO_TASK_STATUS");
+    todoStatusItems.value = await listPublicDictOptions("TODO_TASK_STATUS");
   } catch {
     todoStatusItems.value = [];
   }
