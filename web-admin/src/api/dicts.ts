@@ -1,4 +1,4 @@
-import type { DictDisableValidation, DictItem, DictTypeItem } from "../types/dict-admin";
+import type { DictItem, DictTypeItem } from "../types/dict-admin";
 import type { PageResult, PageRule, SortRule } from "../types/page";
 import { del, get, post, put } from "./http";
 
@@ -120,22 +120,5 @@ export function batchListDictOptions(codes: string[]): Promise<Record<string, Di
 export function resolveDictLabel(code: string, value: string): Promise<string | null> {
   return get<string | null>(
     `${QUERY_BASE}/${encodeURIComponent(code)}/label?value=${encodeURIComponent(value)}`,
-  );
-}
-
-export function validateDisableDict(code: string): Promise<DictDisableValidation> {
-  return post<DictDisableValidation>(
-    `${QUERY_BASE}/${encodeURIComponent(code)}/validate-disable`,
-    {},
-  );
-}
-
-export function validateDisableDictItem(
-  code: string,
-  itemId: string,
-): Promise<DictDisableValidation> {
-  return post<DictDisableValidation>(
-    `${QUERY_BASE}/${encodeURIComponent(code)}/items/${encodeURIComponent(itemId)}/validate-disable`,
-    {},
   );
 }

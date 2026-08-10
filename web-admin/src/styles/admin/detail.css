@@ -123,6 +123,36 @@
   gap: var(--space-3);
 }
 
+.dict-items-table__drag-cell {
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.dict-items-table__order {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+}
+
+.dict-items-table .bz-table__inner tbody tr.is-drag-target td {
+  background: var(--color-bg-surface-selected);
+}
+
+.dict-item-remark {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dict-item-editor-form .bz-input,
+.dict-item-editor-form .bz-select,
+.dict-item-editor-form .bz-text-field__control {
+  border-radius: 0;
+}
+
 .preferences-page-panel {
   display: grid;
   background: var(--color-bg-surface);

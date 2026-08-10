@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, DragEvent, ReactNode } from "react";
 
 import { BzLoading } from "./BzLoading";
 
@@ -20,6 +20,9 @@ interface BzTableProps<Row> {
   loading?: boolean;
   emptyText?: string;
   size?: "small" | "medium";
+  rowClassName?: (row: Row, rowIndex: number) => string | undefined;
+  onRowDragOver?: (event: DragEvent<HTMLTableRowElement>, row: Row, rowIndex: number) => void;
+  onRowDrop?: (event: DragEvent<HTMLTableRowElement>, row: Row, rowIndex: number) => void;
   onRowDoubleClick?: (row: Row, rowIndex: number) => void;
 }
 
@@ -35,6 +38,9 @@ export function BzTable<Row>({
   loading = false,
   emptyText = "暂无数据",
   size = "medium",
+  rowClassName,
+  onRowDragOver,
+  onRowDrop,
   onRowDoubleClick,
 }: BzTableProps<Row>) {
   function resolveRowKey(row: Row, rowIndex: number): string | number {
@@ -76,6 +82,9 @@ export function BzTable<Row>({
                 {data.map((row, rowIndex) => (
                   <tr
                     key={String(resolveRowKey(row, rowIndex))}
+                    className={rowClassName?.(row, rowIndex)}
+                    onDragOver={(event) => onRowDragOver?.(event, row, rowIndex)}
+                    onDrop={(event) => onRowDrop?.(event, row, rowIndex)}
                     onDoubleClick={() => onRowDoubleClick?.(row, rowIndex)}
                   >
                     {columns.map((column) => (

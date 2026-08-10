@@ -8,26 +8,26 @@ import {
   getDictType,
   listDictItems,
   listDictTypes,
+  sortDictItems,
   updateDictItem,
   updateDictItemStatus,
   updateDictType,
   updateDictTypeStatus,
-  validateDisableDict,
-  validateDisableDictItem,
 } from "@admin/api/dicts";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
 import {
   BzButton,
   BzCard,
   BzDialog,
+  BzDragHandle,
   BzEmpty,
   BzForm,
   BzFormItem,
   BzInput,
-  BzInputNumber,
   BzOption,
   BzPagination,
   BzSelect,
@@ -36,6 +36,7 @@ import {
   type BzTableColumn,
   BzTag,
   BzTextField,
+  BzTooltip,
 } from "@admin/components/bz";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
@@ -48,6 +49,7 @@ import type {
   DictValueType,
 } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
+import type { DragEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type DrawerMode = "create" | "detail" | "edit";
@@ -138,11 +140,13 @@ export function DictAdminPage() {
     label: "",
     value: "",
     tagType: "",
-    sortNo: 1,
     enabled: true,
     description: "",
   });
   const [savingItem, setSavingItem] = useState(false);
+  const [itemDragSourceId, setItemDragSourceId] = useState<string | null>(null);
+  const [itemDragTargetId, setItemDragTargetId] = useState<string | null>(null);
+  const [sortingItems, setSortingItems] = useState(false);
 
   const currentTypeRef = useRef<DictTypeItem | null>(null);
   currentTypeRef.current = currentType;
@@ -252,13 +256,6 @@ export function DictAdminPage() {
 
   async function handleTypeStatus(row: DictTypeItem) {
     if (!canEdit) return;
-    if (row.enabled) {
-      const validation = await validateDisableDict(row.code);
-      if (!validation.allowed) {
-        message.warning("该字典存在使用引用，当前无法停用");
-        return;
-      }
-    }
     await updateDictTypeStatus(row.id, !row.enabled);
     message.success(!row.enabled ? "已启用" : "已停用");
     await reload();
@@ -375,8 +372,14 @@ export function DictAdminPage() {
     });
   }
 
-  function selectAllCurrentPage() {
-    setSelectedTypeIds(rows.filter((row) => row.sourceType !== "BUILTIN").map((row) => row.id));
+  function toggleSelectAllCurrentPage(checked: boolean) {
+    const selectableIds = rows.filter((row) => row.sourceType !== "BUILTIN").map((row) => row.id);
+    setSelectedTypeIds((prev) => {
+      const next = new Set(prev);
+      if (checked) selectableIds.forEach((id) => next.add(id));
+      else selectableIds.forEach((id) => next.delete(id));
+      return Array.from(next);
+    });
   }
 
   function openCreateItem() {
@@ -386,7 +389,6 @@ export function DictAdminPage() {
       label: "",
       value: "",
       tagType: "",
-      sortNo: nextSortNo(currentItems),
       enabled: true,
       description: "",
     });
@@ -400,7 +402,6 @@ export function DictAdminPage() {
       label: item.itemLabel,
       value: item.itemValue,
       tagType: item.tagType || "",
-      sortNo: item.sortNo,
       enabled: item.enabled,
       description: item.description || "",
     });
@@ -425,7 +426,7 @@ export function DictAdminPage() {
           itemCode,
           itemLabel: label,
           itemValue: value,
-          sortNo: itemForm.sortNo,
+          sortNo: nextSortNo(currentItems),
           enabled: itemForm.enabled,
           defaultItem: false,
           tagColor: null,
@@ -435,11 +436,12 @@ export function DictAdminPage() {
         });
         message.success("添加成功");
       } else {
+        const editingItem = currentItems.find((item) => item.id === editingItemId);
         await updateDictItem(editingItemId, {
           parentItemId: null,
           itemLabel: label,
           itemValue: value,
-          sortNo: itemForm.sortNo,
+          sortNo: editingItem?.sortNo ?? nextSortNo(currentItems),
           enabled: itemForm.enabled,
           defaultItem: false,
           tagColor: null,
@@ -459,16 +461,57 @@ export function DictAdminPage() {
   async function handleItemStatus(item: DictItem) {
     const type = currentTypeRef.current;
     if (!type || !canEdit) return;
-    if (item.enabled) {
-      const validation = await validateDisableDictItem(type.code, item.id);
-      if (!validation.allowed) {
-        message.warning("该字典项存在使用引用，当前无法停用");
-        return;
-      }
-    }
     await updateDictItemStatus(item.id, !item.enabled);
     message.success(!item.enabled ? "已启用" : "已停用");
     await refreshDrawerItems();
+  }
+
+  function startItemDrag(event: DragEvent<HTMLButtonElement>, itemId: string) {
+    if (drawerMode !== "edit" || sortingItems) return;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+    setItemDragSourceId(itemId);
+    setItemDragTargetId(itemId);
+  }
+
+  function dragOverItem(event: DragEvent<HTMLTableRowElement>, itemId: string) {
+    if (!itemDragSourceId || drawerMode !== "edit" || sortingItems) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setItemDragTargetId(itemId);
+  }
+
+  async function dropItem(event: DragEvent<HTMLTableRowElement>, targetId: string) {
+    event.preventDefault();
+    const type = currentTypeRef.current;
+    const sourceIndex = currentItems.findIndex((item) => item.id === itemDragSourceId);
+    const targetIndex = currentItems.findIndex((item) => item.id === targetId);
+    clearItemDrag();
+    if (!type || sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex || sortingItems)
+      return;
+
+    const reordered = [...currentItems];
+    const [moved] = reordered.splice(sourceIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+    const normalized = reordered.map((item, index) => ({ ...item, sortNo: index + 1 }));
+    setCurrentItems(normalized);
+    setSortingItems(true);
+    try {
+      await sortDictItems(
+        type.id,
+        normalized.map((item) => item.id),
+      );
+      message.success("字典项排序已更新");
+    } catch {
+      await refreshDrawerItems();
+    } finally {
+      setSortingItems(false);
+    }
+  }
+
+  function clearItemDrag() {
+    setItemDragSourceId(null);
+    setItemDragTargetId(null);
   }
 
   async function handleDeleteItem(item: DictItem) {
@@ -485,21 +528,42 @@ export function DictAdminPage() {
   }
 
   const columns = useMemo<Array<BzTableColumn<DictTypeItem>>>(() => {
+    const selectableIds = rows.filter((row) => row.sourceType !== "BUILTIN").map((row) => row.id);
+    const allCurrentPageSelected =
+      selectableIds.length > 0 && selectableIds.every((id) => selectedTypeIds.includes(id));
+    const someCurrentPageSelected =
+      !allCurrentPageSelected && selectableIds.some((id) => selectedTypeIds.includes(id));
     const baseColumns: Array<BzTableColumn<DictTypeItem>> = [
-      {
-        key: "select",
-        title: "选择",
-        width: 64,
-        render: (row) =>
-          batchMode ? (
-            <input
-              type="checkbox"
-              checked={selectedTypeIds.includes(row.id)}
-              disabled={row.sourceType === "BUILTIN"}
-              onChange={(event) => toggleTypeSelection(row.id, event.target.checked)}
-            />
-          ) : null,
-      },
+      ...(batchMode
+        ? [
+            {
+              key: "select",
+              title: "",
+              width: 48,
+              headerRender: () => (
+                <input
+                  className="user-manage-checkbox"
+                  type="checkbox"
+                  checked={allCurrentPageSelected}
+                  disabled={selectableIds.length === 0}
+                  ref={(element) => {
+                    if (element) element.indeterminate = someCurrentPageSelected;
+                  }}
+                  onChange={(event) => toggleSelectAllCurrentPage(event.target.checked)}
+                />
+              ),
+              render: (row: DictTypeItem) => (
+                <input
+                  className="user-manage-checkbox"
+                  type="checkbox"
+                  checked={selectedTypeIds.includes(row.id)}
+                  disabled={row.sourceType === "BUILTIN"}
+                  onChange={(event) => toggleTypeSelection(row.id, event.target.checked)}
+                />
+              ),
+            } as BzTableColumn<DictTypeItem>,
+          ]
+        : []),
       {
         key: "code",
         title: "编码",
@@ -557,6 +621,23 @@ export function DictAdminPage() {
 
     return [
       {
+        key: "order",
+        title: "",
+        width: 42,
+        className: "dict-items-table__drag-cell",
+        headerClassName: "dict-items-table__drag-cell",
+        render: (row, index) =>
+          drawerMode === "edit" && canEdit ? (
+            <BzDragHandle
+              disabled={sortingItems}
+              onDragStart={(event) => startItemDrag(event, row.id)}
+              onDragEnd={clearItemDrag}
+            />
+          ) : (
+            <span className="dict-items-table__order">{index + 1}</span>
+          ),
+      },
+      {
         key: "itemCode",
         title: "编码",
         minWidth: 170,
@@ -591,12 +672,6 @@ export function DictAdminPage() {
           ),
       },
       {
-        key: "sortNo",
-        title: "排序",
-        width: 80,
-        render: (row) => <>{row.sortNo}</>,
-      },
-      {
         key: "enabled",
         title: "状态",
         width: 90,
@@ -607,12 +682,19 @@ export function DictAdminPage() {
       {
         key: "description",
         title: "备注",
-        minWidth: 180,
-        render: (row) => <span className="cell-text">{row.description || "-"}</span>,
+        width: 260,
+        render: (row) => {
+          const text = row.description || "-";
+          return (
+            <BzTooltip content={row.description || ""}>
+              <span className="dict-item-remark">{text}</span>
+            </BzTooltip>
+          );
+        },
       },
       ...(actionColumn ? [actionColumn] : []),
     ];
-  }, [drawerMode, canEdit, currentItems]);
+  }, [drawerMode, canEdit, currentItems, sortingItems]);
 
   const drawerTitle =
     drawerMode === "create" ? "新增字典" : drawerMode === "detail" ? "字典详情" : "编辑字典";
@@ -738,7 +820,6 @@ export function DictAdminPage() {
                     批量删除中，已选 {selectedTypeIds.length} 项
                   </div>
                   <div className="admin-batch-toolbar__actions">
-                    <BzButton onClick={selectAllCurrentPage}>全选当前页</BzButton>
                     <BzButton
                       buttonType="primary"
                       disabled={selectedTypeIds.length === 0}
@@ -819,163 +900,199 @@ export function DictAdminPage() {
           open={drawerOpen}
           title={drawerTitle}
           width="1180px"
-          className="role-manage-drawer"
+          className="role-manage-drawer dict-manage-drawer"
           loading={drawerLoading}
           onClose={closeDrawer}
           footer={drawerFooter}
         >
           {currentType || drawerMode === "create" ? (
-            <div className="role-manage-shell">
-              {drawerMode === "detail" && currentType ? (
-                <section className="role-manage-section">
-                  <div className="role-manage-section__head">
-                    <div className="role-manage-section__title">字典详情</div>
-                  </div>
-                  <div className="role-info-table-wrap">
-                    <table
-                      className="role-info-table"
-                      aria-label="字典详情"
-                    >
-                      <tbody>
-                        <tr>
-                          <th>编码</th>
-                          <td>{currentType.code}</td>
-                          <th>名称</th>
-                          <td>{currentType.name}</td>
-                          <th>值类型</th>
-                          <td>{resolveValueTypeLabel(currentType.valueType)}</td>
-                        </tr>
-                        <tr>
-                          <th>结构</th>
-                          <td>{resolveStructureTypeLabel(currentType.structureType)}</td>
-                          <th>来源</th>
-                          <td>
-                            {sourceTypeLabelMap[currentType.sourceType] || currentType.sourceType}
+            <div className="role-manage-shell dict-manage-shell">
+              <section className="role-manage-section">
+                <div className="role-manage-section__head">
+                  <div className="role-manage-section__title">字典基础信息</div>
+                </div>
+                <div className="role-info-table-wrap">
+                  <table
+                    className="role-info-table"
+                    aria-label="字典基础信息"
+                  >
+                    <tbody>
+                      <tr>
+                        <th>
+                          <span className={drawerMode === "create" ? "is-required" : undefined}>
+                            编码
+                          </span>
+                        </th>
+                        {drawerMode === "create" ? (
+                          <td className="role-info-cell role-info-cell--edit mono">
+                            <BzInput
+                              modelValue={typeForm.code}
+                              placeholder="请输入字典编码"
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({ ...prev, code: value }))
+                              }
+                            />
                           </td>
-                          <th>状态</th>
-                          <td>{currentType.enabled ? "启用" : "停用"}</td>
-                        </tr>
-                        <tr>
-                          <th>枚举类</th>
-                          <td colSpan={5}>{currentType.enumClass || "-"}</td>
-                        </tr>
-                        <tr>
-                          <th>描述</th>
-                          <td colSpan={5}>{currentType.description || "-"}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              ) : (
-                <BzForm>
-                  <div className="group-form-grid">
-                    <BzFormItem label="编码">
-                      <BzInput
-                        modelValue={
-                          drawerMode === "create" ? typeForm.code : currentType?.code || ""
-                        }
-                        disabled={drawerMode !== "create"}
-                        onValueChange={(value) => setTypeForm((prev) => ({ ...prev, code: value }))}
-                      />
-                    </BzFormItem>
-                    <BzFormItem label="名称">
-                      <BzInput
-                        modelValue={typeForm.name}
-                        onValueChange={(value) => setTypeForm((prev) => ({ ...prev, name: value }))}
-                      />
-                    </BzFormItem>
-                    <BzFormItem label="值类型">
-                      <BzSelect
-                        modelValue={typeForm.valueType}
-                        onValueChange={(value) =>
-                          setTypeForm((prev) => ({
-                            ...prev,
-                            valueType: (value || "STRING") as DictValueType,
-                          }))
-                        }
-                      >
-                        {valueTypeOptions.map((item) => (
-                          <BzOption
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </BzFormItem>
-                    <BzFormItem label="结构">
-                      <BzSelect
-                        modelValue={typeForm.structureType}
-                        onValueChange={(value) =>
-                          setTypeForm((prev) => ({
-                            ...prev,
-                            structureType: (value || "FLAT") as DictStructureType,
-                          }))
-                        }
-                      >
-                        {structureTypeOptions.map((item) => (
-                          <BzOption
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                          />
-                        ))}
-                      </BzSelect>
-                    </BzFormItem>
-                    {drawerMode !== "create" ? (
-                      <BzFormItem label="来源">
-                        <BzInput
-                          modelValue={
-                            sourceTypeLabelMap[currentType?.sourceType || ""] ||
-                            currentType?.sourceType ||
-                            "-"
+                        ) : (
+                          <td className="role-info-cell mono">{currentType?.code || "-"}</td>
+                        )}
+                        <th>
+                          <span className={drawerMode !== "detail" ? "is-required" : undefined}>
+                            名称
+                          </span>
+                        </th>
+                        {drawerMode === "detail" ? (
+                          <td className="role-info-cell table-input-display-cell">
+                            {currentType?.name || "-"}
+                          </td>
+                        ) : (
+                          <td className="role-info-cell role-info-cell--edit">
+                            <TableInput
+                              value={typeForm.name}
+                              maxLength={128}
+                              placeholder="请输入字典名称"
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({ ...prev, name: value }))
+                              }
+                            />
+                          </td>
+                        )}
+                        <th>值类型</th>
+                        {drawerMode === "detail" ? (
+                          <td className="role-info-cell table-input-display-cell">
+                            {resolveValueTypeLabel(currentType?.valueType || typeForm.valueType)}
+                          </td>
+                        ) : (
+                          <td className="role-info-cell role-info-cell--edit">
+                            <TableSelect
+                              value={typeForm.valueType}
+                              options={valueTypeOptions}
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({
+                                  ...prev,
+                                  valueType: (value || "STRING") as DictValueType,
+                                }))
+                              }
+                            />
+                          </td>
+                        )}
+                      </tr>
+                      <tr>
+                        <th>结构</th>
+                        {drawerMode === "detail" ? (
+                          <td className="role-info-cell table-input-display-cell">
+                            {resolveStructureTypeLabel(
+                              currentType?.structureType || typeForm.structureType,
+                            )}
+                          </td>
+                        ) : (
+                          <td className="role-info-cell role-info-cell--edit">
+                            <TableSelect
+                              value={typeForm.structureType}
+                              options={structureTypeOptions}
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({
+                                  ...prev,
+                                  structureType: (value || "FLAT") as DictStructureType,
+                                }))
+                              }
+                            />
+                          </td>
+                        )}
+                        <th>来源</th>
+                        <td className="role-info-cell">
+                          <BzTag type={currentType?.sourceType === "BUILTIN" ? "warning" : "info"}>
+                            {drawerMode === "create"
+                              ? "自定义"
+                              : sourceTypeLabelMap[currentType?.sourceType || ""] ||
+                                currentType?.sourceType ||
+                                "-"}
+                          </BzTag>
+                        </td>
+                        <th>状态</th>
+                        <td
+                          className={
+                            drawerMode === "detail"
+                              ? "role-info-cell"
+                              : "role-info-cell role-info-cell--edit"
                           }
-                          disabled
-                        />
-                      </BzFormItem>
-                    ) : null}
-                    <BzFormItem label="启用状态">
-                      <BzSwitch
-                        modelValue={typeForm.enabled}
-                        activeText="启用"
-                        inactiveText="停用"
-                        onValueChange={(value) =>
-                          setTypeForm((prev) => ({ ...prev, enabled: value }))
-                        }
-                      />
-                    </BzFormItem>
-                    <BzFormItem label="枚举类">
-                      <BzInput
-                        modelValue={typeForm.enumClass}
-                        onValueChange={(value) =>
-                          setTypeForm((prev) => ({ ...prev, enumClass: value }))
-                        }
-                      />
-                    </BzFormItem>
-                    <BzFormItem
-                      label="描述"
-                      className="group-form-grid__wide"
-                    >
-                      <BzTextField
-                        modelValue={typeForm.description}
-                        type="textarea"
-                        rows={3}
-                        maxlength={255}
-                        showCounter
-                        onValueChange={(value) =>
-                          setTypeForm((prev) => ({ ...prev, description: value }))
-                        }
-                      />
-                    </BzFormItem>
-                  </div>
-                </BzForm>
-              )}
+                        >
+                          {drawerMode === "detail" ? (
+                            <BzTag type={currentType?.enabled ? "success" : "danger"}>
+                              {currentType?.enabled ? "启用" : "停用"}
+                            </BzTag>
+                          ) : (
+                            <BzSwitch
+                              modelValue={typeForm.enabled}
+                              activeText="启用"
+                              inactiveText="停用"
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({ ...prev, enabled: value }))
+                              }
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>枚举类</th>
+                        {drawerMode === "detail" ? (
+                          <td
+                            className="role-info-cell table-input-display-cell mono"
+                            colSpan={5}
+                          >
+                            {currentType?.enumClass || "-"}
+                          </td>
+                        ) : (
+                          <td
+                            className="role-info-cell role-info-cell--edit"
+                            colSpan={5}
+                          >
+                            <TableInput
+                              value={typeForm.enumClass}
+                              maxLength={255}
+                              placeholder="请输入枚举类全限定名"
+                              onValueChange={(value) =>
+                                setTypeForm((prev) => ({ ...prev, enumClass: value }))
+                              }
+                            />
+                          </td>
+                        )}
+                      </tr>
+                      <tr>
+                        <th>描述</th>
+                        {drawerMode === "detail" ? (
+                          <td
+                            className="role-info-cell"
+                            colSpan={5}
+                          >
+                            {currentType?.description || "-"}
+                          </td>
+                        ) : (
+                          <td
+                            className="role-info-cell role-info-cell--edit"
+                            colSpan={5}
+                          >
+                            <TableTextArea
+                              value={typeForm.description}
+                              rows={3}
+                              maxLength={255}
+                              placeholder="请输入字典描述"
+                              onValueChange={(description) =>
+                                setTypeForm((prev) => ({ ...prev, description }))
+                              }
+                            />
+                          </td>
+                        )}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
 
               {drawerMode !== "create" ? (
                 <section className="role-manage-section dict-items-section">
-                  <div className="admin-table-header">
-                    <div className="admin-table-title">字典项</div>
+                  <div className="role-manage-section__head">
+                    <div className="role-manage-section__title">字典项</div>
                     <div className="admin-table-tools">
                       {drawerMode === "edit" && canEdit ? (
                         <BzButton
@@ -1006,13 +1123,18 @@ export function DictAdminPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="admin-table-surface">
+                  <div className="admin-table-surface dict-items-table">
                     <BzTable
                       columns={itemColumns}
                       data={currentItems}
                       rowKey="id"
                       emptyText="暂无字典项"
                       size="small"
+                      rowClassName={(row) =>
+                        itemDragTargetId === row.id ? "is-drag-target" : undefined
+                      }
+                      onRowDragOver={(event, row) => dragOverItem(event, row.id)}
+                      onRowDrop={(event, row) => void dropItem(event, row.id)}
                     />
                   </div>
                 </section>
@@ -1043,7 +1165,7 @@ export function DictAdminPage() {
           }
         >
           <BzForm onSubmit={(event) => event.preventDefault()}>
-            <div className="group-form-grid">
+            <div className="group-form-grid dict-item-editor-form">
               <BzFormItem label="标签">
                 <BzTextField
                   modelValue={itemForm.label}
@@ -1075,13 +1197,6 @@ export function DictAdminPage() {
                     />
                   ))}
                 </BzSelect>
-              </BzFormItem>
-              <BzFormItem label="排序">
-                <BzInputNumber
-                  modelValue={itemForm.sortNo}
-                  min={0}
-                  onValueChange={(value) => setItemForm((prev) => ({ ...prev, sortNo: value }))}
-                />
               </BzFormItem>
               <BzFormItem label="启用状态">
                 <BzSwitch

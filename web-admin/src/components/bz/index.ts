@@ -7,6 +7,7 @@ export { BzChevronIcon } from "./BzChevronIcon";
 export { BzConfirmHost } from "./BzConfirmHost";
 export { BzDatePicker } from "./BzDatePicker";
 export { BzDialog } from "./BzDialog";
+export { BzDragHandle } from "./BzDragHandle";
 export { BzDropdown } from "./BzDropdown";
 export { BzDropdownItem } from "./BzDropdownItem";
 export { BzDropdownMenu } from "./BzDropdownMenu";
