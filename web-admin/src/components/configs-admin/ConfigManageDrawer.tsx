@@ -1025,6 +1025,8 @@ function renderFieldInput(item: ConfigItem, field: ConfigFieldSpec, value: Field
     <BzInput
       modelValue={text}
       type={field.sensitive ? "password" : field.type === "STRING" ? "text" : "number"}
+      min={field.min ?? undefined}
+      max={field.max ?? undefined}
       placeholder={field.sensitive && item.sensitiveValuePresence[field.path] ? "******（留空保持原值）" : field.placeholder || "请输入"}
       onValueChange={(next) => onChange(field, next)}
     />

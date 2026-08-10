@@ -11,6 +11,8 @@ interface BzInputProps {
   disabled?: boolean;
   readOnly?: boolean;
   type?: "text" | "password" | "number" | "search";
+  min?: number;
+  max?: number;
   className?: string;
   onValueChange?: (value: string) => void;
   onChange?: (value: string) => void;
@@ -32,6 +34,8 @@ export const BzInput = forwardRef<BzInputRef, BzInputProps>(function BzInput(
     disabled = false,
     readOnly = false,
     type = "text",
+    min,
+    max,
     className,
     onValueChange,
     onChange,
@@ -62,6 +66,8 @@ export const BzInput = forwardRef<BzInputRef, BzInputProps>(function BzInput(
         disabled={disabled}
         readOnly={readOnly}
         type={type}
+        min={min}
+        max={max}
         onInput={(event) => onValueChange?.(event.currentTarget.value)}
         onChange={(event) => onChange?.(event.currentTarget.value)}
         onKeyUp={onKeyUp}

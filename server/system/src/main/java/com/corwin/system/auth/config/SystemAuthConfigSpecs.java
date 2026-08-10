@@ -2,12 +2,12 @@ package com.corwin.system.auth.config;
 
 import com.corwin.framework.config.definition.*;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.corwin.framework.config.definition.ConfigFieldSpecs.required;
-import static com.corwin.framework.config.definition.ConfigFieldSpecs.requiredSensitive;
+import static com.corwin.framework.config.definition.ConfigFieldSpecs.*;
 
 /**
  * @author Corwin 2026/7/31
@@ -34,10 +34,10 @@ public final class SystemAuthConfigSpecs {
     public static final ConfigSpec<PasswordPolicyConfig> PASSWORD_POLICY = new SimpleConfigSpec<>(
             new ConfigKey("system.security.password-policy"), "system", "security", "密码策略",
             "系统密码复杂度和强制修改策略", PasswordPolicyConfig.class,
-            new PasswordPolicyConfig(8, true, true, false, false, false, false, true), 1, 20,
+            new PasswordPolicyConfig(6, true, true, false, false, false, false, true), 1, 20,
             ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.FAIL_STARTUP,
-            List.of(required("minLength", "最小长度", ConfigFieldType.INTEGER, 10),
-                    required("requireDigit", "要求数字", ConfigFieldType.BOOLEAN, 20),
+            List.of(requiredRange("minLength", "最小长度", ConfigFieldType.INTEGER, 10, BigDecimal.valueOf(6),
+                            BigDecimal.valueOf(32)), required("requireDigit", "要求数字", ConfigFieldType.BOOLEAN, 20),
                     required("requireLetter", "要求字母", ConfigFieldType.BOOLEAN, 30),
                     required("requireUpper", "要求大写字母", ConfigFieldType.BOOLEAN, 40),
                     required("requireLower", "要求小写字母", ConfigFieldType.BOOLEAN, 50),
@@ -102,8 +102,8 @@ public final class SystemAuthConfigSpecs {
 
     private static List<ConfigViolation> validatePasswordPublish(PasswordPolicyConfig value) {
         var violations = new ArrayList<>(validatePasswordRuntime(value));
-        if (value.minLength() < 8 || value.minLength() > 128) {
-            violations.add(violation("minLength", "OUT_OF_RANGE", "密码最小长度必须在 8 到 128 之间"));
+        if (value.minLength() < 6 || value.minLength() > 32) {
+            violations.add(violation("minLength", "OUT_OF_RANGE", "密码最小长度必须在 6 到 32 之间"));
         }
         if ((value.requireUpper() || value.requireLower()) && !value.requireLetter()) {
             violations.add(violation("requireLetter", "DEPENDENCY_REQUIRED", "要求大小写时必须启用字母要求"));
