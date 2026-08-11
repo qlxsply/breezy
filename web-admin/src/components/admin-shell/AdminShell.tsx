@@ -13,7 +13,7 @@ import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import {
   type AdminMenuNode,
@@ -33,6 +33,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [userOpen, setUserOpen] = useState(false);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [openTabs, setOpenTabs] = useState<string[]>([]);
+  const [tabReloadVersions, setTabReloadVersions] = useState<Record<string, number>>({});
   const [blankMode, setBlankMode] = useState(false);
 
   const pathname = pathnameValue ?? "/admin";
@@ -59,6 +60,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     [menuIndex.byPath, openTabs],
   );
   const displayBlankWorkspace = pathname === "/admin" && blankMode;
+  const currentTabReloadVersion = tabReloadVersions[pathname] ?? 0;
   const displayUnreadCount = unreadCount > 0;
   const userName = (authUser?.account || authUser?.username || "Admin").trim() || "Admin";
   const userAccount = authUser?.account?.trim() || "账号后台";
@@ -93,6 +95,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   function closeTab(href: string) {
+    setTabReloadVersions((current) => {
+      if (!(href in current)) return current;
+      const next = { ...current };
+      delete next[href];
+      return next;
+    });
     setOpenTabs((current) => {
       const index = current.indexOf(href);
       if (index < 0) return current;
@@ -110,6 +118,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       }
       return nextTabs;
     });
+  }
+
+  function reloadCurrentTab() {
+    if (displayBlankWorkspace) return;
+    setNotificationOpen(false);
+    setUserOpen(false);
+    setTabReloadVersions((current) => ({
+      ...current,
+      [pathname]: (current[pathname] ?? 0) + 1,
+    }));
   }
 
   function openUtilityPage(href: string) {
@@ -477,7 +495,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 className="tabbar-tool"
                 type="button"
                 title="刷新当前页面"
-                onClick={() => router.refresh()}
+                aria-label="刷新当前标签页"
+                onClick={reloadCurrentTab}
               >
                 <svg
                   viewBox="0 0 20 20"
@@ -497,7 +516,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         <main className="admin-content">
           <div className="admin-workspace">
-            {displayBlankWorkspace ? <div className="admin-workspace-blank" /> : children}
+            {displayBlankWorkspace ? (
+              <div className="admin-workspace-blank" />
+            ) : (
+              <Fragment key={`${pathname}:${currentTabReloadVersion}`}>{children}</Fragment>
+            )}
           </div>
         </main>
       </section>
