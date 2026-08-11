@@ -423,6 +423,16 @@
                             <permission code="usr.edit"/>
                         </permissions>
                     </button>
+                    <button code="user-feature-user-view" name="查看用户功能能力" sortNo="30" visible="true">
+                        <permissions>
+                            <permission code="ufu.view"/>
+                        </permissions>
+                    </button>
+                    <button code="user-feature-user-edit" name="维护用户功能能力" sortNo="40" visible="true">
+                        <permissions>
+                            <permission code="ufu.edit"/>
+                        </permissions>
+                    </button>
                 </buttons>
             </menu>
 
@@ -465,16 +475,6 @@
                     <button code="user-feature-application-edit" name="维护应用配置" sortNo="20" visible="true">
                         <permissions>
                             <permission code="ufa.edit"/>
-                        </permissions>
-                    </button>
-                    <button code="user-feature-user-view" name="查看用户应用功能授权" sortNo="30" visible="true">
-                        <permissions>
-                            <permission code="ufu.view"/>
-                        </permissions>
-                    </button>
-                    <button code="user-feature-user-edit" name="维护用户应用功能授权" sortNo="40" visible="true">
-                        <permissions>
-                            <permission code="ufu.edit"/>
                         </permissions>
                     </button>
                 </buttons>

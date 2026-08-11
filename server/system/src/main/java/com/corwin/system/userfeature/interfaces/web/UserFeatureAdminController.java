@@ -64,7 +64,7 @@ public class UserFeatureAdminController {
      * @return list of all application responses
      */
     @GetMapping("/applications/catalog")
-    @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view"})
+    @Authorize(userType = UserType.ADMIN, permissions = {"ufa.view", "ufp.view", "ufp.edit"}, anyPermission = true)
     public ApiResponse<List<UserFeatureApplicationRes>> applicationCatalog() {
         List<UserFeatureApplicationView> applications = userFeatureAdminService.applications();
         return ApiResponse.ok(applications.stream().map(UserFeatureAdminController::toApplicationRes).toList());

@@ -36,7 +36,7 @@ export function AdminEntityDrawer({
       />
       <section
         className={["admin-entity-drawer__panel", className].filter(Boolean).join(" ")}
-        style={{ width }}
+        style={{ width, maxWidth: "100vw" }}
       >
         <header className="admin-entity-drawer__header">
           <div className="admin-entity-drawer__title-wrap">

@@ -11,24 +11,25 @@ import {
   updateUserFeaturePackageStatus,
 } from "@admin/api/user-features";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
-  BzForm,
   BzFormItem,
   BzInput,
   BzOption,
   BzPagination,
   BzSelect,
-  BzSwitch,
   BzTable,
   BzTag,
-  BzTextField,
+  BzTooltip,
 } from "@admin/components/bz";
 import type { BzTableColumn } from "@admin/components/bz/BzTable";
+import {
+  type UserFeaturePackageDrawerMode,
+  UserFeaturePackageManageDrawer,
+} from "@admin/components/user-feature-packages/UserFeaturePackageManageDrawer";
 import { bzConfirm } from "@admin/core/confirm";
 import { message } from "@admin/core/message";
 import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
@@ -38,7 +39,6 @@ import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
 import type {
   SaveUserFeaturePackageRequest,
-  UserFeatureAccessScope,
   UserFeatureApplicationEntry,
   UserFeaturePackageEntry,
 } from "@admin/types/user-feature";
@@ -47,7 +47,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const pageSizeOptions = [10, 20, 30, 50, 100];
 type TagType = "info" | "success" | "warning" | "danger";
 type DictMeta = { label: string; tagType?: TagType };
-type DrawerMode = "detail" | "edit" | "create";
 
 function toMetaMap(items?: DictItem[]): Record<string, DictMeta> {
   const map: Record<string, DictMeta> = {};
@@ -69,18 +68,6 @@ function resolveLabel(metaMap: Record<string, DictMeta>, value?: string | null):
 function resolveTagType(metaMap: Record<string, DictMeta>, value?: string | null): string {
   if (!value) return "info";
   return metaMap[value]?.tagType || "info";
-}
-
-function defaultForm(): SaveUserFeaturePackageRequest {
-  return {
-    code: "",
-    name: "",
-    packageType: "CUSTOM",
-    description: "",
-    enabled: true,
-    defaultPackage: false,
-    applicationAccesses: [],
-  };
 }
 
 export function UserFeaturePackagesPage() {
@@ -108,20 +95,15 @@ export function UserFeaturePackagesPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<DrawerMode>("detail");
+  const [drawerMode, setDrawerMode] = useState<UserFeaturePackageDrawerMode>("detail");
   const [currentPackage, setCurrentPackage] = useState<UserFeaturePackageEntry | null>(null);
-  const [selectedApplications, setSelectedApplications] = useState<
-    Record<string, { featureAccessScope: UserFeatureAccessScope; featureIds: string[] }>
-  >({});
-  const [form, setForm] = useState<SaveUserFeaturePackageRequest>(defaultForm());
   const [packageTypeMetaMap, setPackageTypeMetaMap] = useState<Record<string, DictMeta>>({});
-  const [dictsLoading, setDictsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const loadedRef = useRef(false);
+  const metadataLoadedRef = useRef(false);
 
   const canView = hasResourceCodeAccess("user-feature-package-view");
   const canEdit = hasResourceCodeAccess("user-feature-package-edit");
-  const selectedApplicationCount = Object.keys(selectedApplications).length;
 
   const packageTypeOptions = useMemo(
     () => Object.entries(packageTypeMetaMap).map(([value, meta]) => ({ value, label: meta.label })),
@@ -147,6 +129,12 @@ export function UserFeaturePackagesPage() {
         keyword: appliedKeyword || undefined,
         enabled: appliedEnabled === "" ? undefined : appliedEnabled === "true",
         page: { pageNo, pageSize },
+        sort: {
+          orders: [
+            { field: "displayOrder", direction: "ASC" },
+            { field: "packageName", direction: "ASC" },
+          ],
+        },
       });
       setPage(result);
       setPageNo(result.pageNo || 1);
@@ -158,15 +146,12 @@ export function UserFeaturePackagesPage() {
   }
 
   useEffect(() => {
-    if (!permissionsLoaded || dictsLoading) return;
+    if (!permissionsLoaded || metadataLoadedRef.current) return;
+    metadataLoadedRef.current = true;
     void (async () => {
       try {
-        const [dictResult, appResult] = await Promise.all([
-          batchListDictOptions(["USER_APPLICATION_PACKAGE_TYPE"]),
-          listUserFeatureApplications(),
-        ]);
+        const dictResult = await batchListDictOptions(["USER_APPLICATION_PACKAGE_TYPE"]);
         setPackageTypeMetaMap(toMetaMap(dictResult.USER_APPLICATION_PACKAGE_TYPE));
-        setApplications(appResult);
       } catch {
         setPackageTypeMetaMap({
           DEFAULT: { label: "默认包", tagType: "info" },
@@ -175,22 +160,21 @@ export function UserFeaturePackagesPage() {
           ENTERPRISE: { label: "企业包", tagType: "danger" },
           CUSTOM: { label: "自定义", tagType: "info" },
         });
-      } finally {
-        setDictsLoading(false);
+      }
+      if (canView || canEdit) {
+        try {
+          setApplications(await listUserFeatureApplications());
+        } catch {
+          setApplications([]);
+        }
       }
     })();
-  }, [permissionsLoaded]);
+  }, [permissionsLoaded, canView, canEdit]);
 
   useEffect(() => {
-    if (loadedRef.current) return;
-    if (!permissionsLoaded || dictsLoading) return;
-    loadedRef.current = true;
+    if (!permissionsLoaded) return;
     void reload();
-  }, [permissionsLoaded, dictsLoading]);
-
-  useEffect(() => {
-    if (loadedRef.current) void reload();
-  }, [pageNo, appliedKeyword, appliedEnabled]);
+  }, [permissionsLoaded, pageNo, pageSize, appliedKeyword, appliedEnabled]);
 
   function applyFilters() {
     setAppliedKeyword(keywordDraft.trim());
@@ -239,108 +223,26 @@ export function UserFeaturePackagesPage() {
     ];
   }
 
-  function hydrateSelections(applicationAccesses: UserFeaturePackageEntry["applicationAccesses"]) {
-    const next: Record<
-      string,
-      { featureAccessScope: UserFeatureAccessScope; featureIds: string[] }
-    > = {};
-    for (const access of applicationAccesses) {
-      next[access.applicationId] = {
-        featureAccessScope: access.featureAccessScope,
-        featureIds: [...access.featureIds],
-      };
-    }
-    setSelectedApplications(next);
-  }
-
-  function isApplicationSelected(applicationId: string): boolean {
-    return Boolean(selectedApplications[applicationId]);
-  }
-
-  function applicationScopeOf(applicationId: string): UserFeatureAccessScope {
-    return selectedApplications[applicationId]?.featureAccessScope || "FULL";
-  }
-
-  function isFeatureSelected(applicationId: string, featureId: string): boolean {
-    return selectedApplications[applicationId]?.featureIds.includes(featureId) || false;
-  }
-
-  function toggleApplicationSelection(applicationId: string, checked: boolean) {
-    setSelectedApplications((prev) => {
-      const next = { ...prev };
-      if (checked) {
-        next[applicationId] = next[applicationId] || { featureAccessScope: "FULL", featureIds: [] };
-      } else {
-        delete next[applicationId];
-      }
-      return next;
-    });
-  }
-
-  function updateApplicationScope(applicationId: string, scope: UserFeatureAccessScope) {
-    setSelectedApplications((prev) => {
-      const current = prev[applicationId] || {
-        featureAccessScope: "FULL" as UserFeatureAccessScope,
-        featureIds: [],
-      };
-      return {
-        ...prev,
-        [applicationId]: {
-          featureAccessScope: scope,
-          featureIds: scope === "FULL" ? [] : current.featureIds,
-        },
-      };
-    });
-  }
-
-  function toggleFeatureSelection(applicationId: string, featureId: string, checked: boolean) {
-    setSelectedApplications((prev) => {
-      const current = prev[applicationId];
-      if (!current) return prev;
-      const nextFeatureIds = new Set(current.featureIds);
-      if (checked) nextFeatureIds.add(featureId);
-      else nextFeatureIds.delete(featureId);
-      return {
-        ...prev,
-        [applicationId]: {
-          ...current,
-          featureIds: Array.from(nextFeatureIds),
-        },
-      };
-    });
-  }
-
-  async function openCreate() {
-    setForm(defaultForm());
-    setSelectedApplications({});
+  function openCreate() {
     setDrawerMode("create");
     setCurrentPackage(null);
     setDrawerOpen(true);
   }
 
   async function openEdit(id: string) {
+    setCurrentPackage(null);
     setDrawerMode("edit");
     setDrawerOpen(true);
     setDrawerLoading(true);
     try {
-      const pkg = await getUserFeaturePackage(id);
-      setCurrentPackage(pkg);
-      setForm({
-        code: pkg.code,
-        name: pkg.name,
-        packageType: pkg.packageType,
-        description: pkg.description || "",
-        enabled: pkg.enabled,
-        defaultPackage: pkg.defaultPackage,
-        applicationAccesses: [],
-      });
-      hydrateSelections(pkg.applicationAccesses);
+      setCurrentPackage(await getUserFeaturePackage(id));
     } finally {
       setDrawerLoading(false);
     }
   }
 
   async function openDetail(id: string) {
+    setCurrentPackage(null);
     setDrawerMode("detail");
     setDrawerOpen(true);
     setDrawerLoading(true);
@@ -351,37 +253,26 @@ export function UserFeaturePackagesPage() {
     }
   }
 
-  function buildPayload(): SaveUserFeaturePackageRequest {
-    return {
-      code: form.code.trim(),
-      name: form.name.trim(),
-      packageType: form.packageType,
-      description: form.description?.trim() || null,
-      enabled: form.enabled,
-      defaultPackage: form.defaultPackage,
-      applicationAccesses: Object.entries(selectedApplications).map(([applicationId, config]) => ({
-        applicationId,
-        featureAccessScope: config.featureAccessScope,
-        featureIds: config.featureAccessScope === "FULL" ? [] : config.featureIds,
-      })),
-    };
-  }
-
-  async function submitPackage() {
-    const payload = buildPayload();
+  async function submitPackage(payload: SaveUserFeaturePackageRequest) {
+    if (saving) return;
     if (!payload.code || !payload.name) {
       message.warning("编码和名称不能为空");
       return;
     }
-    if (drawerMode === "create") {
-      await createUserFeaturePackage(payload);
-      message.success("应用包已创建");
-    } else if (currentPackage) {
-      await updateUserFeaturePackage(currentPackage.id, payload);
-      message.success("应用包已更新");
+    setSaving(true);
+    try {
+      if (drawerMode === "create") {
+        await createUserFeaturePackage(payload);
+        message.success("应用包已创建");
+      } else if (currentPackage) {
+        await updateUserFeaturePackage(currentPackage.id, payload);
+        message.success("应用包已更新");
+      }
+      setDrawerOpen(false);
+      await reload();
+    } finally {
+      setSaving(false);
     }
-    setDrawerOpen(false);
-    await reload();
   }
 
   async function toggleStatus(row: UserFeaturePackageEntry) {
@@ -416,7 +307,7 @@ export function UserFeaturePackagesPage() {
       {
         key: "code",
         title: "编码",
-        minWidth: 180,
+        width: 240,
         className: "admin-freeze-col--feature-package-code is-sticky-left",
         headerClassName: "admin-freeze-col--feature-package-code is-sticky-left",
         render: (row) => <>{row.code}</>,
@@ -435,7 +326,7 @@ export function UserFeaturePackagesPage() {
       {
         key: "defaultPackage",
         title: "默认包",
-        width: 100,
+        width: 120,
         render: (row) => (
           <BzTag type={row.defaultPackage ? "success" : "info"}>
             {row.defaultPackage ? "是" : "否"}
@@ -445,7 +336,7 @@ export function UserFeaturePackagesPage() {
       {
         key: "enabled",
         title: "状态",
-        width: 100,
+        width: 120,
         render: (row) => (
           <BzTag type={row.enabled ? "success" : "danger"}>{row.enabled ? "启用" : "停用"}</BzTag>
         ),
@@ -453,13 +344,24 @@ export function UserFeaturePackagesPage() {
       {
         key: "description",
         title: "描述",
-        minWidth: 220,
-        render: (row) => <>{row.description || "-"}</>,
+        width: 260,
+        className: "user-feature-package-description-column",
+        headerClassName: "user-feature-package-description-column",
+        render: (row) => {
+          const description = row.description || "-";
+          return (
+            <div className="user-feature-package-description-wrap">
+              <BzTooltip content={description}>
+                <span className="user-feature-package-description-ellipsis">{description}</span>
+              </BzTooltip>
+            </div>
+          );
+        },
       },
       {
         key: "applicationAccesses",
         title: "应用数",
-        width: 90,
+        width: 120,
         render: (row) => <>{row.applicationAccesses.length}</>,
       },
     ];
@@ -469,25 +371,6 @@ export function UserFeaturePackagesPage() {
     });
     return actionsColumn ? [...baseColumns, actionsColumn] : baseColumns;
   }, [packageTypeMetaMap, canEdit, rows]);
-
-  const drawerTitle =
-    drawerMode === "create" ? "新增应用包" : drawerMode === "edit" ? "编辑应用包" : "应用包详情";
-
-  const drawerFooter = (
-    <>
-      <BzButton onClick={() => setDrawerOpen(false)}>
-        {drawerMode === "detail" ? "关闭" : "取消"}
-      </BzButton>
-      {drawerMode !== "detail" ? (
-        <BzButton
-          buttonType="primary"
-          onClick={submitPackage}
-        >
-          确定
-        </BzButton>
-      ) : null}
-    </>
-  );
 
   return (
     <>
@@ -626,243 +509,17 @@ export function UserFeaturePackagesPage() {
         }
       />
 
-      <AdminEntityDrawer
+      <UserFeaturePackageManageDrawer
         open={drawerOpen}
-        title={drawerTitle}
-        width="1180px"
-        className="role-manage-drawer"
+        mode={drawerMode}
+        packageEntry={currentPackage}
+        applications={applications}
+        packageTypeOptions={packageTypeOptions}
         loading={drawerLoading}
+        saving={saving}
         onClose={() => setDrawerOpen(false)}
-        footer={drawerFooter}
-      >
-        {drawerMode === "detail" && currentPackage ? (
-          <div className="role-manage-shell">
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">应用包信息</div>
-              </div>
-              <div className="role-info-table-wrap">
-                <table
-                  className="role-info-table"
-                  aria-label="应用包详情"
-                >
-                  <tbody>
-                    <tr>
-                      <th>编码</th>
-                      <td>{currentPackage.code}</td>
-                      <th>名称</th>
-                      <td>{currentPackage.name}</td>
-                      <th>类型</th>
-                      <td>{resolveLabel(packageTypeMetaMap, currentPackage.packageType)}</td>
-                    </tr>
-                    <tr>
-                      <th>默认包</th>
-                      <td>{currentPackage.defaultPackage ? "是" : "否"}</td>
-                      <th>状态</th>
-                      <td>{currentPackage.enabled ? "启用" : "停用"}</td>
-                      <th></th>
-                      <td></td>
-                    </tr>
-                    <tr>
-                      <th>描述</th>
-                      <td colSpan={5}>{currentPackage.description || "-"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">应用授权</div>
-                <div className="role-manage-section__stat">
-                  共 {currentPackage.applicationAccesses.length} 个应用
-                </div>
-              </div>
-              <div className="package-access-list">
-                {currentPackage.applicationAccesses.map((access) => (
-                  <div
-                    key={access.applicationId}
-                    className="package-access-card"
-                  >
-                    <div className="package-access-card__head">
-                      <strong>{access.applicationName}</strong>
-                      <BzTag type={access.featureAccessScope === "FULL" ? "success" : "warning"}>
-                        {access.featureAccessScope === "FULL" ? "完整功能" : "部分功能"}
-                      </BzTag>
-                    </div>
-                    <div className="package-access-card__meta">{access.applicationCode}</div>
-                    {access.features.length > 0 ? (
-                      <div className="package-access-card__feature-list">
-                        {access.features.map((feature) => (
-                          <span
-                            key={feature.id}
-                            className="package-feature-chip"
-                          >
-                            {feature.name}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        ) : null}
-
-        {drawerMode !== "detail" ? (
-          <div className="role-manage-shell">
-            <BzForm>
-              <div className="group-form-grid">
-                <BzFormItem label="编码">
-                  <BzInput
-                    modelValue={form.code}
-                    disabled={drawerMode === "edit"}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, code: v }))}
-                  />
-                </BzFormItem>
-                <BzFormItem label="名称">
-                  <BzInput
-                    modelValue={form.name}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))}
-                  />
-                </BzFormItem>
-                <BzFormItem label="类型">
-                  <BzSelect
-                    modelValue={form.packageType}
-                    onValueChange={(v) =>
-                      setForm((prev) => ({ ...prev, packageType: v || "CUSTOM" }))
-                    }
-                  >
-                    {packageTypeOptions.map((opt) => (
-                      <BzOption
-                        key={opt.value}
-                        label={opt.label}
-                        value={opt.value}
-                      />
-                    ))}
-                  </BzSelect>
-                </BzFormItem>
-                <BzFormItem label="状态">
-                  <BzSwitch
-                    modelValue={form.enabled}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, enabled: v }))}
-                  />
-                </BzFormItem>
-                <BzFormItem label="默认包">
-                  <BzSwitch
-                    modelValue={form.defaultPackage}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, defaultPackage: v }))}
-                  />
-                </BzFormItem>
-                <BzFormItem
-                  label="描述"
-                  className="group-form-grid__wide"
-                >
-                  <BzTextField
-                    modelValue={form.description || ""}
-                    type="textarea"
-                    rows={3}
-                    onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))}
-                  />
-                </BzFormItem>
-              </div>
-            </BzForm>
-
-            <div className="package-config-panel">
-              <div className="package-config-panel__head">
-                <div className="package-config-panel__title">应用授权</div>
-                <div className="package-config-panel__meta">
-                  已选 {selectedApplicationCount} 个应用
-                </div>
-              </div>
-              <div className="package-config-panel__body">
-                {applications.map((application) => {
-                  const selected = isApplicationSelected(application.id);
-                  const scope = applicationScopeOf(application.id);
-                  return (
-                    <div
-                      key={application.id}
-                      className="package-config-card"
-                    >
-                      <div className="package-config-card__top">
-                        <label className="package-config-card__select">
-                          <input
-                            type="checkbox"
-                            checked={selected}
-                            onChange={(e) =>
-                              toggleApplicationSelection(application.id, e.target.checked)
-                            }
-                          />
-                          <div>
-                            <div className="package-config-card__name">{application.name}</div>
-                            <div className="package-config-card__code">{application.code}</div>
-                          </div>
-                        </label>
-                        <BzTag type={application.enabled ? "success" : "warning"}>
-                          {application.enabled ? "启用" : "停用"}
-                        </BzTag>
-                      </div>
-                      <div className="package-config-card__path">
-                        {application.routePath || "-"}
-                      </div>
-                      {selected ? (
-                        <div className="package-config-card__scope">
-                          <label>
-                            <input
-                              type="radio"
-                              name={`scope-${application.id}`}
-                              value="FULL"
-                              checked={scope === "FULL"}
-                              onChange={() => updateApplicationScope(application.id, "FULL")}
-                            />{" "}
-                            完整功能
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name={`scope-${application.id}`}
-                              value="PARTIAL"
-                              checked={scope === "PARTIAL"}
-                              onChange={() => updateApplicationScope(application.id, "PARTIAL")}
-                            />{" "}
-                            部分功能
-                          </label>
-                        </div>
-                      ) : null}
-                      {selected && scope === "PARTIAL" ? (
-                        <div className="package-config-card__features">
-                          {application.features.map((feature) => (
-                            <label
-                              key={feature.id}
-                              className={`package-feature-option${!feature.enabled ? " disabled" : ""}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isFeatureSelected(application.id, feature.id)}
-                                disabled={!feature.enabled}
-                                onChange={(e) =>
-                                  toggleFeatureSelection(
-                                    application.id,
-                                    feature.id,
-                                    e.target.checked,
-                                  )
-                                }
-                              />
-                              <span>{feature.name}</span>
-                              <small>{feature.code}</small>
-                            </label>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </AdminEntityDrawer>
+        onSubmit={submitPackage}
+      />
     </>
   );
 }

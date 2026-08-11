@@ -454,7 +454,7 @@ export function UserFeatureApplicationsPage() {
                 <div className="role-manage-section__title">应用功能</div>
                 <div className="role-manage-section__stat">共 {detail.features.length} 项</div>
               </div>
-              <div className="admin-table-surface">
+              <div className="admin-table-surface user-feature-application-detail-table">
                 <BzTable
                   columns={featureColumns}
                   data={detail.features}
