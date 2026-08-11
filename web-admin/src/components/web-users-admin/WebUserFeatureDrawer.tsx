@@ -1,5 +1,6 @@
 "use client";
 
+import { batchListDictOptions } from "@admin/api/dicts";
 import { getExternalUser } from "@admin/api/external-users";
 import {
   getUserFeatureUserManagement,
@@ -35,6 +36,14 @@ import { useEffect, useState } from "react";
 export type WebUserFeatureDrawerMode = "detail" | "maintain";
 type ApplicationAccessMode = "INHERIT" | "FULL" | "PARTIAL" | "DISABLE";
 
+const defaultPackageTypeLabels: Record<string, string> = {
+  DEFAULT: "默认包",
+  MEMBERSHIP: "会员包",
+  OPERATION: "运营包",
+  ENTERPRISE: "企业包",
+  CUSTOM: "自定义",
+};
+
 interface WebUserFeatureDrawerProps {
   open: boolean;
   mode: WebUserFeatureDrawerMode;
@@ -62,6 +71,7 @@ export function WebUserFeatureDrawer({
   const [packages, setPackages] = useState<UserFeaturePackageEntry[]>([]);
   const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([]);
   const [applications, setApplications] = useState<UserFeatureUserApplicationEntry[]>([]);
+  const [packageTypeLabels, setPackageTypeLabels] = useState(defaultPackageTypeLabels);
   const [keyword, setKeyword] = useState("");
 
   useEffect(() => {
@@ -75,12 +85,16 @@ export function WebUserFeatureDrawer({
     setKeyword("");
     void (async () => {
       try {
-        const [nextUser, nextManagement, packageCatalog] = await Promise.all([
-          getExternalUser(userId),
-          canViewFeatures ? getUserFeatureUserManagement(userId) : Promise.resolve(null),
-          mode === "maintain" && canManagePackages ? loadPackageCatalog() : Promise.resolve([]),
-        ]);
+        const [nextUser, nextManagement, packageCatalog, nextPackageTypeLabels] = await Promise.all(
+          [
+            getExternalUser(userId),
+            canViewFeatures ? getUserFeatureUserManagement(userId) : Promise.resolve(null),
+            mode === "maintain" && canManagePackages ? loadPackageCatalog() : Promise.resolve([]),
+            loadPackageTypeLabels(),
+          ],
+        );
         setUser(nextUser);
+        setPackageTypeLabels(nextPackageTypeLabels);
         if (nextManagement) {
           const nextApplications = cloneApplications(nextManagement.applications);
           setManagement(nextManagement);
@@ -309,7 +323,9 @@ export function WebUserFeatureDrawer({
                                 {entry.name}
                               </div>
                               <div className="admin-grid-table__cell mono">{entry.code}</div>
-                              <div className="admin-grid-table__cell">{entry.packageType}</div>
+                              <div className="admin-grid-table__cell">
+                                {packageTypeLabels[entry.packageType] || entry.packageType}
+                              </div>
                               <div className="admin-grid-table__cell">
                                 <BzTag type={entry.enabled ? "success" : "danger"}>
                                   {entry.enabled ? "启用" : "停用"}
@@ -496,6 +512,23 @@ async function loadPackageCatalog(): Promise<UserFeaturePackageEntry[]> {
     ),
   );
   return [firstPage, ...remainingPages].flatMap((page) => page.elements);
+}
+
+async function loadPackageTypeLabels(): Promise<Record<string, string>> {
+  try {
+    const result = await batchListDictOptions(["USER_APPLICATION_PACKAGE_TYPE"]);
+    return {
+      ...defaultPackageTypeLabels,
+      ...Object.fromEntries(
+        (result.USER_APPLICATION_PACKAGE_TYPE || []).map((item) => [
+          item.itemValue,
+          item.itemLabel || item.itemValue,
+        ]),
+      ),
+    };
+  } catch {
+    return defaultPackageTypeLabels;
+  }
 }
 
 function comparePackages(

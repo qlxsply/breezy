@@ -162,7 +162,7 @@ export function WebUsersAdminPage() {
 
   const columns = useMemo<Array<BzTableColumn<ExternalUserEntry>>>(() => {
     const baseColumns: Array<BzTableColumn<ExternalUserEntry>> = [
-      { key: "account", title: "账号", minWidth: 180, render: (row) => <>{row.account}</> },
+      { key: "account", title: "账号", width: 200, render: (row) => <>{row.account}</> },
       {
         key: "nickname",
         title: "昵称",
@@ -180,13 +180,13 @@ export function WebUsersAdminPage() {
       {
         key: "lastLoginAt",
         title: "最近登录",
-        minWidth: 160,
+        width: 200,
         render: (row) => <>{formatDateTime(row.lastLoginAt) || "-"}</>,
       },
       {
         key: "createdAt",
         title: "创建时间",
-        minWidth: 160,
+        width: 200,
         render: (row) => <>{formatDateTime(row.createdAt) || "-"}</>,
       },
     ];

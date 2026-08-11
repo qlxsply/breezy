@@ -118,8 +118,23 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.web-user-capability-toolbar {
+  width: 100%;
+}
+
+.web-user-capability-toolbar .role-permission-toolbar__search {
+  flex: 1 1 0;
+  width: auto;
+  max-width: none;
+}
+
 .web-user-capability-toolbar .role-permission-toolbar__actions {
+  flex: 0 0 auto;
   align-items: center;
+}
+
+.web-user-capability-toolbar .role-permission-toolbar__actions:empty {
+  display: none;
 }
 
 .web-user-capability-toolbar .role-permission-toolbar__actions > span {
