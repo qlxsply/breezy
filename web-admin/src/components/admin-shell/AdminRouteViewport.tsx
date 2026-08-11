@@ -43,8 +43,15 @@ function AdminPlaceholderCard({
   );
 }
 
-export function AdminRouteViewport() {
-  const pathname = usePathname() ?? "/admin";
+export function AdminRouteViewport({
+  path,
+  active = true,
+}: {
+  path?: string;
+  active?: boolean;
+} = {}) {
+  const routePathname = usePathname() ?? "/admin";
+  const pathname = path ?? routePathname;
   const router = useRouter();
   const authLoaded = useAuthLoaded();
   const authenticated = useIsAuthenticated();
@@ -55,6 +62,9 @@ export function AdminRouteViewport() {
   const resolved = useAdminRouteResolved(pathname);
 
   useEffect(() => {
+    if (!active) {
+      return;
+    }
     if (!authLoaded) {
       return;
     }
@@ -66,7 +76,7 @@ export function AdminRouteViewport() {
     if (getCurrentUserType() !== "ADMIN") {
       router.replace("/");
     }
-  }, [authLoaded, authenticated, pathname, router]);
+  }, [active, authLoaded, authenticated, pathname, router]);
 
   if (!authLoaded) {
     return (

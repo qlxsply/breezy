@@ -1,29 +1,35 @@
 "use client";
 
-import {listPublicDictOptions} from "@admin/api/dicts";
-import {AdminEntityDrawer} from "@admin/components/admin/AdminEntityDrawer";
-import {AdminDateTimeField} from "@admin/components/admin/AdminDateTimeField";
-import {BzAlert} from "@admin/components/bz/BzAlert";
-import {BzButton} from "@admin/components/bz/BzButton";
-import {BzDragHandle} from "@admin/components/bz/BzDragHandle";
-import {BzIconActionButton} from "@admin/components/bz/BzIconActionButton";
-import {BzInput} from "@admin/components/bz/BzInput";
-import {BzOption} from "@admin/components/bz/BzOption";
-import {BzSelect} from "@admin/components/bz/BzSelect";
-import {BzSwitch} from "@admin/components/bz/BzSwitch";
-import {BzTag} from "@admin/components/bz/BzTag";
-import {BzTextField} from "@admin/components/bz/BzTextField";
+import { listPublicDictOptions } from "@admin/api/dicts";
+import { AdminDateTimeField } from "@admin/components/admin/AdminDateTimeField";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { BzAlert } from "@admin/components/bz/BzAlert";
+import { BzButton } from "@admin/components/bz/BzButton";
+import { BzDragHandle } from "@admin/components/bz/BzDragHandle";
+import { BzIconActionButton } from "@admin/components/bz/BzIconActionButton";
+import { BzInput } from "@admin/components/bz/BzInput";
+import { BzOption } from "@admin/components/bz/BzOption";
+import { BzSelect } from "@admin/components/bz/BzSelect";
+import { BzSwitch } from "@admin/components/bz/BzSwitch";
+import { BzTag } from "@admin/components/bz/BzTag";
+import { BzTextField } from "@admin/components/bz/BzTextField";
 import {
+  dateTimeInputToEpochMillisString,
   formatDateTime,
   formatUserPreferenceDate,
   getUserDateTimePrecision,
   getUserTimeZone,
-  dateTimeInputToEpochMillisString,
 } from "@admin/core/formatter";
-import {usePersonalizedConfigs} from "@admin/core/registry/auth-registry";
-import type {ConfigFieldSpec, ConfigItem, ConfigViolation, JsonObject, JsonValue,} from "@admin/types/config-admin";
-import type {DragEvent} from "react";
-import {useEffect, useState} from "react";
+import { usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
+import type {
+  ConfigFieldSpec,
+  ConfigItem,
+  ConfigViolation,
+  JsonObject,
+  JsonValue,
+} from "@admin/types/config-admin";
+import type { DragEvent } from "react";
+import { useEffect, useState } from "react";
 
 export type ConfigManageMode = "detail" | "edit";
 type FieldInputValue = string | boolean;
@@ -60,31 +66,31 @@ interface UserPreferenceOption {
 }
 
 const WHITELIST_TYPE_OPTIONS = [
-  {value: "EXACT", label: "精确匹配"},
-  {value: "ANT", label: "Ant 路径匹配"},
-  {value: "PATH_PATTERN", label: "PathPattern 匹配"},
+  { value: "EXACT", label: "精确匹配" },
+  { value: "ANT", label: "Ant 路径匹配" },
+  { value: "PATH_PATTERN", label: "PathPattern 匹配" },
 ];
 
 const MESSAGE_TYPE_OPTIONS = [
-  {value: "TODO_REMINDER", label: "待办提醒"},
-  {value: "SYSTEM_EVENT", label: "系统事件"},
-  {value: "BUSINESS_EVENT", label: "业务事件"},
+  { value: "TODO_REMINDER", label: "待办提醒" },
+  { value: "SYSTEM_EVENT", label: "系统事件" },
+  { value: "BUSINESS_EVENT", label: "业务事件" },
 ];
 
 const MESSAGE_PRIORITY_OPTIONS = [
-  {value: "LOW", label: "低"},
-  {value: "MEDIUM", label: "中"},
-  {value: "HIGH", label: "高"},
+  { value: "LOW", label: "低" },
+  { value: "MEDIUM", label: "中" },
+  { value: "HIGH", label: "高" },
 ];
 
 const ROUNDING_MODE_OPTIONS = [
-  {value: "HALF_UP", label: "四舍五入", description: "大于等于 5 时向远离零方向进位"},
-  {value: "HALF_DOWN", label: "五舍六入", description: "大于 5 时进位，正好为 5 时舍去"},
-  {value: "HALF_EVEN", label: "银行家舍入", description: "正好为 5 时向最近的偶数舍入"},
-  {value: "UP", label: "远离零舍入", description: "存在舍弃位时始终增大绝对值"},
-  {value: "DOWN", label: "趋向零舍入", description: "直接舍弃超出位数的部分"},
-  {value: "CEILING", label: "向上取整", description: "向正无穷方向舍入"},
-  {value: "FLOOR", label: "向下取整", description: "向负无穷方向舍入"},
+  { value: "HALF_UP", label: "四舍五入", description: "大于等于 5 时向远离零方向进位" },
+  { value: "HALF_DOWN", label: "五舍六入", description: "大于 5 时进位，正好为 5 时舍去" },
+  { value: "HALF_EVEN", label: "银行家舍入", description: "正好为 5 时向最近的偶数舍入" },
+  { value: "UP", label: "远离零舍入", description: "存在舍弃位时始终增大绝对值" },
+  { value: "DOWN", label: "趋向零舍入", description: "直接舍弃超出位数的部分" },
+  { value: "CEILING", label: "向上取整", description: "向正无穷方向舍入" },
+  { value: "FLOOR", label: "向下取整", description: "向负无穷方向舍入" },
 ];
 
 const USER_PREFERENCE_DICT_CODES: Record<string, string> = {
@@ -108,7 +114,8 @@ function roundDecimalText(input: string, scale: number, mode: string): string {
   const hasDiscardedValue = /[1-9]/.test(discarded);
   const firstDiscarded = Number(discarded.charAt(0) || "0");
   const remainingDiscarded = discarded.slice(1);
-  const greaterThanHalf = firstDiscarded > 5 || (firstDiscarded === 5 && /[1-9]/.test(remainingDiscarded));
+  const greaterThanHalf =
+    firstDiscarded > 5 || (firstDiscarded === 5 && /[1-9]/.test(remainingDiscarded));
   const exactlyHalf = firstDiscarded === 5 && !/[1-9]/.test(remainingDiscarded);
   let increment = false;
   if (mode === "UP") increment = hasDiscardedValue;
@@ -157,7 +164,9 @@ function formatPreferenceDecimal(value: string, formatCode: string): string {
   const grouping = formatCode !== "PLAIN_DOT";
   const groupingSeparator = formatCode === "DOT_COMMA" ? "." : ",";
   const decimalSeparator = formatCode === "DOT_COMMA" ? "," : ".";
-  const integer = grouping ? integerRaw.replace(/\B(?=(\d{3})+(?!\d))/g, groupingSeparator) : integerRaw;
+  const integer = grouping
+    ? integerRaw.replace(/\B(?=(\d{3})+(?!\d))/g, groupingSeparator)
+    : integerRaw;
   return `${negative ? "-" : ""}${integer}${fraction ? `${decimalSeparator}${fraction}` : ""}`;
 }
 
@@ -241,12 +250,15 @@ function readMessageRules(value: JsonValue): MessageTypeRule[] {
   });
 }
 
-function statusMeta(item: ConfigItem): { label: string; type: "info" | "warning" | "danger" | "success" } {
-  if (item.status === "CONFIGURED") return {label: "已配置", type: "success"};
-  if (item.status === "INVALID_DATABASE_VALUE") return {label: "配置异常", type: "danger"};
-  if (item.status === "RESTART_REQUIRED") return {label: "等待重启", type: "warning"};
-  if (item.status === "READ_ONLY") return {label: "只读", type: "info"};
-  return {label: "使用默认值", type: "info"};
+function statusMeta(item: ConfigItem): {
+  label: string;
+  type: "info" | "warning" | "danger" | "success";
+} {
+  if (item.status === "CONFIGURED") return { label: "已配置", type: "success" };
+  if (item.status === "INVALID_DATABASE_VALUE") return { label: "配置异常", type: "danger" };
+  if (item.status === "RESTART_REQUIRED") return { label: "等待重启", type: "warning" };
+  if (item.status === "READ_ONLY") return { label: "只读", type: "info" };
+  return { label: "使用默认值", type: "info" };
 }
 
 function displayValue(item: ConfigItem, field: ConfigFieldSpec): string {
@@ -272,26 +284,29 @@ function base64UrlByteLength(value: string): number | null {
 }
 
 export function ConfigManageDrawer({
-                                     open,
-                                     mode,
-                                     item,
-                                     loading = false,
-                                     saving = false,
-                                     canEdit = false,
-                                     onClose,
-                                     onSubmit,
-                                   }: ConfigManageDrawerProps) {
+  open,
+  mode,
+  item,
+  loading = false,
+  saving = false,
+  canEdit = false,
+  onClose,
+  onSubmit,
+}: ConfigManageDrawerProps) {
   const [inputs, setInputs] = useState<Record<string, FieldInputValue>>({});
   const [touchedSensitiveFields, setTouchedSensitiveFields] = useState<string[]>([]);
   const [whitelistRules, setWhitelistRules] = useState<WhitelistRule[]>([]);
   const [messageRules, setMessageRules] = useState<MessageTypeRule[]>([]);
   const [loggingFilterLists, setLoggingFilterLists] = useState<Record<string, string[]>>({});
-  const [userPreferenceOptions, setUserPreferenceOptions] = useState<Record<string, UserPreferenceOption[]>>({});
+  const [userPreferenceOptions, setUserPreferenceOptions] = useState<
+    Record<string, UserPreferenceOption[]>
+  >({});
   const [violations, setViolations] = useState<ConfigViolation[]>([]);
   const [reason, setReason] = useState("");
   const editable = mode === "edit" && canEdit && item?.editPolicy === "ADMIN_EDITABLE";
-  const availableMessageType = MESSAGE_TYPE_OPTIONS.find((option) =>
-    !messageRules.some((rule) => rule.msgType === option.value));
+  const availableMessageType = MESSAGE_TYPE_OPTIONS.find(
+    (option) => !messageRules.some((rule) => rule.msgType === option.value),
+  );
 
   useEffect(() => {
     if (!open || !item) return;
@@ -299,12 +314,16 @@ export function ConfigManageDrawer({
     setTouchedSensitiveFields([]);
     setWhitelistRules(readWhitelistRules(item.effectiveValue));
     setMessageRules(readMessageRules(item.effectiveValue));
-    setLoggingFilterLists(Object.fromEntries(item.fields
-      .filter((field) => field.type === "STRING_LIST")
-      .map((field) => {
-        const value = getPathValue(item.effectiveValue, field.path);
-        return [field.path, Array.isArray(value) ? value.map(String) : []];
-      })));
+    setLoggingFilterLists(
+      Object.fromEntries(
+        item.fields
+          .filter((field) => field.type === "STRING_LIST")
+          .map((field) => {
+            const value = getPathValue(item.effectiveValue, field.path);
+            return [field.path, Array.isArray(value) ? value.map(String) : []];
+          }),
+      ),
+    );
     setViolations([]);
     setReason("");
   }, [item, mode, open]);
@@ -313,23 +332,32 @@ export function ConfigManageDrawer({
     if (!open || item?.editorId !== "user-preference-defaults") return;
     let active = true;
     setUserPreferenceOptions({});
-    void Promise.all(Object.entries(USER_PREFERENCE_DICT_CODES).map(async ([path, code]) => {
-      const items = await listPublicDictOptions(code);
-      return [path, items.map((option) => ({value: option.itemValue, label: option.itemLabel}))] as const;
-    })).then((options) => {
-      if (!active) return;
-      setUserPreferenceOptions(Object.fromEntries(options));
-    }).catch(() => {
-      if (!active) return;
-      setUserPreferenceOptions(Object.fromEntries(item.fields.map((field) => [field.path, field.options])));
-    });
+    void Promise.all(
+      Object.entries(USER_PREFERENCE_DICT_CODES).map(async ([path, code]) => {
+        const items = await listPublicDictOptions(code);
+        return [
+          path,
+          items.map((option) => ({ value: option.itemValue, label: option.itemLabel })),
+        ] as const;
+      }),
+    )
+      .then((options) => {
+        if (!active) return;
+        setUserPreferenceOptions(Object.fromEntries(options));
+      })
+      .catch(() => {
+        if (!active) return;
+        setUserPreferenceOptions(
+          Object.fromEntries(item.fields.map((field) => [field.path, field.options])),
+        );
+      });
     return () => {
       active = false;
     };
   }, [item, open]);
 
   function changeField(field: ConfigFieldSpec, value: FieldInputValue) {
-    setInputs((previous) => ({...previous, [field.path]: value}));
+    setInputs((previous) => ({ ...previous, [field.path]: value }));
     if (field.sensitive) {
       setTouchedSensitiveFields((previous) =>
         previous.includes(field.path) ? previous : [...previous, field.path],
@@ -340,19 +368,22 @@ export function ConfigManageDrawer({
 
   function addMessageRule() {
     if (!availableMessageType) return;
-    setMessageRules((previous) => [...previous, {
-      msgType: availableMessageType.value,
-      route: "",
-      priority: "MEDIUM",
-      sseEnabled: true,
-      webPushEnabled: false,
-      panelAutoOpen: false,
-      osNotificationEnabled: false,
-    }]);
+    setMessageRules((previous) => [
+      ...previous,
+      {
+        msgType: availableMessageType.value,
+        route: "",
+        priority: "MEDIUM",
+        sseEnabled: true,
+        webPushEnabled: false,
+        panelAutoOpen: false,
+        osNotificationEnabled: false,
+      },
+    ]);
   }
 
   function buildDefaultValue(): { value?: JsonObject; violations: ConfigViolation[] } {
-    if (!item) return {violations: []};
+    if (!item) return { violations: [] };
     const value = cloneObject(item.effectiveValue);
     const nextViolations: ConfigViolation[] = [];
     for (const field of [...item.fields].sort((left, right) => left.order - right.order)) {
@@ -368,29 +399,44 @@ export function ConfigManageDrawer({
       }
       const text = typeof input === "string" ? input : String(input ?? "");
       if (field.required && text.trim() === "") {
-        nextViolations.push({path: field.path, code: "REQUIRED", message: `${field.title}不能为空`});
+        nextViolations.push({
+          path: field.path,
+          code: "REQUIRED",
+          message: `${field.title}不能为空`,
+        });
         continue;
       }
       if (field.type === "INTEGER" || field.type === "LONG" || field.type === "DECIMAL") {
         const number = Number(text);
         const integerRequired = field.type !== "DECIMAL";
         if (!Number.isFinite(number) || (integerRequired && !Number.isInteger(number))) {
-          nextViolations.push({path: field.path, code: "INVALID_NUMBER", message: "请输入有效数字"});
+          nextViolations.push({
+            path: field.path,
+            code: "INVALID_NUMBER",
+            message: "请输入有效数字",
+          });
           continue;
         }
         if (field.min !== null && number < field.min) {
-          nextViolations.push({path: field.path, code: "MIN", message: `不能小于 ${field.min}`});
+          nextViolations.push({ path: field.path, code: "MIN", message: `不能小于 ${field.min}` });
         }
         if (field.max !== null && number > field.max) {
-          nextViolations.push({path: field.path, code: "MAX", message: `不能大于 ${field.max}`});
+          nextViolations.push({ path: field.path, code: "MAX", message: `不能大于 ${field.max}` });
         }
         setPathValue(value, field.path, number);
         continue;
       }
       if (field.type === "STRING_LIST") {
-        const list = text.split(/\r?\n/).map((entry) => entry.trim()).filter(Boolean);
+        const list = text
+          .split(/\r?\n/)
+          .map((entry) => entry.trim())
+          .filter(Boolean);
         if (field.required && !list.length) {
-          nextViolations.push({path: field.path, code: "REQUIRED", message: `${field.title}不能为空`});
+          nextViolations.push({
+            path: field.path,
+            code: "REQUIRED",
+            message: `${field.title}不能为空`,
+          });
         }
         setPathValue(value, field.path, list);
         continue;
@@ -399,77 +445,129 @@ export function ConfigManageDrawer({
         try {
           setPathValue(value, field.path, JSON.parse(text) as JsonValue);
         } catch {
-          nextViolations.push({path: field.path, code: "INVALID_JSON", message: "请输入有效 JSON"});
+          nextViolations.push({
+            path: field.path,
+            code: "INVALID_JSON",
+            message: "请输入有效 JSON",
+          });
         }
         continue;
       }
       if (field.type === "ENUM" && !field.options.some((option) => option.value === text)) {
-        nextViolations.push({path: field.path, code: "INVALID_OPTION", message: "请选择有效选项"});
+        nextViolations.push({
+          path: field.path,
+          code: "INVALID_OPTION",
+          message: "请选择有效选项",
+        });
       }
       if (field.minLength !== null && text.length < field.minLength) {
-        nextViolations.push({path: field.path, code: "MIN_LENGTH", message: `长度不能少于 ${field.minLength}`});
+        nextViolations.push({
+          path: field.path,
+          code: "MIN_LENGTH",
+          message: `长度不能少于 ${field.minLength}`,
+        });
       }
       if (field.maxLength !== null && text.length > field.maxLength) {
-        nextViolations.push({path: field.path, code: "MAX_LENGTH", message: `长度不能超过 ${field.maxLength}`});
+        nextViolations.push({
+          path: field.path,
+          code: "MAX_LENGTH",
+          message: `长度不能超过 ${field.maxLength}`,
+        });
       }
       setPathValue(value, field.path, text);
     }
-    return {value: nextViolations.length ? undefined : value, violations: nextViolations};
+    return { value: nextViolations.length ? undefined : value, violations: nextViolations };
   }
 
   function buildValue(): { value?: JsonObject; violations: ConfigViolation[] } {
-    if (!item) return {violations: []};
+    if (!item) return { violations: [] };
     if (item.editorId === "auth-whitelist") {
       const nextViolations = whitelistRules.flatMap((rule, index) => {
         const errors: ConfigViolation[] = [];
         if (!WHITELIST_TYPE_OPTIONS.some((option) => option.value === rule.type)) {
-          errors.push({path: `rules[${index}].type`, code: "INVALID_TYPE", message: "请选择匹配类型"});
+          errors.push({
+            path: `rules[${index}].type`,
+            code: "INVALID_TYPE",
+            message: "请选择匹配类型",
+          });
         }
         if (!rule.pattern.trim() || !rule.pattern.trim().startsWith("/")) {
-          errors.push({path: `rules[${index}].pattern`, code: "INVALID_PATH", message: "路径必须以 / 开头"});
+          errors.push({
+            path: `rules[${index}].pattern`,
+            code: "INVALID_PATH",
+            message: "路径必须以 / 开头",
+          });
         }
         return errors;
       });
       const value = cloneObject(item.effectiveValue);
-      value.rules = whitelistRules.map((rule) => ({type: rule.type, pattern: rule.pattern.trim()}));
-      return {value: nextViolations.length ? undefined : value, violations: nextViolations};
+      value.rules = whitelistRules.map((rule) => ({
+        type: rule.type,
+        pattern: rule.pattern.trim(),
+      }));
+      return { value: nextViolations.length ? undefined : value, violations: nextViolations };
     }
     if (item.editorId === "message-type-config") {
       const usedTypes = new Set<string>();
       const nextViolations = messageRules.flatMap((rule, index) => {
         const errors: ConfigViolation[] = [];
-        if (!MESSAGE_TYPE_OPTIONS.some((option) => option.value === rule.msgType) || usedTypes.has(rule.msgType)) {
-          errors.push({path: `items[${index}].msgType`, code: "INVALID_TYPE", message: "请选择未重复的消息类型"});
+        if (
+          !MESSAGE_TYPE_OPTIONS.some((option) => option.value === rule.msgType) ||
+          usedTypes.has(rule.msgType)
+        ) {
+          errors.push({
+            path: `items[${index}].msgType`,
+            code: "INVALID_TYPE",
+            message: "请选择未重复的消息类型",
+          });
         } else {
           usedTypes.add(rule.msgType);
         }
         if (!MESSAGE_PRIORITY_OPTIONS.some((option) => option.value === rule.priority)) {
-          errors.push({path: `items[${index}].priority`, code: "INVALID_PRIORITY", message: "请选择消息优先级"});
+          errors.push({
+            path: `items[${index}].priority`,
+            code: "INVALID_PRIORITY",
+            message: "请选择消息优先级",
+          });
         }
         if (rule.route.trim() && !rule.route.trim().startsWith("/")) {
-          errors.push({path: `items[${index}].route`, code: "INVALID_ROUTE", message: "消息路由必须以 / 开头"});
+          errors.push({
+            path: `items[${index}].route`,
+            code: "INVALID_ROUTE",
+            message: "消息路由必须以 / 开头",
+          });
         }
         return errors;
       });
       const value = cloneObject(item.effectiveValue);
-      value.items = messageRules.map((rule) => ({...rule, route: rule.route.trim()}));
-      return {value: nextViolations.length ? undefined : value, violations: nextViolations};
+      value.items = messageRules.map((rule) => ({ ...rule, route: rule.route.trim() }));
+      return { value: nextViolations.length ? undefined : value, violations: nextViolations };
     }
     if (item.editorId === "logging-filter") {
       const value = cloneObject(item.effectiveValue);
       const nextViolations: ConfigViolation[] = [];
       for (const field of item.fields.filter((candidate) => candidate.type === "STRING_LIST")) {
-        const list = (loggingFilterLists[field.path] || []).map((entry) => entry.trim()).filter(Boolean);
+        const list = (loggingFilterLists[field.path] || [])
+          .map((entry) => entry.trim())
+          .filter(Boolean);
         if (!list.length) {
-          nextViolations.push({path: field.path, code: "REQUIRED", message: `${field.title}不能为空`});
+          nextViolations.push({
+            path: field.path,
+            code: "REQUIRED",
+            message: `${field.title}不能为空`,
+          });
         } else if (list.some((entry) => !entry.startsWith("/"))) {
-          nextViolations.push({path: field.path, code: "INVALID_PREFIX", message: "路径前缀必须以 / 开头"});
+          nextViolations.push({
+            path: field.path,
+            code: "INVALID_PREFIX",
+            message: "路径前缀必须以 / 开头",
+          });
         } else if (new Set(list).size !== list.length) {
-          nextViolations.push({path: field.path, code: "DUPLICATE", message: "路径前缀不能重复"});
+          nextViolations.push({ path: field.path, code: "DUPLICATE", message: "路径前缀不能重复" });
         }
         setPathValue(value, field.path, list);
       }
-      return {value: nextViolations.length ? undefined : value, violations: nextViolations};
+      return { value: nextViolations.length ? undefined : value, violations: nextViolations };
     }
     const built = buildDefaultValue();
     if (item.editorId !== "web-push-vapid" || !built.value) return built;
@@ -481,18 +579,34 @@ export function ConfigManageDrawer({
       : Boolean(item.sensitiveValuePresence.privateKey);
     const subject = String(built.value.subject ?? "").trim();
     if (Boolean(publicKey) !== hasPrivateKey) {
-      nextViolations.push({path: "publicKey", code: "KEY_PAIR_REQUIRED", message: "公钥和私钥必须同时配置"});
+      nextViolations.push({
+        path: "publicKey",
+        code: "KEY_PAIR_REQUIRED",
+        message: "公钥和私钥必须同时配置",
+      });
     }
     if (publicKey && base64UrlByteLength(publicKey) !== 65) {
-      nextViolations.push({path: "publicKey", code: "INVALID_KEY", message: "VAPID 公钥格式无效"});
+      nextViolations.push({
+        path: "publicKey",
+        code: "INVALID_KEY",
+        message: "VAPID 公钥格式无效",
+      });
     }
     if (privateKey && base64UrlByteLength(privateKey) !== 32) {
-      nextViolations.push({path: "privateKey", code: "INVALID_KEY", message: "VAPID 私钥格式无效"});
+      nextViolations.push({
+        path: "privateKey",
+        code: "INVALID_KEY",
+        message: "VAPID 私钥格式无效",
+      });
     }
     if (!subject || (!subject.startsWith("mailto:") && !subject.startsWith("https://"))) {
-      nextViolations.push({path: "subject", code: "INVALID_URI", message: "联系主体必须是 mailto 或 https 地址"});
+      nextViolations.push({
+        path: "subject",
+        code: "INVALID_URI",
+        message: "联系主体必须是 mailto 或 https 地址",
+      });
     }
-    return {value: nextViolations.length ? undefined : built.value, violations: nextViolations};
+    return { value: nextViolations.length ? undefined : built.value, violations: nextViolations };
   }
 
   async function submit() {
@@ -507,11 +621,22 @@ export function ConfigManageDrawer({
 
   const footer = (
     <div className="permission-dialog-footer">
-      <div className="permission-dialog-footer__summary"/>
+      <div className="permission-dialog-footer__summary" />
       <div className="permission-dialog-footer__actions">
-        <BzButton disabled={saving} onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
+        <BzButton
+          disabled={saving}
+          onClick={onClose}
+        >
+          {editable ? "取消" : "关闭"}
+        </BzButton>
         {editable ? (
-          <BzButton buttonType="primary" loading={saving} onClick={() => void submit()}>保存</BzButton>
+          <BzButton
+            buttonType="primary"
+            loading={saving}
+            onClick={() => void submit()}
+          >
+            保存
+          </BzButton>
         ) : null}
       </div>
     </div>
@@ -529,15 +654,33 @@ export function ConfigManageDrawer({
     >
       {item ? (
         <div className="role-manage-shell">
-          {item.loadWarning ? <BzAlert title={item.loadWarning} type="warning" showIcon closable={false}/> : null}
-          {item.pendingRestart ?
-            <BzAlert title="当前配置需要重启服务后生效。" type="warning" showIcon closable={false}/> : null}
-          <ConfigBasicInfo item={item}/>
+          {item.loadWarning ? (
+            <BzAlert
+              title={item.loadWarning}
+              type="warning"
+              showIcon
+              closable={false}
+            />
+          ) : null}
+          {item.pendingRestart ? (
+            <BzAlert
+              title="当前配置需要重启服务后生效。"
+              type="warning"
+              showIcon
+              closable={false}
+            />
+          ) : null}
+          <ConfigBasicInfo item={item} />
           <section className="role-manage-section">
             <div className="role-manage-section__head">
               <div className="role-manage-section__title">当前生效值</div>
               {editable && item.editorId === "message-type-config" ? (
-                <BzButton buttonType="primary" size="small" disabled={!availableMessageType} onClick={addMessageRule}>
+                <BzButton
+                  buttonType="primary"
+                  size="small"
+                  disabled={!availableMessageType}
+                  onClick={addMessageRule}
+                >
                   新增
                 </BzButton>
               ) : null}
@@ -615,20 +758,20 @@ export function ConfigManageDrawer({
               <div className="config-value-table-wrap">
                 <table className="config-value-table config-change-table">
                   <tbody>
-                  <tr>
-                    <th>变更原因</th>
-                    <td>
-                      <BzTextField
-                        type="textarea"
-                        rows={3}
-                        maxlength={500}
-                        showCounter
-                        modelValue={reason}
-                        placeholder="选填，说明本次配置变更原因"
-                        onValueChange={setReason}
-                      />
-                    </td>
-                  </tr>
+                    <tr>
+                      <th>变更原因</th>
+                      <td>
+                        <BzTextField
+                          type="textarea"
+                          rows={3}
+                          maxlength={500}
+                          showCounter
+                          modelValue={reason}
+                          placeholder="选填，说明本次配置变更原因"
+                          onValueChange={setReason}
+                        />
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -640,7 +783,7 @@ export function ConfigManageDrawer({
   );
 }
 
-function ConfigBasicInfo({item}: { item: ConfigItem }) {
+function ConfigBasicInfo({ item }: { item: ConfigItem }) {
   const status = statusMeta(item);
   return (
     <section className="role-manage-section">
@@ -648,41 +791,63 @@ function ConfigBasicInfo({item}: { item: ConfigItem }) {
         <div className="role-manage-section__title">基本信息</div>
       </div>
       <div className="role-info-table-wrap">
-        <table className="role-info-table" aria-label="配置基本信息">
+        <table
+          className="role-info-table"
+          aria-label="配置基本信息"
+        >
           <tbody>
-          <tr>
-            <th>配置键</th>
-            <td className="role-info-cell mono" colSpan={5}>{item.key}</td>
-          </tr>
-          <tr>
-            <th>配置名称</th>
-            <td className="role-info-cell">{item.title}</td>
-            <th>状态</th>
-            <td className="role-info-cell"><BzTag type={status.type}>{status.label}</BzTag></td>
-            <th>编辑器</th>
-            <td className="role-info-cell mono">{item.editorId}</td>
-          </tr>
-          <tr>
-            <th>模块</th>
-            <td className="role-info-cell">{item.module}</td>
-            <th>分组</th>
-            <td className="role-info-cell">{item.group}</td>
-            <th>生效方式</th>
-            <td className="role-info-cell">{item.activationPolicy === "DYNAMIC" ? "动态生效" : "重启后生效"}</td>
-          </tr>
-          <tr>
-            <th>值来源</th>
-            <td
-              className="role-info-cell">{item.source === "DATABASE_OVERRIDE" ? "数据库配置" : item.source === "INVALID_DATABASE_FALLBACK" ? "异常回退" : "代码默认值"}</td>
-            <th>配置版本</th>
-            <td className="role-info-cell mono">{item.persistedRevision}</td>
-            <th>Schema 版本</th>
-            <td className="role-info-cell mono">{item.schemaVersion}</td>
-          </tr>
-          <tr>
-            <th>说明</th>
-            <td className="role-info-cell" colSpan={5}>{item.description || "-"}</td>
-          </tr>
+            <tr>
+              <th>配置键</th>
+              <td
+                className="role-info-cell mono"
+                colSpan={5}
+              >
+                {item.key}
+              </td>
+            </tr>
+            <tr>
+              <th>配置名称</th>
+              <td className="role-info-cell">{item.title}</td>
+              <th>状态</th>
+              <td className="role-info-cell">
+                <BzTag type={status.type}>{status.label}</BzTag>
+              </td>
+              <th>编辑器</th>
+              <td className="role-info-cell mono">{item.editorId}</td>
+            </tr>
+            <tr>
+              <th>模块</th>
+              <td className="role-info-cell">{item.module}</td>
+              <th>分组</th>
+              <td className="role-info-cell">{item.group}</td>
+              <th>生效方式</th>
+              <td className="role-info-cell">
+                {item.activationPolicy === "DYNAMIC" ? "动态生效" : "重启后生效"}
+              </td>
+            </tr>
+            <tr>
+              <th>值来源</th>
+              <td className="role-info-cell">
+                {item.source === "DATABASE_OVERRIDE"
+                  ? "数据库配置"
+                  : item.source === "INVALID_DATABASE_FALLBACK"
+                    ? "异常回退"
+                    : "代码默认值"}
+              </td>
+              <th>配置版本</th>
+              <td className="role-info-cell mono">{item.persistedRevision}</td>
+              <th>Schema 版本</th>
+              <td className="role-info-cell mono">{item.schemaVersion}</td>
+            </tr>
+            <tr>
+              <th>说明</th>
+              <td
+                className="role-info-cell"
+                colSpan={5}
+              >
+                {item.description || "-"}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -690,7 +855,13 @@ function ConfigBasicInfo({item}: { item: ConfigItem }) {
   );
 }
 
-function DefaultConfigEditor({item, editable, inputs, violations, onChange}: {
+function DefaultConfigEditor({
+  item,
+  editable,
+  inputs,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   inputs: Record<string, FieldInputValue>;
@@ -701,36 +872,59 @@ function DefaultConfigEditor({item, editable, inputs, violations, onChange}: {
     <div className="config-value-table-wrap">
       <table className="config-value-table">
         <thead>
-        <tr>
-          <th>参数标识</th>
-          <th>参数名称</th>
-          <th>类型</th>
-          <th>值</th>
-        </tr>
+          <tr>
+            <th>参数标识</th>
+            <th>参数名称</th>
+            <th>类型</th>
+            <th>值</th>
+          </tr>
         </thead>
         <tbody>
-        {[...item.fields].sort((left, right) => left.order - right.order).map((field) => {
-          const fieldViolations = violations.filter((violation) => violation.path === field.path);
-          return (
-            <tr key={field.path} className={fieldViolations.length ? "is-error" : undefined}>
-              <td className="mono">{field.path}</td>
-              <td>{field.title}</td>
-              <td><BzTag size="small">{field.type}</BzTag></td>
-              <td>
-                {editable ? renderFieldInput(item, field, inputs[field.path], onChange) : displayValue(item, field)}
-                {fieldViolations.map((violation, index) => <div className="config-field-error"
-                                                                key={`${violation.code}-${index}`}>{violation.message}</div>)}
-              </td>
-            </tr>
-          );
-        })}
+          {[...item.fields]
+            .sort((left, right) => left.order - right.order)
+            .map((field) => {
+              const fieldViolations = violations.filter(
+                (violation) => violation.path === field.path,
+              );
+              return (
+                <tr
+                  key={field.path}
+                  className={fieldViolations.length ? "is-error" : undefined}
+                >
+                  <td className="mono">{field.path}</td>
+                  <td>{field.title}</td>
+                  <td>
+                    <BzTag size="small">{field.type}</BzTag>
+                  </td>
+                  <td>
+                    {editable
+                      ? renderFieldInput(item, field, inputs[field.path], onChange)
+                      : displayValue(item, field)}
+                    {fieldViolations.map((violation, index) => (
+                      <div
+                        className="config-field-error"
+                        key={`${violation.code}-${index}`}
+                      >
+                        {violation.message}
+                      </div>
+                    ))}
+                  </td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
     </div>
   );
 }
 
-function DecimalPolicyEditor({item, editable, inputs, violations, onChange}: {
+function DecimalPolicyEditor({
+  item,
+  editable,
+  inputs,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   inputs: Record<string, FieldInputValue>;
@@ -746,66 +940,113 @@ function DecimalPolicyEditor({item, editable, inputs, violations, onChange}: {
   const positiveOddTie = oddTieSample(scale);
   const negativeTie = tieSample(scale, true);
   const selectedSamples = [
-    {scene: "正数临界值（保留位为偶数）", source: positiveTie},
-    {scene: "正数临界值（保留位为奇数）", source: positiveOddTie},
-    {scene: "负数临界值", source: negativeTie},
-    {scene: "普通正数", source: "1234.567890123"},
-    {scene: "普通负数", source: "-9876.543210987"},
+    { scene: "正数临界值（保留位为偶数）", source: positiveTie },
+    { scene: "正数临界值（保留位为奇数）", source: positiveOddTie },
+    { scene: "负数临界值", source: negativeTie },
+    { scene: "普通正数", source: "1234.567890123" },
+    { scene: "普通负数", source: "-9876.543210987" },
   ];
   return (
     <div className="config-custom-editor">
       <div className="config-value-table-wrap">
         <table className="config-value-table config-decimal-policy-table">
           <thead>
-          <tr>
-            <th>参数标识</th>
-            <th>参数名称</th>
-            <th>说明</th>
-            <th>值</th>
-          </tr>
+            <tr>
+              <th>参数标识</th>
+              <th>参数名称</th>
+              <th>说明</th>
+              <th>值</th>
+            </tr>
           </thead>
           <tbody>
-          <tr className={violations.some((violation) => violation.path === "scale") ? "is-error" : undefined}>
-            <td className="mono">scale</td>
-            <td>小数位数</td>
-            <td>最终结果保留的小数位数，范围 0 至 20</td>
-            <td>{editable && scaleField ? <BzInput modelValue={inputs.scale as string} type="number"
-                                                   onValueChange={(value) => onChange(scaleField, value)}/> : String(inputs.scale)}</td>
-          </tr>
-          <tr className={violations.some((violation) => violation.path === "roundingMode") ? "is-error" : undefined}>
-            <td className="mono">roundingMode</td>
-            <td>舍入模式</td>
-            <td>{ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)?.description || "决定超出小数位数时的处理方式"}</td>
-            <td>{editable && roundingField ? (
-              <BzSelect modelValue={roundingMode}
-                        onValueChange={(value) => onChange(roundingField, value ?? "HALF_UP")}>
-                {ROUNDING_MODE_OPTIONS.map((option) => <BzOption key={option.value} value={option.value}
-                                                                  label={option.label}/>)}
-              </BzSelect>
-            ) : ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)?.label || roundingMode}</td>
-          </tr>
+            <tr
+              className={
+                violations.some((violation) => violation.path === "scale") ? "is-error" : undefined
+              }
+            >
+              <td className="mono">scale</td>
+              <td>小数位数</td>
+              <td>最终结果保留的小数位数，范围 0 至 20</td>
+              <td>
+                {editable && scaleField ? (
+                  <BzInput
+                    modelValue={inputs.scale as string}
+                    type="number"
+                    onValueChange={(value) => onChange(scaleField, value)}
+                  />
+                ) : (
+                  String(inputs.scale)
+                )}
+              </td>
+            </tr>
+            <tr
+              className={
+                violations.some((violation) => violation.path === "roundingMode")
+                  ? "is-error"
+                  : undefined
+              }
+            >
+              <td className="mono">roundingMode</td>
+              <td>舍入模式</td>
+              <td>
+                {ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)
+                  ?.description || "决定超出小数位数时的处理方式"}
+              </td>
+              <td>
+                {editable && roundingField ? (
+                  <BzSelect
+                    modelValue={roundingMode}
+                    onValueChange={(value) => onChange(roundingField, value ?? "HALF_UP")}
+                  >
+                    {ROUNDING_MODE_OPTIONS.map((option) => (
+                      <BzOption
+                        key={option.value}
+                        value={option.value}
+                        label={option.label}
+                      />
+                    ))}
+                  </BzSelect>
+                ) : (
+                  ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)?.label ||
+                  roundingMode
+                )}
+              </td>
+            </tr>
           </tbody>
         </table>
-        {violations.map((violation, index) => <div className="config-field-error"
-                                                   key={`${violation.path}-${index}`}>{violation.message}</div>)}
+        {violations.map((violation, index) => (
+          <div
+            className="config-field-error"
+            key={`${violation.path}-${index}`}
+          >
+            {violation.message}
+          </div>
+        ))}
       </div>
 
-      <ConfigPreviewTitle title="当前设置效果" description={`按 ${scale} 位小数和当前舍入模式计算`}/>
+      <ConfigPreviewTitle
+        title="当前设置效果"
+        description={`按 ${scale} 位小数和当前舍入模式计算`}
+      />
       <div className="config-value-table-wrap">
         <table className="config-value-table config-preview-table">
           <thead>
-          <tr>
-            <th>场景</th>
-            <th>原始值</th>
-            <th>舍入结果</th>
-          </tr>
+            <tr>
+              <th>场景</th>
+              <th>原始值</th>
+              <th>舍入结果</th>
+            </tr>
           </thead>
           <tbody>
-          {selectedSamples.map((sample) => <tr key={sample.scene}>
-            <td>{sample.scene}</td>
-            <td className="mono">{sample.source}</td>
-            <td className="mono config-preview-result">{roundDecimalText(sample.source, scale, roundingMode)}</td>
-          </tr>)}
+            {selectedSamples.map((sample) => (
+              <tr key={sample.scene}>
+                <td>{sample.scene}</td>
+                <td className="mono">{sample.source}</td>
+                <td className="mono config-preview-result">
+                  {roundDecimalText(sample.source, scale, roundingMode)}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -813,7 +1054,13 @@ function DecimalPolicyEditor({item, editable, inputs, violations, onChange}: {
   );
 }
 
-function TimeOffsetEditor({item, editable, inputs, violations, onChange}: {
+function TimeOffsetEditor({
+  item,
+  editable,
+  inputs,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   inputs: Record<string, FieldInputValue>;
@@ -828,7 +1075,9 @@ function TimeOffsetEditor({item, editable, inputs, violations, onChange}: {
   const targetEpochMillis = now + offsetSeconds * 1000;
   const precision = getUserDateTimePrecision();
   const targetInput = epochToDateTimeInput(targetEpochMillis, precision);
-  const formatterVersion = personalizedConfigs.map((config) => `${config.code}:${config.value}`).join("|");
+  const formatterVersion = personalizedConfigs
+    .map((config) => `${config.code}:${config.value}`)
+    .join("|");
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
@@ -842,52 +1091,70 @@ function TimeOffsetEditor({item, editable, inputs, violations, onChange}: {
   }
 
   return (
-    <div className="config-custom-editor" key={formatterVersion}>
+    <div
+      className="config-custom-editor"
+      key={formatterVersion}
+    >
       <div className="config-value-table-wrap">
         <table className="config-value-table config-time-calibration-table">
           <colgroup>
-            <col className="config-time-calibration-table__label"/>
-            <col className="config-time-calibration-table__identity"/>
-            <col className="config-time-calibration-table__label"/>
-            <col className="config-time-calibration-table__offset"/>
-            <col className="config-time-calibration-table__label"/>
-            <col className="config-time-calibration-table__target"/>
+            <col className="config-time-calibration-table__label" />
+            <col className="config-time-calibration-table__identity" />
+            <col className="config-time-calibration-table__label" />
+            <col className="config-time-calibration-table__offset" />
+            <col className="config-time-calibration-table__label" />
+            <col className="config-time-calibration-table__target" />
           </colgroup>
           <tbody>
-          <tr>
-            <th>参数标识</th>
-            <td className="mono">offsetSeconds</td>
-            <th>参数名称</th>
-            <td>{field?.title || "时间偏移秒数"}</td>
-            <th>说明</th>
-            <td>设置系统业务时间相对真实时间的秒级偏移量</td>
-          </tr>
-          <tr className={violations.length ? "is-error" : undefined}>
-            <th>当前真实时间</th>
-            <td>
-              {formatDateTime(now)}
-            </td>
-            <th>偏移量（秒）</th>
-            <td>
-              {editable && field ? (
-                <BzInput modelValue={inputs.offsetSeconds as string} type="number"
-                         onValueChange={(value) => onChange(field, value)}/>
-              ) : (
-                <span className="mono">{offsetSeconds > 0 ? "+" : ""}{offsetSeconds}</span>
-              )}
+            <tr>
+              <th>参数标识</th>
+              <td className="mono">offsetSeconds</td>
+              <th>参数名称</th>
+              <td>{field?.title || "时间偏移秒数"}</td>
+              <th>说明</th>
+              <td>设置系统业务时间相对真实时间的秒级偏移量</td>
+            </tr>
+            <tr className={violations.length ? "is-error" : undefined}>
+              <th>当前真实时间</th>
+              <td>{formatDateTime(now)}</td>
+              <th>偏移量（秒）</th>
+              <td>
+                {editable && field ? (
+                  <BzInput
+                    modelValue={inputs.offsetSeconds as string}
+                    type="number"
+                    onValueChange={(value) => onChange(field, value)}
+                  />
+                ) : (
+                  <span className="mono">
+                    {offsetSeconds > 0 ? "+" : ""}
+                    {offsetSeconds}
+                  </span>
+                )}
 
-              {violations.map((violation, index) => <div className="config-field-error"
-                                                       key={`${violation.path}-${index}`}>{violation.message}</div>)}
-            </td>
-            <th>偏移后时间</th>
-            <td>
-              {editable && field ? (
-                <AdminDateTimeField modelValue={targetInput} onValueChange={changeTargetDateTime}/>
-              ) : (
-                <span className="mono config-preview-result">{formatDateTime(targetEpochMillis)}</span>
-              )}
-            </td>
-          </tr>
+                {violations.map((violation, index) => (
+                  <div
+                    className="config-field-error"
+                    key={`${violation.path}-${index}`}
+                  >
+                    {violation.message}
+                  </div>
+                ))}
+              </td>
+              <th>偏移后时间</th>
+              <td>
+                {editable && field ? (
+                  <AdminDateTimeField
+                    modelValue={targetInput}
+                    onValueChange={changeTargetDateTime}
+                  />
+                ) : (
+                  <span className="mono config-preview-result">
+                    {formatDateTime(targetEpochMillis)}
+                  </span>
+                )}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -895,7 +1162,14 @@ function TimeOffsetEditor({item, editable, inputs, violations, onChange}: {
   );
 }
 
-function UserPreferenceDefaultsEditor({item, editable, inputs, options: dictionaryOptions, violations, onChange}: {
+function UserPreferenceDefaultsEditor({
+  item,
+  editable,
+  inputs,
+  options: dictionaryOptions,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   inputs: Record<string, FieldInputValue>;
@@ -908,84 +1182,167 @@ function UserPreferenceDefaultsEditor({item, editable, inputs, options: dictiona
   const dateTimeFormat = String(inputs.dateTimeFormat || "yyyy-MM-dd HH:mm:ss");
   const dateFormat = String(inputs.dateFormat || "yyyy-MM-dd");
   const decimalFormat = String(inputs.decimalFormat || "COMMA_DOT");
-  const decimalSamples = ["12.3", "1234.56", "1234567.891", "9876543210.12", "-12345678.9", "0.0045"];
+  const decimalSamples = [
+    "12.3",
+    "1234.56",
+    "1234567.891",
+    "9876543210.12",
+    "-12345678.9",
+    "0.0045",
+  ];
   return (
     <div className="config-custom-editor">
       <div className="config-value-table-wrap">
         <table className="config-value-table config-setting-table">
           <thead>
-          <tr>
-            <th>参数标识</th>
-            <th>参数名称</th>
-            <th>说明</th>
-            <th>值</th>
-          </tr>
+            <tr>
+              <th>参数标识</th>
+              <th>参数名称</th>
+              <th>说明</th>
+              <th>值</th>
+            </tr>
           </thead>
           <tbody>
-          {[...item.fields].sort((left, right) => left.order - right.order).map((field) => {
-            const options = dictionaryOptions[field.path]?.length ? dictionaryOptions[field.path] : field.options;
-            const value = String(inputs[field.path] || "");
-            return (
-              <tr key={field.path}
-                  className={violations.some((violation) => violation.path === field.path) ? "is-error" : undefined}>
-                <td className="mono">{field.path}</td>
-                <td>{field.title}</td>
-                <td>{field.path === "timeZone" ? "日期和时间展示使用的时区" : field.path === "decimalFormat" ? "千分位和小数点符号组合" : "日期展示格式"}</td>
-                <td>{editable ? (
-                  <BzSelect modelValue={value} onValueChange={(next) => onChange(field, next ?? "")}>
-                    {options.map((option) => <BzOption key={option.value} value={option.value} label={option.label}/>)}
-                  </BzSelect>
-                ) : options.find((option) => option.value === value)?.label || value}</td>
-              </tr>
-            );
-          })}
+            {[...item.fields]
+              .sort((left, right) => left.order - right.order)
+              .map((field) => {
+                const options = dictionaryOptions[field.path]?.length
+                  ? dictionaryOptions[field.path]
+                  : field.options;
+                const rawValue = inputs[field.path];
+                const value = String(rawValue ?? "");
+                const booleanValue = rawValue === true || rawValue === "true";
+                return (
+                  <tr
+                    key={field.path}
+                    className={
+                      violations.some((violation) => violation.path === field.path)
+                        ? "is-error"
+                        : undefined
+                    }
+                  >
+                    <td className="mono">{field.path}</td>
+                    <td>{field.title}</td>
+                    <td>
+                      {field.path === "timeZone"
+                        ? "日期和时间展示使用的时区"
+                        : field.path === "decimalFormat"
+                          ? "千分位和小数点符号组合"
+                          : field.path === "adminTabKeepAlive"
+                            ? "用户未单独设置时是否保留后台标签页状态"
+                            : "日期展示格式"}
+                    </td>
+                    <td>
+                      {field.type === "BOOLEAN" ? (
+                        editable ? (
+                          <BzSwitch
+                            modelValue={booleanValue}
+                            activeText="开启"
+                            inactiveText="关闭"
+                            onValueChange={(next) => onChange(field, next)}
+                          />
+                        ) : booleanValue ? (
+                          "开启"
+                        ) : (
+                          "关闭"
+                        )
+                      ) : editable ? (
+                        <BzSelect
+                          modelValue={value}
+                          onValueChange={(next) => onChange(field, next ?? "")}
+                        >
+                          {options.map((option) => (
+                            <BzOption
+                              key={option.value}
+                              value={option.value}
+                              label={option.label}
+                            />
+                          ))}
+                        </BzSelect>
+                      ) : (
+                        options.find((option) => option.value === value)?.label || value
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
-        {violations.map((violation, index) => <div className="config-field-error"
-                                                   key={`${violation.path}-${index}`}>{violation.message}</div>)}
+        {violations.map((violation, index) => (
+          <div
+            className="config-field-error"
+            key={`${violation.path}-${index}`}
+          >
+            {violation.message}
+          </div>
+        ))}
       </div>
-      <ConfigPreviewTitle title="日期与时间效果" description="以下结果随时区和格式选项实时变化"/>
+      <ConfigPreviewTitle
+        title="日期与时间效果"
+        description="以下结果随时区和格式选项实时变化"
+      />
       <div className="config-value-table-wrap">
         <table className="config-value-table config-preference-date-table">
           <thead>
-          <tr>
-            <th>预览类型</th>
-            <th>预览结果</th>
-            <th>使用配置</th>
-          </tr>
+            <tr>
+              <th>预览类型</th>
+              <th>预览结果</th>
+              <th>使用配置</th>
+            </tr>
           </thead>
           <tbody>
-          <tr>
-            <td>日期时间</td>
-            <td className="mono config-preview-result">{formatUserPreferenceDate(now, timeZone, dateTimeFormat, false)}</td>
-            <td>{timeZone} / {dateTimeFormat}</td>
-          </tr>
-          <tr>
-            <td>仅日期</td>
-            <td className="mono config-preview-result">{formatUserPreferenceDate(now, timeZone, dateFormat, true)}</td>
-            <td>{timeZone} / {dateFormat}</td>
-          </tr>
+            <tr>
+              <td>日期时间</td>
+              <td className="mono config-preview-result">
+                {formatUserPreferenceDate(now, timeZone, dateTimeFormat, false)}
+              </td>
+              <td>
+                {timeZone} / {dateTimeFormat}
+              </td>
+            </tr>
+            <tr>
+              <td>仅日期</td>
+              <td className="mono config-preview-result">
+                {formatUserPreferenceDate(now, timeZone, dateFormat, true)}
+              </td>
+              <td>
+                {timeZone} / {dateFormat}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <ConfigPreviewTitle title="数字格式效果" description="使用多种位数和正负数展示千分位、小数点效果"/>
+      <ConfigPreviewTitle
+        title="数字格式效果"
+        description="使用多种位数和正负数展示千分位、小数点效果"
+      />
       <div className="config-value-table-wrap">
         <table className="config-value-table config-preference-decimal-table">
           <thead>
-          <tr>
-            <th>数字规模</th>
-            <th>原始值</th>
-            <th>格式化结果</th>
-          </tr>
+            <tr>
+              <th>数字规模</th>
+              <th>原始值</th>
+              <th>格式化结果</th>
+            </tr>
           </thead>
           <tbody>
-          {decimalSamples.map((sample) => (
-            <tr key={sample}>
-              <td>{sample.replace("-", "").split(".")[0].length >= 7 ? "长数字" : sample.startsWith("-") ? "负数" : Number(sample) < 1 ? "小数" : "普通数字"}</td>
-              <td className="mono">{sample}</td>
-              <td className="mono config-preview-result">{formatPreferenceDecimal(sample, decimalFormat)}</td>
-            </tr>
-          ))}
+            {decimalSamples.map((sample) => (
+              <tr key={sample}>
+                <td>
+                  {sample.replace("-", "").split(".")[0].length >= 7
+                    ? "长数字"
+                    : sample.startsWith("-")
+                      ? "负数"
+                      : Number(sample) < 1
+                        ? "小数"
+                        : "普通数字"}
+                </td>
+                <td className="mono">{sample}</td>
+                <td className="mono config-preview-result">
+                  {formatPreferenceDecimal(sample, decimalFormat)}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -993,7 +1350,7 @@ function UserPreferenceDefaultsEditor({item, editable, inputs, options: dictiona
   );
 }
 
-function ConfigPreviewTitle({title, description}: { title: string; description: string }) {
+function ConfigPreviewTitle({ title, description }: { title: string; description: string }) {
   return (
     <div className="config-preview-title">
       <strong>{title}</strong>
@@ -1002,24 +1359,49 @@ function ConfigPreviewTitle({title, description}: { title: string; description: 
   );
 }
 
-function renderFieldInput(item: ConfigItem, field: ConfigFieldSpec, value: FieldInputValue | undefined,
-                          onChange: (field: ConfigFieldSpec, value: FieldInputValue) => void) {
+function renderFieldInput(
+  item: ConfigItem,
+  field: ConfigFieldSpec,
+  value: FieldInputValue | undefined,
+  onChange: (field: ConfigFieldSpec, value: FieldInputValue) => void,
+) {
   const text = typeof value === "string" ? value : String(value ?? "");
   if (field.type === "BOOLEAN") {
-    return <BzSwitch modelValue={Boolean(value)} activeText="启用" inactiveText="停用"
-                     onValueChange={(next) => onChange(field, next)}/>;
+    return (
+      <BzSwitch
+        modelValue={Boolean(value)}
+        activeText="启用"
+        inactiveText="停用"
+        onValueChange={(next) => onChange(field, next)}
+      />
+    );
   }
   if (field.type === "ENUM") {
     return (
-      <BzSelect modelValue={text} onValueChange={(next) => onChange(field, next ?? "")}>
-        {field.options.map((option) => <BzOption key={option.value} value={option.value} label={option.label}/>)}
+      <BzSelect
+        modelValue={text}
+        onValueChange={(next) => onChange(field, next ?? "")}
+      >
+        {field.options.map((option) => (
+          <BzOption
+            key={option.value}
+            value={option.value}
+            label={option.label}
+          />
+        ))}
       </BzSelect>
     );
   }
   if (field.type === "STRING_LIST" || field.type === "OBJECT") {
-    return <BzTextField type="textarea" rows={field.type === "OBJECT" ? 8 : 4} modelValue={text}
-                        placeholder={field.type === "OBJECT" ? "请输入 JSON" : "每行一项"}
-                        onValueChange={(next) => onChange(field, next)}/>;
+    return (
+      <BzTextField
+        type="textarea"
+        rows={field.type === "OBJECT" ? 8 : 4}
+        modelValue={text}
+        placeholder={field.type === "OBJECT" ? "请输入 JSON" : "每行一项"}
+        onValueChange={(next) => onChange(field, next)}
+      />
+    );
   }
   return (
     <BzInput
@@ -1027,13 +1409,22 @@ function renderFieldInput(item: ConfigItem, field: ConfigFieldSpec, value: Field
       type={field.sensitive ? "password" : field.type === "STRING" ? "text" : "number"}
       min={field.min ?? undefined}
       max={field.max ?? undefined}
-      placeholder={field.sensitive && item.sensitiveValuePresence[field.path] ? "******（留空保持原值）" : field.placeholder || "请输入"}
+      placeholder={
+        field.sensitive && item.sensitiveValuePresence[field.path]
+          ? "******（留空保持原值）"
+          : field.placeholder || "请输入"
+      }
       onValueChange={(next) => onChange(field, next)}
     />
   );
 }
 
-function AuthWhitelistEditor({editable, rules, violations, onChange}: {
+function AuthWhitelistEditor({
+  editable,
+  rules,
+  violations,
+  onChange,
+}: {
   editable: boolean;
   rules: WhitelistRule[];
   violations: ConfigViolation[];
@@ -1084,73 +1475,133 @@ function AuthWhitelistEditor({editable, rules, violations, onChange}: {
           <col className="config-whitelist-table__fixed-column" />
         </colgroup>
         <thead>
-        <tr>
-          <th className="config-whitelist-table__drag-column" />
-          <th>匹配类型</th>
-          <th>路径规则</th>
-          <th className="config-whitelist-table__action-column">
-            {editable ? (
-              <BzIconActionButton
-                icon="plus"
-                tone="primary"
-                title="新增白名单规则"
-                onClick={() => onChange([...rules, {type: "EXACT", pattern: "/"}])}
-              />
-            ) : null}
-          </th>
-        </tr>
-        </thead>
-        <tbody>
-        {rules.map((rule, index) => (
-          <tr
-            key={`${index}-${rule.type}`}
-            className={dragTarget === index ? "is-drag-target" : undefined}
-            onDragOver={(event) => dragOver(event, index)}
-            onDrop={(event) => drop(event, index)}
-          >
-            <td className="config-whitelist-table__drag-cell">
-              {editable ? (
-                <BzDragHandle
-                  onDragStart={(event) => startDrag(event, index)}
-                  onDragEnd={clearDrag}
-                />
-              ) : <span className="config-string-list-order">{index + 1}</span>}
-            </td>
-            <td>{editable ? <BzSelect modelValue={rule.type}
-                                       onValueChange={(value) => onChange(rules.map((item, itemIndex) => itemIndex === index ? {
-                                         ...item,
-                                        type: value ?? "EXACT"
-                                      } : item))}>{WHITELIST_TYPE_OPTIONS.map((option) => <BzOption
-              key={option.value} {...option} />)}</BzSelect> : WHITELIST_TYPE_OPTIONS.find((option) => option.value === rule.type)?.label || rule.type}</td>
-            <td>{editable ? <BzInput modelValue={rule.pattern}
-                                     onValueChange={(value) => onChange(rules.map((item, itemIndex) => itemIndex === index ? {
-                                        ...item,
-                                        pattern: value
-                                      } : item))}/> : rule.pattern}</td>
-            <td className="config-whitelist-table__action-cell">
+          <tr>
+            <th className="config-whitelist-table__drag-column" />
+            <th>匹配类型</th>
+            <th>路径规则</th>
+            <th className="config-whitelist-table__action-column">
               {editable ? (
                 <BzIconActionButton
-                  icon="minus"
-                  tone="danger"
-                  title={`移除${rule.pattern || "白名单规则"}`}
-                  onClick={() => onChange(rules.filter((_, itemIndex) => itemIndex !== index))}
+                  icon="plus"
+                  tone="primary"
+                  title="新增白名单规则"
+                  onClick={() => onChange([...rules, { type: "EXACT", pattern: "/" }])}
                 />
               ) : null}
-            </td>
+            </th>
           </tr>
-        ))}
-        {!rules.length ? (
-          <tr><td className="config-string-list-empty" colSpan={4}>暂无白名单规则</td></tr>
-        ) : null}
+        </thead>
+        <tbody>
+          {rules.map((rule, index) => (
+            <tr
+              key={`${index}-${rule.type}`}
+              className={dragTarget === index ? "is-drag-target" : undefined}
+              onDragOver={(event) => dragOver(event, index)}
+              onDrop={(event) => drop(event, index)}
+            >
+              <td className="config-whitelist-table__drag-cell">
+                {editable ? (
+                  <BzDragHandle
+                    onDragStart={(event) => startDrag(event, index)}
+                    onDragEnd={clearDrag}
+                  />
+                ) : (
+                  <span className="config-string-list-order">{index + 1}</span>
+                )}
+              </td>
+              <td>
+                {editable ? (
+                  <BzSelect
+                    modelValue={rule.type}
+                    onValueChange={(value) =>
+                      onChange(
+                        rules.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? {
+                                ...item,
+                                type: value ?? "EXACT",
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                  >
+                    {WHITELIST_TYPE_OPTIONS.map((option) => (
+                      <BzOption
+                        key={option.value}
+                        {...option}
+                      />
+                    ))}
+                  </BzSelect>
+                ) : (
+                  WHITELIST_TYPE_OPTIONS.find((option) => option.value === rule.type)?.label ||
+                  rule.type
+                )}
+              </td>
+              <td>
+                {editable ? (
+                  <BzInput
+                    modelValue={rule.pattern}
+                    onValueChange={(value) =>
+                      onChange(
+                        rules.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? {
+                                ...item,
+                                pattern: value,
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                ) : (
+                  rule.pattern
+                )}
+              </td>
+              <td className="config-whitelist-table__action-cell">
+                {editable ? (
+                  <BzIconActionButton
+                    icon="minus"
+                    tone="danger"
+                    title={`移除${rule.pattern || "白名单规则"}`}
+                    onClick={() => onChange(rules.filter((_, itemIndex) => itemIndex !== index))}
+                  />
+                ) : null}
+              </td>
+            </tr>
+          ))}
+          {!rules.length ? (
+            <tr>
+              <td
+                className="config-string-list-empty"
+                colSpan={4}
+              >
+                暂无白名单规则
+              </td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
-      {violations.map((violation, index) => <div className="config-field-error"
-                                                  key={`${violation.path}-${index}`}>{violation.message}</div>)}
+      {violations.map((violation, index) => (
+        <div
+          className="config-field-error"
+          key={`${violation.path}-${index}`}
+        >
+          {violation.message}
+        </div>
+      ))}
     </div>
   );
 }
 
-function LoggingFilterEditor({item, editable, lists, violations, onChange}: {
+function LoggingFilterEditor({
+  item,
+  editable,
+  lists,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   lists: Record<string, string[]>;
@@ -1164,21 +1615,21 @@ function LoggingFilterEditor({item, editable, lists, violations, onChange}: {
     .sort((left, right) => left.order - right.order);
 
   function updateList(path: string, list: string[]) {
-    onChange({...lists, [path]: list});
+    onChange({ ...lists, [path]: list });
   }
 
   function startDrag(event: DragEvent<HTMLButtonElement>, path: string, index: number) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", `${path}:${index}`);
-    setDragSource({path, index});
-    setDragTarget({path, index});
+    setDragSource({ path, index });
+    setDragTarget({ path, index });
   }
 
   function dragOver(event: DragEvent<HTMLTableRowElement>, path: string, index: number) {
     if (!dragSource || dragSource.path !== path) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    setDragTarget({path, index});
+    setDragTarget({ path, index });
   }
 
   function drop(event: DragEvent<HTMLTableRowElement>, path: string, targetIndex: number) {
@@ -1205,7 +1656,10 @@ function LoggingFilterEditor({item, editable, lists, violations, onChange}: {
         const values = lists[field.path] || [];
         const fieldViolations = violations.filter((violation) => violation.path === field.path);
         return (
-          <section className="config-string-list-group" key={field.path}>
+          <section
+            className="config-string-list-group"
+            key={field.path}
+          >
             <div className="config-value-table-wrap">
               <table className="config-value-table config-string-list-table">
                 <colgroup>
@@ -1214,67 +1668,102 @@ function LoggingFilterEditor({item, editable, lists, violations, onChange}: {
                   <col className="config-string-list-table__fixed-column" />
                 </colgroup>
                 <thead>
-                <tr>
-                  <th className="config-string-list-table__title" colSpan={2}>
-                    <span className="mono">{field.path}</span>
-                    <strong>（{field.title}）</strong>
-                  </th>
-                  <th className="config-string-list-table__action-column">
-                    {editable ? (
-                      <BzIconActionButton
-                        icon="plus"
-                        tone="primary"
-                        title={`新增${field.title}`}
-                        onClick={() => updateList(field.path, [...values, ""])}
-                      />
-                    ) : null}
-                  </th>
-                </tr>
-                </thead>
-                <tbody>
-                {values.map((value, index) => (
-                  <tr
-                    key={`${field.path}-${index}`}
-                    className={dragTarget?.path === field.path && dragTarget.index === index ? "is-drag-target" : undefined}
-                    onDragOver={(event) => dragOver(event, field.path, index)}
-                    onDrop={(event) => drop(event, field.path, index)}
-                  >
-                    <td className="config-string-list-table__drag-cell">
-                      {editable ? (
-                        <BzDragHandle
-                          onDragStart={(event) => startDrag(event, field.path, index)}
-                          onDragEnd={clearDrag}
-                        />
-                      ) : <span className="config-string-list-order">{index + 1}</span>}
-                    </td>
-                    <td className="config-string-list-table__value-cell">{editable ? (
-                      <BzInput
-                        modelValue={value}
-                        placeholder="请输入以 / 开头的路径前缀"
-                        onValueChange={(next) => updateList(field.path,
-                          values.map((entry, entryIndex) => entryIndex === index ? next : entry))}
-                      />
-                    ) : <span className="mono">{value}</span>}</td>
-                    <td className="config-string-list-table__action-cell">
+                  <tr>
+                    <th
+                      className="config-string-list-table__title"
+                      colSpan={2}
+                    >
+                      <span className="mono">{field.path}</span>
+                      <strong>（{field.title}）</strong>
+                    </th>
+                    <th className="config-string-list-table__action-column">
                       {editable ? (
                         <BzIconActionButton
-                          icon="minus"
-                          tone="danger"
-                          title={`移除${value || field.title}`}
-                          onClick={() => updateList(field.path,
-                            values.filter((_, entryIndex) => entryIndex !== index))}
+                          icon="plus"
+                          tone="primary"
+                          title={`新增${field.title}`}
+                          onClick={() => updateList(field.path, [...values, ""])}
                         />
                       ) : null}
-                    </td>
+                    </th>
                   </tr>
-                ))}
-                {!values.length ? (
-                  <tr><td className="config-string-list-empty" colSpan={3}>暂无路径前缀</td></tr>
-                ) : null}
+                </thead>
+                <tbody>
+                  {values.map((value, index) => (
+                    <tr
+                      key={`${field.path}-${index}`}
+                      className={
+                        dragTarget?.path === field.path && dragTarget.index === index
+                          ? "is-drag-target"
+                          : undefined
+                      }
+                      onDragOver={(event) => dragOver(event, field.path, index)}
+                      onDrop={(event) => drop(event, field.path, index)}
+                    >
+                      <td className="config-string-list-table__drag-cell">
+                        {editable ? (
+                          <BzDragHandle
+                            onDragStart={(event) => startDrag(event, field.path, index)}
+                            onDragEnd={clearDrag}
+                          />
+                        ) : (
+                          <span className="config-string-list-order">{index + 1}</span>
+                        )}
+                      </td>
+                      <td className="config-string-list-table__value-cell">
+                        {editable ? (
+                          <BzInput
+                            modelValue={value}
+                            placeholder="请输入以 / 开头的路径前缀"
+                            onValueChange={(next) =>
+                              updateList(
+                                field.path,
+                                values.map((entry, entryIndex) =>
+                                  entryIndex === index ? next : entry,
+                                ),
+                              )
+                            }
+                          />
+                        ) : (
+                          <span className="mono">{value}</span>
+                        )}
+                      </td>
+                      <td className="config-string-list-table__action-cell">
+                        {editable ? (
+                          <BzIconActionButton
+                            icon="minus"
+                            tone="danger"
+                            title={`移除${value || field.title}`}
+                            onClick={() =>
+                              updateList(
+                                field.path,
+                                values.filter((_, entryIndex) => entryIndex !== index),
+                              )
+                            }
+                          />
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                  {!values.length ? (
+                    <tr>
+                      <td
+                        className="config-string-list-empty"
+                        colSpan={3}
+                      >
+                        暂无路径前缀
+                      </td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
               {fieldViolations.map((violation, index) => (
-                <div className="config-field-error" key={`${violation.code}-${index}`}>{violation.message}</div>
+                <div
+                  className="config-field-error"
+                  key={`${violation.code}-${index}`}
+                >
+                  {violation.message}
+                </div>
               ))}
             </div>
           </section>
@@ -1284,7 +1773,13 @@ function LoggingFilterEditor({item, editable, lists, violations, onChange}: {
   );
 }
 
-function VapidEditor({item, editable, inputs, violations, onChange}: {
+function VapidEditor({
+  item,
+  editable,
+  inputs,
+  violations,
+  onChange,
+}: {
   item: ConfigItem;
   editable: boolean;
   inputs: Record<string, FieldInputValue>;
@@ -1301,107 +1796,206 @@ function VapidEditor({item, editable, inputs, violations, onChange}: {
     <div className="config-value-table-wrap">
       <table className="config-value-table config-vapid-table">
         <thead>
-        <tr>
-          <th>参数标识</th>
-          <th>参数名称</th>
-          <th>说明</th>
-          <th>值</th>
-        </tr>
+          <tr>
+            <th>参数标识</th>
+            <th>参数名称</th>
+            <th>说明</th>
+            <th>值</th>
+          </tr>
         </thead>
         <tbody>
-        {fields.map((field) => {
-          const fieldViolations = violations.filter((violation) => violation.path === field.path);
-          const text = typeof inputs[field.path] === "string" ? inputs[field.path] as string : "";
-          return (
-            <tr key={field.path} className={fieldViolations.length ? "is-error" : undefined}>
-              <td className="mono">{field.path}</td>
-              <td>{field.title}</td>
-              <td>{descriptions[field.path] || field.description || "-"}</td>
-              <td>
-                {editable ? (
-                  field.path === "publicKey" ? (
-                    <BzTextField type="textarea" rows={3} modelValue={text} placeholder="请输入 VAPID 公钥"
-                                 onValueChange={(value) => onChange(field, value)}/>
+          {fields.map((field) => {
+            const fieldViolations = violations.filter((violation) => violation.path === field.path);
+            const text =
+              typeof inputs[field.path] === "string" ? (inputs[field.path] as string) : "";
+            return (
+              <tr
+                key={field.path}
+                className={fieldViolations.length ? "is-error" : undefined}
+              >
+                <td className="mono">{field.path}</td>
+                <td>{field.title}</td>
+                <td>{descriptions[field.path] || field.description || "-"}</td>
+                <td>
+                  {editable ? (
+                    field.path === "publicKey" ? (
+                      <BzTextField
+                        type="textarea"
+                        rows={3}
+                        modelValue={text}
+                        placeholder="请输入 VAPID 公钥"
+                        onValueChange={(value) => onChange(field, value)}
+                      />
+                    ) : (
+                      <BzInput
+                        modelValue={text}
+                        type={field.sensitive ? "password" : "text"}
+                        placeholder={
+                          field.sensitive && item.sensitiveValuePresence[field.path]
+                            ? "******（留空保持原值）"
+                            : "请输入"
+                        }
+                        onValueChange={(value) => onChange(field, value)}
+                      />
+                    )
                   ) : (
-                    <BzInput
-                      modelValue={text}
-                      type={field.sensitive ? "password" : "text"}
-                      placeholder={field.sensitive && item.sensitiveValuePresence[field.path] ? "******（留空保持原值）" : "请输入"}
-                      onValueChange={(value) => onChange(field, value)}
-                    />
-                  )
-                ) : displayValue(item, field)}
-                {fieldViolations.map((violation, index) => <div className="config-field-error"
-                                                                key={`${violation.code}-${index}`}>{violation.message}</div>)}
-              </td>
-            </tr>
-          );
-        })}
+                    displayValue(item, field)
+                  )}
+                  {fieldViolations.map((violation, index) => (
+                    <div
+                      className="config-field-error"
+                      key={`${violation.code}-${index}`}
+                    >
+                      {violation.message}
+                    </div>
+                  ))}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
 }
 
-function MessageTypeEditor({editable, rules, violations, onChange}: {
+function MessageTypeEditor({
+  editable,
+  rules,
+  violations,
+  onChange,
+}: {
   editable: boolean;
   rules: MessageTypeRule[];
   violations: ConfigViolation[];
   onChange: (rules: MessageTypeRule[]) => void;
 }) {
   function update(index: number, patch: Partial<MessageTypeRule>) {
-    onChange(rules.map((rule, ruleIndex) => ruleIndex === index ? {...rule, ...patch} : rule));
+    onChange(rules.map((rule, ruleIndex) => (ruleIndex === index ? { ...rule, ...patch } : rule)));
   }
 
   function typeOptionsFor(index: number) {
-    return MESSAGE_TYPE_OPTIONS.filter((option) =>
-      option.value === rules[index]?.msgType || !rules.some((rule, ruleIndex) => ruleIndex !== index && rule.msgType === option.value));
+    return MESSAGE_TYPE_OPTIONS.filter(
+      (option) =>
+        option.value === rules[index]?.msgType ||
+        !rules.some((rule, ruleIndex) => ruleIndex !== index && rule.msgType === option.value),
+    );
   }
 
   return (
     <div className="config-value-table-wrap">
       <table className="config-value-table config-message-table">
         <thead>
-        <tr>
-          <th>消息类型</th>
-          <th>路由</th>
-          <th>优先级</th>
-          <th>SSE</th>
-          <th>Web Push</th>
-          <th>自动弹层</th>
-          <th>系统通知</th>
-          {editable ? <th className="config-action-column">操作</th> : null}
-        </tr>
+          <tr>
+            <th>消息类型</th>
+            <th>路由</th>
+            <th>优先级</th>
+            <th>SSE</th>
+            <th>Web Push</th>
+            <th>自动弹层</th>
+            <th>系统通知</th>
+            {editable ? <th className="config-action-column">操作</th> : null}
+          </tr>
         </thead>
         <tbody>
-        {rules.map((rule, index) => (
-          <tr key={`${rule.msgType}-${index}`}>
-            <td>{editable ? (
-              <BzSelect modelValue={rule.msgType} onValueChange={(msgType) => update(index, {msgType: msgType ?? ""})}>
-                {typeOptionsFor(index).map((option) => <BzOption key={option.value} {...option}/>) }
-              </BzSelect>
-            ) : MESSAGE_TYPE_OPTIONS.find((option) => option.value === rule.msgType)?.label || rule.msgType}</td>
-            <td>{editable ? <BzInput modelValue={rule.route} placeholder="例如 /todo/all"
-                                     onValueChange={(route) => update(index, {route})}/> : rule.route || "-"}</td>
-            <td>{editable ? <BzSelect modelValue={rule.priority}
-                                      onValueChange={(priority) => update(index, {priority: priority ?? "MEDIUM"})}>{MESSAGE_PRIORITY_OPTIONS.map((option) =>
-              <BzOption
-                key={option.value} {...option} />)}</BzSelect> : MESSAGE_PRIORITY_OPTIONS.find((option) => option.value === rule.priority)?.label || rule.priority}</td>
-            {(["sseEnabled", "webPushEnabled", "panelAutoOpen", "osNotificationEnabled"] as const).map((key) => <td
-              key={key}>{editable ? <BzSwitch modelValue={rule[key]}
-                                               onValueChange={(value) => update(index, {[key]: value})}/> : rule[key] ? "是" : "否"}</td>)}
-            {editable ? (
-              <td><BzButton size="small" buttonType="danger" onClick={() => onChange(rules.filter((_, ruleIndex) => ruleIndex !== index))}>删除</BzButton></td>
-            ) : null}
-          </tr>
-        ))}
-        {!rules.length ? (
-          <tr><td className="config-message-empty" colSpan={editable ? 8 : 7}>暂无自定义消息类型设置，全部使用系统默认策略</td></tr>
-        ) : null}
+          {rules.map((rule, index) => (
+            <tr key={`${rule.msgType}-${index}`}>
+              <td>
+                {editable ? (
+                  <BzSelect
+                    modelValue={rule.msgType}
+                    onValueChange={(msgType) => update(index, { msgType: msgType ?? "" })}
+                  >
+                    {typeOptionsFor(index).map((option) => (
+                      <BzOption
+                        key={option.value}
+                        {...option}
+                      />
+                    ))}
+                  </BzSelect>
+                ) : (
+                  MESSAGE_TYPE_OPTIONS.find((option) => option.value === rule.msgType)?.label ||
+                  rule.msgType
+                )}
+              </td>
+              <td>
+                {editable ? (
+                  <BzInput
+                    modelValue={rule.route}
+                    placeholder="例如 /todo/all"
+                    onValueChange={(route) => update(index, { route })}
+                  />
+                ) : (
+                  rule.route || "-"
+                )}
+              </td>
+              <td>
+                {editable ? (
+                  <BzSelect
+                    modelValue={rule.priority}
+                    onValueChange={(priority) => update(index, { priority: priority ?? "MEDIUM" })}
+                  >
+                    {MESSAGE_PRIORITY_OPTIONS.map((option) => (
+                      <BzOption
+                        key={option.value}
+                        {...option}
+                      />
+                    ))}
+                  </BzSelect>
+                ) : (
+                  MESSAGE_PRIORITY_OPTIONS.find((option) => option.value === rule.priority)
+                    ?.label || rule.priority
+                )}
+              </td>
+              {(
+                ["sseEnabled", "webPushEnabled", "panelAutoOpen", "osNotificationEnabled"] as const
+              ).map((key) => (
+                <td key={key}>
+                  {editable ? (
+                    <BzSwitch
+                      modelValue={rule[key]}
+                      onValueChange={(value) => update(index, { [key]: value })}
+                    />
+                  ) : rule[key] ? (
+                    "是"
+                  ) : (
+                    "否"
+                  )}
+                </td>
+              ))}
+              {editable ? (
+                <td>
+                  <BzButton
+                    size="small"
+                    buttonType="danger"
+                    onClick={() => onChange(rules.filter((_, ruleIndex) => ruleIndex !== index))}
+                  >
+                    删除
+                  </BzButton>
+                </td>
+              ) : null}
+            </tr>
+          ))}
+          {!rules.length ? (
+            <tr>
+              <td
+                className="config-message-empty"
+                colSpan={editable ? 8 : 7}
+              >
+                暂无自定义消息类型设置，全部使用系统默认策略
+              </td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
-      {violations.map((violation, index) => <div className="config-field-error"
-                                                 key={`${violation.path}-${index}`}>{violation.message}</div>)}
+      {violations.map((violation, index) => (
+        <div
+          className="config-field-error"
+          key={`${violation.path}-${index}`}
+        >
+          {violation.message}
+        </div>
+      ))}
     </div>
   );
 }

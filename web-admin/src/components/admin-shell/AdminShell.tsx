@@ -2,7 +2,8 @@
 
 import brandLogo from "@admin/assets/brand-logo.png";
 import { formatDateTime } from "@admin/core/formatter";
-import { logout, useAuthUser } from "@admin/core/registry/auth-registry";
+import { message } from "@admin/core/message";
+import { logout, useAuthUser, usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
 import {
   markAllRead,
   markRead,
@@ -13,7 +14,16 @@ import { resolveResourceIconUrl } from "@admin/core/resource-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import {
+  Activity,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 
 import {
   type AdminMenuNode,
@@ -21,11 +31,15 @@ import {
   useAdminBreadcrumb,
   useAdminMenuTree,
 } from "./admin-routes";
+import { AdminRouteViewport } from "./AdminRouteViewport";
+
+const MAX_OPEN_TABS = 20;
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathnameValue = usePathname();
   const router = useRouter();
   const authUser = useAuthUser();
+  const personalizedConfigs = usePersonalizedConfigs();
   const unreadCount = useUnreadCount();
   const unreadList = useUnreadList();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -34,7 +48,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [openTabs, setOpenTabs] = useState<string[]>([]);
   const [tabReloadVersions, setTabReloadVersions] = useState<Record<string, number>>({});
+  const [tabScrollState, setTabScrollState] = useState({
+    overflow: false,
+    canScrollLeft: false,
+    canScrollRight: false,
+  });
+  const [tabMenu, setTabMenu] = useState<TabMenuState | null>(null);
+  const [draggingPath, setDraggingPath] = useState<string | null>(null);
+  const [dragTarget, setDragTarget] = useState<TabDragTarget | null>(null);
   const [blankMode, setBlankMode] = useState(false);
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
+  const tabElementsRef = useRef(new Map<string, HTMLDivElement>());
+  const dragSessionRef = useRef<TabDragSession | null>(null);
+  const dragTargetRef = useRef<TabDragTarget | null>(null);
+  const suppressTabClickRef = useRef(false);
+  const lastAcceptedPathRef = useRef(pathnameValue ?? "/admin");
 
   const pathname = pathnameValue ?? "/admin";
 
@@ -59,8 +87,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         .filter((item): item is TabEntry => Boolean(item)),
     [menuIndex.byPath, openTabs],
   );
+  const workspaceTabs = useMemo(
+    () =>
+      currentTabEntry &&
+      currentTabEntry.path !== "/admin" &&
+      !activeTabs.some((tab) => tab.path === currentTabEntry.path)
+        ? [...activeTabs, currentTabEntry]
+        : activeTabs,
+    [activeTabs, currentTabEntry],
+  );
   const displayBlankWorkspace = pathname === "/admin" && blankMode;
   const currentTabReloadVersion = tabReloadVersions[pathname] ?? 0;
+  const tabKeepAlive =
+    personalizedConfigs.find((item) => item.code === "USER_ADMIN_TAB_KEEP_ALIVE")?.value !==
+    "false";
   const displayUnreadCount = unreadCount > 0;
   const userName = (authUser?.account || authUser?.username || "Admin").trim() || "Admin";
   const userAccount = authUser?.account?.trim() || "账号后台";
@@ -70,10 +110,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     if (blankMode || !currentTabEntry || currentTabEntry.path === "/admin") {
       return;
     }
-    setOpenTabs((current) =>
-      current.includes(currentTabEntry.path) ? current : [...current, currentTabEntry.path],
-    );
-  }, [currentTabEntry, blankMode]);
+    setOpenTabs((current) => {
+      if (current.includes(currentTabEntry.path)) {
+        lastAcceptedPathRef.current = currentTabEntry.path;
+        return current;
+      }
+      if (current.length >= MAX_OPEN_TABS) {
+        queueMicrotask(() => {
+          message.warning(`最多同时打开 ${MAX_OPEN_TABS} 个标签页，请先关闭不需要的标签`);
+          router.replace(lastAcceptedPathRef.current);
+        });
+        return current;
+      }
+      lastAcceptedPathRef.current = currentTabEntry.path;
+      return [...current, currentTabEntry.path];
+    });
+  }, [currentTabEntry, blankMode, router]);
 
   useEffect(() => {
     if (pathname !== "/admin" && blankMode) {
@@ -88,36 +140,251 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setExpandedIds((current) => Array.from(new Set([...current, ...currentMenuEntry.ancestorIds])));
   }, [currentMenuEntry]);
 
+  useEffect(() => {
+    const scrollElement = tabsScrollRef.current;
+    if (!scrollElement) return;
+    const observer = new ResizeObserver(updateTabScrollState);
+    observer.observe(scrollElement);
+    const listElement = scrollElement.firstElementChild;
+    if (listElement) observer.observe(listElement);
+    const frame = window.requestAnimationFrame(updateTabScrollState);
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+    };
+  }, [activeTabs]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      tabElementsRef.current.get(pathname)?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+      updateTabScrollState();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeTabs, pathname]);
+
+  useEffect(() => {
+    if (!tabMenu) return;
+    function closeMenu(event: globalThis.PointerEvent) {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".tabs-context-menu")) return;
+      setTabMenu(null);
+    }
+    function closeMenuOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTabMenu(null);
+    }
+    document.addEventListener("pointerdown", closeMenu);
+    document.addEventListener("keydown", closeMenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenu);
+      document.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [tabMenu]);
+
+  useEffect(() => {
+    function moveTab(event: globalThis.PointerEvent) {
+      const session = dragSessionRef.current;
+      if (!session || event.pointerId !== session.pointerId) return;
+      if (!session.dragging && Math.abs(event.clientX - session.startX) < 5) return;
+      if (!session.dragging) {
+        session.dragging = true;
+        setDraggingPath(session.path);
+        document.body.classList.add("is-dragging-admin-tab");
+      }
+      event.preventDefault();
+
+      const scrollElement = tabsScrollRef.current;
+      if (scrollElement) {
+        const bounds = scrollElement.getBoundingClientRect();
+        const edgeSize = 52;
+        if (event.clientX < bounds.left + edgeSize) {
+          const ratio = 1 - Math.max(0, event.clientX - bounds.left) / edgeSize;
+          scrollElement.scrollBy({ left: -Math.ceil(24 * ratio) });
+        } else if (event.clientX > bounds.right - edgeSize) {
+          const ratio = 1 - Math.max(0, bounds.right - event.clientX) / edgeSize;
+          scrollElement.scrollBy({ left: Math.ceil(24 * ratio) });
+        }
+      }
+
+      const hit = document.elementFromPoint(event.clientX, event.clientY);
+      const tabElement =
+        hit instanceof Element ? hit.closest<HTMLElement>("[data-tab-path]") : null;
+      const targetPath = tabElement?.dataset.tabPath;
+      if (!tabElement || !targetPath || targetPath === session.path) {
+        dragTargetRef.current = null;
+        setDragTarget(null);
+        return;
+      }
+      const bounds = tabElement.getBoundingClientRect();
+      const nextTarget: TabDragTarget = {
+        path: targetPath,
+        side: event.clientX < bounds.left + bounds.width / 2 ? "before" : "after",
+      };
+      dragTargetRef.current = nextTarget;
+      setDragTarget(nextTarget);
+    }
+
+    function finishTabDrag(event: globalThis.PointerEvent) {
+      const session = dragSessionRef.current;
+      if (!session || event.pointerId !== session.pointerId) return;
+      if (session.dragging) {
+        suppressTabClickRef.current = true;
+        setOpenTabs((current) => reorderTabs(current, session.path, dragTargetRef.current));
+        window.setTimeout(() => {
+          suppressTabClickRef.current = false;
+        }, 0);
+      }
+      dragSessionRef.current = null;
+      dragTargetRef.current = null;
+      setDraggingPath(null);
+      setDragTarget(null);
+      document.body.classList.remove("is-dragging-admin-tab");
+    }
+
+    document.addEventListener("pointermove", moveTab, { passive: false });
+    document.addEventListener("pointerup", finishTabDrag);
+    document.addEventListener("pointercancel", finishTabDrag);
+    return () => {
+      document.removeEventListener("pointermove", moveTab);
+      document.removeEventListener("pointerup", finishTabDrag);
+      document.removeEventListener("pointercancel", finishTabDrag);
+      document.body.classList.remove("is-dragging-admin-tab");
+    };
+  }, []);
+
   function toggleExpanded(nodeId: string) {
     setExpandedIds((current) =>
       current.includes(nodeId) ? current.filter((item) => item !== nodeId) : [...current, nodeId],
     );
   }
 
+  function updateTabScrollState() {
+    const element = tabsScrollRef.current;
+    if (!element) return;
+    const maxScrollLeft = Math.max(0, element.scrollWidth - element.clientWidth);
+    const next = {
+      overflow: maxScrollLeft > 1,
+      canScrollLeft: element.scrollLeft > 1,
+      canScrollRight: element.scrollLeft < maxScrollLeft - 1,
+    };
+    setTabScrollState((current) =>
+      current.overflow === next.overflow &&
+      current.canScrollLeft === next.canScrollLeft &&
+      current.canScrollRight === next.canScrollRight
+        ? current
+        : next,
+    );
+  }
+
+  function scrollTabs(direction: "left" | "right") {
+    const scrollElement = tabsScrollRef.current;
+    if (!scrollElement) return;
+    const pageDistance = Math.min(
+      scrollElement.clientWidth,
+      Math.max(160, Math.floor(scrollElement.clientWidth * 0.7)),
+    );
+    const desired = Math.max(
+      0,
+      Math.min(
+        scrollElement.scrollWidth - scrollElement.clientWidth,
+        scrollElement.scrollLeft + (direction === "right" ? pageDistance : -pageDistance),
+      ),
+    );
+    const offsets = activeTabs.map((tab) => tabElementsRef.current.get(tab.path)?.offsetLeft ?? 0);
+    const aligned =
+      direction === "right"
+        ? (offsets.find((offset) => offset >= desired) ?? desired)
+        : ([...offsets].reverse().find((offset) => offset <= desired) ?? desired);
+    scrollElement.scrollTo({ left: aligned, behavior: "smooth" });
+  }
+
+  function showTabMenu(path: string, x: number, y: number) {
+    const width = 196;
+    const height = 224;
+    setTabMenu({
+      path,
+      x: Math.max(8, Math.min(x, window.innerWidth - width - 8)),
+      y: Math.max(8, Math.min(y, window.innerHeight - height - 8)),
+    });
+  }
+
+  function openTabContextMenu(event: ReactMouseEvent, path: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    showTabMenu(path, event.clientX, event.clientY);
+  }
+
+  function openTabToolsMenu(event: ReactMouseEvent<HTMLButtonElement>) {
+    const targetPath = openTabs.includes(pathname) ? pathname : openTabs.at(-1);
+    if (!targetPath) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    showTabMenu(targetPath, bounds.right - 196, bounds.bottom + 6);
+  }
+
+  function startTabDrag(event: ReactPointerEvent<HTMLDivElement>, path: string) {
+    if (event.button !== 0 || (event.target as Element).closest("button")) return;
+    setTabMenu(null);
+    dragSessionRef.current = {
+      path,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      dragging: false,
+    };
+  }
+
   function closeTab(href: string) {
-    setTabReloadVersions((current) => {
-      if (!(href in current)) return current;
-      const next = { ...current };
-      delete next[href];
-      return next;
-    });
-    setOpenTabs((current) => {
-      const index = current.indexOf(href);
-      if (index < 0) return current;
-      const nextTabs = current.filter((item) => item !== href);
-      if (pathname === href) {
-        const nextHref = nextTabs[index] ?? nextTabs[index - 1];
-        queueMicrotask(() => {
-          if (nextHref) {
-            router.push(nextHref);
-          } else {
-            setBlankMode(true);
-            router.push("/admin");
-          }
-        });
+    closeTabPaths(new Set([href]));
+  }
+
+  function closeTabPaths(paths: Set<string>, preferredPath?: string) {
+    setTabMenu(null);
+    const currentIndex = openTabs.indexOf(pathname);
+    const nextTabs = openTabs.filter((item) => !paths.has(item));
+    setOpenTabs(nextTabs);
+    setTabReloadVersions((current) =>
+      Object.fromEntries(Object.entries(current).filter(([path]) => !paths.has(path))),
+    );
+
+    if (!paths.has(pathname)) return;
+    const nextHref =
+      (preferredPath && nextTabs.includes(preferredPath) ? preferredPath : undefined) ??
+      nextTabs[currentIndex] ??
+      nextTabs[currentIndex - 1];
+    queueMicrotask(() => {
+      if (nextHref) {
+        setBlankMode(false);
+        router.push(nextHref);
+      } else {
+        setBlankMode(true);
+        router.push("/admin");
       }
-      return nextTabs;
     });
+  }
+
+  function runTabMenuAction(action: TabMenuAction) {
+    if (!tabMenu) return;
+    const targetIndex = openTabs.indexOf(tabMenu.path);
+    if (targetIndex < 0) return;
+    if (action === "current") {
+      closeTab(tabMenu.path);
+      return;
+    }
+    if (action === "others") {
+      closeTabPaths(new Set(openTabs.filter((path) => path !== tabMenu.path)), tabMenu.path);
+      return;
+    }
+    if (action === "left") {
+      closeTabPaths(new Set(openTabs.slice(0, targetIndex)), tabMenu.path);
+      return;
+    }
+    if (action === "right") {
+      closeTabPaths(new Set(openTabs.slice(targetIndex + 1)), tabMenu.path);
+      return;
+    }
+    closeTabPaths(new Set(openTabs));
   }
 
   function reloadCurrentTab() {
@@ -437,18 +704,61 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </header>
 
           <div className="tabs-row">
-            <div className="tabs-scroll">
-              <div className="tabs-list">
+            {tabScrollState.overflow ? (
+              <button
+                className="tab-scroll-control"
+                type="button"
+                title="向左滚动标签"
+                aria-label="向左滚动标签"
+                disabled={!tabScrollState.canScrollLeft}
+                onClick={() => scrollTabs("left")}
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path d="m12.5 4.5-5 5.5 5 5.5" />
+                </svg>
+              </button>
+            ) : null}
+            <div
+              className="tabs-scroll"
+              ref={tabsScrollRef}
+              onScroll={updateTabScrollState}
+            >
+              <div
+                className="tabs-list"
+                onContextMenu={(event) => {
+                  if (event.target !== event.currentTarget || activeTabs.length === 0) return;
+                  const targetPath = openTabs.includes(pathname) ? pathname : openTabs.at(-1);
+                  if (targetPath) openTabContextMenu(event, targetPath);
+                }}
+              >
                 {activeTabs.map((tab) => {
                   const active = pathname === tab.path;
+                  const insertSide = dragTarget?.path === tab.path ? dragTarget.side : null;
                   return (
                     <div
                       key={tab.path}
-                      className={`tab-item${active ? " active" : ""}`}
+                      ref={(element) => {
+                        if (element) tabElementsRef.current.set(tab.path, element);
+                        else tabElementsRef.current.delete(tab.path);
+                      }}
+                      data-tab-path={tab.path}
+                      className={`tab-item${active ? " active" : ""}${draggingPath === tab.path ? " dragging" : ""}${insertSide ? ` insert-${insertSide}` : ""}`}
+                      onPointerDown={(event) => startTabDrag(event, tab.path)}
+                      onContextMenu={(event) => openTabContextMenu(event, tab.path)}
+                      onClickCapture={(event) => {
+                        if (!suppressTabClickRef.current) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                      }}
                     >
                       <Link
                         href={tab.path}
                         className="tab-link"
+                        draggable={false}
+                        onClick={() => setBlankMode(false)}
                       >
                         <span
                           className="tab-icon"
@@ -490,6 +800,23 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 })}
               </div>
             </div>
+            {tabScrollState.overflow ? (
+              <button
+                className="tab-scroll-control"
+                type="button"
+                title="向右滚动标签"
+                aria-label="向右滚动标签"
+                disabled={!tabScrollState.canScrollRight}
+                onClick={() => scrollTabs("right")}
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path d="m7.5 4.5 5 5.5-5 5.5" />
+                </svg>
+              </button>
+            ) : null}
             <div className="tabs-tools">
               <button
                 className="tabbar-tool"
@@ -510,7 +837,78 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <path d="M17.5 2.5v4.17h-4.17" />
                 </svg>
               </button>
+              <button
+                className="tabbar-tool"
+                type="button"
+                title="标签页操作"
+                aria-label="打开标签页操作菜单"
+                disabled={openTabs.length === 0}
+                onClick={openTabToolsMenu}
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </button>
             </div>
+            {tabMenu
+              ? createPortal(
+                  <div
+                    className="tabs-context-menu"
+                    role="menu"
+                    style={{ left: tabMenu.x, top: tabMenu.y }}
+                    onContextMenu={(event) => event.preventDefault()}
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => runTabMenuAction("current")}
+                    >
+                      关闭当前标签
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={openTabs.length <= 1}
+                      onClick={() => runTabMenuAction("others")}
+                    >
+                      关闭其它标签
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={openTabs.indexOf(tabMenu.path) <= 0}
+                      onClick={() => runTabMenuAction("left")}
+                    >
+                      关闭左侧标签
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={openTabs.indexOf(tabMenu.path) >= openTabs.length - 1}
+                      onClick={() => runTabMenuAction("right")}
+                    >
+                      关闭右侧标签
+                    </button>
+                    <div className="tabs-context-menu__separator" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => runTabMenuAction("all")}
+                    >
+                      关闭全部标签
+                    </button>
+                  </div>,
+                  document.body,
+                )
+              : null}
           </div>
         </div>
 
@@ -518,8 +916,42 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <div className="admin-workspace">
             {displayBlankWorkspace ? (
               <div className="admin-workspace-blank" />
+            ) : tabKeepAlive ? (
+              <>
+                {workspaceTabs.map((tab) => {
+                  const active = pathname === tab.path;
+                  return (
+                    <Activity
+                      key={tab.path}
+                      mode={active ? "visible" : "hidden"}
+                    >
+                      <div className="admin-tab-panel">
+                        <div key={`${tab.path}:${tabReloadVersions[tab.path] ?? 0}`}>
+                          <AdminRouteViewport
+                            path={tab.path}
+                            active={active}
+                          />
+                        </div>
+                      </div>
+                    </Activity>
+                  );
+                })}
+                {pathname === "/admin" || !workspaceTabs.some((tab) => tab.path === pathname) ? (
+                  <div
+                    className="admin-tab-panel"
+                    key={`${pathname}:${currentTabReloadVersion}`}
+                  >
+                    {children}
+                  </div>
+                ) : null}
+              </>
             ) : (
-              <Fragment key={`${pathname}:${currentTabReloadVersion}`}>{children}</Fragment>
+              <div
+                className="admin-tab-panel"
+                key={`${pathname}:${currentTabReloadVersion}`}
+              >
+                {children}
+              </div>
             )}
           </div>
         </main>
@@ -537,6 +969,37 @@ interface TabEntry {
   path: string;
   title: string;
   iconUrl: string;
+}
+
+type TabMenuAction = "current" | "others" | "left" | "right" | "all";
+
+interface TabMenuState {
+  path: string;
+  x: number;
+  y: number;
+}
+
+interface TabDragSession {
+  path: string;
+  pointerId: number;
+  startX: number;
+  dragging: boolean;
+}
+
+interface TabDragTarget {
+  path: string;
+  side: "before" | "after";
+}
+
+function reorderTabs(tabs: string[], sourcePath: string, target: TabDragTarget | null): string[] {
+  if (!target || sourcePath === target.path) return tabs;
+  const sourceIndex = tabs.indexOf(sourcePath);
+  if (sourceIndex < 0) return tabs;
+  const next = tabs.filter((path) => path !== sourcePath);
+  const targetIndex = next.indexOf(target.path);
+  if (targetIndex < 0) return tabs;
+  next.splice(targetIndex + (target.side === "after" ? 1 : 0), 0, sourcePath);
+  return next.every((path, index) => path === tabs[index]) ? tabs : next;
 }
 
 function buildMenuIndex(nodes: AdminMenuNode[]): { byPath: Map<string, MenuPathEntry> } {

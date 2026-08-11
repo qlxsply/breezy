@@ -28,7 +28,8 @@ public class UserConfigAppService {
             UserConfigCodes.TIME_ZONE,
             UserConfigCodes.DATE_TIME_FORMAT,
             UserConfigCodes.DATE_FORMAT,
-            UserConfigCodes.DECIMAL_FORMAT
+            UserConfigCodes.DECIMAL_FORMAT,
+            UserConfigCodes.ADMIN_TAB_KEEP_ALIVE
     );
 
     private final UserConfigRepository userConfigRepository;
@@ -47,7 +48,7 @@ public class UserConfigAppService {
                 .map(entry -> new UserConfigView(
                         entry.getKey(),
                         description(entry.getKey()),
-                        "STR",
+                        valueType(entry.getKey()),
                         overrides.getOrDefault(entry.getKey(), entry.getValue())
                 ))
                 .toList();
@@ -76,11 +77,22 @@ public class UserConfigAppService {
         values.put(UserConfigCodes.DATE_TIME_FORMAT, defaults.dateTimeFormat().itemValue());
         values.put(UserConfigCodes.DATE_FORMAT, defaults.dateFormat().itemValue());
         values.put(UserConfigCodes.DECIMAL_FORMAT, defaults.decimalFormat().itemValue());
+        values.put(UserConfigCodes.ADMIN_TAB_KEEP_ALIVE, Boolean.toString(defaults.adminTabKeepAlive()));
         return values;
     }
 
     private void validateValue(String code, String value) {
+        if (UserConfigCodes.ADMIN_TAB_KEEP_ALIVE.equals(code)) {
+            if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+                throw new IllegalArgumentException("标签页状态记忆配置必须为布尔值");
+            }
+            return;
+        }
         dictQueryService.assertValidValue(code, value);
+    }
+
+    private String valueType(String code) {
+        return UserConfigCodes.ADMIN_TAB_KEEP_ALIVE.equals(code) ? "BOOL" : "STR";
     }
 
     private String description(String code) {
@@ -89,6 +101,7 @@ public class UserConfigAppService {
             case UserConfigCodes.DATE_TIME_FORMAT -> "用户默认日期时间格式";
             case UserConfigCodes.DATE_FORMAT -> "用户默认日期格式";
             case UserConfigCodes.DECIMAL_FORMAT -> "用户默认数字符号组合";
+            case UserConfigCodes.ADMIN_TAB_KEEP_ALIVE -> "记忆后台标签页状态";
             default -> code;
         };
     }

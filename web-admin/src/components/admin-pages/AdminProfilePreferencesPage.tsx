@@ -1,19 +1,19 @@
 "use client";
 
-import {getMyConfigs, updateMyConfig} from "@admin/api/configs";
-import {listPublicDictOptions, type PublicDictItem} from "@admin/api/dicts";
+import { getMyConfigs, updateMyConfig } from "@admin/api/configs";
+import { listPublicDictOptions, type PublicDictItem } from "@admin/api/dicts";
 import {
   type AdminDetailSection,
   AdminDetailTable,
   AdminEditableSection,
 } from "@admin/components/admin";
-import { BzButton, BzOption, BzSelect } from "@admin/components/bz";
-import {
-  formatDateByPattern,
-  resolveUserTimeZoneCode,
-} from "@admin/core/formatter";
+import { BzButton, BzOption, BzSelect, BzSwitch } from "@admin/components/bz";
+import { formatDateByPattern, resolveUserTimeZoneCode } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
-import {applyPersonalizedConfigs, usePersonalizedConfigs} from "@admin/core/registry/auth-registry";
+import {
+  applyPersonalizedConfigs,
+  usePersonalizedConfigs,
+} from "@admin/core/registry/auth-registry";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface OptionItem {
@@ -45,6 +45,7 @@ export function AdminProfilePreferencesPage() {
     USER_DATE_TIME_FORMAT: "yyyy-MM-dd HH:mm:ss",
     USER_DATE_FORMAT: "yyyy-MM-dd",
     USER_DECIMAL_FORMAT: "COMMA_DOT",
+    USER_ADMIN_TAB_KEEP_ALIVE: true,
   });
 
   const [dictItems, setDictItems] = useState<Record<string, PublicDictItem[]>>({});
@@ -194,6 +195,23 @@ export function AdminProfilePreferencesPage() {
               <span className="preferences-value">{currentLabels.decimal}</span>
             ),
           },
+          {
+            label: "记忆后台标签页状态",
+            value: editing ? (
+              <BzSwitch
+                modelValue={form.USER_ADMIN_TAB_KEEP_ALIVE}
+                activeText="已开启"
+                inactiveText="已关闭"
+                onValueChange={(value) =>
+                  setForm((prev) => ({ ...prev, USER_ADMIN_TAB_KEEP_ALIVE: value }))
+                }
+              />
+            ) : (
+              <span className="preferences-value">
+                {form.USER_ADMIN_TAB_KEEP_ALIVE ? "已开启" : "已关闭"}
+              </span>
+            ),
+          },
         ],
       },
     ],
@@ -209,6 +227,7 @@ export function AdminProfilePreferencesPage() {
       form.USER_DATE_FORMAT,
       form.USER_DATE_TIME_FORMAT,
       form.USER_DECIMAL_FORMAT,
+      form.USER_ADMIN_TAB_KEEP_ALIVE,
       form.USER_TIME_ZONE,
       timeZoneOptions,
     ],
@@ -216,10 +235,11 @@ export function AdminProfilePreferencesPage() {
 
   async function loadOptions() {
     try {
-      const entries = await Promise.all(PREFERENCE_DICT_CODES.map(async (code) => [
-        code,
-        await listPublicDictOptions(code),
-      ] as const));
+      const entries = await Promise.all(
+        PREFERENCE_DICT_CODES.map(
+          async (code) => [code, await listPublicDictOptions(code)] as const,
+        ),
+      );
       setDictItems(Object.fromEntries(entries));
     } catch (error) {
       message.error(error instanceof Error ? error.message : "个性化配置候选项加载失败");
@@ -239,6 +259,9 @@ export function AdminProfilePreferencesPage() {
       if (item.code === "USER_DATE_TIME_FORMAT") update.USER_DATE_TIME_FORMAT = item.value;
       if (item.code === "USER_DATE_FORMAT") update.USER_DATE_FORMAT = item.value;
       if (item.code === "USER_DECIMAL_FORMAT") update.USER_DECIMAL_FORMAT = item.value;
+      if (item.code === "USER_ADMIN_TAB_KEEP_ALIVE") {
+        update.USER_ADMIN_TAB_KEEP_ALIVE = item.value.toLowerCase() === "true";
+      }
     });
     setForm((prev) => ({ ...prev, ...update }));
   }
@@ -259,6 +282,7 @@ export function AdminProfilePreferencesPage() {
       await updateMyConfig("USER_DATE_TIME_FORMAT", form.USER_DATE_TIME_FORMAT);
       await updateMyConfig("USER_DATE_FORMAT", form.USER_DATE_FORMAT);
       await updateMyConfig("USER_DECIMAL_FORMAT", form.USER_DECIMAL_FORMAT);
+      await updateMyConfig("USER_ADMIN_TAB_KEEP_ALIVE", String(form.USER_ADMIN_TAB_KEEP_ALIVE));
       await reload();
       setEditing(false);
       message.success("已确认");
@@ -284,18 +308,29 @@ export function AdminProfilePreferencesPage() {
               title="显示与格式"
               actions={
                 <>
-                  {editing ? <BzButton disabled={saving} onClick={cancelEdit}>取消</BzButton> : null}
-                  <BzButton buttonType={editing ? "primary" : undefined} loading={saving} onClick={editing ? submit : startEdit}>
+                  {editing ? (
+                    <BzButton
+                      disabled={saving}
+                      onClick={cancelEdit}
+                    >
+                      取消
+                    </BzButton>
+                  ) : null}
+                  <BzButton
+                    buttonType={editing ? "primary" : undefined}
+                    loading={saving}
+                    onClick={editing ? submit : startEdit}
+                  >
                     {editing ? "保存" : "编辑"}
                   </BzButton>
                 </>
               }
             >
               <div className="preferences-detail-table profile-detail-table">
-              <AdminDetailTable
-                sections={detailSections}
-                variant="plain"
-              />
+                <AdminDetailTable
+                  sections={detailSections}
+                  variant="plain"
+                />
               </div>
             </AdminEditableSection>
           </div>
