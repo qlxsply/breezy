@@ -63,6 +63,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const dragTargetRef = useRef<TabDragTarget | null>(null);
   const suppressTabClickRef = useRef(false);
   const lastAcceptedPathRef = useRef(pathnameValue ?? "/admin");
+  const emptyWorkspacePendingRef = useRef(false);
 
   const pathname = pathnameValue ?? "/admin";
 
@@ -89,9 +90,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
   const workspaceTabs = useMemo(
     () =>
-      currentTabEntry &&
-      currentTabEntry.path !== "/admin" &&
-      !activeTabs.some((tab) => tab.path === currentTabEntry.path)
+      currentTabEntry && !activeTabs.some((tab) => tab.path === currentTabEntry.path)
         ? [...activeTabs, currentTabEntry]
         : activeTabs,
     [activeTabs, currentTabEntry],
@@ -107,7 +106,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const avatarText = userName.slice(0, 1).toUpperCase() || "A";
 
   useEffect(() => {
-    if (blankMode || !currentTabEntry || currentTabEntry.path === "/admin") {
+    if (blankMode || !currentTabEntry) {
       return;
     }
     setOpenTabs((current) => {
@@ -128,7 +127,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [currentTabEntry, blankMode, router]);
 
   useEffect(() => {
-    if (pathname !== "/admin" && blankMode) {
+    if (pathname === "/admin") {
+      emptyWorkspacePendingRef.current = false;
+    } else if (blankMode && !emptyWorkspacePendingRef.current) {
       setBlankMode(false);
     }
   }, [pathname, blankMode]);
@@ -343,22 +344,26 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setTabMenu(null);
     const currentIndex = openTabs.indexOf(pathname);
     const nextTabs = openTabs.filter((item) => !paths.has(item));
+    const closingActiveTab = paths.has(pathname);
+    const nextHref = closingActiveTab
+      ? ((preferredPath && nextTabs.includes(preferredPath) ? preferredPath : undefined) ??
+        nextTabs[currentIndex] ??
+        nextTabs[currentIndex - 1])
+      : undefined;
+    if (closingActiveTab) {
+      emptyWorkspacePendingRef.current = !nextHref;
+      setBlankMode(!nextHref);
+    }
     setOpenTabs(nextTabs);
     setTabReloadVersions((current) =>
       Object.fromEntries(Object.entries(current).filter(([path]) => !paths.has(path))),
     );
 
-    if (!paths.has(pathname)) return;
-    const nextHref =
-      (preferredPath && nextTabs.includes(preferredPath) ? preferredPath : undefined) ??
-      nextTabs[currentIndex] ??
-      nextTabs[currentIndex - 1];
+    if (!closingActiveTab) return;
     queueMicrotask(() => {
       if (nextHref) {
-        setBlankMode(false);
         router.push(nextHref);
       } else {
-        setBlankMode(true);
         router.push("/admin");
       }
     });
@@ -400,6 +405,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   function openUtilityPage(href: string) {
     setNotificationOpen(false);
     setUserOpen(false);
+    emptyWorkspacePendingRef.current = false;
     setBlankMode(false);
     router.push(href);
   }
@@ -412,7 +418,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             className="brand-link"
             type="button"
             aria-label="Breezy Admin"
-            onClick={() => router.push("/admin")}
+            onClick={() => openUtilityPage("/admin")}
           >
             <span className="brand-logo">
               <Image
@@ -437,6 +443,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               collapsed={sidebarCollapsed}
               expandedIds={expandedIds}
               onToggle={toggleExpanded}
+              onNavigate={() => setBlankMode(false)}
             />
           ))}
         </nav>
@@ -936,7 +943,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     </Activity>
                   );
                 })}
-                {pathname === "/admin" || !workspaceTabs.some((tab) => tab.path === pathname) ? (
+                {!workspaceTabs.some((tab) => tab.path === pathname) ? (
                   <div
                     className="admin-tab-panel"
                     key={`${pathname}:${currentTabReloadVersion}`}
@@ -1060,6 +1067,7 @@ function AdminNavItem({
   collapsed,
   expandedIds,
   onToggle,
+  onNavigate,
   depth = 0,
 }: {
   node: AdminMenuNode;
@@ -1067,6 +1075,7 @@ function AdminNavItem({
   collapsed: boolean;
   expandedIds: string[];
   onToggle: (nodeId: string) => void;
+  onNavigate: () => void;
   depth?: number;
 }) {
   const hasChildren = node.children.length > 0;
@@ -1124,6 +1133,7 @@ function AdminNavItem({
                 collapsed={collapsed}
                 expandedIds={expandedIds}
                 onToggle={onToggle}
+                onNavigate={onNavigate}
                 depth={depth + 1}
               />
             ))}
@@ -1147,6 +1157,7 @@ function AdminNavItem({
             href={node.path}
             className="nav-item-main"
             title={node.title}
+            onClick={onNavigate}
           >
             <span
               className="nav-icon"
@@ -1184,6 +1195,7 @@ function AdminNavItem({
               collapsed={collapsed}
               expandedIds={expandedIds}
               onToggle={onToggle}
+              onNavigate={onNavigate}
               depth={depth + 1}
             />
           ))}
