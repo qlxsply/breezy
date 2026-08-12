@@ -416,6 +416,12 @@
   line-height: var(--size-control-sm);
 }
 
+.resource-manage-status-switch {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+}
+
 .resource-manage-textarea {
   width: 100%;
   min-height: 88px;

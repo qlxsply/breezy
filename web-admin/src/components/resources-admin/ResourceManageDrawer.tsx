@@ -378,11 +378,13 @@ export function ResourceManageDrawer({
   ) {
     if (disabled || !editable) return renderCell(value ? "是" : "否");
     return renderEditCell(
-      <BzSwitch
-        modelValue={value}
-        disabled={disabled}
-        onValueChange={onChange}
-      />,
+      <span className="resource-manage-status-switch">
+        <BzSwitch
+          modelValue={value}
+          disabled={disabled}
+          onValueChange={onChange}
+        />
+      </span>,
     );
   }
 
