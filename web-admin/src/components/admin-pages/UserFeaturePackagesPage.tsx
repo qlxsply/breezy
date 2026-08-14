@@ -192,14 +192,19 @@ export function UserFeaturePackagesPage() {
 
   function getRowActions(row: UserFeaturePackageEntry): AdminActionItem[] {
     const actions: AdminActionItem[] = [
-      { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
+      {
+        key: `detail-${row.id}`,
+        label: "详情",
+        level: "default",
+        onClick: () => openDetail(row.id),
+      },
     ];
     if (canEdit) {
       actions.push({
         key: `edit-${row.id}`,
         label: "编辑",
-        tone: "edit",
-        handler: () => openEdit(row.id),
+        level: "primary",
+        onClick: () => openEdit(row.id),
       });
     }
     return actions;
@@ -211,14 +216,14 @@ export function UserFeaturePackagesPage() {
       {
         key: `toggle-${row.id}`,
         label: row.enabled ? "停用" : "启用",
-        tone: row.enabled ? "disable" : "enable",
-        handler: () => toggleStatus(row),
+        level: row.enabled ? "warning" : "success",
+        onClick: () => toggleStatus(row),
       },
       {
         key: `delete-${row.id}`,
         label: "删除",
-        tone: "delete",
-        handler: () => removePackage(row),
+        level: "danger",
+        onClick: () => removePackage(row),
       },
     ];
   }

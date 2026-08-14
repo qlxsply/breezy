@@ -165,7 +165,7 @@ export function LoginLogsPage() {
 
   function getRowActions(row: LoginLogEntry): AdminActionItem[] {
     return [
-      { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row) },
+      { key: `detail-${row.id}`, label: "详情", level: "default", onClick: () => openDetail(row) },
     ];
   }
 

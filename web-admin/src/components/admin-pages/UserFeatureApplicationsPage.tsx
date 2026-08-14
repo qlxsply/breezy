@@ -121,14 +121,19 @@ export function UserFeatureApplicationsPage() {
 
   function getRowActions(row: UserFeatureApplicationEntry): AdminActionItem[] {
     const actions: AdminActionItem[] = [
-      { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
+      {
+        key: `detail-${row.id}`,
+        label: "详情",
+        level: "default",
+        onClick: () => openDetail(row.id),
+      },
     ];
     if (canToggle)
       actions.push({
         key: `toggle-${row.id}`,
         label: row.enabled ? "停用" : "启用",
-        tone: row.enabled ? "disable" : "enable",
-        handler: () => toggleStatus(row),
+        level: row.enabled ? "warning" : "success",
+        onClick: () => toggleStatus(row),
       });
     return actions;
   }

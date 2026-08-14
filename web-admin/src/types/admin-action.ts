@@ -1,18 +1,9 @@
-export type AdminActionTone =
-  | "detail"
-  | "edit"
-  | "enable"
-  | "disable"
-  | "delete"
-  | "pause"
-  | "copy"
-  | "more"
-  | "neutral";
+export type AdminActionLevel = "default" | "primary" | "success" | "warning" | "danger";
 
 export interface AdminActionItem {
   key: string;
   label: string;
-  tone?: AdminActionTone;
+  level?: AdminActionLevel;
   disabled?: boolean;
-  handler: () => void;
+  onClick: () => void;
 }

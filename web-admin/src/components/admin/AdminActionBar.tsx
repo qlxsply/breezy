@@ -4,9 +4,9 @@ import type { AdminActionItem } from "@admin/types/admin-action";
 const MAX_DIRECT_ACTIONS = 3;
 const MORE_TRIGGER_LABEL = "更多";
 const ACTION_BUTTON_MIN_WIDTH = 44;
-const ACTION_BUTTON_HORIZONTAL_PADDING = 20;
-const ACTION_BUTTON_GAP = 8;
-const ACTION_COLUMN_CELL_HORIZONTAL_PADDING = 24;
+const ACTION_BUTTON_HORIZONTAL_PADDING = 16;
+const ACTION_BUTTON_GAP = 6;
+const ACTION_COLUMN_CELL_HORIZONTAL_PADDING = 16;
 
 function estimateActionLabelWidth(label: string): number {
   return Array.from(label).reduce(
@@ -50,10 +50,10 @@ export function AdminActionBar({ actions = [] }: { actions?: AdminActionItem[] }
       {visibleActions.map((action) => (
         <button
           key={action.key}
-          className={`admin-action-link is-${action.tone || "neutral"}`}
+          className={`admin-action-link is-${action.level || "default"}`}
           type="button"
           disabled={action.disabled}
-          onClick={action.handler}
+          onClick={action.onClick}
         >
           {action.label}
         </button>
@@ -68,9 +68,9 @@ export function AdminActionBar({ actions = [] }: { actions?: AdminActionItem[] }
                 <BzDropdownItem
                   key={action.key}
                   disabled={action.disabled}
-                  onClick={action.handler}
+                  onClick={action.onClick}
                 >
-                  <span className={`admin-action-dropdown-item is-${action.tone || "neutral"}`}>
+                  <span className={`admin-action-dropdown-item is-${action.level || "default"}`}>
                     {action.label}
                   </span>
                 </BzDropdownItem>

@@ -69,33 +69,40 @@ export function UserTable({
     const toggleDisabled = isProtectedUser(user);
     const resetDisabled = user.userType === "SYSTEM" || user.username === "admin";
     const actions: AdminActionItem[] = [
-      { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(user) },
+      { key: "detail", label: "详情", level: "default", onClick: () => onDetail(user) },
     ];
     if (canEdit || canRoles)
       actions.push({
         key: "edit",
         label: "维护",
-        tone: "edit",
+        level: "primary",
         disabled: maintainDisabled,
-        handler: () => onEdit(user),
+        onClick: () => onEdit(user),
       });
     if (canToggle)
       actions.push({
         key: "toggle",
         label: user.status === "ENABLED" ? "停用" : "启用",
-        tone: user.status === "ENABLED" ? "disable" : "enable",
+        level: user.status === "ENABLED" ? "warning" : "success",
         disabled: toggleDisabled,
-        handler: () => onToggle(user),
+        onClick: () => onToggle(user),
       });
     if (canReset)
       actions.push({
         key: "reset",
         label: "重置密码",
         disabled: resetDisabled,
-        handler: () => onReset(user),
+        level: "warning",
+        onClick: () => onReset(user),
       });
     if (canDelete)
-      actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(user) });
+      actions.push({
+        key: "delete",
+        label: "删除",
+        level: "danger",
+        disabled: maintainDisabled,
+        onClick: () => onRemove(user),
+      });
     return actions;
   }
 

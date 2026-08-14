@@ -286,7 +286,12 @@ export function AuditLogsPage() {
 
   function getRowActions(row: AuditLogEntry): AdminActionItem[] {
     return [
-      { key: `detail-${row.id}`, label: "详情", tone: "detail", handler: () => openDetail(row.id) },
+      {
+        key: `detail-${row.id}`,
+        label: "详情",
+        level: "default",
+        onClick: () => openDetail(row.id),
+      },
     ];
   }
 

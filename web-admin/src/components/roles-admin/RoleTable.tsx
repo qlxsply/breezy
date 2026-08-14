@@ -31,13 +31,18 @@ export function RoleTable({
 }: RoleTableProps) {
   function getActions(role: RoleEntry) {
     const actions: AdminActionItem[] = [
-      { key: "detail", label: "详情", tone: "detail", handler: () => onDetail(role) },
+      { key: "detail", label: "详情", level: "default", onClick: () => onDetail(role) },
     ];
     if (canEdit) {
-      actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => onEdit(role) });
+      actions.push({ key: "edit", label: "编辑", level: "primary", onClick: () => onEdit(role) });
     }
     if (canDelete) {
-      actions.push({ key: "delete", label: "删除", tone: "delete", handler: () => onRemove(role) });
+      actions.push({
+        key: "delete",
+        label: "删除",
+        level: "danger",
+        onClick: () => onRemove(role),
+      });
     }
     return actions;
   }

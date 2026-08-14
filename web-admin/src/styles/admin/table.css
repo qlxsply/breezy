@@ -289,10 +289,10 @@
 }
 
 .admin-action-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
+  justify-content: flex-end;
+  gap: 6px;
   flex-wrap: nowrap;
 }
 
@@ -307,7 +307,8 @@
   justify-content: center;
   min-width: 44px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 8px;
+  box-sizing: border-box;
   color: var(--color-text-secondary);
   background: var(--color-bg-surface);
   border: var(--border-width-1) solid var(--color-border-strong);
@@ -330,38 +331,63 @@
   opacity: 1;
 }
 
-.admin-action-link.is-detail,
+.admin-action-link.is-default,
 .admin-action-link.is-more,
-.admin-action-dropdown-item.is-detail,
-.admin-action-dropdown-item.is-more,
-.admin-action-dropdown-item.is-neutral {
+.admin-action-dropdown-item.is-default {
   color: var(--color-text-tertiary);
 }
 
-.admin-action-link.is-edit,
-.admin-action-dropdown-item.is-edit,
-.admin-action-dropdown-item.is-copy {
+.admin-action-link.is-primary,
+.admin-action-dropdown-item.is-primary {
   color: var(--color-brand-600);
 }
 
-.admin-action-link.is-enable,
-.admin-action-dropdown-item.is-enable {
+.admin-action-link.is-success,
+.admin-action-dropdown-item.is-success {
   color: var(--color-success-600);
 }
 
-.admin-action-dropdown-item.is-pause {
+.admin-action-link.is-success:hover:not(:disabled) {
+  color: var(--color-success-600);
+  background: var(--color-success-soft);
+  border-color: var(--color-success-500);
+}
+
+.admin-action-link.is-warning,
+.admin-action-dropdown-item.is-warning {
   color: var(--color-warning-600);
 }
 
-.admin-action-link.is-disable,
-.admin-action-link.is-delete,
-.admin-action-dropdown-item.is-disable,
-.admin-action-dropdown-item.is-delete {
+.admin-action-link.is-warning:hover:not(:disabled) {
+  color: var(--color-warning-700);
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning-600);
+}
+
+.admin-action-link.is-danger,
+.admin-action-dropdown-item.is-danger {
   color: var(--color-danger-700);
+}
+
+.admin-action-link.is-danger:hover:not(:disabled) {
+  color: var(--color-danger-700);
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-500);
 }
 
 .bz-dropdown-item.is-disabled .admin-action-dropdown-item {
   color: var(--color-text-disabled);
+}
+
+.bz-table__inner th.admin-actions-column,
+.bz-table__inner td.admin-actions-column {
+  padding-right: 8px !important;
+  padding-left: 8px !important;
+  white-space: nowrap;
+}
+
+.bz-table__inner td.admin-actions-column {
+  text-align: right;
 }
 
 .api-table-scope .bz-table__inner {

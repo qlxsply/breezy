@@ -22,7 +22,7 @@ export function estimateAdminActionsColumnWidth<Row>(
 ): number {
   const widths = rows.map((row) => estimateAdminActionBarWidth(getActions(row)));
   const maxWidth = widths.length > 0 ? Math.max(...widths) : 0;
-  return Math.max(88, maxWidth);
+  return maxWidth;
 }
 
 export function createAdminActionsColumn<Row>({
@@ -39,15 +39,19 @@ export function createAdminActionsColumn<Row>({
   if (!hasVisibleActions && rows.length > 0) return null;
 
   const resolvedWidth = width ?? estimateAdminActionsColumnWidth(rows, getActions);
+  const useIntrinsicWidth =
+    width === undefined &&
+    stickyClassName === "is-fixed-right" &&
+    stickyHeaderClassName === "is-fixed-right";
 
   return {
     key,
     title,
-    width: resolvedWidth,
-    minWidth,
+    width: useIntrinsicWidth ? "1%" : resolvedWidth,
+    minWidth: minWidth ?? resolvedWidth,
     disableRowSelection: true,
-    className: stickyClassName,
-    headerClassName: stickyHeaderClassName,
+    className: ["admin-actions-column", stickyClassName].filter(Boolean).join(" "),
+    headerClassName: ["admin-actions-column", stickyHeaderClassName].filter(Boolean).join(" "),
     render: (row) => <AdminActionBar actions={getActions(row)} />,
   };
 }

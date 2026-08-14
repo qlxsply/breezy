@@ -122,24 +122,25 @@ export function WebUsersAdminPage() {
       {
         key: `detail-${row.id}`,
         label: "详情",
-        tone: "detail",
-        handler: () => openDrawer(row.id, "detail"),
+        level: "default",
+        onClick: () => openDrawer(row.id, "detail"),
       },
     ];
     if (canFeatureView && canFeatureSave && canPackageView) {
       actions.push({
         key: `maintain-${row.id}`,
         label: "维护",
-        tone: "edit",
-        handler: () => openDrawer(row.id, "maintain"),
+        level: "primary",
+        onClick: () => openDrawer(row.id, "maintain"),
       });
     }
-    if (canEdit && row.status !== "CANCELLED") {
+    if (canEdit) {
       actions.push({
         key: `toggle-${row.id}`,
         label: row.status === "ACTIVE" ? "停用" : "启用",
-        tone: row.status === "ACTIVE" ? "disable" : "enable",
-        handler: () => toggleStatus(row),
+        level: row.status === "ACTIVE" ? "warning" : "success",
+        disabled: row.status === "CANCELLED",
+        onClick: () => toggleStatus(row),
       });
     }
     return actions;

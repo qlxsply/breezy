@@ -270,12 +270,29 @@ function getRowActions(
 ): AdminActionItem[] {
   const actions: AdminActionItem[] = [];
   if (canDetail)
-    actions.push({ key: "detail", label: "详情", tone: "detail", handler: () => onDetail(row) });
+    actions.push({ key: "detail", label: "详情", level: "default", onClick: () => onDetail(row) });
   if (canMaintain)
-    actions.push({ key: "maintain", label: "维护", tone: "edit", handler: () => onMaintain(row) });
-  if (canPublish && !row.enabled)
-    actions.push({ key: "enable", label: "启用", tone: "enable", handler: () => onPublish(row) });
-  if (canDisable && row.enabled)
-    actions.push({ key: "disable", label: "停用", tone: "disable", handler: () => onDisable(row) });
+    actions.push({
+      key: "maintain",
+      label: "维护",
+      level: "primary",
+      onClick: () => onMaintain(row),
+    });
+  if (canPublish)
+    actions.push({
+      key: "enable",
+      label: "启用",
+      level: "success",
+      disabled: row.enabled,
+      onClick: () => onPublish(row),
+    });
+  if (canDisable)
+    actions.push({
+      key: "disable",
+      label: "停用",
+      level: "warning",
+      disabled: !row.enabled,
+      onClick: () => onDisable(row),
+    });
   return actions;
 }

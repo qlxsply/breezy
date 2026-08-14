@@ -238,33 +238,33 @@ export function ResourcesAdminPage() {
         actions.push({
           key: "detail",
           label: "详情",
-          tone: "detail",
-          handler: () => void openEdit(row, "detail"),
+          level: "default",
+          onClick: () => void openEdit(row, "detail"),
         });
         if (canEdit) {
           actions.push({
             key: "edit",
             label: "编辑",
-            tone: "edit",
-            handler: () => void openEdit(row, "edit"),
+            level: "primary",
+            onClick: () => void openEdit(row, "edit"),
           });
         }
         if (canDelete) {
           actions.push({
             key: "delete",
             label: "删除",
-            tone: "delete",
+            level: "danger",
             disabled: row.systemBuiltin,
-            handler: () => void onDelete(row),
+            onClick: () => void onDelete(row),
           });
         }
         if (canCreate) {
           actions.push({
             key: "create-child",
             label: "新增子项",
-            tone: "neutral",
+            level: "primary",
             disabled: !childrenAllowed,
-            handler: () => openCreateChild(row),
+            onClick: () => openCreateChild(row),
           });
         }
         return actions;

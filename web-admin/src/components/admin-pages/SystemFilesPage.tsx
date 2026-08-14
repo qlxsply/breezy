@@ -380,8 +380,8 @@ export function SystemFilesPage() {
       actions.push({
         key: "enter",
         label: "进入",
-        tone: "detail",
-        handler: () => enterFolder(item),
+        level: "default",
+        onClick: () => enterFolder(item),
       });
     }
     if (item.type === "FILE") {
@@ -389,24 +389,24 @@ export function SystemFilesPage() {
         actions.push({
           key: "preview",
           label: "预览",
-          tone: "detail",
-          handler: () => void previewFile(item),
+          level: "default",
+          onClick: () => void previewFile(item),
         });
       }
       if (canDownload) {
         actions.push({
           key: "download",
           label: "下载",
-          tone: "neutral",
-          handler: () => void downloadFile(item),
+          level: "default",
+          onClick: () => void downloadFile(item),
         });
       }
       if (canPhysical) {
         actions.push({
           key: "physical",
           label: "物理信息",
-          tone: "edit",
-          handler: () => void loadPhysicalDetail(item),
+          level: "primary",
+          onClick: () => void loadPhysicalDetail(item),
         });
       }
     }

@@ -258,16 +258,17 @@ export function ConfigsAdminPage() {
       {
         key: "detail",
         label: "详情",
-        tone: "detail",
-        handler: () => void openDrawer(row, "detail"),
+        level: "default",
+        onClick: () => void openDrawer(row, "detail"),
       },
     ];
-    if (canUpdate && row.editPolicy === "ADMIN_EDITABLE") {
+    if (canUpdate) {
       actions.push({
         key: "edit",
         label: "编辑",
-        tone: "edit",
-        handler: () => void openDrawer(row, "edit"),
+        level: "primary",
+        disabled: row.editPolicy !== "ADMIN_EDITABLE",
+        onClick: () => void openDrawer(row, "edit"),
       });
     }
     return actions;

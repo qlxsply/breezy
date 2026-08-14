@@ -1298,32 +1298,32 @@ export function DictAdminPage() {
       actions.push({
         key: `detail-${row.id}`,
         label: "详情",
-        tone: "detail",
-        handler: () => void loadDrawer(row.id, "detail"),
+        level: "default",
+        onClick: () => void loadDrawer(row.id, "detail"),
       });
     }
-    if (canEdit && row.sourceType !== "BUILTIN") {
+    if (canEdit) {
+      const disabled = row.sourceType === "BUILTIN";
       actions.push({
         key: `edit-${row.id}`,
         label: "编辑",
-        tone: "edit",
-        handler: () => void loadDrawer(row.id, "edit"),
+        level: "primary",
+        disabled,
+        onClick: () => void loadDrawer(row.id, "edit"),
       });
-    }
-    if (canEdit && row.sourceType !== "BUILTIN") {
       actions.push({
         key: `status-${row.id}`,
         label: row.enabled ? "停用" : "启用",
-        tone: row.enabled ? "disable" : "enable",
-        handler: () => void handleTypeStatus(row),
+        level: row.enabled ? "warning" : "success",
+        disabled,
+        onClick: () => void handleTypeStatus(row),
       });
-    }
-    if (canEdit && row.sourceType !== "BUILTIN") {
       actions.push({
         key: `delete-${row.id}`,
         label: "删除",
-        tone: "delete",
-        handler: () => void handleDeleteType(row),
+        level: "danger",
+        disabled,
+        onClick: () => void handleDeleteType(row),
       });
     }
     return actions;
@@ -1331,18 +1331,23 @@ export function DictAdminPage() {
 
   function getItemRowActions(row: DictItem): AdminActionItem[] {
     return [
-      { key: `edit-item-${row.id}`, label: "编辑", tone: "edit", handler: () => openEditItem(row) },
+      {
+        key: `edit-item-${row.id}`,
+        label: "编辑",
+        level: "primary",
+        onClick: () => openEditItem(row),
+      },
       {
         key: `status-item-${row.id}`,
         label: row.enabled ? "停用" : "启用",
-        tone: row.enabled ? "disable" : "enable",
-        handler: () => void handleItemStatus(row),
+        level: row.enabled ? "warning" : "success",
+        onClick: () => void handleItemStatus(row),
       },
       {
         key: `delete-item-${row.id}`,
         label: "删除",
-        tone: "delete",
-        handler: () => handleDeleteItem(row),
+        level: "danger",
+        onClick: () => handleDeleteItem(row),
       },
     ];
   }
