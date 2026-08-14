@@ -557,7 +557,7 @@
 .application-icon-cell {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .application-icon-cell__image {
@@ -588,7 +588,6 @@
 
 .user-manage-text--primary {
   color: var(--color-text-primary);
-  font-weight: var(--font-weight-semibold);
 }
 
 @media (max-width: 768px) {

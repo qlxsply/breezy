@@ -51,7 +51,7 @@ export function RoleTable({
     {
       key: "code",
       title: "编码",
-      width: 160,
+      width: 200,
       className: "role-manage-col-code is-sticky-left",
       headerClassName: "role-manage-col-code is-sticky-left",
       render: (row) => <span className="role-table-mono role-table-text">{row.code}</span>,

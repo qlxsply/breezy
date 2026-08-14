@@ -169,7 +169,7 @@ export function UserFeatureApplicationsPage() {
       {
         key: "icon",
         title: "图标",
-        width: 80,
+        width: 52,
         className: "admin-freeze-col--feature-application-icon is-sticky-left",
         headerClassName: "admin-freeze-col--feature-application-icon is-sticky-left",
         render: (row) => {
@@ -192,7 +192,7 @@ export function UserFeatureApplicationsPage() {
       {
         key: "code",
         title: "应用编码",
-        minWidth: 160,
+        width: 200,
         className: "admin-freeze-col--feature-application-code is-sticky-left",
         headerClassName: "admin-freeze-col--feature-application-code is-sticky-left",
         render: (row) => <>{row.code}</>,

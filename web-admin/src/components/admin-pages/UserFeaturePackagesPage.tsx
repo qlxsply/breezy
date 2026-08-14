@@ -312,7 +312,7 @@ export function UserFeaturePackagesPage() {
       {
         key: "code",
         title: "编码",
-        width: 240,
+        width: 200,
         className: "admin-freeze-col--feature-package-code is-sticky-left",
         headerClassName: "admin-freeze-col--feature-package-code is-sticky-left",
         render: (row) => <>{row.code}</>,
