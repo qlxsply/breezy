@@ -297,6 +297,15 @@
   padding: 4px 12px;
 }
 
+.admin-info-cell--readonly {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface-soft);
+}
+
+.admin-info-cell--editable {
+  background: var(--color-bg-surface);
+}
+
 .role-info-table .bz-input,
 .role-info-table .bz-select,
 .role-info-table .bz-text-field__control {

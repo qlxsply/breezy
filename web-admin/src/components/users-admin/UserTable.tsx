@@ -52,9 +52,7 @@ export function UserTable({
   onToggleSelectAll,
 }: UserTableProps) {
   function isProtectedUser(user: UserEntry): boolean {
-    return (
-      user.userType === "SYSTEM" || (user.userType === "ADMIN" && user.username === "admin")
-    );
+    return user.userType === "SYSTEM" || (user.userType === "ADMIN" && user.username === "admin");
   }
 
   function resolveUserTypeLabel(userType: string): string {
@@ -65,14 +63,6 @@ export function UserTable({
     if (t === "success" || t === "warning" || t === "danger" || t === "info") return t;
     return "info";
   }
-
-  const currentPageSelectableRows = rows.filter((row) => !isProtectedUser(row));
-  const currentPageSelectableIds = currentPageSelectableRows.map((row) => row.id);
-  const allCurrentPageSelected =
-    currentPageSelectableIds.length > 0 &&
-    currentPageSelectableIds.every((id) => selectedIds.includes(id));
-  const someCurrentPageSelected =
-    !allCurrentPageSelected && currentPageSelectableIds.some((id) => selectedIds.includes(id));
 
   function getActions(user: UserEntry): AdminActionItem[] {
     const maintainDisabled = isProtectedUser(user);
@@ -110,38 +100,6 @@ export function UserTable({
   }
 
   const columns: Array<BzTableColumn<UserEntry>> = [
-    ...(batchMode
-      ? [
-          {
-            key: "select",
-            title: "",
-            width: 48,
-            className: "user-manage-col-select is-sticky-left",
-            headerClassName: "user-manage-col-select is-sticky-left",
-            headerRender: () => (
-              <input
-                className="user-manage-checkbox"
-                type="checkbox"
-                checked={allCurrentPageSelected}
-                disabled={currentPageSelectableIds.length === 0}
-                ref={(el) => {
-                  if (el) el.indeterminate = someCurrentPageSelected;
-                }}
-                onChange={(event) => onToggleSelectAll?.(event.target.checked)}
-              />
-            ),
-            render: (row: UserEntry) => (
-              <input
-                className="user-manage-checkbox"
-                type="checkbox"
-                checked={selectedIds.includes(row.id)}
-                disabled={isProtectedUser(row)}
-                onChange={(event) => onToggleSelect?.(row, event.target.checked)}
-              />
-            ),
-          } as BzTableColumn<UserEntry>,
-        ]
-      : []),
     {
       key: "username",
       title: "账号",
@@ -217,6 +175,17 @@ export function UserTable({
         loading={loading}
         emptyText="暂无数据"
         size="small"
+        rowSelection={
+          batchMode
+            ? {
+                selectedRowKeys: selectedIds,
+                isRowSelectable: (row) => !isProtectedUser(row),
+                onToggle: (row, selected) => onToggleSelect?.(row, selected),
+                onToggleCurrentPage: (_rows, selected) => onToggleSelectAll?.(selected),
+                columnClassName: "user-manage-col-select is-sticky-left",
+              }
+            : undefined
+        }
       />
     </div>
   );

@@ -420,8 +420,8 @@
 }
 
 .user-manage-table-scope .bz-table__scroll {
-  overflow: visible;
-  scrollbar-gutter: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .user-manage-table-scope .bz-table__inner {

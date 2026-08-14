@@ -521,7 +521,7 @@
 
 .user-panel {
   width: 280px;
-  border-radius: 16px;
+  border-radius: 0;
 }
 
 .panel-header,
@@ -1089,7 +1089,7 @@ body.is-dragging-admin-tab * {
   width: 100%;
   max-width: 420px;
   padding: 32px;
-  border-radius: 12px;
+  border-radius: 0;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);

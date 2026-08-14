@@ -45,6 +45,7 @@ export function createAdminActionsColumn<Row>({
     title,
     width: resolvedWidth,
     minWidth,
+    disableRowSelection: true,
     className: stickyClassName,
     headerClassName: stickyHeaderClassName,
     render: (row) => <AdminActionBar actions={getActions(row)} />,

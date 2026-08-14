@@ -17,7 +17,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-import { TableSelectCheckIcon, TableSelectCloseIcon } from "./TableSelectIcons";
+import {
+  TableSelectCheckIcon,
+  TableSelectClearIcon,
+  TableSelectCloseIcon,
+} from "./TableSelectIcons";
 
 export type TableSelectPrimitive = string | number;
 
@@ -178,7 +182,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
     placeholder = "请选择",
     disabled = false,
     loading = false,
-    allowClear = false,
+    allowClear,
     allowCreate = false,
     showSearch = false,
     inputValue,
@@ -232,6 +236,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
   ref,
 ) {
   const multiple = mode === "multiple" || mode === "tags";
+  const clearable = allowClear ?? multiple;
   const searchable = Boolean(showSearch || allowCreate || multiple);
   const rootRef = useRef<HTMLDivElement>(null);
   const controlRef = useRef<HTMLButtonElement>(null);
@@ -384,6 +389,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
   }
 
   function clearValue(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
     event.stopPropagation();
     const retainedValues = multiple
       ? selectedValues.filter((item) => optionMap.get(String(item))?.disabled)
@@ -821,13 +827,19 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
               value={selectedValues.join(",")}
             />
           ) : null}
-          {allowClear && selectedValues.length > 0 && !disabled && !loading ? (
+          {clearable && selectedValues.length > 0 && !disabled && !loading ? (
             <button
               className="table-select__clear"
               type="button"
+              title="取消选中"
+              aria-label="取消选中内容"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
               onClick={clearValue}
             >
-              {clearIcon ?? <TableSelectCloseIcon />}
+              {clearIcon ?? <TableSelectClearIcon />}
             </button>
           ) : null}
           <span
@@ -873,7 +885,9 @@ function modelToValues(
     return [];
   }
   const values = Array.isArray(value) ? value : [value];
-  const normalized = values.map((item) => (typeof item === "object" ? item.value : item));
+  const normalized = values
+    .map((item) => (typeof item === "object" ? item.value : item))
+    .filter((item) => item !== "");
   return multiple ? normalized : normalized.slice(0, 1);
 }
 

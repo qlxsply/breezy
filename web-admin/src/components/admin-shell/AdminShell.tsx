@@ -58,6 +58,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [dragTarget, setDragTarget] = useState<TabDragTarget | null>(null);
   const [blankMode, setBlankMode] = useState(false);
   const tabsScrollRef = useRef<HTMLDivElement>(null);
+  const userPanelHostRef = useRef<HTMLDivElement>(null);
   const tabElementsRef = useRef(new Map<string, HTMLDivElement>());
   const dragSessionRef = useRef<TabDragSession | null>(null);
   const dragTargetRef = useRef<TabDragTarget | null>(null);
@@ -71,6 +72,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setNotificationOpen(false);
     setUserOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!userOpen) return;
+    function closeUserPanelOnOutsidePointer(event: PointerEvent) {
+      const target = event.target;
+      if (target instanceof Node && !userPanelHostRef.current?.contains(target)) {
+        setUserOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", closeUserPanelOnOutsidePointer, true);
+    return () => document.removeEventListener("pointerdown", closeUserPanelOnOutsidePointer, true);
+  }, [userOpen]);
 
   const menuTree = useAdminMenuTree();
   const breadcrumbItems = useAdminBreadcrumb(pathname);
@@ -653,7 +666,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 ) : null}
               </div>
 
-              <div className="topbar-popover-host">
+              <div
+                className="topbar-popover-host"
+                ref={userPanelHostRef}
+              >
                 <button
                   className="avatar-button"
                   type="button"

@@ -255,50 +255,25 @@ export function ConfigsAdminPage() {
 
   function getRowActions(row: ConfigItem): AdminActionItem[] {
     const actions: AdminActionItem[] = [
-      { key: "detail", label: "详情", tone: "detail", handler: () => void openDrawer(row, "detail") },
+      {
+        key: "detail",
+        label: "详情",
+        tone: "detail",
+        handler: () => void openDrawer(row, "detail"),
+      },
     ];
     if (canUpdate && row.editPolicy === "ADMIN_EDITABLE") {
-      actions.push({ key: "edit", label: "编辑", tone: "edit", handler: () => void openDrawer(row, "edit") });
+      actions.push({
+        key: "edit",
+        label: "编辑",
+        tone: "edit",
+        handler: () => void openDrawer(row, "edit"),
+      });
     }
     return actions;
   }
 
-  const selectableRows = page.elements.filter(isBatchSelectable);
-  const allCurrentPageSelected =
-    selectableRows.length > 0 && selectableRows.every((item) => item.key in selectedItems);
-  const someCurrentPageSelected =
-    !allCurrentPageSelected && selectableRows.some((item) => item.key in selectedItems);
   const columns: BzTableColumn<ConfigItem>[] = [
-    ...(batchMode
-      ? [
-          {
-            key: "select",
-            title: "",
-            width: 48,
-            headerRender: () => (
-              <input
-                className="user-manage-checkbox"
-                type="checkbox"
-                checked={allCurrentPageSelected}
-                disabled={!selectableRows.length}
-                ref={(element) => {
-                  if (element) element.indeterminate = someCurrentPageSelected;
-                }}
-                onChange={(event) => toggleCurrentPage(event.target.checked)}
-              />
-            ),
-            render: (row: ConfigItem) => (
-              <input
-                className="user-manage-checkbox"
-                type="checkbox"
-                checked={row.key in selectedItems}
-                disabled={!isBatchSelectable(row)}
-                onChange={(event) => toggleSelection(row, event.target.checked)}
-              />
-            ),
-          } as BzTableColumn<ConfigItem>,
-        ]
-      : []),
     {
       key: "key",
       title: "配置键",
@@ -312,17 +287,26 @@ export function ConfigsAdminPage() {
       key: "status",
       title: "状态",
       width: 130,
-      render: (row) => <BzTag type={STATUS_META[row.status].type}>{STATUS_META[row.status].label}</BzTag>,
+      render: (row) => (
+        <BzTag type={STATUS_META[row.status].type}>{STATUS_META[row.status].label}</BzTag>
+      ),
     },
     {
       key: "activationPolicy",
       title: "生效方式",
       width: 130,
-      render: (row) => <BzTag type={row.activationPolicy === "DYNAMIC" ? "success" : "warning"}>{policyLabel(row)}</BzTag>,
+      render: (row) => (
+        <BzTag type={row.activationPolicy === "DYNAMIC" ? "success" : "warning"}>
+          {policyLabel(row)}
+        </BzTag>
+      ),
     },
     { key: "revision", title: "版本", width: 90, render: (row) => row.persistedRevision },
   ];
-  const actionsColumn = createAdminActionsColumn({ rows: page.elements, getActions: getRowActions });
+  const actionsColumn = createAdminActionsColumn({
+    rows: page.elements,
+    getActions: getRowActions,
+  });
   if (actionsColumn) columns.push(actionsColumn);
 
   return (
@@ -336,17 +320,63 @@ export function ConfigsAdminPage() {
             querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
           ].join(" ")}
         >
-          <form ref={queryGridRef} className="bz-form admin-query-grid" onSubmit={(event) => { event.preventDefault(); applyFilters(); }}>
-            <QueryField label="关键词"><BzInput modelValue={keywordDraft} placeholder="配置键、名称或说明" clearable onValueChange={setKeywordDraft} /></QueryField>
-            <QueryField label="模块"><BzInput modelValue={moduleDraft} placeholder="例如 system" clearable onValueChange={setModuleDraft} /></QueryField>
-            <QueryField label="分组"><BzInput modelValue={groupDraft} placeholder="例如 security" clearable onValueChange={setGroupDraft} /></QueryField>
+          <form
+            ref={queryGridRef}
+            className="bz-form admin-query-grid"
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyFilters();
+            }}
+          >
+            <QueryField label="关键词">
+              <BzInput
+                modelValue={keywordDraft}
+                placeholder="配置键、名称或说明"
+                clearable
+                onValueChange={setKeywordDraft}
+              />
+            </QueryField>
+            <QueryField label="模块">
+              <BzInput
+                modelValue={moduleDraft}
+                placeholder="例如 system"
+                clearable
+                onValueChange={setModuleDraft}
+              />
+            </QueryField>
+            <QueryField label="分组">
+              <BzInput
+                modelValue={groupDraft}
+                placeholder="例如 security"
+                clearable
+                onValueChange={setGroupDraft}
+              />
+            </QueryField>
             <div className="admin-query-actions">
-              <BzButton className="admin-filter-secondary" onClick={resetFilters}>重置</BzButton>
-              <BzButton className="admin-filter-primary" buttonType="primary" onClick={applyFilters}>搜索</BzButton>
+              <BzButton
+                className="admin-filter-secondary"
+                onClick={resetFilters}
+              >
+                重置
+              </BzButton>
+              <BzButton
+                className="admin-filter-primary"
+                buttonType="primary"
+                onClick={applyFilters}
+              >
+                搜索
+              </BzButton>
               {!querySingleRow ? (
-                <button className="admin-filter-toggle" type="button" aria-expanded={queryExpanded} onClick={() => setQueryExpanded((value) => !value)}>
+                <button
+                  className="admin-filter-toggle"
+                  type="button"
+                  aria-expanded={queryExpanded}
+                  onClick={() => setQueryExpanded((value) => !value)}
+                >
                   <span>{queryExpanded ? "收起" : "展开"}</span>
-                  <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} />
+                  <i
+                    className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                  />
                 </button>
               ) : null}
             </div>
@@ -356,15 +386,33 @@ export function ConfigsAdminPage() {
       batchToolbar={
         batchMode ? (
           <div className="admin-batch-toolbar">
-            <div className="admin-batch-toolbar__summary">批量重置默认值，已选 {Object.keys(selectedItems).length} 项</div>
+            <div className="admin-batch-toolbar__summary">
+              批量重置默认值，已选 {Object.keys(selectedItems).length} 项
+            </div>
             <div className="admin-batch-toolbar__actions">
-              <BzButton buttonType="primary" loading={saving} disabled={!Object.keys(selectedItems).length} onClick={() => void confirmBatchReset()}>确认</BzButton>
-              <BzButton disabled={saving} onClick={cancelBatchReset}>取消</BzButton>
+              <BzButton
+                buttonType="primary"
+                loading={saving}
+                disabled={!Object.keys(selectedItems).length}
+                onClick={() => void confirmBatchReset()}
+              >
+                确认
+              </BzButton>
+              <BzButton
+                disabled={saving}
+                onClick={cancelBatchReset}
+              >
+                取消
+              </BzButton>
             </div>
           </div>
         ) : null
       }
-      businessActions={canBatchReset && !batchMode ? <BzButton onClick={beginBatchReset}>批量重置默认值</BzButton> : null}
+      businessActions={
+        canBatchReset && !batchMode ? (
+          <BzButton onClick={beginBatchReset}>批量重置默认值</BzButton>
+        ) : null
+      }
       queryTools={
         !batchMode ? (
           <AdminTableTools
@@ -374,7 +422,24 @@ export function ConfigsAdminPage() {
           />
         ) : null
       }
-      table={<BzTable data={page.elements} columns={columns} rowKey="key" loading={loading} />}
+      table={
+        <BzTable
+          data={page.elements}
+          columns={columns}
+          rowKey="key"
+          loading={loading}
+          rowSelection={
+            batchMode
+              ? {
+                  selectedRowKeys: Object.keys(selectedItems),
+                  isRowSelectable: isBatchSelectable,
+                  onToggle: toggleSelection,
+                  onToggleCurrentPage: (_rows, selected) => toggleCurrentPage(selected),
+                }
+              : undefined
+          }
+        />
+      }
       footer={
         page.totalElements > 0 ? (
           <div className="dict-pagination-bar admin-list-table-footer">
@@ -386,7 +451,10 @@ export function ConfigsAdminPage() {
                 currentPage={pageNo}
                 pageSizes={PAGE_SIZE_OPTIONS}
                 onCurrentChange={setPageNo}
-                onSizeChange={(size) => { setPageSize(size); setPageNo(1); }}
+                onSizeChange={(size) => {
+                  setPageSize(size);
+                  setPageNo(1);
+                }}
               />
             </div>
           </div>

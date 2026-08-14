@@ -71,6 +71,8 @@ export function UserFeaturePackageManageDrawer({
 }: UserFeaturePackageManageDrawerProps) {
   const editable = mode !== "detail";
   const [form, setForm] = useState<SaveUserFeaturePackageRequest>(defaultForm());
+  const [enabledValue, setEnabledValue] = useState("true");
+  const [defaultPackageValue, setDefaultPackageValue] = useState("false");
   const [accesses, setAccesses] = useState<Record<string, AccessDraft>>({});
   const [keyword, setKeyword] = useState("");
 
@@ -79,6 +81,8 @@ export function UserFeaturePackageManageDrawer({
     setKeyword("");
     if (!packageEntry) {
       setForm(defaultForm());
+      setEnabledValue("true");
+      setDefaultPackageValue("false");
       setAccesses({});
       return;
     }
@@ -91,6 +95,8 @@ export function UserFeaturePackageManageDrawer({
       defaultPackage: packageEntry.defaultPackage,
       applicationAccesses: [],
     });
+    setEnabledValue(String(packageEntry.enabled));
+    setDefaultPackageValue(String(packageEntry.defaultPackage));
     setAccesses(toAccessDraft(packageEntry.applicationAccesses));
   }, [open, packageEntry]);
 
@@ -158,8 +164,8 @@ export function UserFeaturePackageManageDrawer({
       name: form.name.trim(),
       packageType: form.packageType,
       description: form.description?.trim() || null,
-      enabled: form.enabled,
-      defaultPackage: form.defaultPackage,
+      enabled: enabledValue === "true",
+      defaultPackage: defaultPackageValue === "true",
       applicationAccesses: Object.entries(accesses).map(([applicationId, access]) => ({
         applicationId,
         featureAccessScope: access.featureAccessScope,
@@ -257,11 +263,9 @@ export function UserFeaturePackageManageDrawer({
                   {editable ? (
                     <td className="role-info-cell role-info-cell--edit">
                       <TableSelect
-                        value={String(form.enabled)}
+                        value={enabledValue}
                         options={statusOptions}
-                        onValueChange={(value) =>
-                          setForm((current) => ({ ...current, enabled: value === "true" }))
-                        }
+                        onValueChange={(value) => setEnabledValue(String(value))}
                       />
                     </td>
                   ) : (
@@ -275,11 +279,9 @@ export function UserFeaturePackageManageDrawer({
                   {editable ? (
                     <td className="role-info-cell role-info-cell--edit">
                       <TableSelect
-                        value={String(form.defaultPackage)}
+                        value={defaultPackageValue}
                         options={defaultPackageOptions}
-                        onValueChange={(value) =>
-                          setForm((current) => ({ ...current, defaultPackage: value === "true" }))
-                        }
+                        onValueChange={(value) => setDefaultPackageValue(String(value))}
                       />
                     </td>
                   ) : (

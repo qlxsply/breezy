@@ -551,6 +551,36 @@
   background: #fafcff;
 }
 
+.bz-table__inner
+  tbody
+  tr.is-selectable
+  > td:not(:has(button, a, input, select, textarea, [role="button"], [role="link"])) {
+  cursor: pointer;
+}
+
+.bz-table__inner tbody tr.is-selected > td,
+.bz-table__inner tbody tr.is-selected:hover > td {
+  background: #eff6ff;
+}
+
+.bz-table__selection-cell {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  text-align: center !important;
+}
+
+.bz-table__selection-checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--primary-color, #3b82f6);
+  cursor: pointer;
+}
+
+.bz-table__selection-checkbox:disabled {
+  cursor: not-allowed;
+}
+
 .bz-table__inner th.is-fixed-left,
 .bz-table__inner td.is-fixed-left,
 .bz-table__inner th.is-sticky-left,
@@ -1366,5 +1396,9 @@
 }
 
 .bz-switch__text {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
   font-size: 13px;
+  line-height: 1;
 }

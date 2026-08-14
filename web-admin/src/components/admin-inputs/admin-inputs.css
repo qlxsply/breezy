@@ -286,8 +286,11 @@ td:has(> .table-input-control:not(.is-disabled, .is-readonly):focus-within) {
 }
 
 .table-select-popup__label {
+  display: flex;
   flex: 1;
+  align-items: center;
   min-width: 0;
+  min-height: 32px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -313,8 +316,19 @@ td:has(> .table-input-control:not(.is-disabled, .is-readonly):focus-within) {
 }
 
 .table-select-popup__check {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 32px;
   color: var(--color-brand-600);
+}
+
+.table-select-popup__check svg,
+.table-select-popup__checkbox svg,
+.table-select__clear svg {
+  display: block;
 }
 
 .table-select-popup__group {
