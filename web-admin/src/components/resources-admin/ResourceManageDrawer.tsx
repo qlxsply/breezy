@@ -8,13 +8,9 @@ import {
   updateResourcePermissions,
 } from "@admin/api/resources";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import {
-  BzButton,
-  BzInput,
-  BzOption,
-  BzSelect,
-  BzSwitch,
-} from "@admin/components/bz";
+import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
+import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
+import { BzButton, BzSwitch } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
 import type {
@@ -327,17 +323,25 @@ export function ResourceManageDrawer({
 
   // ---- 单元格渲染辅助函数 ----
 
-  function renderCell(children: ReactNode, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
-    return <td colSpan={colSpan} className={`role-info-cell${mono ? " mono" : ""}`}>{children}</td>;
-  }
-
-  function renderEditCell(children: ReactNode, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
+  function renderCell(
+    children: ReactNode,
+    { mono, colSpan }: { mono?: boolean; colSpan?: number } = {},
+  ) {
     return (
-      <td colSpan={colSpan} className={`role-info-cell role-info-cell--edit${mono ? " mono" : ""}`}>{children}</td>
+      <AdminInfoCell
+        state="display"
+        mono={mono}
+        colSpan={colSpan}
+      >
+        {children}
+      </AdminInfoCell>
     );
   }
 
-  function renderValue(value: string | number, { mono, colSpan }: { mono?: boolean; colSpan?: number } = {}) {
+  function renderValue(
+    value: string | number,
+    { mono, colSpan }: { mono?: boolean; colSpan?: number } = {},
+  ) {
     return renderCell(value || "-", { mono, colSpan });
   }
 
@@ -345,29 +349,45 @@ export function ResourceManageDrawer({
     value: string,
     placeholder: string,
     onChange: (v: string) => void,
-    { mono, disabled }: { mono?: boolean; disabled?: boolean } = {},
+    { mono, disabled, maxLength }: { mono?: boolean; disabled?: boolean; maxLength?: number } = {},
   ) {
     if (disabled) return renderValue(value, { mono });
-    return renderEditCell(
-      <BzInput
-        modelValue={value}
-        placeholder={placeholder}
-        className={`role-info-input${mono ? " mono" : ""}`}
-        onValueChange={onChange}
-      />,
-      { mono },
+    return (
+      <AdminInfoCell
+        state="editable"
+        mono={mono}
+      >
+        <TableInput
+          value={value}
+          maxLength={maxLength}
+          placeholder={placeholder}
+          onValueChange={onChange}
+        />
+      </AdminInfoCell>
     );
   }
 
-  function renderTextarea(value: string, placeholder: string, onChange: (v: string) => void, colSpan?: number) {
-    if (!editable) return renderCell(<pre className="admin-log-pre">{value || "-"}</pre>, { colSpan });
-    return renderEditCell(
-      <BzInput
-        modelValue={value}
-        placeholder={placeholder}
-        onValueChange={onChange}
-      />,
-      { colSpan },
+  function renderTextarea(
+    value: string,
+    placeholder: string,
+    onChange: (v: string) => void,
+    colSpan?: number,
+  ) {
+    if (!editable)
+      return renderCell(<pre className="admin-log-pre">{value || "-"}</pre>, { colSpan });
+    return (
+      <AdminInfoCell
+        state="editable"
+        colSpan={colSpan}
+      >
+        <TableTextArea
+          value={value}
+          rows={3}
+          maxLength={512}
+          placeholder={placeholder}
+          onValueChange={onChange}
+        />
+      </AdminInfoCell>
     );
   }
 
@@ -377,14 +397,16 @@ export function ResourceManageDrawer({
     { disabled }: { disabled?: boolean } = {},
   ) {
     if (disabled || !editable) return renderCell(value ? "是" : "否");
-    return renderEditCell(
-      <span className="resource-manage-status-switch">
-        <BzSwitch
-          modelValue={value}
-          disabled={disabled}
-          onValueChange={onChange}
-        />
-      </span>,
+    return (
+      <AdminInfoCell state="editable">
+        <span className="resource-manage-status-switch">
+          <BzSwitch
+            modelValue={value}
+            disabled={disabled}
+            onValueChange={onChange}
+          />
+        </span>
+      </AdminInfoCell>
     );
   }
 
@@ -392,27 +414,24 @@ export function ResourceManageDrawer({
     value: string,
     onChange: (v: string) => void,
     options: Array<{ value: string; label: string; disabled?: boolean }>,
-    { disabled }: { disabled?: boolean } = {},
+    { disabled, showSearch }: { disabled?: boolean; showSearch?: boolean } = {},
   ) {
     if (disabled || !editable) {
-      const selected = options.find((o) => o.value === value);
+      const selected = options.find((option) => option.value === value);
       return renderCell(selected?.label || value || "-");
     }
-    return renderEditCell(
-      <BzSelect
-        className="role-info-select"
-        modelValue={value}
-        onValueChange={(v) => onChange(v ?? "")}
-      >
-        {options.map((o) => (
-          <BzOption
-            key={o.value}
-            value={o.value}
-            label={o.label}
-            disabled={o.disabled}
-          />
-        ))}
-      </BzSelect>,
+    return (
+      <AdminInfoCell state="editable">
+        <TableSelect
+          value={value}
+          options={options}
+          allowClear={false}
+          showSearch={showSearch}
+          onValueChange={(nextValue) =>
+            onChange(Array.isArray(nextValue) ? "" : String(nextValue ?? ""))
+          }
+        />
+      </AdminInfoCell>
     );
   }
 
@@ -483,7 +502,9 @@ export function ResourceManageDrawer({
                 <tr>
                   <th>父级资源</th>
                   {editable
-                    ? renderSelectCell(form.parentId, handleParentChange, parentSelectOptions)
+                    ? renderSelectCell(form.parentId, handleParentChange, parentSelectOptions, {
+                        showSearch: true,
+                      })
                     : renderCell(currentParent?.name || "-")}
                   <th>资源类型</th>
                   {editable && !typeLocked
@@ -495,7 +516,9 @@ export function ResourceManageDrawer({
                     : renderCell(RESOURCE_TYPE_LABEL[form.resourceType])}
                   <th>{thRequired(editable)}资源名称</th>
                   {editable
-                    ? renderInput(form.name, "例如：资源管理", (v) => updateForm("name", v))
+                    ? renderInput(form.name, "例如：资源管理", (v) => updateForm("name", v), {
+                        maxLength: 128,
+                      })
                     : renderValue(form.name)}
                 </tr>
                 <tr>
@@ -505,13 +528,14 @@ export function ResourceManageDrawer({
                         form.code,
                         "例如：platform.resource",
                         (v) => updateForm("code", v),
-                        { mono: true },
+                        { mono: true, maxLength: 128 },
                       )
                     : renderValue(form.code, { mono: true })}
                   <th>图标</th>
                   {editable
                     ? renderInput(form.icon, "例如：Setting", (v) => updateForm("icon", v), {
                         disabled: iconDisabled,
+                        maxLength: 128,
                       })
                     : renderValue(form.icon)}
                   <th>排序号</th>
@@ -520,7 +544,7 @@ export function ResourceManageDrawer({
                         String(form.sortNo),
                         "例如：10",
                         (v) => updateForm("sortNo", Number(v || 0)),
-                        { mono: true },
+                        { mono: true, maxLength: 10 },
                       )
                     : renderValue(form.sortNo, { mono: true })}
                 </tr>
@@ -553,7 +577,7 @@ export function ResourceManageDrawer({
                         form.path,
                         "例如：/admin/resources",
                         (v) => updateForm("path", v),
-                        { disabled: routeDisabled },
+                        { disabled: routeDisabled, maxLength: 512 },
                       )
                     : renderValue(form.path)}
                   <th>组件路径</th>
@@ -562,7 +586,7 @@ export function ResourceManageDrawer({
                         form.component,
                         "例如：pages/ResourcesAdminPage",
                         (v) => updateForm("component", v),
-                        { disabled: routeDisabled },
+                        { disabled: routeDisabled, maxLength: 512 },
                       )
                     : renderValue(form.component)}
                   <th></th>
