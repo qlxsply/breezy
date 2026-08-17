@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 后方协同用户 (代表角色组) -->
+  <circle cx="16" cy="7.5" r="2.5" fill="#93C5FD"/>
+  <path d="M12.5 18c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="#93C5FD" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 前方主用户 -->
+  <circle cx="8.5" cy="8.5" r="3" fill="#2563EB"/>
+  <path d="M3.5 19c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+</svg>

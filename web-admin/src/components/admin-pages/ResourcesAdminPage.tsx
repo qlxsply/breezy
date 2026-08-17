@@ -287,7 +287,6 @@ export function ResourcesAdminPage() {
       ]);
       setRows(resourceTree);
       setPermissions(permissionRows);
-      setExpandedIds(new Set());
     } finally {
       setLoading(false);
     }
@@ -298,7 +297,6 @@ export function ResourcesAdminPage() {
     setTypeFilter(typeFilterDraft);
     setEnabledFilter(enabledFilterDraft);
     setBuiltinFilter(builtinFilterDraft);
-    setExpandedIds(new Set(flattenRows(rows).map((item) => item.id)));
   }
 
   function openCreateRoot() {
@@ -382,7 +380,6 @@ export function ResourcesAdminPage() {
     setTypeFilter("");
     setEnabledFilter("");
     setBuiltinFilter("");
-    setExpandedIds(new Set());
   }
 
   return (

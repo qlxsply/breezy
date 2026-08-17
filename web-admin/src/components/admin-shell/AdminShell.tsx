@@ -787,10 +787,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                           className="tab-icon"
                           aria-hidden="true"
                         >
-                          <img
-                            src={tab.iconUrl}
-                            alt=""
-                          />
+                          <ResourceIconImage src={tab.iconUrl} />
                         </span>
                         <span className="tab-title-text">{tab.title}</span>
                       </Link>
@@ -1077,6 +1074,27 @@ function resolveHiddenRouteIconUrl(path: string): string {
   return resolveResourceIconUrl("menu", "MENU") || "/admin-icons/default-menu.svg";
 }
 
+function ResourceIconImage({
+  src,
+  nodeType = "MENU",
+}: {
+  src: string;
+  nodeType?: "DIRECTORY" | "MENU";
+}) {
+  return (
+    <img
+      src={src}
+      alt=""
+      onError={(event) => {
+        const fallbackUrl = resolveResourceIconUrl(null, nodeType);
+        if (fallbackUrl && event.currentTarget.getAttribute("src") !== fallbackUrl) {
+          event.currentTarget.src = fallbackUrl;
+        }
+      }}
+    />
+  );
+}
+
 function AdminNavItem({
   node,
   pathname,
@@ -1114,9 +1132,9 @@ function AdminNavItem({
               className="nav-icon"
               aria-hidden="true"
             >
-              <img
+              <ResourceIconImage
                 src={node.iconUrl}
-                alt=""
+                nodeType="DIRECTORY"
               />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
@@ -1179,10 +1197,7 @@ function AdminNavItem({
               className="nav-icon"
               aria-hidden="true"
             >
-              <img
-                src={node.iconUrl}
-                alt=""
-              />
+              <ResourceIconImage src={node.iconUrl} />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
           </Link>
@@ -1192,10 +1207,7 @@ function AdminNavItem({
               className="nav-icon"
               aria-hidden="true"
             >
-              <img
-                src={node.iconUrl}
-                alt=""
-              />
+              <ResourceIconImage src={node.iconUrl} />
             </span>
             {!collapsed ? <span className="nav-label">{node.title}</span> : null}
           </span>

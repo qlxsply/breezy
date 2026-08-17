@@ -70,7 +70,7 @@ export async function ensureRegistryLoaded(force = false): Promise<void> {
 }
 
 export async function refreshRegistryLoaded(): Promise<void> {
-  bootstrapRegistryStore.setState({ loaded: false, loading: false });
+  bootstrapRegistryStore.setState((current) => ({ ...current, loading: false }));
   loadingPromise = null;
   await ensureRegistryLoaded(true);
 }

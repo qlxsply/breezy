@@ -1,7 +1,5 @@
 import type { PageQuery } from "./page";
 
-export type MethodStatMatchMode = "FUZZY" | "EXACT";
-
 export type MethodStatSortDirection = "ASC" | "DESC";
 
 export type MethodStatSortBy =
@@ -69,5 +67,5 @@ export interface MethodStatMethodSwitch {
 
 export interface MethodStatStatsPageRequest extends PageQuery {
   methodName?: string;
-  matchMode?: MethodStatMatchMode;
+  collectEnabled?: boolean;
 }

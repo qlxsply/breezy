@@ -8,7 +8,7 @@
                   name="工作台"
                   path="/admin"
                   component="pages/AdminWorkbenchPage.vue"
-                  icon="dashboard"
+                  icon="workbench"
                   sortNo="10"
                   visible="true"
                   enabled="true">
@@ -19,13 +19,13 @@
         </menus>
     </directory>
 
-    <directory code="platform-root" name="平台管理" icon="platform" sortNo="20" visible="true">
+    <directory code="platform-root" name="平台管理" icon="platform-management" sortNo="20" visible="true">
         <menus>
             <menu code="config-center"
                   name="系统配置"
                   path="/admin/configs"
                   component="pages/ConfigsAdminPage.vue"
-                  icon="settings"
+                  icon="platform-settings"
                   sortNo="10"
                   visible="true"
                   enabled="true">
@@ -52,7 +52,7 @@
                   name="接口管理"
                   path="/admin/apis"
                   component="pages/ApisAdminPage.vue"
-                  icon="link"
+                  icon="platform-api"
                   sortNo="20"
                   visible="true"
                   enabled="true">
@@ -84,7 +84,7 @@
                   name="资源管理"
                   path="/admin/resources"
                   component="pages/ResourcesAdminPage.vue"
-                  icon="tree"
+                  icon="platform-resource"
                   sortNo="30"
                   visible="true"
                   enabled="true">
@@ -126,7 +126,7 @@
                   name="数据字典"
                   path="/admin/dicts"
                   component="pages/DictAdminPage.vue"
-                  icon="book"
+                  icon="platform-dictionary"
                   sortNo="40"
                   visible="true"
                   enabled="true">
@@ -148,7 +148,7 @@
                   name="系统文件"
                   path="/admin/system-files"
                   component="pages/SystemFilesAdminPage.vue"
-                  icon="folder"
+                  icon="platform-folder"
                   sortNo="50"
                   visible="true"
                   enabled="true">
@@ -185,7 +185,7 @@
                   name="诊断工具"
                   path="/admin/diagnostic"
                   component="pages/DiagnosticAdminPage.vue"
-                  icon="monitor"
+                  icon="platform-monitor"
                   sortNo="60"
                   visible="true"
                   enabled="true">
@@ -217,9 +217,9 @@
                   name="方法统计"
                   path="/admin/method-stat"
                   component="pages/MethodStatPage.vue"
-                  icon="chart"
+                  icon="platform-chart"
                   sortNo="90"
-                  visible="false"
+                  visible="true"
                   enabled="true">
                 <buttons>
                     <button code="method-stat-switch-view" name="查看统计开关" sortNo="10" visible="true">
@@ -247,13 +247,13 @@
         </menus>
     </directory>
 
-    <directory code="permission-root" name="权限中心" icon="shield" sortNo="30" visible="true">
+    <directory code="permission-root" name="权限中心" icon="permission-center" sortNo="30" visible="true">
         <menus>
             <menu code="user-center"
                   name="账号管理"
                   path="/admin/users"
                   component="pages/UsersAdminPage.vue"
-                  icon="users"
+                  icon="admin-account"
                   sortNo="10"
                   visible="true"
                   enabled="true">
@@ -315,7 +315,7 @@
                   name="角色管理"
                   path="/admin/roles"
                   component="pages/RolesAdminPage.vue"
-                  icon="role"
+                  icon="admin-role"
                   sortNo="20"
                   visible="true"
                   enabled="true">
@@ -357,7 +357,7 @@
                   name="权限策略"
                   path="/admin/permission-policies"
                   component="pages/AdminPlaceholderPage.vue"
-                  icon="policy"
+                  icon="admin-permission-policy"
                   sortNo="30"
                   visible="true"
                   enabled="true">
@@ -370,7 +370,7 @@
                   name="登录日志"
                   path="/admin/login-logs"
                   component="pages/LoginLogsPage.vue"
-                  icon="history"
+                  icon="admin-login"
                   sortNo="40"
                   visible="true"
                   enabled="true">
@@ -387,7 +387,7 @@
                   name="审计日志"
                   path="/admin/audit-logs"
                   component="pages/AuditLogsPage.vue"
-                  icon="audit"
+                  icon="admin-audit-log"
                   sortNo="50"
                   visible="true"
                   enabled="true">
@@ -402,13 +402,13 @@
         </menus>
     </directory>
 
-    <directory code="customer-root" name="用户中心" icon="customer" sortNo="40" visible="true">
+    <directory code="customer-root" name="用户中心" icon="user-center" sortNo="40" visible="true">
         <menus>
             <menu code="web-user-center"
                   name="用户管理"
                   path="/admin/web-users"
                   component="pages/WebUsersAdminPage.vue"
-                  icon="customer-user"
+                  icon="user-management"
                   sortNo="10"
                   visible="true"
                   enabled="true">
@@ -440,7 +440,7 @@
                   name="应用包管理"
                   path="/admin/user-feature-packages"
                   component="pages/UserFeaturePackagesPage.vue"
-                  icon="customer-chart"
+                  icon="application-package"
                   sortNo="20"
                   visible="true"
                   enabled="true">
@@ -462,7 +462,7 @@
                   name="应用配置"
                   path="/admin/user-feature-applications"
                   component="pages/UserFeatureApplicationsPage.vue"
-                  icon="spark"
+                  icon="application-configuration"
                   sortNo="30"
                   visible="true"
                   enabled="true">

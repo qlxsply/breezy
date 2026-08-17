@@ -10,34 +10,36 @@ import {
   updateMethodStatGlobalSwitch,
   updateMethodStatMethodSwitch,
 } from "@admin/api/method-stat";
+import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
+import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
+import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
 import {
   BzButton,
-  BzCard,
-  BzDialog,
-  BzEmpty,
-  BzForm,
   BzFormItem,
   BzInput,
-  BzLoading,
   BzOption,
+  BzOverflowTooltip,
   BzPagination,
   BzSelect,
-  BzSwitch,
   BzTable,
   type BzTableColumn,
   BzTag,
-  BzTooltip,
 } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
+import type { AdminActionItem } from "@admin/types/admin-action";
 import type {
-  MethodStatMatchMode,
   MethodStatSortBy,
   MethodStatSortDirection,
   MethodStatStatsItem,
 } from "@admin/types/method-stat";
 import type { PageResult } from "@admin/types/page";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
+type CollectStatusFilter = "" | "true" | "false";
 
 const SORT_OPTIONS: Array<{ label: string; value: MethodStatSortBy }> = [
   { label: "累计调用", value: "TOTAL_CALLS" },
@@ -46,25 +48,30 @@ const SORT_OPTIONS: Array<{ label: string; value: MethodStatSortBy }> = [
   { label: "1分钟调用", value: "RECENT_1M_CALLS" },
   { label: "1小时调用", value: "RECENT_1H_CALLS" },
   { label: "1天调用", value: "RECENT_1D_CALLS" },
-  { label: "耗时平均", value: "DURATION_AVG" },
-  { label: "耗时P95", value: "DURATION_P95" },
-  { label: "耗时P99", value: "DURATION_P99" },
+  { label: "平均耗时", value: "DURATION_AVG" },
+  { label: "P95耗时", value: "DURATION_P95" },
+  { label: "P99耗时", value: "DURATION_P99" },
   { label: "方法名", value: "METHOD_NAME" },
   { label: "唯一Key", value: "KEY" },
 ];
 
-function normalizeText(value: string): string | undefined {
-  const normalized = value.trim();
-  if (!normalized) return undefined;
-  return normalized;
+function createEmptyPage(pageSize: number): PageResult<MethodStatStatsItem> {
+  return {
+    pageNo: 1,
+    pageSize,
+    numberOfElements: 0,
+    totalPages: 0,
+    totalElements: 0,
+    elements: [],
+  };
 }
 
 function formatNumber(value: number): string {
-  return value.toLocaleString("zh-CN");
+  return Number.isFinite(value) ? value.toLocaleString("zh-CN") : "0";
 }
 
 function formatDecimal(value: number): string {
-  return value.toFixed(2);
+  return Number.isFinite(value) ? value.toFixed(2) : "0.00";
 }
 
 function formatSuccessRate(success: number, total: number): string {
@@ -72,158 +79,149 @@ function formatSuccessRate(success: number, total: number): string {
   return `${((success / total) * 100).toFixed(2)}%`;
 }
 
-function formatMethodDisplay(className: string, methodName: string): string {
-  return `${className}.${methodName}`;
+function formatMethodDisplay(row: MethodStatStatsItem): string {
+  return `${row.className}.${row.methodName}`;
 }
 
 export function MethodStatPage() {
-  const [statsLoading, setStatsLoading] = useState(false);
-  const [globalSwitchLoading, setGlobalSwitchLoading] = useState(false);
-  const [clearingAll, setClearingAll] = useState(false);
-  const [batchSwitchLoading, setBatchSwitchLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<MethodStatStatsItem[]>([]);
+  const [page, setPage] = useState<PageResult<MethodStatStatsItem>>(createEmptyPage(10));
+  const [queryPanelVisible, setQueryPanelVisible] = useState(false);
 
+  const [methodNameDraft, setMethodNameDraft] = useState("");
+  const [collectStatusDraft, setCollectStatusDraft] = useState<CollectStatusFilter>("");
+  const [sortByDraft, setSortByDraft] = useState<MethodStatSortBy>("TOTAL_CALLS");
+  const [sortDirectionDraft, setSortDirectionDraft] = useState<MethodStatSortDirection>("DESC");
+  const [appliedMethodName, setAppliedMethodName] = useState("");
+  const [appliedCollectStatus, setAppliedCollectStatus] = useState<CollectStatusFilter>("");
+  const [appliedSortBy, setAppliedSortBy] = useState<MethodStatSortBy>("TOTAL_CALLS");
+  const [appliedSortDirection, setAppliedSortDirection] = useState<MethodStatSortDirection>("DESC");
+  const [pageNo, setPageNo] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [globalSwitchEnabled, setGlobalSwitchEnabled] = useState(false);
+  const [globalSwitchLoading, setGlobalSwitchLoading] = useState(false);
+  const [batchSwitchLoading, setBatchSwitchLoading] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
   const [methodSwitchLoadingKeys, setMethodSwitchLoadingKeys] = useState<Set<string>>(new Set());
   const [clearingMethodKeys, setClearingMethodKeys] = useState<Set<string>>(new Set());
 
-  const [globalSwitchEnabled, setGlobalSwitchEnabled] = useState(false);
-
-  const [methodName, setMethodName] = useState("");
-  const [matchMode, setMatchMode] = useState<MethodStatMatchMode>("FUZZY");
-  const [sortBy, setSortBy] = useState<MethodStatSortBy>("TOTAL_CALLS");
-  const [sortDirection, setSortDirection] = useState<MethodStatSortDirection>("DESC");
-  const [pageNo, setPageNo] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-
-  const [statsPage, setStatsPage] = useState<PageResult<MethodStatStatsItem>>({
-    pageNo: 1,
-    pageSize: 20,
-    numberOfElements: 0,
-    totalPages: 0,
-    totalElements: 0,
-    elements: [],
-  });
-
-  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [detailData, setDetailData] = useState<MethodStatStatsItem | null>(null);
+  const [detail, setDetail] = useState<MethodStatStatsItem | null>(null);
 
   const canStatsView = hasResourceCodeAccess("method-stat-view");
   const canSwitchView = hasResourceCodeAccess("method-stat-switch-view");
   const canSwitchEdit = hasResourceCodeAccess("method-stat-switch-edit");
   const canStatClear = hasResourceCodeAccess("method-stat-clear");
+  const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
+    useAdminQueryPanelLayout(queryPanelVisible);
 
-  const statsTotalPages = useMemo(() => {
-    if (pageSize <= 0) return 0;
-    return Math.ceil(statsPage.totalElements / pageSize);
-  }, [statsPage.totalElements, pageSize]);
+  const pageNoRef = useRef(pageNo);
+  const pageSizeRef = useRef(pageSize);
+  const methodNameRef = useRef(appliedMethodName);
+  const collectStatusRef = useRef(appliedCollectStatus);
+  const sortByRef = useRef(appliedSortBy);
+  const sortDirectionRef = useRef(appliedSortDirection);
+  const canStatsViewRef = useRef(canStatsView);
+  pageNoRef.current = pageNo;
+  pageSizeRef.current = pageSize;
+  methodNameRef.current = appliedMethodName;
+  collectStatusRef.current = appliedCollectStatus;
+  sortByRef.current = appliedSortBy;
+  sortDirectionRef.current = appliedSortDirection;
+  canStatsViewRef.current = canStatsView;
 
-  function addMethodSwitchLoading(key: string) {
-    setMethodSwitchLoadingKeys((prev) => new Set(prev).add(key));
-  }
+  const reload = useCallback(async (silent = false) => {
+    const currentPageSize = pageSizeRef.current;
+    if (!canStatsViewRef.current) {
+      const emptyPage = createEmptyPage(currentPageSize);
+      setPage(emptyPage);
+      setRows([]);
+      return;
+    }
 
-  function removeMethodSwitchLoading(key: string) {
-    setMethodSwitchLoadingKeys((prev) => {
-      const next = new Set(prev);
-      next.delete(key);
-      return next;
-    });
-  }
+    if (!silent) setLoading(true);
+    try {
+      const request = (requestedPageNo: number) =>
+        pageMethodStatStats({
+          methodName: methodNameRef.current.trim() || undefined,
+          collectEnabled:
+            collectStatusRef.current === "" ? undefined : collectStatusRef.current === "true",
+          page: { pageNo: requestedPageNo, pageSize: currentPageSize },
+          sort: {
+            orders: [{ field: sortByRef.current, direction: sortDirectionRef.current }],
+          },
+        });
 
-  function isMethodSwitchLoading(key: string): boolean {
-    return methodSwitchLoadingKeys.has(key);
-  }
+      const requestedPageNo = pageNoRef.current;
+      let result = await request(requestedPageNo);
+      if (result.totalElements > 0 && requestedPageNo > Math.max(1, result.totalPages)) {
+        const lastPage = Math.max(1, result.totalPages);
+        setPageNo(lastPage);
+        result = await request(lastPage);
+      }
+      setPage(result);
+      setRows(result.elements);
+      setPageNo(result.pageNo || 1);
+      setPageSize(result.pageSize || currentPageSize);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, []);
 
-  function addMethodClearing(key: string) {
-    setClearingMethodKeys((prev) => new Set(prev).add(key));
-  }
-
-  function removeMethodClearing(key: string) {
-    setClearingMethodKeys((prev) => {
-      const next = new Set(prev);
-      next.delete(key);
-      return next;
-    });
-  }
-
-  function isClearingMethod(key: string): boolean {
-    return clearingMethodKeys.has(key);
-  }
-
-  async function loadGlobalSwitch() {
+  const loadGlobalSwitch = useCallback(async () => {
     if (!canSwitchView) {
       setGlobalSwitchEnabled(false);
       return;
     }
     const state = await getMethodStatGlobalSwitch();
     setGlobalSwitchEnabled(state.enabled);
-  }
+  }, [canSwitchView]);
 
-  async function loadStats(pNo?: number) {
-    if (!canStatsView) {
-      setStatsPage({
-        pageNo: 1,
-        pageSize,
-        numberOfElements: 0,
-        totalPages: 0,
-        totalElements: 0,
-        elements: [],
-      });
-      return;
-    }
-    if (typeof pNo === "number") {
-      setPageNo(pNo);
-    }
-    setStatsLoading(true);
-    try {
-      const page = await pageMethodStatStats({
-        methodName: normalizeText(methodName),
-        matchMode,
-        page: { pageNo: typeof pNo === "number" ? pNo : pageNo, pageSize },
-        sort: { orders: [{ field: sortBy, direction: sortDirection }] },
-      });
-      setStatsPage(page);
-      setPageNo(page.pageNo || 1);
-      setPageSize(page.pageSize || pageSize);
-    } finally {
-      setStatsLoading(false);
-    }
-  }
+  useEffect(() => {
+    void reload();
+  }, [
+    appliedCollectStatus,
+    appliedMethodName,
+    appliedSortBy,
+    appliedSortDirection,
+    pageNo,
+    pageSize,
+    reload,
+  ]);
 
-  async function handleSearch() {
-    await loadStats(1);
-  }
+  useEffect(() => {
+    void loadGlobalSwitch();
+  }, [loadGlobalSwitch]);
 
-  async function handleReset() {
-    setMethodName("");
-    setMatchMode("FUZZY");
-    setSortBy("TOTAL_CALLS");
-    setSortDirection("DESC");
+  function applyFilters() {
+    setAppliedMethodName(methodNameDraft.trim());
+    setAppliedCollectStatus(collectStatusDraft);
+    setAppliedSortBy(sortByDraft);
+    setAppliedSortDirection(sortDirectionDraft);
     setPageNo(1);
-    setStatsLoading(true);
-    try {
-      const page = await pageMethodStatStats({
-        methodName: undefined,
-        matchMode: "FUZZY",
-        page: { pageNo: 1, pageSize },
-        sort: {
-          orders: [
-            {
-              field: "TOTAL_CALLS" as MethodStatSortBy,
-              direction: "DESC" as MethodStatSortDirection,
-            },
-          ],
-        },
-      });
-      setStatsPage(page);
-      setPageNo(page.pageNo || 1);
-    } finally {
-      setStatsLoading(false);
-    }
   }
 
-  async function handleGlobalSwitchChange(next: boolean) {
+  function resetFilters() {
+    setMethodNameDraft("");
+    setCollectStatusDraft("");
+    setSortByDraft("TOTAL_CALLS");
+    setSortDirectionDraft("DESC");
+    setAppliedMethodName("");
+    setAppliedCollectStatus("");
+    setAppliedSortBy("TOTAL_CALLS");
+    setAppliedSortDirection("DESC");
+    setPageNo(1);
+  }
+
+  async function refreshPage() {
+    await Promise.allSettled([reload(), loadGlobalSwitch()]);
+  }
+
+  async function handleGlobalSwitchChange(enabled: boolean) {
     if (!canSwitchEdit) {
-      setGlobalSwitchEnabled(!next);
       message.warning("无权限维护统计开关");
       return;
     }
@@ -231,77 +229,20 @@ export function MethodStatPage() {
 
     setGlobalSwitchLoading(true);
     try {
-      const updated = await updateMethodStatGlobalSwitch(next);
+      const updated = await updateMethodStatGlobalSwitch(enabled);
       setGlobalSwitchEnabled(updated.enabled);
-      message.success(updated.enabled ? "采集功能已开启" : "采集功能已关闭");
-      await loadStats();
+      await reload(true);
       if (!updated.enabled) {
-        setDetailVisible(false);
-        return;
+        setDetailOpen(false);
+        setDetail(null);
       }
-      if (detailVisible && detailData) {
-        await openStatsDetail(detailData.key);
-      }
-    } catch {
-      setGlobalSwitchEnabled(!next);
     } finally {
       setGlobalSwitchLoading(false);
     }
   }
 
-  async function handleToggleMethodSwitch(row: MethodStatStatsItem) {
-    await handleMethodSwitchChange(row, !row.methodSwitchEnabled);
-  }
-
-  async function handleMethodSwitchChange(row: MethodStatStatsItem, next: boolean) {
-    if (!canSwitchEdit) {
-      message.warning("无权限维护方法开关");
-      return;
-    }
-    if (isMethodSwitchLoading(row.key)) return;
-
-    const previous = row.methodSwitchEnabled;
-
-    setStatsPage((prev) => ({
-      ...prev,
-      elements: prev.elements.map((e) =>
-        e.key === row.key
-          ? { ...e, methodSwitchEnabled: next, collectEnabled: next && globalSwitchEnabled }
-          : e,
-      ),
-    }));
-
-    addMethodSwitchLoading(row.key);
-    try {
-      await updateMethodStatMethodSwitch(row.key, next);
-      message.success(next ? "方法统计已开启" : "方法统计已关闭");
-      await loadStats();
-      if (detailVisible && detailData?.key === row.key) {
-        await openStatsDetail(row.key);
-      }
-    } catch {
-      setStatsPage((prev) => ({
-        ...prev,
-        elements: prev.elements.map((e) =>
-          e.key === row.key
-            ? {
-                ...e,
-                methodSwitchEnabled: previous,
-                collectEnabled: previous && globalSwitchEnabled,
-              }
-            : e,
-        ),
-      }));
-    } finally {
-      removeMethodSwitchLoading(row.key);
-    }
-  }
-
   async function handleSetAllMethodSwitch(enabled: boolean) {
-    if (!canSwitchEdit) {
-      message.warning("无权限维护方法开关");
-      return;
-    }
+    if (!canSwitchEdit) return;
     if (!globalSwitchEnabled) {
       message.warning("请先开启采集功能");
       return;
@@ -311,107 +252,122 @@ export function MethodStatPage() {
     setBatchSwitchLoading(true);
     try {
       await updateAllMethodStatMethodSwitch(enabled);
-      message.success(enabled ? "已开启全部方法采集" : "已关闭全部方法采集");
-      await loadStats();
-      if (detailVisible && detailData) {
-        await openStatsDetail(detailData.key);
-      }
+      await reload(true);
+      await refreshDetail();
     } finally {
       setBatchSwitchLoading(false);
     }
   }
 
-  async function handleClearMethodStats(key: string) {
-    if (!canStatClear) {
-      message.warning("无权限清空统计数据");
-      return;
-    }
-    if (isClearingMethod(key)) return;
-
-    addMethodClearing(key);
+  async function handleMethodSwitchChange(row: MethodStatStatsItem) {
+    if (!canSwitchEdit || methodSwitchLoadingKeys.has(row.key)) return;
+    const enabled = !row.methodSwitchEnabled;
+    setMethodSwitchLoadingKeys((current) => new Set(current).add(row.key));
     try {
-      await clearMethodStat(key);
-      message.success("方法统计已清空");
-      await loadStats();
-      if (detailVisible && detailData?.key === key) {
-        await openStatsDetail(key);
-      }
+      await updateMethodStatMethodSwitch(row.key, enabled);
+      await reload(true);
+      if (detail?.key === row.key) await openDetail(row.key);
     } finally {
-      removeMethodClearing(key);
+      setMethodSwitchLoadingKeys((current) => {
+        const next = new Set(current);
+        next.delete(row.key);
+        return next;
+      });
     }
   }
 
-  async function handleClearAllStats() {
-    if (!canStatClear) {
-      message.warning("无权限清空统计数据");
-      return;
+  async function handleClearMethod(row: MethodStatStatsItem) {
+    if (!canStatClear || clearingMethodKeys.has(row.key)) return;
+    setClearingMethodKeys((current) => new Set(current).add(row.key));
+    try {
+      await clearMethodStat(row.key);
+      await reload(true);
+      if (detail?.key === row.key) await openDetail(row.key);
+    } finally {
+      setClearingMethodKeys((current) => {
+        const next = new Set(current);
+        next.delete(row.key);
+        return next;
+      });
     }
-    if (clearingAll) return;
+  }
 
+  async function handleClearAll() {
+    if (!canStatClear || clearingAll) return;
     setClearingAll(true);
     try {
       await clearAllMethodStat();
-      message.success("统计数据已清空");
-      await loadStats();
-      if (detailVisible && detailData) {
-        await openStatsDetail(detailData.key);
-      }
+      await reload(true);
+      await refreshDetail();
     } finally {
       setClearingAll(false);
     }
   }
 
-  async function openStatsDetail(key: string) {
-    if (!canStatsView) {
-      message.warning("无权限查看统计详情");
-      return;
-    }
-    setDetailVisible(true);
+  async function openDetail(key: string) {
+    if (!canStatsView) return;
+    setDetailOpen(true);
     setDetailLoading(true);
     try {
-      setDetailData(await getMethodStatStatsDetail(key));
+      setDetail(await getMethodStatStatsDetail(key));
     } finally {
       setDetailLoading(false);
     }
   }
 
-  function closeStatsDetail() {
-    setDetailVisible(false);
+  async function refreshDetail() {
+    if (detailOpen && detail) await openDetail(detail.key);
   }
 
-  async function initializePage() {
-    if (canSwitchView) {
-      await loadGlobalSwitch();
+  function getActions(row: MethodStatStatsItem): AdminActionItem[] {
+    const actions: AdminActionItem[] = [
+      {
+        key: "detail",
+        label: "详情",
+        level: "default",
+        onClick: () => void openDetail(row.key),
+      },
+    ];
+    if (canSwitchEdit) {
+      actions.push({
+        key: "toggle",
+        label: row.methodSwitchEnabled ? "关闭" : "开启",
+        level: row.methodSwitchEnabled ? "warning" : "success",
+        disabled: !globalSwitchEnabled || methodSwitchLoadingKeys.has(row.key),
+        onClick: () => void handleMethodSwitchChange(row),
+      });
     }
-    await loadStats();
+    if (canStatClear) {
+      actions.push({
+        key: "clear",
+        label: "清空",
+        level: "danger",
+        disabled: clearingMethodKeys.has(row.key),
+        onClick: () => void handleClearMethod(row),
+      });
+    }
+    return actions;
   }
-
-  useEffect(() => {
-    void initializePage();
-  }, []);
 
   const columns: Array<BzTableColumn<MethodStatStatsItem>> = [
     {
       key: "method",
       title: "方法",
-      minWidth: 260,
+      width: 420,
+      className: "method-stat-col-method is-sticky-left",
+      headerClassName: "method-stat-col-method is-sticky-left",
       render: (row) => (
-        <BzTooltip content={row.methodSignature}>
-          <span className="method-stat-method">
-            {formatMethodDisplay(row.className, row.methodName)}
-          </span>
-        </BzTooltip>
+        <BzOverflowTooltip text={row.methodSignature}>
+          <span className="method-stat-method">{formatMethodDisplay(row)}</span>
+        </BzOverflowTooltip>
       ),
     },
     {
       key: "status",
-      title: "状态",
-      width: 120,
+      title: "采集状态",
+      width: 100,
       render: (row) => (
-        <BzTag
-          size="small"
-          type={row.collectEnabled ? "success" : "info"}
-        >
+        <BzTag type={row.collectEnabled ? "success" : "info"}>
           {row.collectEnabled ? "采集中" : "已关闭"}
         </BzTag>
       ),
@@ -419,339 +375,425 @@ export function MethodStatPage() {
     {
       key: "totalCalls",
       title: "累计调用",
-      width: 120,
-      render: (row) => <>{formatNumber(row.totalCalls)}</>,
+      width: 100,
+      render: (row) => formatNumber(row.totalCalls),
     },
     {
-      key: "windowCalls",
-      title: "窗口调用",
-      minWidth: 170,
-      render: (row) => (
-        <div className="method-stat-lines">
-          <div className="method-stat-line">1分：{formatNumber(row.recent1MinuteCalls)}</div>
-          <div className="method-stat-line">1时：{formatNumber(row.recent1HourCalls)}</div>
-          <div className="method-stat-line">1天：{formatNumber(row.recent1DayCalls)}</div>
-        </div>
-      ),
+      key: "totalSuccess",
+      title: "成功",
+      width: 100,
+      render: (row) => formatNumber(row.totalSuccess),
     },
     {
-      key: "successFailure",
-      title: "成功 / 失败",
-      minWidth: 160,
-      render: (row) => (
-        <div className="method-stat-lines">
-          <div className="method-stat-line is-success">成功：{formatNumber(row.totalSuccess)}</div>
-          <div className="method-stat-line is-danger">失败：{formatNumber(row.totalFailure)}</div>
-          <div className="method-stat-line">
-            成功率：{formatSuccessRate(row.totalSuccess, row.totalCalls)}
-          </div>
-        </div>
-      ),
+      key: "totalFailure",
+      title: "失败",
+      width: 100,
+      render: (row) => formatNumber(row.totalFailure),
     },
     {
-      key: "duration",
-      title: "耗时(ms)",
-      minWidth: 180,
-      render: (row) => (
-        <div className="method-stat-lines">
-          <div className="method-stat-line">avg：{formatDecimal(row.durationAvg)}</div>
-          <div className="method-stat-line">p95：{formatNumber(row.durationP95)}</div>
-          <div className="method-stat-line">max：{formatNumber(row.durationMax)}</div>
-          <div className="method-stat-line">样本：{formatNumber(row.durationSampleSize)}</div>
-        </div>
-      ),
+      key: "successRate",
+      title: "成功率",
+      width: 100,
+      render: (row) => formatSuccessRate(row.totalSuccess, row.totalCalls),
     },
     {
-      key: "actions",
-      title: "操作",
-      width: 260,
-      className: "is-fixed-right",
-      render: (row) => (
-        <div className="method-stat-actions">
-          {canSwitchEdit ? (
-            <BzButton
-              size="small"
-              disabled={isMethodSwitchLoading(row.key)}
-              loading={isMethodSwitchLoading(row.key)}
-              onClick={() => handleToggleMethodSwitch(row)}
-            >
-              {row.methodSwitchEnabled ? "关闭" : "开启"}
-            </BzButton>
-          ) : null}
-          <BzButton
-            size="small"
-            onClick={() => void openStatsDetail(row.key)}
-          >
-            详情
-          </BzButton>
-          {canStatClear ? (
-            <BzButton
-              size="small"
-              buttonType="danger"
-              disabled={isClearingMethod(row.key)}
-              loading={isClearingMethod(row.key)}
-              onClick={() => void handleClearMethodStats(row.key)}
-            >
-              清空
-            </BzButton>
-          ) : null}
-        </div>
-      ),
+      key: "recent1MinuteCalls",
+      title: "近1分钟",
+      width: 100,
+      render: (row) => formatNumber(row.recent1MinuteCalls),
+    },
+    {
+      key: "recent1HourCalls",
+      title: "近1小时",
+      width: 100,
+      render: (row) => formatNumber(row.recent1HourCalls),
+    },
+    {
+      key: "recent1DayCalls",
+      title: "近1天",
+      width: 100,
+      render: (row) => formatNumber(row.recent1DayCalls),
+    },
+    {
+      key: "durationAvg",
+      title: "平均耗时(ms)",
+      width: 100,
+      render: (row) => formatDecimal(row.durationAvg),
+    },
+    {
+      key: "durationP95",
+      title: "P95(ms)",
+      width: 100,
+      render: (row) => formatNumber(row.durationP95),
+    },
+    {
+      key: "durationMax",
+      title: "最大耗时(ms)",
+      width: 100,
+      render: (row) => formatNumber(row.durationMax),
     },
   ];
-
-  const detailFields = detailData
-    ? [
-        { label: "包名", value: detailData.packageName },
-        { label: "类名", value: detailData.className },
-        { label: "方法名", value: detailData.methodName },
-        { label: "唯一Key", value: detailData.key, code: true },
-      ]
-    : [];
-
-  const detailMetrics = detailData
-    ? [
-        { label: "累计调用", value: formatNumber(detailData.totalCalls) },
-        { label: "累计成功", value: formatNumber(detailData.totalSuccess) },
-        { label: "累计失败", value: formatNumber(detailData.totalFailure) },
-        { label: "1分钟调用", value: formatNumber(detailData.recent1MinuteCalls) },
-        { label: "1小时调用", value: formatNumber(detailData.recent1HourCalls) },
-        { label: "1天调用", value: formatNumber(detailData.recent1DayCalls) },
-        { label: "耗时avg(ms)", value: formatDecimal(detailData.durationAvg) },
-        { label: "耗时p95(ms)", value: formatNumber(detailData.durationP95) },
-        { label: "耗时max(ms)", value: formatNumber(detailData.durationMax) },
-        { label: "样本数", value: formatNumber(detailData.durationSampleSize) },
-        { label: "方法开关", value: detailData.methodSwitchEnabled ? "开启" : "关闭" },
-        { label: "采集状态", value: detailData.collectEnabled ? "采集中" : "已关闭" },
-      ]
-    : [];
+  const actionsColumn = createAdminActionsColumn({ rows, getActions });
+  if (actionsColumn) columns.push(actionsColumn);
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="list-page-stack">
-          <section className="list-page-actions">
-            <div className="list-page-actions-main">
-              {canSwitchView && canSwitchEdit ? (
-                <>
-                  <BzButton
-                    disabled={!globalSwitchEnabled || batchSwitchLoading}
-                    loading={batchSwitchLoading}
-                    onClick={() => void handleSetAllMethodSwitch(true)}
-                  >
-                    全部开启
-                  </BzButton>
-                  <BzButton
-                    disabled={!globalSwitchEnabled || batchSwitchLoading}
-                    loading={batchSwitchLoading}
-                    onClick={() => void handleSetAllMethodSwitch(false)}
-                  >
-                    全部关闭
-                  </BzButton>
-                </>
-              ) : null}
-              {canStatClear ? (
-                <BzButton
-                  loading={clearingAll}
-                  onClick={() => void handleClearAllStats()}
-                >
-                  全部清空
-                </BzButton>
-              ) : null}
-            </div>
-
-            {canSwitchView && canSwitchEdit ? (
-              <div className="method-stat-switch">
-                <span className="method-stat-switch__label">采集功能</span>
-                <BzSwitch
-                  modelValue={globalSwitchEnabled}
-                  disabled={globalSwitchLoading}
-                  onValueChange={(value) => void handleGlobalSwitchChange(value)}
-                />
-              </div>
-            ) : null}
-          </section>
-
-          <BzCard
-            className="list-page-query-card"
-            shadow="never"
+    <>
+      <AdminListPageTemplate
+        queryPanelVisible={queryPanelVisible}
+        className="method-stat-page"
+        queryPanel={
+          <div
+            ref={queryCardRef}
+            className={[
+              "admin-query-layout",
+              querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+            ].join(" ")}
           >
-            <BzForm
-              className="list-page-filter-form"
-              inline
-              onSubmit={(e) => e.preventDefault()}
+            <form
+              ref={queryGridRef}
+              className="bz-form admin-query-grid"
+              onSubmit={(event) => {
+                event.preventDefault();
+                applyFilters();
+              }}
             >
-              <BzFormItem className="list-page-filter-item">
-                <div className="list-page-filter-field">
-                  <div className="list-page-filter-label">方法名</div>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">方法</div>
+                <div className="admin-query-field__control">
                   <BzInput
-                    className="list-page-filter-control"
-                    modelValue={methodName}
-                    placeholder="输入方法名"
+                    modelValue={methodNameDraft}
+                    placeholder="按包名、类名、方法名或签名搜索"
                     clearable
-                    onValueChange={setMethodName}
-                    onKeyUp={(e) => {
-                      if (e.key === "Enter") void handleSearch();
+                    onValueChange={setMethodNameDraft}
+                    onKeyUp={(event) => {
+                      if (event.key === "Enter") applyFilters();
                     }}
                   />
                 </div>
               </BzFormItem>
-
-              <BzFormItem className="list-page-filter-item">
-                <div className="list-page-filter-field">
-                  <div className="list-page-filter-label">匹配模式</div>
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">采集状态</div>
+                <div className="admin-query-field__control">
                   <BzSelect
-                    modelValue={matchMode}
-                    className="match-mode-select"
-                    onValueChange={(v) => setMatchMode((v ?? "FUZZY") as MethodStatMatchMode)}
+                    modelValue={collectStatusDraft}
+                    placeholder="全部"
+                    clearable
+                    onValueChange={(value) =>
+                      setCollectStatusDraft((value ?? "") as CollectStatusFilter)
+                    }
                   >
                     <BzOption
-                      label="模糊"
-                      value="FUZZY"
+                      label="采集中"
+                      value="true"
                     />
                     <BzOption
-                      label="精确"
-                      value="EXACT"
+                      label="已关闭"
+                      value="false"
                     />
                   </BzSelect>
                 </div>
               </BzFormItem>
-
-              <BzFormItem className="list-page-filter-item sort-field-item">
-                <div className="list-page-filter-field">
-                  <div className="list-page-filter-label">排序规则</div>
-                  <div className="list-page-sort-group">
-                    <BzSelect
-                      modelValue={sortBy}
-                      className="sort-field-select"
-                      onValueChange={(v) => setSortBy((v ?? "TOTAL_CALLS") as MethodStatSortBy)}
-                    >
-                      {SORT_OPTIONS.map((option) => (
-                        <BzOption
-                          key={option.value}
-                          label={option.label}
-                          value={option.value}
-                        />
-                      ))}
-                    </BzSelect>
-                    <BzSelect
-                      modelValue={sortDirection}
-                      className="sort-order-select"
-                      onValueChange={(v) =>
-                        setSortDirection((v ?? "DESC") as MethodStatSortDirection)
-                      }
-                    >
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">排序字段</div>
+                <div className="admin-query-field__control">
+                  <BzSelect
+                    modelValue={sortByDraft}
+                    onValueChange={(value) =>
+                      setSortByDraft((value ?? "TOTAL_CALLS") as MethodStatSortBy)
+                    }
+                  >
+                    {SORT_OPTIONS.map((option) => (
                       <BzOption
-                        label="升序"
-                        value="ASC"
+                        key={option.value}
+                        label={option.label}
+                        value={option.value}
                       />
-                      <BzOption
-                        label="降序"
-                        value="DESC"
-                      />
-                    </BzSelect>
-                  </div>
+                    ))}
+                  </BzSelect>
                 </div>
               </BzFormItem>
-
-              <BzFormItem className="list-page-filter-actions">
+              <BzFormItem className="admin-query-field">
+                <div className="admin-query-field__label">排序方向</div>
+                <div className="admin-query-field__control">
+                  <BzSelect
+                    modelValue={sortDirectionDraft}
+                    onValueChange={(value) =>
+                      setSortDirectionDraft((value ?? "DESC") as MethodStatSortDirection)
+                    }
+                  >
+                    <BzOption
+                      label="降序"
+                      value="DESC"
+                    />
+                    <BzOption
+                      label="升序"
+                      value="ASC"
+                    />
+                  </BzSelect>
+                </div>
+              </BzFormItem>
+              <div className="admin-query-actions">
                 <BzButton
+                  className="admin-filter-secondary"
+                  nativeType="button"
+                  onClick={resetFilters}
+                >
+                  重置
+                </BzButton>
+                <BzButton
+                  className="admin-filter-primary"
                   buttonType="primary"
-                  onClick={() => void handleSearch()}
+                  nativeType="button"
+                  onClick={applyFilters}
                 >
                   搜索
                 </BzButton>
-                <BzButton onClick={() => void handleReset()}>重置</BzButton>
-              </BzFormItem>
-            </BzForm>
-          </BzCard>
-
-          <BzCard
-            className="list-page-result-card"
-            shadow="never"
-          >
-            {!canStatsView ? (
-              <BzEmpty description="无权限查看统计结果" />
-            ) : (
-              <>
-                <BzTable
-                  data={statsPage.elements}
-                  columns={columns}
-                  loading={statsLoading}
-                  emptyText="暂无统计数据"
-                  size="small"
-                />
-
-                <div className="list-page-pagination">
-                  <div className="list-page-pagination-summary">
-                    <span>总计 {statsPage.totalElements} 项</span>
-                    <span>，共 {statsTotalPages} 页</span>
-                  </div>
-                  {statsPage.totalElements > 0 ? (
-                    <BzPagination
-                      total={statsPage.totalElements}
-                      pageSizes={[10, 20, 50, 100]}
-                      pageSize={pageSize}
-                      currentPage={pageNo}
-                      onCurrentChange={(p) => {
-                        setPageNo(p);
-                        void loadStats(p);
-                      }}
-                      onSizeChange={(ps) => {
-                        if (!Number.isFinite(ps) || ps <= 0 || ps === pageSize) return;
-                        setPageSize(ps);
-                        setPageNo(1);
-                        void loadStats(1);
-                      }}
-                    />
-                  ) : null}
-                </div>
-              </>
-            )}
-          </BzCard>
-        </div>
-      </div>
-
-      <BzDialog
-        modelValue={detailVisible}
-        title="方法统计详情"
-        width={760}
-        onClose={closeStatsDetail}
-        onUpdateModelValue={(v) => {
-          if (!v) closeStatsDetail();
-        }}
-        footer={<BzButton onClick={closeStatsDetail}>关闭</BzButton>}
-      >
-        <BzLoading loading={detailLoading}>
-          {detailData ? (
-            <>
-              {detailFields.map((item) => (
-                <div
-                  key={item.label}
-                  className="method-stat-detail-section"
-                >
-                  <div className="method-stat-detail-label">{item.label}</div>
-                  <div className={`method-stat-detail-value${item.code ? " is-code" : ""}`}>
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-
-              <div className="method-stat-detail-metrics">
-                {detailMetrics.map((item) => (
-                  <div
-                    key={item.label}
-                    className="method-stat-detail-metric"
+                {!querySingleRow ? (
+                  <button
+                    className="admin-filter-toggle"
+                    type="button"
+                    aria-expanded={queryExpanded}
+                    onClick={() => setQueryExpanded((value) => !value)}
                   >
-                    <span className="method-stat-detail-metric-label">{item.label}</span>
-                    <span className="method-stat-detail-metric-value">{item.value}</span>
-                  </div>
-                ))}
+                    <span>{queryExpanded ? "收起" : "展开"}</span>
+                    <i
+                      className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : null}
               </div>
-            </>
-          ) : null}
-        </BzLoading>
-      </BzDialog>
-    </div>
+            </form>
+          </div>
+        }
+        businessActions={
+          <>
+            {canSwitchView ? (
+              <BzButton
+                className="method-stat-global-action"
+                buttonType={globalSwitchEnabled ? "danger" : "primary"}
+                disabled={!canSwitchEdit || globalSwitchLoading}
+                onClick={() => void handleGlobalSwitchChange(!globalSwitchEnabled)}
+              >
+                {globalSwitchEnabled ? "停止采集" : "开启采集"}
+              </BzButton>
+            ) : null}
+            {globalSwitchEnabled && canSwitchEdit ? (
+              <>
+                <BzButton
+                  disabled={batchSwitchLoading}
+                  onClick={() => void handleSetAllMethodSwitch(true)}
+                >
+                  全部开启
+                </BzButton>
+                <BzButton
+                  disabled={batchSwitchLoading}
+                  onClick={() => void handleSetAllMethodSwitch(false)}
+                >
+                  全部关闭
+                </BzButton>
+              </>
+            ) : null}
+            {globalSwitchEnabled && canStatClear ? (
+              <BzButton
+                buttonType="danger"
+                disabled={clearingAll}
+                onClick={() => void handleClearAll()}
+              >
+                全部清空
+              </BzButton>
+            ) : null}
+          </>
+        }
+        queryTools={
+          <AdminTableTools
+            queryPanelVisible={queryPanelVisible}
+            onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
+            onRefresh={() => void refreshPage()}
+          />
+        }
+        table={
+          <div className="method-stat-table-scope">
+            <BzTable
+              data={rows}
+              columns={columns}
+              rowKey="key"
+              loading={loading}
+              emptyText={canStatsView ? "暂无统计数据" : "无权限查看统计数据"}
+              size="small"
+            />
+          </div>
+        }
+        footer={
+          page.totalElements > 0 ? (
+            <div className="dict-pagination-bar admin-list-table-footer">
+              <div className="dict-pagination-summary">共 {page.totalElements} 条记录</div>
+              <div className="dict-pagination-right">
+                <BzPagination
+                  total={page.totalElements}
+                  pageSize={pageSize}
+                  currentPage={pageNo}
+                  pageSizes={PAGE_SIZE_OPTIONS}
+                  onCurrentChange={setPageNo}
+                  onSizeChange={(size) => {
+                    if (!Number.isFinite(size) || size <= 0 || size === pageSize) return;
+                    setPageSize(size);
+                    setPageNo(1);
+                  }}
+                />
+              </div>
+            </div>
+          ) : null
+        }
+      />
+
+      <AdminEntityDrawer
+        open={detailOpen}
+        title="方法统计详情"
+        width="1080px"
+        loading={detailLoading}
+        className="role-manage-drawer method-stat-detail-drawer"
+        onClose={() => setDetailOpen(false)}
+        footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
+      >
+        {detail ? (
+          <div className="role-manage-shell">
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">方法信息</div>
+              </div>
+              <div className="role-info-table-wrap">
+                <table
+                  className="role-info-table"
+                  aria-label="方法信息"
+                >
+                  <tbody>
+                    <tr>
+                      <th>包名</th>
+                      <td colSpan={3}>{detail.packageName}</td>
+                    </tr>
+                    <tr>
+                      <th>类名</th>
+                      <td colSpan={3}>{detail.className}</td>
+                    </tr>
+                    <tr>
+                      <th>方法名</th>
+                      <td colSpan={3}>{detail.methodName}</td>
+                    </tr>
+                    <tr>
+                      <th>方法签名</th>
+                      <td
+                        className="method-stat-detail-code"
+                        colSpan={3}
+                      >
+                        {detail.methodSignature}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">采集状态</div>
+              </div>
+              <div className="role-info-table-wrap">
+                <table
+                  className="role-info-table"
+                  aria-label="采集状态"
+                >
+                  <tbody>
+                    <tr>
+                      <th>全局开关</th>
+                      <td>{detail.globalSwitchEnabled ? "开启" : "关闭"}</td>
+                      <th>方法开关</th>
+                      <td>{detail.methodSwitchEnabled ? "开启" : "关闭"}</td>
+                      <th>采集状态</th>
+                      <td>
+                        <BzTag type={detail.collectEnabled ? "success" : "info"}>
+                          {detail.collectEnabled ? "采集中" : "已关闭"}
+                        </BzTag>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className="role-manage-section">
+              <div className="role-manage-section__head">
+                <div className="role-manage-section__title">统计指标</div>
+              </div>
+              <div className="role-info-table-wrap">
+                <table
+                  className="role-info-table method-stat-metrics-table"
+                  aria-label="统计指标"
+                >
+                  <tbody>
+                    <tr>
+                      <th>累计调用</th>
+                      <td>{formatNumber(detail.totalCalls)}</td>
+                      <th>累计成功</th>
+                      <td>{formatNumber(detail.totalSuccess)}</td>
+                      <th>累计失败</th>
+                      <td>{formatNumber(detail.totalFailure)}</td>
+                    </tr>
+                    <tr>
+                      <th>成功率</th>
+                      <td>{formatSuccessRate(detail.totalSuccess, detail.totalCalls)}</td>
+                      <th>近1分钟调用</th>
+                      <td>{formatNumber(detail.recent1MinuteCalls)}</td>
+                      <th>近1分钟成功</th>
+                      <td>{formatNumber(detail.recent1MinuteSuccess)}</td>
+                    </tr>
+                    <tr>
+                      <th>近1分钟失败</th>
+                      <td>{formatNumber(detail.recent1MinuteFailure)}</td>
+                      <th>近1小时调用</th>
+                      <td>{formatNumber(detail.recent1HourCalls)}</td>
+                      <th>近1小时成功</th>
+                      <td>{formatNumber(detail.recent1HourSuccess)}</td>
+                    </tr>
+                    <tr>
+                      <th>近1小时失败</th>
+                      <td>{formatNumber(detail.recent1HourFailure)}</td>
+                      <th>近1天调用</th>
+                      <td>{formatNumber(detail.recent1DayCalls)}</td>
+                      <th>近1天成功</th>
+                      <td>{formatNumber(detail.recent1DaySuccess)}</td>
+                    </tr>
+                    <tr>
+                      <th>近1天失败</th>
+                      <td>{formatNumber(detail.recent1DayFailure)}</td>
+                      <th>耗时样本</th>
+                      <td>{formatNumber(detail.durationSampleSize)}</td>
+                      <th>最小耗时(ms)</th>
+                      <td>{formatNumber(detail.durationMin)}</td>
+                    </tr>
+                    <tr>
+                      <th>平均耗时(ms)</th>
+                      <td>{formatDecimal(detail.durationAvg)}</td>
+                      <th>P50(ms)</th>
+                      <td>{formatNumber(detail.durationP50)}</td>
+                      <th>P90(ms)</th>
+                      <td>{formatNumber(detail.durationP90)}</td>
+                    </tr>
+                    <tr>
+                      <th>P95(ms)</th>
+                      <td>{formatNumber(detail.durationP95)}</td>
+                      <th>P99(ms)</th>
+                      <td>{formatNumber(detail.durationP99)}</td>
+                      <th>最大耗时(ms)</th>
+                      <td>{formatNumber(detail.durationMax)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        ) : null}
+      </AdminEntityDrawer>
+    </>
   );
 }

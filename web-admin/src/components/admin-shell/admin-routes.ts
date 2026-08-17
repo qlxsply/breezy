@@ -61,7 +61,6 @@ const staticAdminRoutes: AdminRouteMeta[] = [
     section: "平台管理",
     sectionOrder: 20,
     order: 90,
-    hidden: true,
   },
   { path: "/admin/users", title: "账号管理", section: "权限中心", sectionOrder: 30, order: 10 },
   { path: "/admin/roles", title: "角色管理", section: "权限中心", sectionOrder: 30, order: 20 },

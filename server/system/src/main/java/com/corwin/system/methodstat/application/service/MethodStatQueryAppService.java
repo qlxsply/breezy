@@ -27,31 +27,38 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class MethodStatQueryAppService {
 
-    private static final String MATCH_MODE_EXACT = "EXACT";
     private static final String SORT_DIRECTION_DESC = "DESC";
     private static final String SORT_BY_METHOD_NAME = "METHOD_NAME";
 
     private final MethodStatMetadataRepository metadataRepository;
     private final MethodStatAggregateRepository aggregateRepository;
     private final MethodStatSwitchAppService switchAppService;
+    private final MethodStatMetadataCollector metadataCollector;
 
     /**
      * Retrieve a paginated list of method statistics, filtered by method name and sorted by the given field.
      *
-     * @param methodName    optional method name filter
-     * @param matchMode     matching mode (EXACT or fuzzy)
+     * @param methodName    optional method keyword filter
+     * @param collectEnabled optional effective collection status filter
      * @param sortBy        field to sort by
      * @param sortDirection sort direction (ASC or DESC)
      * @param pageNo        page number (1-based)
      * @param pageSize      page size
      * @return paginated method statistics
      */
-    public PageData<MethodStatStatsView> pageStats(String methodName, String matchMode, String sortBy,
+    public PageData<MethodStatStatsView> pageStats(String methodName, Boolean collectEnabled, String sortBy,
             String sortDirection, Integer pageNo, Integer pageSize) {
         long nowMillis = HighDate.realTimestampMillis();
-        List<MethodStatStatsView> all = metadataRepository.findAll().stream()
-                .filter(item -> matchesMethodName(item.methodName(), methodName, matchMode))
-                .map(item -> toStatsView(item, nowMillis)).sorted(buildStatsComparator(sortBy, sortDirection)).toList();
+        List<MethodStatMetadata> metadata = metadataRepository.findAll();
+        if (metadata.isEmpty()) {
+            metadataCollector.collectAllPointcutMetadata();
+            metadata = metadataRepository.findAll();
+        }
+        List<MethodStatStatsView> all = metadata.stream()
+                .filter(item -> matchesMethod(item, methodName))
+                .map(item -> toStatsView(item, nowMillis))
+                .filter(item -> collectEnabled == null || item.collectEnabled() == collectEnabled.booleanValue())
+                .sorted(buildStatsComparator(sortBy, sortDirection)).toList();
         return page(all, pageNo, pageSize);
     }
 
@@ -107,23 +114,28 @@ public class MethodStatQueryAppService {
     }
 
     /**
-     * Check if a method name matches the filter based on exact or fuzzy matching.
+     * Check whether any method identity field contains the keyword, ignoring case.
      *
-     * @param currentMethodName the actual method name
-     * @param methodName        the filter value
-     * @param matchMode         matching mode (EXACT or fuzzy)
+     * @param metadata method metadata
+     * @param methodName optional method keyword
      * @return true if the method name matches the filter
      */
-    private boolean matchesMethodName(String currentMethodName, String methodName, String matchMode) {
+    private boolean matchesMethod(MethodStatMetadata metadata, String methodName) {
         String normalizedFilter = normalize(methodName);
         if (normalizedFilter == null) {
             return true;
         }
-        String current = currentMethodName == null ? TextConstants.EMPTY : currentMethodName;
-        if (MATCH_MODE_EXACT.equalsIgnoreCase(normalize(matchMode))) {
-            return current.equalsIgnoreCase(normalizedFilter);
-        }
-        return current.toLowerCase(Locale.ROOT).contains(normalizedFilter.toLowerCase(Locale.ROOT));
+        String keyword = normalizedFilter.toLowerCase(Locale.ROOT);
+        return containsIgnoreCase(metadata.packageName(), keyword)
+                || containsIgnoreCase(metadata.className(), keyword)
+                || containsIgnoreCase(metadata.methodName(), keyword)
+                || containsIgnoreCase(metadata.methodSignature(), keyword)
+                || containsIgnoreCase(metadata.key().value(), keyword);
+    }
+
+    private boolean containsIgnoreCase(String value, String lowercaseKeyword) {
+        String current = value == null ? TextConstants.EMPTY : value;
+        return current.toLowerCase(Locale.ROOT).contains(lowercaseKeyword);
     }
 
     /**

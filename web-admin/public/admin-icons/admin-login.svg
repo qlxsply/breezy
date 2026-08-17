@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 登入入口/框 (Login Gate/Portal) -->
+  <path d="M12 4h4.5A1.5 1.5 0 0 1 18 5.5v13a1.5 1.5 0 0 1-1.5 1.5H12" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 登入箭号 (Log-in Action) -->
+  <path d="M3 12h9.5M9.5 8.5L13 12l-3.5 3.5" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 时钟/历史日志印章 (Log Timestamp) -->
+  <circle cx="16" cy="15.5" r="3" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.5"/>
+  <path d="M16 14v1.5h1.2" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round"/>
+</svg>

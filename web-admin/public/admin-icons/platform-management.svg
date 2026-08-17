@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 平台服务器集群基座 (顶层 Console) -->
+  <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v2A1.5 1.5 0 0 1 19.5 10h-15A1.5 1.5 0 0 1 3 8.5v-2z" fill="#2563EB"/>
+  <circle cx="6" cy="7.5" r="1" fill="#EFF6FF"/>
+  <circle cx="8.5" cy="7.5" r="1" fill="#93C5FD"/>
+
+  <!-- 平台控制中心节点 -->
+  <path d="M3 15.5A1.5 1.5 0 0 1 4.5 14h8A1.5 1.5 0 0 1 14 15.5v2a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 3 17.5v-2z" fill="#3B82F6"/>
+  <path d="M5.5 16.5h5" stroke="#EFF6FF" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- 全局管理控制齿轮 (Platform Admin) -->
+  <circle cx="18" cy="17" r="3" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.8"/>
+  <path d="M18 13.5v1M18 19.5v1M14.5 17h1M20.5 17h1" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

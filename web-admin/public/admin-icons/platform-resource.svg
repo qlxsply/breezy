@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 顶层主资源节点 (Parent Resource) -->
+  <rect x="8.5" y="2.5" width="7" height="5" rx="1.5" fill="#2563EB"/>
+
+  <!-- 资源拓扑总线/分支连接线 -->
+  <path d="M12 7.5v4.5M6 12h12M6 12v2.5M18 12v2.5" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- 下级子资源节点 (Sub-Resources / Clusters) -->
+  <rect x="2.5" y="14.5" width="7" height="6" rx="1.5" fill="#3B82F6"/>
+  <rect x="14.5" y="14.5" width="7" height="6" rx="1.5" fill="#93C5FD"/>
+
+  <!-- 节点状态指示 -->
+  <circle cx="6" cy="17.5" r="1" fill="#EFF6FF"/>
+  <circle cx="18" cy="17.5" r="1" fill="#2563EB"/>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 仪表盘/系统外框，带有淡蓝色背景 -->
+  <rect x="2.5" y="3" width="19" height="18" rx="4" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.8"/>
+
+  <!-- 辅助网格线，增加数据报表感 -->
+  <path d="M2.5 16h19" stroke="#93C5FD" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+  <!-- 核心数据波形：代表CPU飙升、内存回收、请求耗时 -->
+  <path d="M2.5 11.5h3.5l3-6 5 12 3-6h4.5" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

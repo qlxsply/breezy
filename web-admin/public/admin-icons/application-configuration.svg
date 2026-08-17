@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- 标准 App 图标网格 (App Grid) -->
+  <rect x="3" y="3" width="8" height="8" rx="2" fill="#2563EB"/>
+  <rect x="13" y="3" width="8" height="8" rx="2" fill="#3B82F6"/>
+  <rect x="3" y="13" width="8" height="8" rx="2" fill="#3B82F6"/>
+
+  <!-- 右下角：应用配置与参数调节滑块区 (App Sliders Block) -->
+  <rect x="13" y="13" width="8" height="8" rx="2" fill="#EFF6FF"/>
+
+  <!-- 滑块 1 (启用/控制) -->
+  <path d="M14.5 15.5h5" stroke="#2563EB" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="18" cy="15.5" r="1.2" fill="#2563EB"/>
+
+  <!-- 滑块 2 (配置/调节) -->
+  <path d="M14.5 18.5h5" stroke="#3B82F6" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="16" cy="18.5" r="1.2" fill="#2563EB"/>
+</svg>
