@@ -30,16 +30,13 @@
 }
 
 .config-preview-title {
-  display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: flex-start;
   gap: 12px;
-  padding-left: 10px;
-  border-left: 3px solid var(--primary-color);
 }
 
 .config-preview-title strong {
   color: var(--color-text-primary);
-  font-size: 13px;
 }
 
 .config-preview-title span {
@@ -60,7 +57,8 @@
 
 .config-value-table th,
 .config-value-table td {
-  padding: 10px 12px;
+  height: 40px;
+  padding: 4px 10px;
   border-right: 1px solid var(--color-border-table);
   border-bottom: 1px solid var(--color-border-table);
   color: var(--color-text-secondary);
@@ -76,8 +74,8 @@
   font-weight: 600;
 }
 
-.config-value-table tr:last-child th,
-.config-value-table tr:last-child td {
+.config-value-table tbody tr:last-child th,
+.config-value-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
@@ -105,15 +103,6 @@
   word-break: break-all;
 }
 
-.config-value-table .bz-input,
-.config-value-table .bz-select,
-.config-value-table .bz-text-field {
-  width: 100%;
-}
-
-.config-manage-drawer .config-value-table-wrap .bz-input,
-.config-manage-drawer .config-value-table-wrap .bz-select,
-.config-manage-drawer .config-value-table-wrap .bz-text-field__control,
 .config-manage-drawer .config-value-table-wrap .bz-button {
   border-radius: 0;
 }
@@ -151,7 +140,7 @@
 }
 
 .config-message-empty {
-  height: 72px;
+  height: 40px;
   text-align: center !important;
 }
 
@@ -170,7 +159,7 @@
 .config-value-table.config-whitelist-table th:nth-child(1),
 .config-value-table.config-whitelist-table th:nth-child(4) {
   width: 42px;
-  height: 42px;
+  height: 40px;
   padding: 0;
   text-align: center;
 }
@@ -184,13 +173,13 @@
 }
 
 .config-whitelist-table td {
-  height: 42px;
+  height: 40px;
 }
 
 .config-whitelist-table__drag-cell,
 .config-whitelist-table__action-cell {
   width: 42px;
-  height: 42px;
+  height: 40px;
   padding: 0 !important;
   text-align: center !important;
 }
@@ -214,8 +203,8 @@
 
 .config-string-list-table th,
 .config-string-list-table td {
-  height: 42px;
-  padding: 5px 10px;
+  height: 40px;
+  padding: 4px 10px;
 }
 
 .config-value-table.config-string-list-table thead th.config-string-list-table__title {
@@ -231,14 +220,14 @@
 .config-value-table.config-string-list-table thead th.config-string-list-table__action-column,
 .config-value-table.config-string-list-table tbody td.config-string-list-table__action-cell {
   width: 42px;
-  height: 42px;
+  height: 40px;
   padding: 0;
   text-align: center;
 }
 
 .config-string-list-table__drag-cell {
   width: 42px;
-  height: 42px;
+  height: 40px;
   padding: 0 !important;
   text-align: center !important;
 }
@@ -247,7 +236,7 @@
   padding: 4px 10px !important;
 }
 
-.config-string-list-table__value-cell .bz-input {
+.config-string-list-table__value-cell .table-input-control {
   min-width: 320px;
 }
 
@@ -263,7 +252,7 @@
 }
 
 .config-string-list-empty {
-  height: 64px;
+  height: 40px;
   color: var(--color-text-muted) !important;
   text-align: center !important;
 }
@@ -639,8 +628,7 @@
   min-width: 980px;
 }
 
-.config-vapid-table td:nth-child(4) .bz-input,
-.config-vapid-table td:nth-child(4) .bz-text-field {
+.config-vapid-table td:nth-child(4) .table-input-control {
   min-width: 320px;
 }
 
@@ -709,7 +697,7 @@
 }
 
 .config-change-table td {
-  padding: 8px 12px;
+  padding: 0;
 }
 
 .config-message-table th:nth-child(1) {

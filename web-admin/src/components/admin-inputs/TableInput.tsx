@@ -8,6 +8,7 @@ export interface TableInputProps extends Omit<
 > {
   value?: string | null;
   defaultValue?: string;
+  type?: "text" | "password" | "number";
   onValueChange?: (value: string) => void;
 }
 
@@ -15,6 +16,7 @@ export const TableInput = forwardRef<HTMLInputElement, TableInputProps>(function
   {
     value,
     defaultValue,
+    type = "text",
     maxLength,
     onChange,
     onValueChange,
@@ -47,7 +49,7 @@ export const TableInput = forwardRef<HTMLInputElement, TableInputProps>(function
         {...rest}
         ref={ref}
         className="table-common-input__inner"
-        type="text"
+        type={type}
         value={currentValue}
         maxLength={maxLength}
         disabled={disabled}

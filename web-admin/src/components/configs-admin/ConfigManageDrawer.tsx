@@ -3,16 +3,14 @@
 import { listPublicDictOptions } from "@admin/api/dicts";
 import { AdminDateTimeField } from "@admin/components/admin/AdminDateTimeField";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
+import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
 import { BzAlert } from "@admin/components/bz/BzAlert";
 import { BzButton } from "@admin/components/bz/BzButton";
 import { BzDragHandle } from "@admin/components/bz/BzDragHandle";
 import { BzIconActionButton } from "@admin/components/bz/BzIconActionButton";
-import { BzInput } from "@admin/components/bz/BzInput";
-import { BzOption } from "@admin/components/bz/BzOption";
-import { BzSelect } from "@admin/components/bz/BzSelect";
 import { BzSwitch } from "@admin/components/bz/BzSwitch";
 import { BzTag } from "@admin/components/bz/BzTag";
-import { BzTextField } from "@admin/components/bz/BzTextField";
 import {
   dateTimeInputToEpochMillisString,
   formatDateTime,
@@ -33,6 +31,10 @@ import { useEffect, useState } from "react";
 
 export type ConfigManageMode = "detail" | "edit";
 type FieldInputValue = string | boolean;
+
+function tableSelectString(value: string | number | Array<string | number>, fallback = ""): string {
+  return Array.isArray(value) ? fallback : String(value ?? fallback);
+}
 
 interface ConfigManageDrawerProps {
   open: boolean;
@@ -760,17 +762,15 @@ export function ConfigManageDrawer({
                   <tbody>
                     <tr>
                       <th>变更原因</th>
-                      <td>
-                        <BzTextField
-                          type="textarea"
+                      <AdminInfoCell state="editable">
+                        <TableTextArea
+                          value={reason}
                           rows={3}
-                          maxlength={500}
-                          showCounter
-                          modelValue={reason}
+                          maxLength={500}
                           placeholder="选填，说明本次配置变更原因"
                           onValueChange={setReason}
                         />
-                      </td>
+                      </AdminInfoCell>
                     </tr>
                   </tbody>
                 </table>
@@ -896,9 +896,11 @@ function DefaultConfigEditor({
                   <td>
                     <BzTag size="small">{field.type}</BzTag>
                   </td>
-                  <td>
+                  <AdminInfoCell state={editable && !field.readOnly ? "editable" : "display"}>
                     {editable
-                      ? renderFieldInput(item, field, inputs[field.path], onChange)
+                      ? field.readOnly
+                        ? displayValue(item, field)
+                        : renderFieldInput(item, field, inputs[field.path], onChange)
                       : displayValue(item, field)}
                     {fieldViolations.map((violation, index) => (
                       <div
@@ -908,7 +910,7 @@ function DefaultConfigEditor({
                         {violation.message}
                       </div>
                     ))}
-                  </td>
+                  </AdminInfoCell>
                 </tr>
               );
             })}
@@ -967,17 +969,19 @@ function DecimalPolicyEditor({
               <td className="mono">scale</td>
               <td>小数位数</td>
               <td>最终结果保留的小数位数，范围 0 至 20</td>
-              <td>
+              <AdminInfoCell state={editable && scaleField ? "editable" : "display"}>
                 {editable && scaleField ? (
-                  <BzInput
-                    modelValue={inputs.scale as string}
+                  <TableInput
+                    value={inputs.scale as string}
                     type="number"
+                    min={scaleField.min ?? undefined}
+                    max={scaleField.max ?? undefined}
                     onValueChange={(value) => onChange(scaleField, value)}
                   />
                 ) : (
                   String(inputs.scale)
                 )}
-              </td>
+              </AdminInfoCell>
             </tr>
             <tr
               className={
@@ -992,25 +996,21 @@ function DecimalPolicyEditor({
                 {ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)
                   ?.description || "决定超出小数位数时的处理方式"}
               </td>
-              <td>
+              <AdminInfoCell state={editable && roundingField ? "editable" : "display"}>
                 {editable && roundingField ? (
-                  <BzSelect
-                    modelValue={roundingMode}
-                    onValueChange={(value) => onChange(roundingField, value ?? "HALF_UP")}
-                  >
-                    {ROUNDING_MODE_OPTIONS.map((option) => (
-                      <BzOption
-                        key={option.value}
-                        value={option.value}
-                        label={option.label}
-                      />
-                    ))}
-                  </BzSelect>
+                  <TableSelect
+                    value={roundingMode}
+                    options={ROUNDING_MODE_OPTIONS}
+                    allowClear={false}
+                    onValueChange={(value) =>
+                      onChange(roundingField, tableSelectString(value, "HALF_UP"))
+                    }
+                  />
                 ) : (
                   ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)?.label ||
                   roundingMode
                 )}
-              </td>
+              </AdminInfoCell>
             </tr>
           </tbody>
         </table>
@@ -1118,11 +1118,13 @@ function TimeOffsetEditor({
               <th>当前真实时间</th>
               <td>{formatDateTime(now)}</td>
               <th>偏移量（秒）</th>
-              <td>
+              <AdminInfoCell state={editable && field ? "editable" : "display"}>
                 {editable && field ? (
-                  <BzInput
-                    modelValue={inputs.offsetSeconds as string}
+                  <TableInput
+                    value={inputs.offsetSeconds as string}
                     type="number"
+                    min={field.min ?? undefined}
+                    max={field.max ?? undefined}
                     onValueChange={(value) => onChange(field, value)}
                   />
                 ) : (
@@ -1140,7 +1142,7 @@ function TimeOffsetEditor({
                     {violation.message}
                   </div>
                 ))}
-              </td>
+              </AdminInfoCell>
               <th>偏移后时间</th>
               <td>
                 {editable && field ? (
@@ -1232,7 +1234,7 @@ function UserPreferenceDefaultsEditor({
                             ? "用户未单独设置时是否保留后台标签页状态"
                             : "日期展示格式"}
                     </td>
-                    <td>
+                    <AdminInfoCell state={editable ? "editable" : "display"}>
                       {field.type === "BOOLEAN" ? (
                         editable ? (
                           <BzSwitch
@@ -1247,22 +1249,16 @@ function UserPreferenceDefaultsEditor({
                           "关闭"
                         )
                       ) : editable ? (
-                        <BzSelect
-                          modelValue={value}
-                          onValueChange={(next) => onChange(field, next ?? "")}
-                        >
-                          {options.map((option) => (
-                            <BzOption
-                              key={option.value}
-                              value={option.value}
-                              label={option.label}
-                            />
-                          ))}
-                        </BzSelect>
+                        <TableSelect
+                          value={value}
+                          options={options}
+                          allowClear={false}
+                          onValueChange={(next) => onChange(field, tableSelectString(next))}
+                        />
                       ) : (
                         options.find((option) => option.value === value)?.label || value
                       )}
-                    </td>
+                    </AdminInfoCell>
                   </tr>
                 );
               })}
@@ -1352,8 +1348,8 @@ function UserPreferenceDefaultsEditor({
 
 function ConfigPreviewTitle({ title, description }: { title: string; description: string }) {
   return (
-    <div className="config-preview-title">
-      <strong>{title}</strong>
+    <div className="role-manage-section__head config-preview-title">
+      <strong className="role-manage-section__title">{title}</strong>
       <span>{description}</span>
     </div>
   );
@@ -1378,34 +1374,28 @@ function renderFieldInput(
   }
   if (field.type === "ENUM") {
     return (
-      <BzSelect
-        modelValue={text}
-        onValueChange={(next) => onChange(field, next ?? "")}
-      >
-        {field.options.map((option) => (
-          <BzOption
-            key={option.value}
-            value={option.value}
-            label={option.label}
-          />
-        ))}
-      </BzSelect>
+      <TableSelect
+        value={text}
+        options={field.options}
+        allowClear={false}
+        onValueChange={(next) => onChange(field, tableSelectString(next))}
+      />
     );
   }
   if (field.type === "STRING_LIST" || field.type === "OBJECT") {
     return (
-      <BzTextField
-        type="textarea"
+      <TableTextArea
+        value={text}
         rows={field.type === "OBJECT" ? 8 : 4}
-        modelValue={text}
+        showCount={false}
         placeholder={field.type === "OBJECT" ? "请输入 JSON" : "每行一项"}
         onValueChange={(next) => onChange(field, next)}
       />
     );
   }
   return (
-    <BzInput
-      modelValue={text}
+    <TableInput
+      value={text}
       type={field.sensitive ? "password" : field.type === "STRING" ? "text" : "number"}
       min={field.min ?? undefined}
       max={field.max ?? undefined}
@@ -1509,39 +1499,35 @@ function AuthWhitelistEditor({
                   <span className="config-string-list-order">{index + 1}</span>
                 )}
               </td>
-              <td>
+              <AdminInfoCell state={editable ? "editable" : "display"}>
                 {editable ? (
-                  <BzSelect
-                    modelValue={rule.type}
+                  <TableSelect
+                    value={rule.type}
+                    options={WHITELIST_TYPE_OPTIONS}
+                    allowClear={false}
                     onValueChange={(value) =>
                       onChange(
                         rules.map((item, itemIndex) =>
                           itemIndex === index
                             ? {
                                 ...item,
-                                type: value ?? "EXACT",
+                                type: tableSelectString(value, "EXACT"),
                               }
                             : item,
                         ),
                       )
                     }
-                  >
-                    {WHITELIST_TYPE_OPTIONS.map((option) => (
-                      <BzOption
-                        key={option.value}
-                        {...option}
-                      />
-                    ))}
-                  </BzSelect>
+                  />
                 ) : (
                   WHITELIST_TYPE_OPTIONS.find((option) => option.value === rule.type)?.label ||
                   rule.type
                 )}
-              </td>
-              <td>
+              </AdminInfoCell>
+              <AdminInfoCell state={editable ? "editable" : "display"}>
                 {editable ? (
-                  <BzInput
-                    modelValue={rule.pattern}
+                  <TableInput
+                    value={rule.pattern}
+                    placeholder="请输入以 / 开头的路径规则"
                     onValueChange={(value) =>
                       onChange(
                         rules.map((item, itemIndex) =>
@@ -1558,7 +1544,7 @@ function AuthWhitelistEditor({
                 ) : (
                   rule.pattern
                 )}
-              </td>
+              </AdminInfoCell>
               <td className="config-whitelist-table__action-cell">
                 {editable ? (
                   <BzIconActionButton
@@ -1710,10 +1696,13 @@ function LoggingFilterEditor({
                           <span className="config-string-list-order">{index + 1}</span>
                         )}
                       </td>
-                      <td className="config-string-list-table__value-cell">
+                      <AdminInfoCell
+                        state={editable ? "editable" : "display"}
+                        className="config-string-list-table__value-cell"
+                      >
                         {editable ? (
-                          <BzInput
-                            modelValue={value}
+                          <TableInput
+                            value={value}
                             placeholder="请输入以 / 开头的路径前缀"
                             onValueChange={(next) =>
                               updateList(
@@ -1727,7 +1716,7 @@ function LoggingFilterEditor({
                         ) : (
                           <span className="mono">{value}</span>
                         )}
-                      </td>
+                      </AdminInfoCell>
                       <td className="config-string-list-table__action-cell">
                         {editable ? (
                           <BzIconActionButton
@@ -1816,19 +1805,19 @@ function VapidEditor({
                 <td className="mono">{field.path}</td>
                 <td>{field.title}</td>
                 <td>{descriptions[field.path] || field.description || "-"}</td>
-                <td>
+                <AdminInfoCell state={editable ? "editable" : "display"}>
                   {editable ? (
                     field.path === "publicKey" ? (
-                      <BzTextField
-                        type="textarea"
+                      <TableTextArea
+                        value={text}
                         rows={3}
-                        modelValue={text}
+                        showCount={false}
                         placeholder="请输入 VAPID 公钥"
                         onValueChange={(value) => onChange(field, value)}
                       />
                     ) : (
-                      <BzInput
-                        modelValue={text}
+                      <TableInput
+                        value={text}
                         type={field.sensitive ? "password" : "text"}
                         placeholder={
                           field.sensitive && item.sensitiveValuePresence[field.path]
@@ -1849,7 +1838,7 @@ function VapidEditor({
                       {violation.message}
                     </div>
                   ))}
-                </td>
+                </AdminInfoCell>
               </tr>
             );
           })}
@@ -1900,53 +1889,47 @@ function MessageTypeEditor({
         <tbody>
           {rules.map((rule, index) => (
             <tr key={`${rule.msgType}-${index}`}>
-              <td>
+              <AdminInfoCell state={editable ? "editable" : "display"}>
                 {editable ? (
-                  <BzSelect
-                    modelValue={rule.msgType}
-                    onValueChange={(msgType) => update(index, { msgType: msgType ?? "" })}
-                  >
-                    {typeOptionsFor(index).map((option) => (
-                      <BzOption
-                        key={option.value}
-                        {...option}
-                      />
-                    ))}
-                  </BzSelect>
+                  <TableSelect
+                    value={rule.msgType}
+                    options={typeOptionsFor(index)}
+                    allowClear={false}
+                    onValueChange={(msgType) =>
+                      update(index, { msgType: tableSelectString(msgType) })
+                    }
+                  />
                 ) : (
                   MESSAGE_TYPE_OPTIONS.find((option) => option.value === rule.msgType)?.label ||
                   rule.msgType
                 )}
-              </td>
-              <td>
+              </AdminInfoCell>
+              <AdminInfoCell state={editable ? "editable" : "display"}>
                 {editable ? (
-                  <BzInput
-                    modelValue={rule.route}
+                  <TableInput
+                    value={rule.route}
                     placeholder="例如 /todo/all"
                     onValueChange={(route) => update(index, { route })}
                   />
                 ) : (
                   rule.route || "-"
                 )}
-              </td>
-              <td>
+              </AdminInfoCell>
+              <AdminInfoCell state={editable ? "editable" : "display"}>
                 {editable ? (
-                  <BzSelect
-                    modelValue={rule.priority}
-                    onValueChange={(priority) => update(index, { priority: priority ?? "MEDIUM" })}
-                  >
-                    {MESSAGE_PRIORITY_OPTIONS.map((option) => (
-                      <BzOption
-                        key={option.value}
-                        {...option}
-                      />
-                    ))}
-                  </BzSelect>
+                  <TableSelect
+                    value={rule.priority}
+                    options={MESSAGE_PRIORITY_OPTIONS}
+                    allowClear={false}
+                    onValueChange={(priority) =>
+                      update(index, { priority: tableSelectString(priority, "MEDIUM") })
+                    }
+                  />
                 ) : (
                   MESSAGE_PRIORITY_OPTIONS.find((option) => option.value === rule.priority)
                     ?.label || rule.priority
                 )}
-              </td>
+              </AdminInfoCell>
               {(
                 ["sseEnabled", "webPushEnabled", "panelAutoOpen", "osNotificationEnabled"] as const
               ).map((key) => (
