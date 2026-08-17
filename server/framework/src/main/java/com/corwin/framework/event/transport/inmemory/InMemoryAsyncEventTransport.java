@@ -102,7 +102,7 @@ public class InMemoryAsyncEventTransport implements AsyncEventTransport {
      * 按 deliverAtMillis 判断立即投递或进入延时队列。
      */
     private void submitDelivery(SubscriptionDescriptor subscription, AsyncEventEnvelope<?> envelope) {
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         if (envelope.deliverAtMillis() <= now) {
             executor.execute(() -> invokeSubscriber(subscription, envelope));
             return;
@@ -202,7 +202,7 @@ public class InMemoryAsyncEventTransport implements AsyncEventTransport {
          */
         @Override
         public long getDelay(TimeUnit unit) {
-            long delayMillis = deliverAtMillis - HighDate.mockTimestampMillis();
+            long delayMillis = deliverAtMillis - HighDate.realTimestampMillis();
             return unit.convert(delayMillis, TimeUnit.MILLISECONDS);
         }
 
@@ -223,4 +223,3 @@ public class InMemoryAsyncEventTransport implements AsyncEventTransport {
         }
     }
 }
-

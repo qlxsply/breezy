@@ -29,6 +29,6 @@ public class WebUserRestrictionService {
         return repository.findByUserId(userId).stream()
                          .filter(restriction -> restriction.getRestrictionScope() == WebUserRestrictionScope.LOGIN ||
                                  restriction.getRestrictionScope() == WebUserRestrictionScope.ALL)
-                         .anyMatch(restriction -> restriction.activeAt(HighDate.mockInstant()));
+                         .anyMatch(restriction -> restriction.activeAt(HighDate.realInstant()));
     }
 }

@@ -38,7 +38,7 @@ public class ScheduleRuleTrigger implements Trigger {
     @Override
     @Nullable
     public Instant nextExecution(TriggerContext triggerContext) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         Instant lastScheduledExecution = triggerContext.lastScheduledExecution();
         Instant lastCompletion = triggerContext.lastCompletion();
         return nextExecution(scheduleRule, lastScheduledExecution, lastCompletion, now);
@@ -47,14 +47,14 @@ public class ScheduleRuleTrigger implements Trigger {
     /** Calculates the first scheduled execution time for a rule. */
     @Nullable
     public static Instant firstExecution(ScheduleRule rule) {
-        return nextExecution(rule, null, null, HighDate.mockInstant());
+        return nextExecution(rule, null, null, HighDate.realInstant());
     }
 
     /** Calculates the next execution time after a given scheduled/completion time. */
     @Nullable
     public static Instant nextExecutionAfter(ScheduleRule rule, @Nullable Instant lastScheduledExecution,
             @Nullable Instant lastCompletion) {
-        return nextExecution(rule, lastScheduledExecution, lastCompletion, HighDate.mockInstant());
+        return nextExecution(rule, lastScheduledExecution, lastCompletion, HighDate.realInstant());
     }
 
     @Nullable

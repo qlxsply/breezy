@@ -145,7 +145,7 @@ public class WebUser {
         this.registerIp = registerIp;
         this.registerUserAgent = registerUserAgent;
         this.tokenVersion = 1L;
-        this.tokenNotBefore = now;
+        this.tokenNotBefore = HighDate.realInstant();
         this.createdAt = now;
         this.updatedAt = now;
         this.createdBy = operator;
@@ -183,7 +183,7 @@ public class WebUser {
      */
     public void revokeTokens(String operator) {
         this.tokenVersion = (tokenVersion == null ? 1L : tokenVersion + 1L);
-        this.tokenNotBefore = HighDate.mockInstant();
+        this.tokenNotBefore = HighDate.realInstant();
         touch(operator);
     }
 

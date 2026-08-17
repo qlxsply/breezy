@@ -95,6 +95,11 @@ const ROUNDING_MODE_OPTIONS = [
   { value: "FLOOR", label: "向下取整", description: "向负无穷方向舍入" },
 ];
 
+const TIME_MOCK_MODE_OPTIONS = [
+  { value: "DYNAMIC", label: "动态偏移" },
+  { value: "FIXED", label: "固定时间" },
+];
+
 const USER_PREFERENCE_DICT_CODES: Record<string, string> = {
   timeZone: "USER_TIME_ZONE",
   dateTimeFormat: "USER_DATE_TIME_FORMAT",
@@ -384,17 +389,21 @@ export function ConfigManageDrawer({
     ]);
   }
 
-  function buildDefaultValue(): { value?: JsonObject; violations: ConfigViolation[] } {
+  function buildDefaultValue(inputOverrides: Record<string, FieldInputValue> = {}): {
+    value?: JsonObject;
+    violations: ConfigViolation[];
+  } {
     if (!item) return { violations: [] };
     const value = cloneObject(item.effectiveValue);
     const nextViolations: ConfigViolation[] = [];
+    const normalizedInputs = { ...inputs, ...inputOverrides };
     for (const field of [...item.fields].sort((left, right) => left.order - right.order)) {
       if (field.readOnly) continue;
       if (field.sensitive && !touchedSensitiveFields.includes(field.path)) {
         deletePathValue(value, field.path);
         continue;
       }
-      const input = inputs[field.path];
+      const input = normalizedInputs[field.path];
       if (field.type === "BOOLEAN") {
         setPathValue(value, field.path, Boolean(input));
         continue;
@@ -570,6 +579,12 @@ export function ConfigManageDrawer({
         setPathValue(value, field.path, list);
       }
       return { value: nextViolations.length ? undefined : value, violations: nextViolations };
+    }
+    if (item.editorId === "time-offset") {
+      const mode = inputs.mode === "FIXED" ? "FIXED" : "DYNAMIC";
+      return buildDefaultValue(
+        mode === "FIXED" ? { offsetSeconds: "0" } : { fixedEpochMillis: "0" },
+      );
     }
     const built = buildDefaultValue();
     if (item.editorId !== "web-push-vapid" || !built.value) return built;
@@ -870,7 +885,9 @@ function DefaultConfigEditor({
 }) {
   return (
     <div className="config-value-table-wrap">
-      <table className="config-value-table">
+      <table
+        className={`config-value-table${["system.security.password-policy", "system.security.authentication", "schemaforge.ddl.policy", "system.audit.policy"].includes(item.key) ? " config-default-switch-table" : ""}`}
+      >
         <thead>
           <tr>
             <th>参数标识</th>
@@ -1069,12 +1086,17 @@ function TimeOffsetEditor({
 }) {
   const personalizedConfigs = usePersonalizedConfigs();
   const [now, setNow] = useState(() => Date.now());
-  const field = item.fields.find((candidate) => candidate.path === "offsetSeconds");
+  const modeField = item.fields.find((candidate) => candidate.path === "mode");
+  const offsetField = item.fields.find((candidate) => candidate.path === "offsetSeconds");
+  const fixedField = item.fields.find((candidate) => candidate.path === "fixedEpochMillis");
+  const mode = inputs.mode === "FIXED" ? "FIXED" : "DYNAMIC";
   const parsedOffset = Number(inputs.offsetSeconds);
   const offsetSeconds = Number.isFinite(parsedOffset) ? parsedOffset : 0;
-  const targetEpochMillis = now + offsetSeconds * 1000;
+  const parsedFixedEpochMillis = Number(inputs.fixedEpochMillis);
+  const fixedEpochMillis = Number.isFinite(parsedFixedEpochMillis) ? parsedFixedEpochMillis : 0;
   const precision = getUserDateTimePrecision();
-  const targetInput = epochToDateTimeInput(targetEpochMillis, precision);
+  const offsetInput = epochToDateTimeInput(now + offsetSeconds * 1000, precision);
+  const fixedInput = epochToDateTimeInput(fixedEpochMillis, precision);
   const formatterVersion = personalizedConfigs
     .map((config) => `${config.code}:${config.value}`)
     .join("|");
@@ -1083,11 +1105,29 @@ function TimeOffsetEditor({
     return () => window.clearInterval(timer);
   }, []);
 
-  function changeTargetDateTime(value: string) {
-    if (!field || !value) return;
-    const targetMillis = Number(dateTimeInputToEpochMillisString(value));
-    if (!Number.isFinite(targetMillis)) return;
-    onChange(field, String(Math.round((targetMillis - now) / 1000)));
+  function changeMode(value: string) {
+    if (!modeField) return;
+    if (value === "FIXED") {
+      if (offsetField) onChange(offsetField, "0");
+      if (fixedField && fixedEpochMillis === 0) onChange(fixedField, String(now));
+    } else if (fixedField) {
+      onChange(fixedField, "0");
+    }
+    onChange(modeField, value);
+  }
+
+  function changeFixedDateTime(value: string) {
+    if (!fixedField || !value) return;
+    const epochMillis = dateTimeInputToEpochMillisString(value);
+    if (epochMillis !== null) onChange(fixedField, epochMillis);
+  }
+
+  function changeOffsetDateTime(value: string) {
+    if (!offsetField || !value) return;
+    const epochMillis = Number(dateTimeInputToEpochMillisString(value));
+    if (Number.isFinite(epochMillis)) {
+      onChange(offsetField, String(Math.round((epochMillis - now) / 1000)));
+    }
   }
 
   return (
@@ -1098,67 +1138,124 @@ function TimeOffsetEditor({
       <div className="config-value-table-wrap">
         <table className="config-value-table config-time-calibration-table">
           <colgroup>
-            <col className="config-time-calibration-table__label" />
             <col className="config-time-calibration-table__identity" />
-            <col className="config-time-calibration-table__label" />
-            <col className="config-time-calibration-table__offset" />
-            <col className="config-time-calibration-table__label" />
-            <col className="config-time-calibration-table__target" />
+            <col className="config-time-calibration-table__name" />
+            <col className="config-time-calibration-table__raw" />
+            <col className="config-time-calibration-table__helper" />
           </colgroup>
-          <tbody>
+          <thead>
             <tr>
               <th>参数标识</th>
-              <td className="mono">offsetSeconds</td>
               <th>参数名称</th>
-              <td>{field?.title || "时间偏移秒数"}</td>
-              <th>说明</th>
-              <td>设置系统业务时间相对真实时间的秒级偏移量</td>
+              <th>值</th>
+              <th>设置效果</th>
             </tr>
-            <tr className={violations.length ? "is-error" : undefined}>
-              <th>当前真实时间</th>
-              <td>{formatDateTime(now)}</td>
-              <th>偏移量（秒）</th>
-              <AdminInfoCell state={editable && field ? "editable" : "display"}>
-                {editable && field ? (
-                  <TableInput
-                    value={inputs.offsetSeconds as string}
-                    type="number"
-                    min={field.min ?? undefined}
-                    max={field.max ?? undefined}
-                    onValueChange={(value) => onChange(field, value)}
+          </thead>
+          <tbody>
+            <tr
+              className={
+                violations.some((violation) => violation.path === "mode") ? "is-error" : undefined
+              }
+            >
+              <td className="mono">mode</td>
+              <td>{modeField?.title || "模拟模式"}</td>
+              <AdminInfoCell state={editable && modeField ? "editable" : "display"}>
+                {editable && modeField ? (
+                  <TableSelect
+                    value={mode}
+                    options={TIME_MOCK_MODE_OPTIONS}
+                    allowClear={false}
+                    onValueChange={(value) => changeMode(tableSelectString(value, "DYNAMIC"))}
                   />
                 ) : (
-                  <span className="mono">
-                    {offsetSeconds > 0 ? "+" : ""}
-                    {offsetSeconds}
-                  </span>
+                  TIME_MOCK_MODE_OPTIONS.find((option) => option.value === mode)?.label
                 )}
-
-                {violations.map((violation, index) => (
-                  <div
-                    className="config-field-error"
-                    key={`${violation.path}-${index}`}
-                  >
-                    {violation.message}
-                  </div>
-                ))}
               </AdminInfoCell>
-              <th>偏移后时间</th>
-              <td>
-                {editable && field ? (
-                  <AdminDateTimeField
-                    modelValue={targetInput}
-                    onValueChange={changeTargetDateTime}
-                  />
-                ) : (
-                  <span className="mono config-preview-result">
-                    {formatDateTime(targetEpochMillis)}
-                  </span>
-                )}
-              </td>
+              <td />
             </tr>
+            {mode === "DYNAMIC" ? (
+              <tr
+                className={
+                  violations.some((violation) => violation.path === "offsetSeconds")
+                    ? "is-error"
+                    : undefined
+                }
+              >
+                <td className="mono">offsetSeconds</td>
+                <td>{offsetField?.title || "时间偏移秒数"}</td>
+                <AdminInfoCell state={editable && offsetField ? "editable" : "display"}>
+                  {editable && offsetField ? (
+                    <TableInput
+                      value={String(inputs.offsetSeconds ?? "")}
+                      type="number"
+                      min={offsetField.min ?? undefined}
+                      max={offsetField.max ?? undefined}
+                      onValueChange={(value) => onChange(offsetField, value)}
+                    />
+                  ) : (
+                    <span className="mono">{String(inputs.offsetSeconds ?? "")}</span>
+                  )}
+                </AdminInfoCell>
+                <AdminInfoCell state={editable && offsetField ? "editable" : "display"}>
+                  {editable && offsetField ? (
+                    <AdminDateTimeField
+                      modelValue={offsetInput}
+                      onValueChange={changeOffsetDateTime}
+                    />
+                  ) : (
+                    <span className="mono config-preview-result">
+                      {formatDateTime(now + offsetSeconds * 1000)}
+                    </span>
+                  )}
+                </AdminInfoCell>
+              </tr>
+            ) : (
+              <tr
+                className={
+                  violations.some((violation) => violation.path === "fixedEpochMillis")
+                    ? "is-error"
+                    : undefined
+                }
+              >
+                <td className="mono">fixedEpochMillis</td>
+                <td>{fixedField?.title || "固定时间"}</td>
+                <AdminInfoCell state={editable && fixedField ? "editable" : "display"}>
+                  {editable && fixedField ? (
+                    <TableInput
+                      value={String(inputs.fixedEpochMillis ?? "")}
+                      type="number"
+                      min={fixedField.min ?? undefined}
+                      max={fixedField.max ?? undefined}
+                      onValueChange={(value) => onChange(fixedField, value)}
+                    />
+                  ) : (
+                    <span className="mono">{String(inputs.fixedEpochMillis ?? "")}</span>
+                  )}
+                </AdminInfoCell>
+                <AdminInfoCell state={editable && fixedField ? "editable" : "display"}>
+                  {editable && fixedField ? (
+                    <AdminDateTimeField
+                      modelValue={fixedInput}
+                      onValueChange={changeFixedDateTime}
+                    />
+                  ) : (
+                    <span className="mono config-preview-result">
+                      {formatDateTime(fixedEpochMillis)}
+                    </span>
+                  )}
+                </AdminInfoCell>
+              </tr>
+            )}
           </tbody>
         </table>
+        {violations.map((violation, index) => (
+          <div
+            className="config-field-error"
+            key={`${violation.path}-${index}`}
+          >
+            {violation.message}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1234,7 +1331,14 @@ function UserPreferenceDefaultsEditor({
                             ? "用户未单独设置时是否保留后台标签页状态"
                             : "日期展示格式"}
                     </td>
-                    <AdminInfoCell state={editable ? "editable" : "display"}>
+                    <AdminInfoCell
+                      state={editable ? "editable" : "display"}
+                      className={
+                        field.path === "adminTabKeepAlive"
+                          ? "config-preference-switch-cell"
+                          : undefined
+                      }
+                    >
                       {field.type === "BOOLEAN" ? (
                         editable ? (
                           <BzSwitch
@@ -1805,12 +1909,20 @@ function VapidEditor({
                 <td className="mono">{field.path}</td>
                 <td>{field.title}</td>
                 <td>{descriptions[field.path] || field.description || "-"}</td>
-                <AdminInfoCell state={editable ? "editable" : "display"}>
+                <AdminInfoCell
+                  state={editable ? "editable" : "display"}
+                  className={
+                    field.path === "publicKey" || field.path === "privateKey"
+                      ? "config-vapid-key-cell"
+                      : undefined
+                  }
+                >
                   {editable ? (
                     field.path === "publicKey" ? (
                       <TableTextArea
                         value={text}
                         rows={3}
+                        className="config-vapid-key-control"
                         showCount={false}
                         placeholder="请输入 VAPID 公钥"
                         onValueChange={(value) => onChange(field, value)}
@@ -1819,6 +1931,9 @@ function VapidEditor({
                       <TableInput
                         value={text}
                         type={field.sensitive ? "password" : "text"}
+                        className={
+                          field.path === "privateKey" ? "config-vapid-key-control" : undefined
+                        }
                         placeholder={
                           field.sensitive && item.sensitiveValuePresence[field.path]
                             ? "******（留空保持原值）"
@@ -1933,7 +2048,10 @@ function MessageTypeEditor({
               {(
                 ["sseEnabled", "webPushEnabled", "panelAutoOpen", "osNotificationEnabled"] as const
               ).map((key) => (
-                <td key={key}>
+                <td
+                  className="config-message-switch-cell"
+                  key={key}
+                >
                   {editable ? (
                     <BzSwitch
                       modelValue={rule[key]}

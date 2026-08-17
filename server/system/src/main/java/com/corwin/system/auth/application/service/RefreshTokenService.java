@@ -38,7 +38,7 @@ public class RefreshTokenService {
      */
     @Transactional
     public IssuedRefreshToken issue(Long userId, String clientInfo) {
-        Instant expiresAt = HighDate.mockInstant().plus(authConfigService.userRefreshTokenTtl());
+        Instant expiresAt = HighDate.realInstant().plus(authConfigService.userRefreshTokenTtl());
         String rawToken = opaqueTokenService.generateToken();
         String tokenHash = opaqueTokenService.hash(rawToken);
         refreshTokenRepository.save(new RefreshToken(userId, newTokenId(), tokenHash, expiresAt, clientInfo));
@@ -84,7 +84,7 @@ public class RefreshTokenService {
         String tokenHash = opaqueTokenService.hash(rawRefreshToken.trim());
         RefreshToken token = refreshTokenRepository.findByRefreshTokenHash(tokenHash)
                 .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         if (token.expired(now)) {
             token.markExpired();
             refreshTokenRepository.save(token);

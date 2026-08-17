@@ -80,7 +80,7 @@ public class WebUserRestriction {
         this.restrictionType = restrictionType;
         this.restrictionScope = restrictionScope;
         this.reason = reason;
-        this.startAt = now;
+        this.startAt = HighDate.realInstant();
         this.endAt = endAt;
         this.createdAt = now;
         this.updatedAt = now;
@@ -102,8 +102,8 @@ public class WebUserRestriction {
      * Close the restriction immediately by setting end_at to now.
      */
     public void close(String operator) {
-        this.endAt = HighDate.mockInstant();
-        this.updatedAt = this.endAt;
+        this.endAt = HighDate.realInstant();
+        this.updatedAt = HighDate.mockInstant();
         this.updatedBy = operator;
     }
 }

@@ -78,7 +78,7 @@ public class RefreshToken {
      */
     public RefreshToken(Long userId, String refreshTokenId, String refreshTokenHash, Instant expiresAt,
             String clientInfo) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         this.userId = userId;
         this.refreshTokenId = refreshTokenId;
         this.refreshTokenHash = refreshTokenHash;
@@ -116,7 +116,7 @@ public class RefreshToken {
      * Revokes this token with a reason.
      */
     public void revoke(String reason) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         this.status = RefreshTokenStatus.REVOKED;
         this.revokedAt = now;
         this.revokedReason = reason;
@@ -132,6 +132,6 @@ public class RefreshToken {
     }
 
     private void touch() {
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 }

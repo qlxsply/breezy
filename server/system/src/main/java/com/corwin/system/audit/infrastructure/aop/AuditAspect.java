@@ -61,7 +61,7 @@ public class AuditAspect {
         }
 
         HttpServletRequest request = currentRequest();
-        Instant startedAt = HighDate.mockInstant();
+        Instant startedAt = HighDate.realInstant();
         Object result = null;
         Throwable throwable = null;
         boolean success = false;
@@ -74,7 +74,7 @@ public class AuditAspect {
             throwable = ex;
             throw ex;
         } finally {
-            Instant endedAt = HighDate.mockInstant();
+            Instant endedAt = HighDate.realInstant();
             long durationMs = Math.max(0L, HighDate.betweenMillis(startedAt, endedAt));
             auditLogService.record(new AuditRecordCommand(CtxUtil.getTraceId(), readRequestId(request), currentUserId(),
                     currentUsername(), currentUserType(), operation.applicationCode(), ApiProtocol.HTTP,

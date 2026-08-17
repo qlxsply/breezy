@@ -1,6 +1,16 @@
 package com.corwin.framework.config.builtin;
 
-import com.corwin.framework.config.definition.*;
+import com.corwin.framework.config.TimeMockMode;
+import com.corwin.framework.config.definition.ConfigActivationPolicy;
+import com.corwin.framework.config.definition.ConfigEditPolicy;
+import com.corwin.framework.config.definition.ConfigFieldSpec;
+import com.corwin.framework.config.definition.ConfigFieldType;
+import com.corwin.framework.config.definition.ConfigInvalidValuePolicy;
+import com.corwin.framework.config.definition.ConfigKey;
+import com.corwin.framework.config.definition.ConfigOptionItem;
+import com.corwin.framework.config.definition.ConfigSpec;
+import com.corwin.framework.config.definition.ConfigViolation;
+import com.corwin.framework.config.definition.SimpleConfigSpec;
 import com.corwin.framework.util.ClientIpMode;
 import com.corwin.framework.web.auth.AuthWhitelistItem;
 
@@ -11,18 +21,22 @@ import java.util.List;
 import java.util.Set;
 
 import static com.corwin.framework.config.definition.ConfigFieldSpecs.required;
+import static com.corwin.framework.config.definition.ConfigFieldSpecs.requiredEnum;
 
 /**
  * @author Corwin 2026/7/31
  */
 public final class FrameworkConfigSpecs {
 
-    public static final ConfigSpec<TimeOffsetConfig> TIME_OFFSET = new SimpleConfigSpec<>(
-            new ConfigKey("framework.time.offset"), "framework", "time", "时间偏移",
-            "业务模拟时间相对服务器真实时间的偏移量", TimeOffsetConfig.class, new TimeOffsetConfig(0), 1, 10,
+    public static final ConfigSpec<TimeMockConfig> TIME_MOCK = new SimpleConfigSpec<>(
+            new ConfigKey("framework.time.mock"), "framework", "time", "业务时间模拟",
+            "按动态偏移或固定时刻模拟业务时间，不影响调度、安全过期与运行耗时", TimeMockConfig.class,
+            new TimeMockConfig(TimeMockMode.DYNAMIC, 0, 0), 1, 10,
             ConfigActivationPolicy.DYNAMIC, ConfigEditPolicy.ADMIN_EDITABLE, ConfigInvalidValuePolicy.USE_DEFAULT,
-            List.of(required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 10)), "time-offset",
-            FrameworkConfigSpecs::validateTimeOffset, FrameworkConfigSpecs::validateTimeOffset);
+            List.of(requiredEnum("mode", "模拟模式", TimeMockMode.values(), 10),
+                    required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 20),
+                    required("fixedEpochMillis", "固定时间", ConfigFieldType.LONG, 30)), "time-offset",
+            FrameworkConfigSpecs::validateTimeMock, FrameworkConfigSpecs::validateTimeMock);
 
     public static final ConfigSpec<ClientIpConfig> CLIENT_IP = new SimpleConfigSpec<>(
             new ConfigKey("framework.web.client-ip"), "framework", "web", "客户端 IP", "客户端 IP 请求头解析方式",
@@ -53,7 +67,7 @@ public final class FrameworkConfigSpecs {
                     required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)), "logging-filter",
             FrameworkConfigSpecs::validateLogging, FrameworkConfigSpecs::validateLogging);
 
-    public record TimeOffsetConfig(long offsetSeconds) {
+    public record TimeMockConfig(TimeMockMode mode, long offsetSeconds, long fixedEpochMillis) {
     }
 
     public record ClientIpConfig(ClientIpMode mode) {
@@ -75,12 +89,20 @@ public final class FrameworkConfigSpecs {
         }
     }
 
-    private static List<ConfigViolation> validateTimeOffset(TimeOffsetConfig value) {
+    private static List<ConfigViolation> validateTimeMock(TimeMockConfig value) {
+        if (value == null || value.mode() == null) {
+            return List.of(violation("mode", "REQUIRED", "时间模拟模式不能为空"));
+        }
         try {
-            Instant.EPOCH.plusSeconds(value.offsetSeconds());
+            if (value.mode() == TimeMockMode.DYNAMIC) {
+                Instant.now().plusSeconds(value.offsetSeconds());
+            } else {
+                Instant.ofEpochMilli(value.fixedEpochMillis());
+            }
             return List.of();
         } catch (DateTimeException ex) {
-            return List.of(violation("offsetSeconds", "OUT_OF_RANGE", "时间偏移量超出可计算范围"));
+            String path = value.mode() == TimeMockMode.DYNAMIC ? "offsetSeconds" : "fixedEpochMillis";
+            return List.of(violation(path, "OUT_OF_RANGE", "模拟时间超出可计算范围"));
         }
     }
 

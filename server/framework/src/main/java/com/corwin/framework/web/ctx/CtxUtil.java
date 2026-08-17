@@ -123,7 +123,7 @@ public final class CtxUtil {
      */
     public static void initTrace(HttpServletRequest request, String traceId) {
         Ctx ctx = CTX_CACHE.get();
-        ctx.setRequestStartTs(HighDate.mockTimestampMillis());
+        ctx.setRequestStartTs(HighDate.realTimestampMillis());
         ctx.setRequestStartNano(System.nanoTime());
         ctx.setTraceId(traceId);
         ctx.setClient(request.getHeader(HttpHeaderNames.CLIENT));
@@ -146,7 +146,7 @@ public final class CtxUtil {
      */
     public static void schedulerInitTrace(String traceId) {
         Ctx ctx = CTX_CACHE.get();
-        ctx.setRequestStartTs(HighDate.mockTimestampMillis());
+        ctx.setRequestStartTs(HighDate.realTimestampMillis());
         ctx.setRequestStartNano(System.nanoTime());
         ctx.setTraceId(traceId);
         ctx.setClient(null);

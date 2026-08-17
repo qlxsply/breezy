@@ -63,15 +63,15 @@ public class SchedulerJobExecutionRunner implements Runnable {
     /** Executes the job: acquires lock, invokes handler, records result and schedules next execution. */
     @Override
     public void run() {
-        Instant scheduledTime = HighDate.mockInstant();
-        Instant startTime = HighDate.mockInstant();
+        Instant scheduledTime = HighDate.realInstant();
+        Instant startTime = HighDate.realInstant();
         String executionId = UUID.randomUUID().toString().replace("-", "");
 
         boolean locked = executionLock == null || executionLock.tryLock();
         if (!locked) {
             SchedulerJobExecution skipped = SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime,
                     triggerType);
-            skipped.finishSkipped(HighDate.mockInstant(), "Skipped because previous execution is still running");
+            skipped.finishSkipped(HighDate.realInstant(), "Skipped because previous execution is still running");
             executionRepository.save(skipped);
             runtimeRepository.findById(jobId).ifPresent(runtime -> {
                 runtime.markScheduled(ScheduleRuleTrigger.nextExecutionAfter(scheduleRule, scheduledTime, startTime));
@@ -92,7 +92,7 @@ public class SchedulerJobExecutionRunner implements Runnable {
 
             JobResult result = handler.execute(new JobExecutionContext<>(jobId, executionId, scheduledTime, startTime,
                     triggerType, payload));
-            Instant endTime = HighDate.mockInstant();
+            Instant endTime = HighDate.realInstant();
             long durationMs = HighDate.realTimestampMillis() - startTime.toEpochMilli();
             execution.finishSuccess(endTime, durationMs, result);
             executionRepository.save(execution);
@@ -100,7 +100,7 @@ public class SchedulerJobExecutionRunner implements Runnable {
                     durationMs);
             runtimeRepository.save(runtime);
         } catch (Exception ex) {
-            Instant endTime = HighDate.mockInstant();
+            Instant endTime = HighDate.realInstant();
             long durationMs = HighDate.realTimestampMillis() - startTime.toEpochMilli();
             SchedulerJobExecution execution = executionRepository.findById(executionId)
                     .orElseGet(() -> SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime,

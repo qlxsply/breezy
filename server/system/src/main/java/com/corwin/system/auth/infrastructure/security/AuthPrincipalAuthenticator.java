@@ -83,7 +83,7 @@ public class AuthPrincipalAuthenticator {
 
         LoginSession session = loginSessionRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         if (session.expired(now)) {
             session.markExpired(systemOperator());
             loginSessionRepository.save(session);

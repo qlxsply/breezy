@@ -28,7 +28,7 @@ public final class ScheduleRules {
 
     /** Creates a fixed-delay rule starting immediately. */
     public static FixedIntervalRule fixedDelay(Duration delay) {
-        return new FixedIntervalRule(Objects.requireNonNull(delay, "delay required"), HighDate.mockInstant(),
+        return new FixedIntervalRule(Objects.requireNonNull(delay, "delay required"), HighDate.realInstant(),
                 IntervalMode.FIXED_DELAY);
     }
 
@@ -40,7 +40,7 @@ public final class ScheduleRules {
 
     /** Creates a fixed-rate rule starting immediately. */
     public static FixedIntervalRule fixedRate(Duration rate) {
-        return new FixedIntervalRule(Objects.requireNonNull(rate, "rate required"), HighDate.mockInstant(),
+        return new FixedIntervalRule(Objects.requireNonNull(rate, "rate required"), HighDate.realInstant(),
                 IntervalMode.FIXED_RATE);
     }
 

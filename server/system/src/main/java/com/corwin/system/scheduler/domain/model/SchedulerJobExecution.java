@@ -146,7 +146,7 @@ public class SchedulerJobExecution {
         execution.scheduledTime = scheduledTime;
         execution.startTime = startTime;
         execution.triggerType = triggerType;
-        execution.createdAt = HighDate.mockInstant();
+        execution.createdAt = HighDate.realInstant();
         return execution;
     }
 

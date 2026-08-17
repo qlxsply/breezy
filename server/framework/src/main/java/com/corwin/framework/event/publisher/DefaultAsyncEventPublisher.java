@@ -80,7 +80,7 @@ public class DefaultAsyncEventPublisher implements AsyncEventPublisher {
             throw new IllegalArgumentException("delay must be >= 0");
         }
         long delayMillis = delay.toMillis();
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         long deliverAtMillis;
         try {
             deliverAtMillis = Math.addExact(now, delayMillis);

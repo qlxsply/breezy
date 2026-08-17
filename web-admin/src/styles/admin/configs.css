@@ -176,6 +176,24 @@
   height: 40px;
 }
 
+.config-whitelist-table tbody tr {
+  height: 40px;
+}
+
+.config-whitelist-table tbody td {
+  box-sizing: border-box;
+  height: 40px !important;
+}
+
+.config-whitelist-table tbody td:nth-child(2) {
+  padding-top: 3px;
+  padding-bottom: 4px;
+}
+
+.config-whitelist-table tbody td:nth-child(3) > .table-input-control {
+  margin: 3px 12px 4px;
+}
+
 .config-whitelist-table__drag-cell,
 .config-whitelist-table__action-cell {
   width: 42px;
@@ -207,6 +225,15 @@
   padding: 4px 10px;
 }
 
+.config-string-list-table tbody tr {
+  height: 40px;
+}
+
+.config-string-list-table tbody td {
+  box-sizing: border-box;
+  height: 40px !important;
+}
+
 .config-value-table.config-string-list-table thead th.config-string-list-table__title {
   width: auto;
   text-align: left;
@@ -233,11 +260,13 @@
 }
 
 .config-string-list-table__value-cell {
-  padding: 4px 10px !important;
+  height: 40px !important;
+  padding: 0 10px !important;
 }
 
 .config-string-list-table__value-cell .table-input-control {
   min-width: 320px;
+  margin: 3px 12px 4px;
 }
 
 .config-whitelist-table tbody tr.is-drag-target td,
@@ -261,20 +290,20 @@
   min-width: 980px;
 }
 
-.config-time-calibration-table__label {
-  width: 112px;
-}
-
 .config-time-calibration-table__identity {
   width: 190px;
 }
 
-.config-time-calibration-table__offset {
-  width: 230px;
+.config-time-calibration-table__name {
+  width: 180px;
 }
 
-.config-time-calibration-table__target {
-  width: 224px;
+.config-time-calibration-table__raw {
+  width: 220px;
+}
+
+.config-time-calibration-table__helper {
+  width: 360px;
 }
 
 .config-time-value {
@@ -632,6 +661,34 @@
   min-width: 320px;
 }
 
+.config-vapid-key-cell .config-vapid-key-control {
+  min-height: 72px;
+}
+
+.config-vapid-key-cell .config-vapid-key-control.table-common-input {
+  height: 72px;
+}
+
+.config-vapid-key-cell .config-vapid-key-control.table-common-input .table-common-input__inner {
+  line-height: 72px;
+}
+
+.config-vapid-key-cell .config-vapid-key-control.table-text-area .table-text-area__input {
+  min-height: 72px;
+}
+
+.config-preference-switch-cell,
+.config-default-switch-table td:has(> .bz-switch),
+.config-message-switch-cell {
+  vertical-align: middle !important;
+}
+
+.config-preference-switch-cell > .bz-switch,
+.config-default-switch-table td > .bz-switch,
+.config-message-switch-cell > .bz-switch {
+  vertical-align: middle;
+}
+
 .config-setting-table th:nth-child(1) {
   width: 18%;
 }
@@ -719,8 +776,8 @@
   width: 68px;
 }
 
-.config-message-table td:nth-child(n + 4) {
-  text-align: center;
+.config-message-table td.config-message-switch-cell {
+  text-align: left;
 }
 
 .config-message-table td:nth-child(n + 8) {

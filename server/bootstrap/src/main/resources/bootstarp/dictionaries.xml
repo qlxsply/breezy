@@ -382,6 +382,16 @@
         <enabled>true</enabled>
     </dictionary>
     <dictionary>
+        <id>dict-type-time-mock-mode</id>
+        <code>TIME_MOCK_MODE</code>
+        <name>业务时间模拟模式</name>
+        <description>业务时间使用动态偏移或固定时刻的模拟模式。</description>
+        <enumClass>com.corwin.framework.config.TimeMockMode</enumClass>
+        <valueType>STRING</valueType>
+        <structureType>FLAT</structureType>
+        <enabled>true</enabled>
+    </dictionary>
+    <dictionary>
         <id>dict-type-client-ip-mode</id>
         <code>CLIENT_IP_MODE</code>
         <name>客户端 IP 模式</name>

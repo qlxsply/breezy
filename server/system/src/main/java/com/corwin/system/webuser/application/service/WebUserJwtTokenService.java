@@ -36,7 +36,7 @@ public class WebUserJwtTokenService {
      * @return the issued token and its expiration time
      */
     public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         Instant expiresAt = now.plus(authConfigService.userAccessTokenTtl());
         String token = Jwts.builder().subject(String.valueOf(principal.userId()))
                            .issuer(authConfigService.userJwtIssuer()).issuedAt(Date.from(now))

@@ -174,7 +174,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
      * 持久化并入队。
      */
     private void persistAndEnqueue(AsyncEventEnvelope<?> envelope, List<SubscriptionDescriptor> subscriptions) {
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         String payloadBody = encodeEnvelope(envelope);
         PersistedEvent event = new PersistedEvent(envelope.eventId(), envelope.eventType(), envelope.source(),
                 "base64-envelope-bytes", envelope.eventType(), payloadBody, envelope.occurredAtMillis(),
@@ -195,7 +195,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
      * 入 ready 或 delay 队列。
      */
     private void enqueueTask(DeliveryTaskRef taskRef) {
-        if (taskRef.deliverAtMillis() <= HighDate.mockTimestampMillis()) {
+        if (taskRef.deliverAtMillis() <= HighDate.realTimestampMillis()) {
             readyQueue.offer(taskRef);
             return;
         }
@@ -280,7 +280,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
      * 单条 delivery 执行。
      */
     private void processDelivery(DeliveryTaskRef taskRef) {
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         long claimTimeout = Math.max(1000L, properties.getDurable().getClaimTimeoutMs());
         long claimUntil = safeAdd(now, claimTimeout);
         boolean claimed = Boolean.TRUE.equals(transactionTemplate.execute(
@@ -292,7 +292,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
         long claimedVersion = taskRef.deliveryVersion() + 1;
         PersistedEvent event = eventStore.findEvent(taskRef.eventId()).orElse(null);
         if (event == null) {
-            long updatedAt = HighDate.mockTimestampMillis();
+            long updatedAt = HighDate.realTimestampMillis();
             transactionTemplate.executeWithoutResult(
                     status -> eventStore.markDeliveryCancelled(taskRef.deliveryId(), taskRef.eventId(), claimedVersion,
                             updatedAt, updatedAt));
@@ -300,7 +300,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
         }
         SubscriptionDescriptor subscription = subscriptionById.get(taskRef.subscriberId());
         if (subscription == null) {
-            long updatedAt = HighDate.mockTimestampMillis();
+            long updatedAt = HighDate.realTimestampMillis();
             transactionTemplate.executeWithoutResult(
                     status -> eventStore.markDeliveryCancelled(taskRef.deliveryId(), taskRef.eventId(), claimedVersion,
                             updatedAt, updatedAt));
@@ -309,7 +309,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
         AsyncEventEnvelope<?> envelope = decodeEnvelope(event.payloadBody());
         try (ConsumeContextScope ignored = contextBinder.bind(envelope.ctxSnapshot())) {
             subscription.invoker().invoke(envelope);
-            long completedAt = HighDate.mockTimestampMillis();
+            long completedAt = HighDate.realTimestampMillis();
             transactionTemplate.executeWithoutResult(
                     status -> eventStore.markDeliverySucceeded(taskRef.deliveryId(), taskRef.eventId(), claimedVersion,
                             completedAt, completedAt));
@@ -322,7 +322,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
      * 处理消费失败：标记失败并进行最小本地延时回队。
      */
     private void onConsumeFailed(DeliveryTaskRef taskRef, long claimedVersion, Exception ex) {
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         String errorMessage = ex.getClass().getSimpleName() + ": " + Objects.toString(ex.getMessage(), "");
         boolean marked = Boolean.TRUE.equals(transactionTemplate.execute(
                 status -> eventStore.markDeliveryFailed(taskRef.deliveryId(), claimedVersion, errorMessage, now)));
@@ -346,7 +346,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
             return;
         }
         int limit = Math.max(1, properties.getDurable().getStartupRecoveryBatchSize());
-        long now = HighDate.mockTimestampMillis();
+        long now = HighDate.realTimestampMillis();
         int offset = 0;
         int totalLoaded = 0;
         while (true) {
@@ -408,7 +408,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
             if (cleanup == null || !cleanup.isEnabled()) {
                 return;
             }
-            long now = HighDate.mockTimestampMillis();
+            long now = HighDate.realTimestampMillis();
             long deliveryBefore = now - Math.max(0L, cleanup.getDeliveryRetentionMs());
             long eventBefore = now - Math.max(0L, cleanup.getEventRetentionMs());
             int batchSize = Math.max(1, cleanup.getBatchSize());
@@ -512,7 +512,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
          */
         @Override
         public long getDelay(TimeUnit unit) {
-            long delayMillis = taskRef.deliverAtMillis() - HighDate.mockTimestampMillis();
+            long delayMillis = taskRef.deliverAtMillis() - HighDate.realTimestampMillis();
             return unit.convert(delayMillis, TimeUnit.MILLISECONDS);
         }
 

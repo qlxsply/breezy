@@ -45,15 +45,17 @@ public final class HighDate {
     }
 
     /**
-     * Returns the mocked current instant (= now + offsetSeconds).
-     * Does not depend on time zone. The offset is read from
-     * {@link FrameworkConfigSpecs#TIME_OFFSET}.
+     * Returns the current business instant according to the configured mock mode.
+     * Does not depend on time zone.
      *
      * @return the mocked {@link Instant}
      */
     public static Instant mockInstant() {
-        long offsetSeconds = Configs.get(FrameworkConfigSpecs.TIME_OFFSET).offsetSeconds();
-        return Instant.now().plusSeconds(offsetSeconds);
+        var config = Configs.get(FrameworkConfigSpecs.TIME_MOCK);
+        return switch (config.mode()) {
+            case DYNAMIC -> realInstant().plusSeconds(config.offsetSeconds());
+            case FIXED -> Instant.ofEpochMilli(config.fixedEpochMillis());
+        };
     }
 
     public static LocalDateTime mockDateTime() {

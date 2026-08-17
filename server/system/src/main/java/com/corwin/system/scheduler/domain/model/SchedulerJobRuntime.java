@@ -123,7 +123,7 @@ public class SchedulerJobRuntime {
         runtime.status = status;
         runtime.nextFireTime = nextFireTime;
         runtime.consecutiveFailures = 0L;
-        runtime.updatedAt = HighDate.mockInstant();
+        runtime.updatedAt = HighDate.realInstant();
         return runtime;
     }
 
@@ -132,7 +132,7 @@ public class SchedulerJobRuntime {
         this.status = SchedulerJobStatus.SCHEDULED;
         this.nextFireTime = nextFireTime;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to PAUSED. */
@@ -140,7 +140,7 @@ public class SchedulerJobRuntime {
         this.status = SchedulerJobStatus.PAUSED;
         this.nextFireTime = null;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to CANCELLED. */
@@ -148,7 +148,7 @@ public class SchedulerJobRuntime {
         this.status = SchedulerJobStatus.CANCELLED;
         this.nextFireTime = null;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to INVALID with an error message. */
@@ -157,7 +157,7 @@ public class SchedulerJobRuntime {
         this.nextFireTime = null;
         this.lastErrorMessage = message;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to ERROR with an error message. */
@@ -165,7 +165,7 @@ public class SchedulerJobRuntime {
         this.status = SchedulerJobStatus.ERROR;
         this.lastErrorMessage = message;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to RUNNING with the current execution ID. */
@@ -173,7 +173,7 @@ public class SchedulerJobRuntime {
         this.status = SchedulerJobStatus.RUNNING;
         this.currentExecutionId = executionId;
         this.lastFireTime = scheduledTime;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to SCHEDULED or CANCELLED after successful execution. */
@@ -185,7 +185,7 @@ public class SchedulerJobRuntime {
         this.lastErrorMessage = null;
         this.consecutiveFailures = 0L;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 
     /** Transitions state to SCHEDULED or ERROR after a failed execution. */
@@ -197,6 +197,6 @@ public class SchedulerJobRuntime {
         this.lastErrorMessage = errorMessage;
         this.consecutiveFailures = (this.consecutiveFailures == null ? 0L : this.consecutiveFailures) + 1L;
         this.currentExecutionId = null;
-        this.updatedAt = HighDate.mockInstant();
+        this.updatedAt = HighDate.realInstant();
     }
 }

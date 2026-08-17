@@ -70,7 +70,7 @@ com.corwin.config
 
 当前配置大致分为：
 
-- framework：时间偏移、客户端 IP、鉴权白名单、日志过滤路径、用户偏好默认值。
+- framework：业务时间模拟、客户端 IP、鉴权白名单、日志过滤路径、用户偏好默认值。
 - system：认证、密码策略、审计、文件存储、SSE、Web Push、消息类型配置。
 - business：JSONFMT 文件阈值、SchemaForge DDL 格式和限定符模式。
 
@@ -1050,7 +1050,7 @@ public record UserPreferenceDefaultsConfig(
 
 | 新配置键 | 原配置项 | 说明 |
 | --- | --- | --- |
-| `framework.time.offset` | `TIME_OFFSET` | 业务模拟时间偏移 |
+| `framework.time.mock` | `TIME_MOCK` | 动态偏移或固定时刻的业务时间模拟 |
 | `framework.web.client-ip` | `CLIENT_IP_MODE` | 客户端 IP 解析策略 |
 | `framework.web.auth-whitelist` | `AUTH_WHITELIST` | 鉴权白名单 |
 | `framework.web.logging-filter` | 两个 Logging Filter 路径配置 | 聚合日志过滤策略 |

@@ -29,7 +29,7 @@ public class InMemorySseTicketService implements SseTicketService {
 
     @Override
     public SseTicket issue(TokenPayload payload) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         long ttlSeconds = Configs.get(SystemNotifyConfigSpecs.SSE).ttlSeconds();
         Instant expiresAt = now.plusSeconds(ttlSeconds);
         String ticketValue = generateTicket();
@@ -46,7 +46,7 @@ public class InMemorySseTicketService implements SseTicketService {
         if (entry == null) {
             throw new IllegalArgumentException("sse ticket not found");
         }
-        if (entry.expiresAt().isBefore(HighDate.mockInstant())) {
+        if (entry.expiresAt().isBefore(HighDate.realInstant())) {
             throw new IllegalArgumentException("sse ticket expired");
         }
         return entry.payload();
@@ -61,7 +61,7 @@ public class InMemorySseTicketService implements SseTicketService {
 
     @Scheduled(fixedDelay = 60_000L)
     public void cleanupExpired() {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         store.entrySet().removeIf(entry -> entry.getValue().expiresAt().isBefore(now));
     }
 

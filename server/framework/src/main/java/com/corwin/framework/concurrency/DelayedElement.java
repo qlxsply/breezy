@@ -31,7 +31,7 @@ public record DelayedElement<T>(
 
     @Override
     public long getDelay(TimeUnit unit) {
-        long diff = expireTime.toEpochMilli() - HighDate.mockInstant().toEpochMilli();
+        long diff = expireTime.toEpochMilli() - HighDate.realInstant().toEpochMilli();
         return unit.convert(diff, TimeUnit.MILLISECONDS);
     }
 

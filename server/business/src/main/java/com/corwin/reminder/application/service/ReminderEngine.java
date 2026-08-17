@@ -54,7 +54,7 @@ public class ReminderEngine {
      * 预加载未来一段时间内的提醒到延迟队列
      */
     public void preloadReminders() {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         Instant end = now.plus(PRELOAD_HOURS, ChronoUnit.HOURS);
 
         log.info("Preloading reminders before {}", end);
@@ -106,7 +106,7 @@ public class ReminderEngine {
         if (event.removed()) {
             todoReminderProcessor.cancel(event.todoId());
         } else {
-            Instant now = HighDate.mockInstant();
+            Instant now = HighDate.realInstant();
             Instant end = now.plus(PRELOAD_HOURS, ChronoUnit.HOURS);
             if (event.remindAt() != null && !event.remindAt().isAfter(end)) {
                 todoReminderProcessor.submit(new DelayedElement<>(event.todoId(), event.remindAt()));
@@ -120,7 +120,7 @@ public class ReminderEngine {
             scheduleReminderProcessor.cancel(event.scheduleId());
         } else {
             scheduleRepo.findById(event.scheduleId())
-                    .ifPresent(e -> submitNextScheduleReminder(e, HighDate.mockInstant()));
+                    .ifPresent(e -> submitNextScheduleReminder(e, HighDate.realInstant()));
         }
     }
 
@@ -130,7 +130,7 @@ public class ReminderEngine {
     @Scheduled(fixedDelay = 60_000L) // 降低频率，仅作为延迟队列失效时的兜底
     @Transactional
     public void tick() {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         generateTodoOutbox(now);
         generateScheduleOutbox(now);
     }
@@ -163,7 +163,7 @@ public class ReminderEngine {
             return;
         }
 
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         // 处理当前到点的提醒（可能由于 take 延迟，此时可能已经有多个点到期，但 DelayQueue 保证了按序触发）
         Instant nextStart = nextOccurrenceCalculator.nextStart(e, now.minusSeconds(1)); // 稍微往前偏一点点确保能算到当前的 occurrence
         if (nextStart != null) {

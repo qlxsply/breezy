@@ -14,7 +14,7 @@ public final class FrameworkConfigSpecProvider implements ConfigSpecProvider {
 
     @Override
     public Collection<ConfigSpec<?>> getConfigSpecs() {
-        return List.of(FrameworkConfigSpecs.TIME_OFFSET, FrameworkConfigSpecs.CLIENT_IP,
+        return List.of(FrameworkConfigSpecs.TIME_MOCK, FrameworkConfigSpecs.CLIENT_IP,
                 FrameworkConfigSpecs.AUTH_WHITELIST, FrameworkConfigSpecs.LOGGING_FILTER,
                 FrameworkFormatConfigSpecs.DECIMAL_POLICY);
     }

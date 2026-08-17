@@ -48,7 +48,7 @@ public class DefaultAsyncEventEnvelopeFactory implements AsyncEventEnvelopeFacto
      */
     @Override
     public <T extends AsyncEvent> AsyncEventEnvelope<T> create(T event, String source) {
-        return create(event, source, HighDate.mockTimestampMillis());
+        return create(event, source, HighDate.realTimestampMillis());
     }
 
     /**
@@ -66,7 +66,7 @@ public class DefaultAsyncEventEnvelopeFactory implements AsyncEventEnvelopeFacto
         EventCtxSnapshot ctxSnapshot = EventCtxSnapshot.from(CtxUtil.snapshot());
         String finalSource = resolveSource(source);
         long occurredAtMillis = HighDate.mockTimestampMillis();
-        long finalDeliverAtMillis = deliverAtMillis <= 0L ? occurredAtMillis : deliverAtMillis;
+        long finalDeliverAtMillis = deliverAtMillis <= 0L ? HighDate.realTimestampMillis() : deliverAtMillis;
         return new AsyncEventEnvelope<>(UUID.randomUUID().toString(), event.getClass().getName(),
                 occurredAtMillis, finalDeliverAtMillis, ctxSnapshot, event, finalSource, resolveProducerService(),
                 null, Map.of());
@@ -91,4 +91,3 @@ public class DefaultAsyncEventEnvelopeFactory implements AsyncEventEnvelopeFacto
         return StringUtils.hasText(configured) ? configured.trim() : applicationName;
     }
 }
-

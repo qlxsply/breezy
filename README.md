@@ -298,7 +298,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - 动态任务运行时注册采用“事务内落库 + 提交后注册”模型，避免业务事务回滚后任务已注册的脏状态
     - 方法调用统计（MethodStat）已合并到系统域：`com.corwin.system.domain.model.MethodStat`、`com.corwin.system.application.service.MethodStatManageAppService`
     - Web Push 健康检查能力：提供订阅状态、最近投递状态查询与高优先级测试推送接口（`/api/push/health`、`/api/push/health/test`）
-    - 系统配置增强：支持客户端 IP 获取方式实时预览、TIME_OFFSET 基于服务器时间的偏移预览与目标时间秒差辅助计算
+    - 系统配置增强：支持客户端 IP 获取方式实时预览，以及 `TIME_MOCK` 动态偏移/固定时刻两种业务时间模拟模式
     - 文件管理能力：系统业务文件上传、文件预览/下载、批量元数据查询、全局文件管理
     - 管理员文件查询增强：支持逻辑文件/目录统一检索、逻辑文件到物理文件详情映射、物理文件反向引用追踪
     - 应用内文件创建能力：支持系统在无外部上传流场景下按 `FilePurpose` 自动路由目录创建文件，按内容摘要执行物理文件去重与引用计数复用
@@ -323,7 +323,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 - 页面（`web/src/pages`）
     - 系统管理后台：接口、用户功能、账号、用户、用户直授权限、角色、系统配置、数据字典、登录日志、诊断工具、方法统计、系统文件
     - 全局通知菜单支持“推送健康检查面板”：可查看浏览器安全上下文、Service Worker Scope、订阅健康状态、最近投递状态，并支持一键发送高优先级测试推送
-    - 系统配置页交互升级：列表改为只读展示 + 图标化编辑入口；按配置项弹出专用编辑界面（客户端 IP 实时测试、TIME_OFFSET 秒差辅助计算、日期/日期时间/小数格式样例预览）
+    - 系统配置页交互升级：列表改为只读展示 + 图标化编辑入口；按配置项弹出专用编辑界面（客户端 IP 实时测试、业务时间动态偏移/固定时刻设置、日期/日期时间/小数格式样例预览）
 - 系统管理后台：文件管理（只读查询逻辑文件/目录，支持物理文件详情映射与同物理引用反查，文本/图片预览带大小阈值，并提供清晰错误态提示）
     - 文件管理预览交互：目录切换、搜索、排序、刷新等会导致列表内容变化的操作会自动关闭当前预览，避免旧内容误导
     - 工具：数据源管理、数据库管理、元数据浏览、结构工厂（`/schemaforge`）、方法调用统计（`/method-stat`）、诊所管理（商品/库存/采购/销售/流水）
@@ -636,13 +636,12 @@ cd web; npm run build
 - 时间获取统一规范：禁止在业务代码中直接使用 `Instant.now()`、`LocalDateTime.now()`、`LocalDate.now()`、
   `System.currentTimeMillis()` 获取当前时间
 - 统一通过 `HighDate` 或 `LowDate` 获取时间；`java.time` 类型优先使用 `HighDate`，`Date/Timestamp` 场景使用 `LowDate`
-- 默认使用 `mock*` 方法作为业务时间（受 `TIME_OFFSET` 影响）；仅在必须使用系统真实时间时使用 `real*` 方法
+- 默认使用 `mock*` 方法作为业务数据时间（受 `framework.time.mock` 影响）；调度、延迟队列、安全过期、TTL 和耗时统计必须使用 `real*` 方法
 - 时间范围查询统一使用半开区间：开始时间用 `toStartOf*`，结束时间优先用“下一边界起点”（如 `toStartOfNextDay`、
   `toStartOfNextMonth`），查询条件使用 `<` 而不是 `<= toEndOf*`
 - `LowDate.toEndOfDay` 仅保留为兼容语义方法，不再推荐作为查询上界；新代码优先使用 `HighDate`，`LowDate` 主要承担 `Date`/
   `Timestamp` 兼容转换
-- Token 有效期规则：签发时间和过期校验都必须基于 mock 时间（当前由 `JwtTokenService` 使用 `HighDate.mockInstant()` 与
-  parser clock 保证）
+- Token 有效期规则：签发时间和过期校验必须基于真实时间，业务时间模拟不得延长、缩短或冻结 Token 有效期
 - 异步事件统一约定：所有业务异步事件必须使用 `com.corwin.framework.event` 基础能力实现（发布走 `AsyncEventPublisher`，消费走 `@AsyncEventListener`），禁止在业务模块重复自建队列/线程池事件机制
 - 缓存统一约定：业务通过 `CacheTemplate` 显式选择 `CacheMode`；当前仅 `LOCAL` 可用，`REDIS` 与 `LOCAL_REDIS` 调用时会抛出带错误码的 `BizException`
 - 缓存异常统一约定：缓存参数错误、模式未实现、类型不匹配等可预期失败统一走 `BizException + CacheError`，不再单独定义裸 `RuntimeException` 体系
@@ -652,8 +651,9 @@ cd web; npm run build
 ### 真实时间使用登记（real*）
 
 - `server/system/src/main/java/com/corwin/system/config/application/service/ConfigCommandService.java`：配置覆盖值的修改时间属于系统运行元数据
-- `server/system/src/main/java/com/corwin/system/application/service/ConfigAdminService.java`：`previewTimeOffset`
-  需要以服务器真实当前时间作为偏移预览基准
+- `server/framework/src/main/java/com/corwin/framework/event` 与 `concurrency`：异步投递、重试和延迟队列按真实时间推进
+- `server/system/src/main/java/com/corwin/system/auth` 与 `webuser/application/service/WebUserJwtTokenService.java`：会话、Refresh Token 和 JWT 的签发及过期校验使用真实时间
+- `server/system/src/main/java/com/corwin/system/scheduler` 与 `server/business/src/main/java/com/corwin/reminder/application/service/ReminderEngine.java`：任务和提醒调度按真实时间推进
 - `server/src/main/java/com/corwin/framework/config/JdbcBootstrapDigestStore.java`：`save` 写入引导摘要更新时间，属于系统运行时元数据
 - `server/framework/src/main/java/com/corwin/framework/web/filter/LoggingFilter.java`：请求耗时统计必须使用真实时间差
 - `server/system/src/main/java/com/corwin/system/infrastructure/scheduling/TaskSchedulerManager.java`：任务执行耗时统计必须使用真实时间差

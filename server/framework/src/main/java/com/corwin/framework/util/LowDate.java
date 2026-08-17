@@ -67,10 +67,10 @@ public final class LowDate {
         return toTimeOfDay(realDateTime());
     }
 
-    /* ----------------------- mock (offset current time) ----------------------- */
+    /* ----------------------- mock (business time) ----------------------- */
 
     /**
-     * Returns the mocked current {@link Date} (= now + offsetSeconds).
+     * Returns the configured current business {@link Date}.
      * Does not depend on time zone.
      */
     public static Date mockDateTime() {

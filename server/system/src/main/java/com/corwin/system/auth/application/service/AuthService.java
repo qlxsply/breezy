@@ -86,7 +86,7 @@ public class AuthService {
             Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.ADMIN);
             String rawToken = opaqueTokenService.generateToken();
             String tokenHash = opaqueTokenService.hash(rawToken);
-            Instant now = HighDate.mockInstant();
+            Instant now = HighDate.realInstant();
             Instant expiresAt = now.plus(authConfigService.adminSessionTtl());
 
             LoginSession session = new LoginSession(user.getId(), newTokenId(), tokenHash,

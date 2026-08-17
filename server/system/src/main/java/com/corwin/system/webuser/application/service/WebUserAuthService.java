@@ -267,7 +267,7 @@ public class WebUserAuthService {
     }
 
     private Instant toRefreshTriggerAt(Instant actualExpiresAt) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         Instant candidate = actualExpiresAt.minus(authConfigService.userAccessTokenRefreshSkew());
         return candidate.isAfter(now) ? candidate : now;
     }

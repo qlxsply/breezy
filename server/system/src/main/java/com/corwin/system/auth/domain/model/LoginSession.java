@@ -117,7 +117,7 @@ public class LoginSession {
     public LoginSession(Long userId, String tokenId, String tokenHash, String loginIp, String userAgent,
             String permissionSnapshotJson, String menuSnapshotJson, String functionSnapshotJson, Instant expiresAt,
             String operator) {
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         this.userId = userId;
         this.tokenId = tokenId;
         this.tokenHash = tokenHash;
@@ -163,7 +163,7 @@ public class LoginSession {
      */
     public void revoke(String operator) {
         this.sessionStatus = SessionStatus.REVOKED;
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         this.revokedAt = now;
         this.revokedBy = operator;
         touch(operator, now);
@@ -174,7 +174,7 @@ public class LoginSession {
      */
     public void kickOut(String operator) {
         this.sessionStatus = SessionStatus.KICKED_OUT;
-        Instant now = HighDate.mockInstant();
+        Instant now = HighDate.realInstant();
         this.revokedAt = now;
         this.revokedBy = operator;
         touch(operator, now);
@@ -185,7 +185,7 @@ public class LoginSession {
      */
     public void markExpired(String operator) {
         this.sessionStatus = SessionStatus.EXPIRED;
-        this.revokedAt = HighDate.mockInstant();
+        this.revokedAt = HighDate.realInstant();
         this.revokedBy = operator;
         touch(operator, this.revokedAt);
     }
