@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatDateTime } from "../../core/formatter";
 import type { RoleEntry, RoleGrantResourceEntry, RoleGrantSelection } from "../../types/role-admin";
 import { AdminEntityDrawer } from "../admin/AdminEntityDrawer";
+import { AdminInfoCell } from "../admin/AdminInfoCell";
+import { TableInput, TableSelect } from "../admin-inputs";
 import { BzAlert } from "../bz/BzAlert";
 import { BzButton } from "../bz/BzButton";
 import { BzInput } from "../bz/BzInput";
-import { BzOption } from "../bz/BzOption";
-import { BzSelect } from "../bz/BzSelect";
 import { BzTag } from "../bz/BzTag";
 import { RolePermissionTreeNode, type RolePermissionTreeNodeView } from "./RolePermissionTreeNode";
 
@@ -470,43 +470,43 @@ export function RolePermissionDialog({
   function renderStatusValue() {
     if (basicEditable) {
       return (
-        <td className="role-info-cell role-info-cell--edit">
-          <BzSelect
-            className="role-info-select"
-            modelValue={form.enabled ? "true" : "false"}
+        <AdminInfoCell state="editable">
+          <TableSelect
+            value={form.enabled ? "true" : "false"}
+            options={[
+              { label: "启用", value: "true" },
+              { label: "停用", value: "false" },
+            ]}
+            allowClear={false}
             onValueChange={(value) =>
               setForm((current) => ({
                 ...current,
-                enabled: value === undefined ? current.enabled : value === "true",
+                enabled: (Array.isArray(value) ? value[0] : value) === "true",
               }))
             }
-          >
-            <BzOption
-              label="启用"
-              value="true"
-            />
-            <BzOption
-              label="停用"
-              value="false"
-            />
-          </BzSelect>
-        </td>
+          />
+        </AdminInfoCell>
       );
     }
-    return (
-      <td className="role-info-cell">
-        <BzTag
-          className={`role-info-status-tag${form.enabled ? " is-enabled" : " is-disabled"}`}
-          type={form.enabled ? "success" : "danger"}
-        >
-          {form.enabled ? "启用" : "停用"}
-        </BzTag>
-      </td>
+    return renderValueCell(
+      <BzTag
+        className={`role-info-status-tag${form.enabled ? " is-enabled" : " is-disabled"}`}
+        type={form.enabled ? "success" : "danger"}
+      >
+        {form.enabled ? "启用" : "停用"}
+      </BzTag>,
     );
   }
 
-  function renderValueCell(value: string, options?: { mono?: boolean }) {
-    return <td className={`role-info-cell${options?.mono ? " mono" : ""}`}>{value || "-"}</td>;
+  function renderValueCell(value: ReactNode, options?: { mono?: boolean }) {
+    return (
+      <AdminInfoCell
+        state={mode === "detail" ? "display" : "readonly"}
+        mono={options?.mono}
+      >
+        {value || "-"}
+      </AdminInfoCell>
+    );
   }
 
   function renderEditableTextCell(
@@ -516,14 +516,17 @@ export function RolePermissionDialog({
     options?: { mono?: boolean },
   ) {
     return (
-      <td className={`role-info-cell role-info-cell--edit${options?.mono ? " mono" : ""}`}>
-        <BzInput
-          modelValue={value}
+      <AdminInfoCell
+        state="editable"
+        mono={options?.mono}
+      >
+        <TableInput
+          value={value}
           placeholder={placeholder}
-          className={`role-info-input${options?.mono ? " mono" : ""}`}
+          className={options?.mono ? "mono" : undefined}
           onValueChange={onChange}
         />
-      </td>
+      </AdminInfoCell>
     );
   }
 
