@@ -2,7 +2,7 @@ import type { ExternalUserEntry } from "../types/external-user-admin";
 import type { PageResult } from "../types/page";
 import { get, post, put } from "./http";
 
-const BASE = "/external-users";
+const BASE = "/web-users";
 
 interface ExternalUserPayload {
   id: string;

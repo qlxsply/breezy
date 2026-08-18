@@ -1,12 +1,12 @@
 "use client";
 
 import { batchListDictOptions } from "@admin/api/dicts";
-import { getExternalUser } from "@admin/api/external-users";
 import {
   getUserFeatureUserManagement,
   pageUserFeaturePackages,
   saveUserFeatureUserManagement,
 } from "@admin/api/user-features";
+import { getExternalUser } from "@admin/api/web-users";
 import {
   type AdminDetailSection,
   AdminDetailTable,

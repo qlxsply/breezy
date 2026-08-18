@@ -330,7 +330,7 @@ public class BootstrapControllerApiScanner {
                     "name", "name", "code", "code", "createdAt", "created_at");
             case "/api/users/page" -> sortOptions(null, null,
                     "username", "username", "createdAt", "created_at", "created_at", "created_at");
-            case "/api/external-users/page" -> sortOptions(null, null,
+            case "/api/web-users/page" -> sortOptions(null, null,
                     "createdAt", "created_at", "created_at", "created_at", "displayName", "display_name",
                     "nickname", "nickname");
             case "/api/roles/page" -> sortOptions(null, null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { pageExternalUsers, updateExternalUser } from "@admin/api/external-users";
+import { pageExternalUsers, updateExternalUser } from "@admin/api/web-users";
 import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";

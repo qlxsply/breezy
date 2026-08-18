@@ -518,7 +518,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `web/src/pages/UsersAdminPage.vue` -> `web/src/api/users.ts`、`web/src/api/roles.ts`
     - `web/src/pages/RolesAdminPage.vue` -> `web/src/api/roles.ts`
     - `web/src/pages/UserPermissionsPage.vue` -> `web/src/api/permissions.ts`、`web/src/api/users.ts`
-    - `web/src/pages/NormalFeatureAdminPage.vue` -> `web/src/api/normal-features.ts`、`web/src/api/external-users.ts`
+    - `web-admin/src/components/admin-pages/WebUsersAdminPage.tsx` -> `web-admin/src/api/web-users.ts`
     - `web/src/pages/SystemFilesPage.vue` -> `web/src/api/system-files.ts`
     - `web/src/pages/LoginLogsPage.vue` -> `web/src/api/login-logs.ts`
     - `web/src/pages/DictAdminPage.vue` -> `web/src/api/dicts.ts`

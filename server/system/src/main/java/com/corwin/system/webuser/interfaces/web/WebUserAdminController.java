@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @ApiMeta(module = ApiModuleCode.SYSTEM)
 @RestController
-@RequestMapping("/api/external-users")
+@RequestMapping("/api/web-users")
 public class WebUserAdminController {
 
     private final WebUserAdminService webUserAdminService;
