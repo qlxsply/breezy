@@ -667,7 +667,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
       onMouseLeave={handleHoverLeave}
     >
       {triggerContent ?? (
-        <>
+        <div className="table-select__content">
           {addBefore ? <span className="table-select__add-before">{addBefore}</span> : null}
           {prefix ? <span className="table-select__prefix">{prefix}</span> : null}
           {multiple ? (
@@ -853,7 +853,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
               (arrowIcon === undefined ? <span className="table-select__arrow" /> : arrowIcon))
             )}
           </span>
-        </>
+        </div>
       )}
       {popup && typeof document !== "undefined"
         ? createPortal(popup, getPopupContainer?.(rootRef.current as HTMLElement) ?? document.body)

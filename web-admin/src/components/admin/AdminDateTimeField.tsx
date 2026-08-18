@@ -37,9 +37,11 @@ interface CalendarDay {
 }
 
 const TIME_ROW_HEIGHT = 36;
-const HOURS = Array.from({ length: 24 }, (_, index) => index);
+const HOURS_24 = Array.from({ length: 24 }, (_, index) => index);
+const HOURS_12 = Array.from({ length: 12 }, (_, index) => index + 1);
 const MINUTES = Array.from({ length: 60 }, (_, index) => index);
 const SECONDS = Array.from({ length: 60 }, (_, index) => index);
+const PERIODS = ["AM", "PM"] as const;
 const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
 
 export function AdminDateTimeField({
@@ -53,7 +55,9 @@ export function AdminDateTimeField({
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<DateTimeParts>(() => parseCanonical(modelValue) || currentZonedParts());
+  const [draft, setDraft] = useState<DateTimeParts>(
+    () => parseCanonical(modelValue) || currentZonedParts(),
+  );
   const [viewYear, setViewYear] = useState(draft.year);
   const [viewMonth, setViewMonth] = useState(draft.month);
   const [dateText, setDateText] = useState("");
@@ -64,13 +68,15 @@ export function AdminDateTimeField({
   const pattern = getUserDateTimeFormatPattern();
   const precision = getUserDateTimePrecision();
   const datePattern = pattern.split(/\s+/)[0] || "yyyy-MM-dd";
-  const timePattern = precision === "second" ? "HH:mm:ss" : "HH:mm";
+  const hour12 = pattern.includes("h:") && pattern.includes("a");
+  const timePanelWidth = timePickerWidth(hour12, precision);
+  const panelWidth = 338 + timePanelWidth;
   const displayValue = formatDateTimeInputValue(modelValue);
   const calendarDays = buildCalendarDays(viewYear, viewMonth);
 
   function syncTexts(value: DateTimeParts) {
     setDateText(formatDate(value, datePattern));
-    setTimeText(formatTime(value, precision));
+    setTimeText(formatTime(value, precision, hour12));
     setDateInvalid(false);
     setTimeInvalid(false);
   }
@@ -79,12 +85,13 @@ export function AdminDateTimeField({
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const margin = 12;
-    const width = Math.min(620, window.innerWidth - margin * 2);
+    const width = Math.min(panelWidth, window.innerWidth - margin * 2);
     const estimatedHeight = 445;
     const left = Math.max(margin, Math.min(rect.left, window.innerWidth - width - margin));
-    const top = rect.bottom + 4 + estimatedHeight <= window.innerHeight
-      ? rect.bottom + 4
-      : Math.max(margin, rect.top - estimatedHeight - 4);
+    const top =
+      rect.bottom + 4 + estimatedHeight <= window.innerHeight
+        ? rect.bottom + 4
+        : Math.max(margin, rect.top - estimatedHeight - 4);
     setPanelStyle({ position: "fixed", left, top, width });
   }
 
@@ -114,7 +121,7 @@ export function AdminDateTimeField({
       document.removeEventListener("pointerdown", cancelOnOutside);
       document.removeEventListener("keydown", cancelOnEscape);
     };
-  }, [open, modelValue]);
+  }, [open, modelValue, panelWidth]);
 
   function openEditor() {
     if (disabled || open) return;
@@ -150,11 +157,11 @@ export function AdminDateTimeField({
   }
 
   function applyTimeText(base = draft): DateTimeParts | null {
-    const parsed = parseTime(timeText, base, precision);
+    const parsed = parseTime(timeText, base, precision, hour12);
     setTimeInvalid(!parsed);
     if (!parsed) return null;
     setDraft(parsed);
-    setTimeText(formatTime(parsed, precision));
+    setTimeText(formatTime(parsed, precision, hour12));
     return parsed;
   }
 
@@ -164,7 +171,7 @@ export function AdminDateTimeField({
       setDateInvalid(true);
       return;
     }
-    const parsedTime = parseTime(timeText, parsedDate, precision);
+    const parsedTime = parseTime(timeText, parsedDate, precision, hour12);
     if (!parsedTime) {
       setTimeInvalid(true);
       return;
@@ -194,94 +201,189 @@ export function AdminDateTimeField({
     setViewMonth(current.month);
   }
 
-  const panel = open && typeof document !== "undefined"
-    ? createPortal(
-        <div ref={panelRef} className="admin-date-time-picker-panel" style={panelStyle}>
-          <div className="admin-date-time-picker-editor-row">
-            <div className="admin-date-time-picker-editor-cell">
-              <input
-                className={dateInvalid ? "is-invalid" : ""}
-                value={dateText}
-                aria-label="日期"
-                onChange={(event) => { setDateText(event.target.value); setDateInvalid(false); }}
-                onBlur={() => applyDateText()}
-                onKeyDown={(event) => { if (event.key === "Enter") applyDateText(); }}
-              />
-            </div>
-            <div className="admin-date-time-picker-editor-cell">
-              <input
-                className={timeInvalid ? "is-invalid" : ""}
-                value={timeText}
-                aria-label="时间"
-                onChange={(event) => { setTimeText(event.target.value); setTimeInvalid(false); }}
-                onBlur={() => applyTimeText()}
-                onKeyDown={(event) => { if (event.key === "Enter") applyTimeText(); }}
-              />
-            </div>
-          </div>
-          <div className="admin-date-time-picker-panel__main">
-            <section className="admin-date-time-picker-calendar">
-              <header className="admin-date-time-picker-calendar__header">
-                <button type="button" title="上一年" onClick={() => moveMonth(-12)}>«</button>
-                <button type="button" title="上个月" onClick={() => moveMonth(-1)}>‹</button>
-                <strong>{viewYear} 年 {viewMonth} 月</strong>
-                <button type="button" title="下个月" onClick={() => moveMonth(1)}>›</button>
-                <button type="button" title="下一年" onClick={() => moveMonth(12)}>»</button>
-              </header>
-              <div className="admin-date-time-picker-calendar__weekdays">
-                {WEEKDAYS.map((weekday) => <span key={weekday}>{weekday}</span>)}
+  const panel =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            ref={panelRef}
+            className="admin-date-time-picker-panel"
+            style={panelStyle}
+          >
+            <div className="admin-date-time-picker-editor-row">
+              <div className="admin-date-time-picker-editor-cell">
+                <input
+                  className={dateInvalid ? "is-invalid" : ""}
+                  value={dateText}
+                  aria-label="日期"
+                  onChange={(event) => {
+                    setDateText(event.target.value);
+                    setDateInvalid(false);
+                  }}
+                  onBlur={() => applyDateText()}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") applyDateText();
+                  }}
+                />
               </div>
-              <div className="admin-date-time-picker-calendar__days">
-                {calendarDays.map((day) => {
-                  const selected = sameDate(day, draft);
-                  const today = sameDate(day, currentZonedParts());
-                  return (
-                    <button
-                      key={day.key}
-                      type="button"
-                      className={[
-                        !day.currentMonth ? "is-outside" : "",
-                        selected ? "is-selected" : "",
-                        today ? "is-today" : "",
-                      ].filter(Boolean).join(" ")}
-                      onClick={() => selectDay(day)}
-                    >
-                      {day.day}
-                    </button>
-                  );
-                })}
+              <div className="admin-date-time-picker-editor-cell">
+                <input
+                  className={timeInvalid ? "is-invalid" : ""}
+                  value={timeText}
+                  aria-label="时间"
+                  onChange={(event) => {
+                    setTimeText(event.target.value);
+                    setTimeInvalid(false);
+                  }}
+                  onBlur={() => applyTimeText()}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") applyTimeText();
+                  }}
+                />
               </div>
-            </section>
-            <section className="admin-date-time-picker-time">
-              <div className="admin-date-time-picker-time__wheels">
-                <div className="admin-date-time-picker-time__selection" />
-                <TimeWheel values={HOURS} selected={draft.hour} onChange={(hour) => updateDraft({ ...draft, hour })}/>
-                <span>:</span>
-                <TimeWheel values={MINUTES} selected={draft.minute} onChange={(minute) => updateDraft({ ...draft, minute })}/>
-                {precision === "second" ? (
-                  <>
-                    <span>:</span>
-                    <TimeWheel values={SECONDS} selected={draft.second} onChange={(second) => updateDraft({ ...draft, second })}/>
-                  </>
-                ) : null}
-              </div>
-            </section>
-          </div>
-          <footer className="admin-date-time-picker-panel__footer">
-            <BzButton size="small" onClick={selectNow}>此刻</BzButton>
-            <div>
-              <BzButton size="small" onClick={cancel}>取消</BzButton>
-              <BzButton size="small" buttonType="primary" onClick={confirm}>确定</BzButton>
             </div>
-          </footer>
-        </div>,
-        document.body,
-      )
-    : null;
+            <div className="admin-date-time-picker-panel__main">
+              <section className="admin-date-time-picker-calendar">
+                <header className="admin-date-time-picker-calendar__header">
+                  <button
+                    type="button"
+                    title="上一年"
+                    onClick={() => moveMonth(-12)}
+                  >
+                    «
+                  </button>
+                  <button
+                    type="button"
+                    title="上个月"
+                    onClick={() => moveMonth(-1)}
+                  >
+                    ‹
+                  </button>
+                  <strong>
+                    {viewYear} 年 {viewMonth} 月
+                  </strong>
+                  <button
+                    type="button"
+                    title="下个月"
+                    onClick={() => moveMonth(1)}
+                  >
+                    ›
+                  </button>
+                  <button
+                    type="button"
+                    title="下一年"
+                    onClick={() => moveMonth(12)}
+                  >
+                    »
+                  </button>
+                </header>
+                <div className="admin-date-time-picker-calendar__weekdays">
+                  {WEEKDAYS.map((weekday) => (
+                    <span key={weekday}>{weekday}</span>
+                  ))}
+                </div>
+                <div className="admin-date-time-picker-calendar__days">
+                  {calendarDays.map((day) => {
+                    const selected = sameDate(day, draft);
+                    const today = sameDate(day, currentZonedParts());
+                    return (
+                      <button
+                        key={day.key}
+                        type="button"
+                        className={[
+                          !day.currentMonth ? "is-outside" : "",
+                          selected ? "is-selected" : "",
+                          today ? "is-today" : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        onClick={() => selectDay(day)}
+                      >
+                        {day.day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+              <section className="admin-date-time-picker-time">
+                <div className="admin-date-time-picker-time__wheels">
+                  <div className="admin-date-time-picker-time__selection" />
+                  <TimeWheel
+                    values={hour12 ? HOURS_12 : HOURS_24}
+                    selected={hour12 ? draft.hour % 12 || 12 : draft.hour}
+                    onChange={(hour) =>
+                      updateDraft({
+                        ...draft,
+                        hour: hour12 ? to24Hour(hour, draft.hour < 12 ? "AM" : "PM") : hour,
+                      })
+                    }
+                  />
+                  <span>:</span>
+                  <TimeWheel
+                    values={MINUTES}
+                    selected={draft.minute}
+                    onChange={(minute) => updateDraft({ ...draft, minute })}
+                  />
+                  {precision === "second" ? (
+                    <>
+                      <span>:</span>
+                      <TimeWheel
+                        values={SECONDS}
+                        selected={draft.second}
+                        onChange={(second) => updateDraft({ ...draft, second })}
+                      />
+                    </>
+                  ) : null}
+                  {hour12 ? (
+                    <TimeWheel
+                      values={PERIODS}
+                      selected={draft.hour < 12 ? "AM" : "PM"}
+                      onChange={(period) =>
+                        updateDraft({ ...draft, hour: to24Hour(draft.hour % 12 || 12, period) })
+                      }
+                    />
+                  ) : null}
+                </div>
+              </section>
+            </div>
+            <footer className="admin-date-time-picker-panel__footer">
+              <BzButton
+                size="small"
+                onClick={selectNow}
+              >
+                此刻
+              </BzButton>
+              <div>
+                <BzButton
+                  size="small"
+                  onClick={cancel}
+                >
+                  取消
+                </BzButton>
+                <BzButton
+                  size="small"
+                  buttonType="primary"
+                  onClick={confirm}
+                >
+                  确定
+                </BzButton>
+              </div>
+            </footer>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
-    <div ref={rootRef} className="admin-date-time-field-root">
-      <div ref={triggerRef} className={disabled ? "admin-date-time-field-trigger is-disabled" : "admin-date-time-field-trigger"}>
+    <div
+      ref={rootRef}
+      className="admin-date-time-field-root"
+    >
+      <div
+        ref={triggerRef}
+        className={
+          disabled ? "admin-date-time-field-trigger is-disabled" : "admin-date-time-field-trigger"
+        }
+      >
         <input
           className="admin-date-time-field-trigger__value"
           value={displayValue}
@@ -291,11 +393,37 @@ export function AdminDateTimeField({
           aria-expanded={open}
           onClick={openEditor}
         />
-        <button className="admin-date-time-field-trigger__open" type="button" disabled={disabled} aria-label="打开日期时间选择器" onClick={open ? cancel : openEditor}>
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-            <rect x="1.5" y="2.5" width="11" height="10" fill="none" stroke="currentColor" />
-            <path d="M1.5 5.5H12.5M4.5 1.5V3.5M9.5 1.5V3.5" fill="none" stroke="currentColor" />
-            <path d="M4 7H5M6.5 7H7.5M9 7H10M4 9H5M6.5 9H7.5M9 9H10" fill="none" stroke="currentColor" />
+        <button
+          className="admin-date-time-field-trigger__open"
+          type="button"
+          disabled={disabled}
+          aria-label="打开日期时间选择器"
+          onClick={open ? cancel : openEditor}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            aria-hidden="true"
+          >
+            <rect
+              x="1.5"
+              y="2.5"
+              width="11"
+              height="10"
+              fill="none"
+              stroke="currentColor"
+            />
+            <path
+              d="M1.5 5.5H12.5M4.5 1.5V3.5M9.5 1.5V3.5"
+              fill="none"
+              stroke="currentColor"
+            />
+            <path
+              d="M4 7H5M6.5 7H7.5M9 7H10M4 9H5M6.5 9H7.5M9 9H10"
+              fill="none"
+              stroke="currentColor"
+            />
           </svg>
         </button>
       </div>
@@ -304,35 +432,53 @@ export function AdminDateTimeField({
   );
 }
 
-function TimeWheel({ values, selected, onChange }: {
-  values: number[];
-  selected: number;
-  onChange: (value: number) => void;
+function TimeWheel<T extends number | string>({
+  values,
+  selected,
+  onChange,
+}: {
+  values: readonly T[];
+  selected: T;
+  onChange: (value: T) => void;
 }) {
   const wheelRef = useRef<HTMLDivElement | null>(null);
   const timerRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
-    if (wheelRef.current) wheelRef.current.scrollTop = selected * TIME_ROW_HEIGHT;
-  }, [selected]);
+    const selectedIndex = values.indexOf(selected);
+    if (wheelRef.current && selectedIndex >= 0) {
+      wheelRef.current.scrollTop = selectedIndex * TIME_ROW_HEIGHT;
+    }
+  }, [selected, values]);
 
-  useEffect(() => () => {
-    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   function handleScroll() {
     if (!wheelRef.current) return;
     if (timerRef.current !== null) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
       if (!wheelRef.current) return;
-      const index = clamp(Math.round(wheelRef.current.scrollTop / TIME_ROW_HEIGHT), 0, values.length - 1);
+      const index = clamp(
+        Math.round(wheelRef.current.scrollTop / TIME_ROW_HEIGHT),
+        0,
+        values.length - 1,
+      );
       wheelRef.current.scrollTo({ top: index * TIME_ROW_HEIGHT, behavior: "smooth" });
       if (values[index] !== selected) onChange(values[index]);
     }, 70);
   }
 
   return (
-    <div ref={wheelRef} className="admin-date-time-picker-time__wheel" onScroll={handleScroll}>
+    <div
+      ref={wheelRef}
+      className="admin-date-time-picker-time__wheel"
+      onScroll={handleScroll}
+    >
       <ul>
         {values.map((value, index) => (
           <li
@@ -343,7 +489,7 @@ function TimeWheel({ values, selected, onChange }: {
               if (value !== selected) onChange(value);
             }}
           >
-            {pad(value)}
+            {typeof value === "number" ? pad(value) : value}
           </li>
         ))}
       </ul>
@@ -355,8 +501,12 @@ function parseCanonical(value: string): DateTimeParts | null {
   const matched = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
   if (!matched) return null;
   const result = {
-    year: Number(matched[1]), month: Number(matched[2]), day: Number(matched[3]),
-    hour: Number(matched[4]), minute: Number(matched[5]), second: Number(matched[6] || 0),
+    year: Number(matched[1]),
+    month: Number(matched[2]),
+    day: Number(matched[3]),
+    hour: Number(matched[4]),
+    minute: Number(matched[5]),
+    second: Number(matched[6] || 0),
   };
   return validParts(result) ? result : null;
 }
@@ -367,11 +517,16 @@ function serializeCanonical(value: DateTimeParts, precision: "minute" | "second"
 }
 
 function formatDate(value: DateTimeParts, pattern: string): string {
-  return pattern.replace(/yyyy/g, pad(value.year, 4)).replace(/MM/g, pad(value.month)).replace(/dd/g, pad(value.day));
+  return pattern
+    .replace(/yyyy/g, pad(value.year, 4))
+    .replace(/MM/g, pad(value.month))
+    .replace(/dd/g, pad(value.day));
 }
 
-function formatTime(value: DateTimeParts, precision: "minute" | "second"): string {
-  return `${pad(value.hour)}:${pad(value.minute)}${precision === "second" ? `:${pad(value.second)}` : ""}`;
+function formatTime(value: DateTimeParts, precision: "minute" | "second", hour12: boolean): string {
+  const hour = hour12 ? value.hour % 12 || 12 : value.hour;
+  const suffix = hour12 ? ` ${value.hour < 12 ? "AM" : "PM"}` : "";
+  return `${pad(hour)}:${pad(value.minute)}${precision === "second" ? `:${pad(value.second)}` : ""}${suffix}`;
 }
 
 function parseDate(text: string, pattern: string, base: DateTimeParts): DateTimeParts | null {
@@ -396,20 +551,65 @@ function parseDate(text: string, pattern: string, base: DateTimeParts): DateTime
   return validParts(result) ? result : null;
 }
 
-function parseTime(text: string, base: DateTimeParts, precision: "minute" | "second"): DateTimeParts | null {
-  const matched = text.trim().match(precision === "second" ? /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/ : /^(\d{1,2}):(\d{1,2})$/);
+function parseTime(
+  text: string,
+  base: DateTimeParts,
+  precision: "minute" | "second",
+  hour12: boolean,
+): DateTimeParts | null {
+  const expression = hour12
+    ? precision === "second"
+      ? /^(\d{1,2}):(\d{1,2}):(\d{1,2})\s*(AM|PM)$/i
+      : /^(\d{1,2}):(\d{1,2})\s*(AM|PM)$/i
+    : precision === "second"
+      ? /^(\d{1,2}):(\d{1,2}):(\d{1,2})$/
+      : /^(\d{1,2}):(\d{1,2})$/;
+  const matched = text.trim().match(expression);
   if (!matched) return null;
-  const result = { ...base, hour: Number(matched[1]), minute: Number(matched[2]), second: precision === "second" ? Number(matched[3]) : 0 };
+  const inputHour = Number(matched[1]);
+  const periodIndex = precision === "second" ? 4 : 3;
+  const hour = hour12
+    ? to24Hour(inputHour, matched[periodIndex].toUpperCase() as "AM" | "PM")
+    : inputHour;
+  const result = {
+    ...base,
+    hour,
+    minute: Number(matched[2]),
+    second: precision === "second" ? Number(matched[3]) : 0,
+  };
+  if (hour12 && (inputHour < 1 || inputHour > 12)) return null;
   return validParts(result) ? result : null;
+}
+
+function to24Hour(hour: number, period: "AM" | "PM"): number {
+  return (hour % 12) + (period === "PM" ? 12 : 0);
+}
+
+function timePickerWidth(hour12: boolean, precision: "minute" | "second"): number {
+  if (hour12) return precision === "second" ? 244 : 184;
+  return precision === "second" ? 188 : 128;
 }
 
 function currentZonedParts(): DateTimeParts {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: getUserTimeZone(), year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    timeZone: getUserTimeZone(),
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
   }).formatToParts(new Date());
   const values = Object.fromEntries(parts.map((part) => [part.type, Number(part.value)]));
-  return { year: values.year, month: values.month, day: values.day, hour: values.hour, minute: values.minute, second: values.second };
+  return {
+    year: values.year,
+    month: values.month,
+    day: values.day,
+    hour: values.hour,
+    minute: values.minute,
+    second: values.second,
+  };
 }
 
 function buildCalendarDays(year: number, month: number): CalendarDay[] {
@@ -419,18 +619,35 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
     const dayYear = date.getUTCFullYear();
     const dayMonth = date.getUTCMonth() + 1;
     const day = date.getUTCDate();
-    return { key: `${dayYear}-${dayMonth}-${day}`, year: dayYear, month: dayMonth, day, currentMonth: dayMonth === month };
+    return {
+      key: `${dayYear}-${dayMonth}-${day}`,
+      year: dayYear,
+      month: dayMonth,
+      day,
+      currentMonth: dayMonth === month,
+    };
   });
 }
 
 function validParts(value: DateTimeParts): boolean {
   if (value.year < 1 || value.year > 9999 || value.month < 1 || value.month > 12) return false;
   const maxDay = new Date(Date.UTC(value.year, value.month, 0)).getUTCDate();
-  return value.day >= 1 && value.day <= maxDay && value.hour >= 0 && value.hour <= 23
-    && value.minute >= 0 && value.minute <= 59 && value.second >= 0 && value.second <= 59;
+  return (
+    value.day >= 1 &&
+    value.day <= maxDay &&
+    value.hour >= 0 &&
+    value.hour <= 23 &&
+    value.minute >= 0 &&
+    value.minute <= 59 &&
+    value.second >= 0 &&
+    value.second <= 59
+  );
 }
 
-function sameDate(left: { year: number; month: number; day: number }, right: DateTimeParts): boolean {
+function sameDate(
+  left: { year: number; month: number; day: number },
+  right: DateTimeParts,
+): boolean {
   return left.year === right.year && left.month === right.month && left.day === right.day;
 }
 

@@ -1,10 +1,14 @@
 "use client";
 
 import { listPublicDictOptions } from "@admin/api/dicts";
-import { AdminDateTimeField } from "@admin/components/admin/AdminDateTimeField";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
-import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
+import {
+  TableDateTimeInput,
+  TableInput,
+  TableSelect,
+  TableTextArea,
+} from "@admin/components/admin-inputs";
 import { BzAlert } from "@admin/components/bz/BzAlert";
 import { BzButton } from "@admin/components/bz/BzButton";
 import { BzDragHandle } from "@admin/components/bz/BzDragHandle";
@@ -1198,8 +1202,8 @@ function TimeOffsetEditor({
                 </AdminInfoCell>
                 <AdminInfoCell state={editable && offsetField ? "editable" : "display"}>
                   {editable && offsetField ? (
-                    <AdminDateTimeField
-                      modelValue={offsetInput}
+                    <TableDateTimeInput
+                      value={offsetInput}
                       onValueChange={changeOffsetDateTime}
                     />
                   ) : (
@@ -1234,8 +1238,8 @@ function TimeOffsetEditor({
                 </AdminInfoCell>
                 <AdminInfoCell state={editable && fixedField ? "editable" : "display"}>
                   {editable && fixedField ? (
-                    <AdminDateTimeField
-                      modelValue={fixedInput}
+                    <TableDateTimeInput
+                      value={fixedInput}
                       onValueChange={changeFixedDateTime}
                     />
                   ) : (

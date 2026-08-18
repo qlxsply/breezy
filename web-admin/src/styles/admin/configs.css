@@ -186,8 +186,7 @@
 }
 
 .config-whitelist-table tbody td:nth-child(2) {
-  padding-top: 3px;
-  padding-bottom: 4px;
+  padding: 0;
 }
 
 .config-whitelist-table tbody td:nth-child(3) > .table-input-control {
