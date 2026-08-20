@@ -3,9 +3,11 @@
 import { disableApi, getApi, pageApis, publishApi, updateApiSortOptions } from "@admin/api/apis";
 import { batchListDictOptions } from "@admin/api/dicts";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
+import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
 import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
 import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
 import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { TableInput, TableSelect } from "@admin/components/admin-inputs";
 import { ApiTable } from "@admin/components/apis-admin/ApiTable";
 import {
   BzButton,
@@ -23,7 +25,14 @@ import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
 import type { ApiEntry } from "@admin/types/api-admin";
 import type { DictItem } from "@admin/types/dict-admin";
 import type { PageResult } from "@admin/types/page";
-import { type CSSProperties, type DragEvent, type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  type CSSProperties,
+  type DragEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const API_DICT_CODES = [
   "API_METHOD",
@@ -265,7 +274,18 @@ export function ApisAdminPage() {
     setPageNo(1);
   }
 
-  function renderBasicSection(api: ApiEntry, ariaLabel: string) {
+  function renderInfoCell(value: ReactNode, readonly: boolean, colSpan?: number) {
+    return (
+      <AdminInfoCell
+        state={readonly ? "readonly" : "display"}
+        colSpan={colSpan}
+      >
+        {value || "-"}
+      </AdminInfoCell>
+    );
+  }
+
+  function renderBasicSection(api: ApiEntry, ariaLabel: string, readonly = false) {
     return (
       <section className="role-manage-section">
         <div className="role-manage-section__head">
@@ -279,31 +299,31 @@ export function ApisAdminPage() {
             <tbody>
               <tr>
                 <th>模块</th>
-                <td>{api.module || "-"}</td>
+                {renderInfoCell(api.module, readonly)}
                 <th>协议</th>
-                <td>{api.protocolLabel || api.protocol || "-"}</td>
+                {renderInfoCell(api.protocolLabel || api.protocol, readonly)}
                 <th>方法</th>
-                <td>{api.httpMethodLabel || api.httpMethod || "-"}</td>
+                {renderInfoCell(api.httpMethodLabel || api.httpMethod, readonly)}
               </tr>
               <tr>
                 <th>访问类型</th>
-                <td>{api.accessTypeLabel || api.accessType || "-"}</td>
+                {renderInfoCell(api.accessTypeLabel || api.accessType, readonly)}
                 <th>用户类型</th>
-                <td>{api.userTypeLabel || api.userType || "-"}</td>
+                {renderInfoCell(api.userTypeLabel || api.userType, readonly)}
                 <th>接口状态</th>
-                <td>{api.enabled ? "启用" : "停用"}</td>
+                {renderInfoCell(api.enabled ? "启用" : "停用", readonly)}
               </tr>
               <tr>
                 <th>路径</th>
-                <td colSpan={5}>{api.pathPattern || "-"}</td>
+                {renderInfoCell(api.pathPattern, readonly, 5)}
               </tr>
               <tr>
                 <th>处理类</th>
-                <td colSpan={5}>{api.handlerClass || "-"}</td>
+                {renderInfoCell(api.handlerClass, readonly, 5)}
               </tr>
               <tr>
                 <th>处理方法</th>
-                <td colSpan={5}>{api.handlerMethod || "-"}</td>
+                {renderInfoCell(api.handlerMethod, readonly, 5)}
               </tr>
             </tbody>
           </table>
@@ -312,7 +332,7 @@ export function ApisAdminPage() {
     );
   }
 
-  function renderAuditSection(api: ApiEntry, ariaLabel: string) {
+  function renderAuditSection(api: ApiEntry, ariaLabel: string, readonly = false) {
     return (
       <section className="role-manage-section">
         <div className="role-manage-section__head">
@@ -326,19 +346,19 @@ export function ApisAdminPage() {
             <tbody>
               <tr>
                 <th>权限声明</th>
-                <td>{api.permissionDeclared ? "已声明" : "未声明"}</td>
+                {renderInfoCell(api.permissionDeclared ? "已声明" : "未声明", readonly)}
                 <th>审计状态</th>
-                <td>{api.auditDeclared ? "已开启" : "未开启"}</td>
+                {renderInfoCell(api.auditDeclared ? "已开启" : "未开启", readonly)}
                 <th>审计资源</th>
-                <td>{api.auditResource || "-"}</td>
+                {renderInfoCell(api.auditResource, readonly)}
               </tr>
               <tr>
                 <th>审计动作</th>
-                <td colSpan={5}>{api.auditAction || "-"}</td>
+                {renderInfoCell(api.auditAction, readonly, 5)}
               </tr>
               <tr>
                 <th>审计说明</th>
-                <td colSpan={5}>{api.auditDescription || "-"}</td>
+                {renderInfoCell(api.auditDescription, readonly, 5)}
               </tr>
             </tbody>
           </table>
@@ -410,19 +430,18 @@ export function ApisAdminPage() {
         renderRow={(index) => {
           const item = allowedSortDrafts[index];
           return [
-            <input
-              className="api-sort-input"
+            <TableInput
               key="field"
               value={item.field}
               placeholder="createdAt"
-              onChange={(event) => updateAllowedField(index, event.target.value)}
+              onValueChange={(value) => updateAllowedField(index, value)}
             />,
-            <input
-              className="api-sort-input is-code"
+            <TableInput
+              className="is-code"
               key="column"
               value={item.column}
               placeholder="created_at"
-              onChange={(event) => updateAllowedColumn(index, event.target.value)}
+              onValueChange={(value) => updateAllowedColumn(index, value)}
             />,
           ];
         }}
@@ -449,44 +468,33 @@ export function ApisAdminPage() {
         renderRow={(index) => {
           const item = defaultSortDrafts[index];
           return [
-            <select
-              className="api-sort-input is-code"
+            <TableSelect
+              className="is-code"
               key="field"
               value={item.field}
-              onChange={(event) => updateDefaultSortField(index, event.target.value)}
-            >
-              {allowedSortDrafts
+              options={allowedSortDrafts
                 .filter((field) => field.field.trim())
-                .map((field) => (
-                  <option
-                    key={field.uid}
-                    value={field.field}
-                  >
-                    {field.field}
-                  </option>
-                ))}
-            </select>,
-            <div
-              className="api-sort-direction-group"
+                .map((field) => ({ label: field.field, value: field.field }))}
+              allowClear={false}
+              onValueChange={(value) =>
+                updateDefaultSortField(index, Array.isArray(value) ? "" : String(value))
+              }
+            />,
+            <TableSelect
               key="direction"
-            >
-              <button
-                className={`api-sort-direction-btn${item.direction === "ASC" ? " is-active" : ""}`}
-                type="button"
-                aria-pressed={item.direction === "ASC"}
-                onClick={() => updateDefaultSortDirection(index, "ASC")}
-              >
-                ↑
-              </button>
-              <button
-                className={`api-sort-direction-btn${item.direction === "DESC" ? " is-active" : ""}`}
-                type="button"
-                aria-pressed={item.direction === "DESC"}
-                onClick={() => updateDefaultSortDirection(index, "DESC")}
-              >
-                ↓
-              </button>
-            </div>,
+              value={item.direction}
+              options={[
+                { label: "升序（ASC）", value: "ASC" },
+                { label: "降序（DESC）", value: "DESC" },
+              ]}
+              allowClear={false}
+              onValueChange={(value) =>
+                updateDefaultSortDirection(
+                  index,
+                  (Array.isArray(value) ? value[0] : value) as "ASC" | "DESC",
+                )
+              }
+            />,
           ];
         }}
       />
@@ -833,69 +841,69 @@ export function ApisAdminPage() {
         overlays={
           <>
             <AdminEntityDrawer
-            open={detailOpen}
-            title="接口详情"
-            width="1180px"
-            loading={detailLoading}
-            className="role-manage-drawer"
-            onClose={() => {
-              setDetailOpen(false);
-              setDetailItem(null);
-            }}
-            footer={
-              <BzButton
-                onClick={() => {
-                  setDetailOpen(false);
-                  setDetailItem(null);
-                }}
-              >
-                关闭
-              </BzButton>
-            }
-          >
-            {detailItem ? (
-              <div className="role-manage-shell">
-                {renderBasicSection(detailItem, "接口基础信息")}
-                {renderAuditSection(detailItem, "接口权限与审计")}
-                {renderSortDetailSection(detailSortOptions)}
-              </div>
-            ) : null}
+              open={detailOpen}
+              title="接口详情"
+              width="1180px"
+              loading={detailLoading}
+              className="role-manage-drawer"
+              onClose={() => {
+                setDetailOpen(false);
+                setDetailItem(null);
+              }}
+              footer={
+                <BzButton
+                  onClick={() => {
+                    setDetailOpen(false);
+                    setDetailItem(null);
+                  }}
+                >
+                  关闭
+                </BzButton>
+              }
+            >
+              {detailItem ? (
+                <div className="role-manage-shell">
+                  {renderBasicSection(detailItem, "接口基础信息")}
+                  {renderAuditSection(detailItem, "接口权限与审计")}
+                  {renderSortDetailSection(detailSortOptions)}
+                </div>
+              ) : null}
             </AdminEntityDrawer>
             <AdminEntityDrawer
-            open={maintainOpen}
-            title="接口维护"
-            width="980px"
-            loading={maintainLoading}
-            className="role-manage-drawer"
-            onClose={() => {
-              if (sortSaving) return;
-              closeMaintain();
-            }}
-            footer={
-              <>
-                <BzButton
-                  disabled={sortSaving}
-                  onClick={closeMaintain}
-                >
-                  取消
-                </BzButton>
-                <BzButton
-                  buttonType="primary"
-                  loading={sortSaving}
-                  onClick={() => void saveSortOptions()}
-                >
-                  保存
-                </BzButton>
-              </>
-            }
-          >
-            {maintainItem ? (
-              <div className="role-manage-shell">
-                {renderBasicSection(maintainItem, "维护排序规则基础信息")}
-                {renderAuditSection(maintainItem, "维护排序规则权限与审计")}
-                {renderSortEditorSection()}
-              </div>
-            ) : null}
+              open={maintainOpen}
+              title="接口维护"
+              width="980px"
+              loading={maintainLoading}
+              className="role-manage-drawer"
+              onClose={() => {
+                if (sortSaving) return;
+                closeMaintain();
+              }}
+              footer={
+                <>
+                  <BzButton
+                    disabled={sortSaving}
+                    onClick={closeMaintain}
+                  >
+                    取消
+                  </BzButton>
+                  <BzButton
+                    buttonType="primary"
+                    loading={sortSaving}
+                    onClick={() => void saveSortOptions()}
+                  >
+                    保存
+                  </BzButton>
+                </>
+              }
+            >
+              {maintainItem ? (
+                <div className="role-manage-shell">
+                  {renderBasicSection(maintainItem, "维护排序规则基础信息", true)}
+                  {renderAuditSection(maintainItem, "维护排序规则权限与审计", true)}
+                  {renderSortEditorSection()}
+                </div>
+              ) : null}
             </AdminEntityDrawer>
           </>
         }
@@ -1139,7 +1147,7 @@ function SortRuleEditTable({
               </div>
               {renderRow(index).map((cell, cellIndex) => (
                 <div
-                  className="api-sort-edit-table__cell"
+                  className="api-sort-edit-table__cell admin-info-cell--editable"
                   key={cellIndex}
                 >
                   {cell}
@@ -1236,7 +1244,9 @@ function normalizeDefaultSorts(value: unknown): ApiDefaultSort[] {
     .map((item) => {
       if (!isRecord(item)) return null;
       const field = String(item.field ?? "").trim();
-      const direction = String(item.direction ?? "ASC").trim().toUpperCase();
+      const direction = String(item.direction ?? "ASC")
+        .trim()
+        .toUpperCase();
       if (!field || (direction !== "ASC" && direction !== "DESC")) return null;
       return { field, direction };
     })
@@ -1306,7 +1316,10 @@ function buildSortOptionsJson(
     field: field.trim(),
     column: column.trim(),
   }));
-  const defaults = defaultDrafts.map(({ field, direction }) => ({ field: field.trim(), direction }));
+  const defaults = defaultDrafts.map(({ field, direction }) => ({
+    field: field.trim(),
+    direction,
+  }));
   if (allowed.length === 0) {
     throw new Error("开启排序规则时必须配置候选排序字段");
   }

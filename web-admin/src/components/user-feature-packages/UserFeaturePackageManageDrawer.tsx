@@ -1,8 +1,14 @@
 "use client";
 
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
-import { BzButton, BzCheckbox, BzInput, BzTag } from "@admin/components/bz";
+import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
+import {
+  TableCheckbox,
+  TableInput,
+  TableSelect,
+  TableTextArea,
+} from "@admin/components/admin-inputs";
+import { BzButton, BzInput, BzTag } from "@admin/components/bz";
 import type {
   SaveUserFeaturePackageRequest,
   UserFeatureAccessScope,
@@ -215,35 +221,43 @@ export function UserFeaturePackageManageDrawer({
                     <span className={mode === "create" ? "is-required" : undefined}>编码</span>
                   </th>
                   {mode === "create" ? (
-                    <td className="role-info-cell role-info-cell--edit mono">
+                    <AdminInfoCell
+                      state="editable"
+                      mono
+                    >
                       <TableInput
                         value={form.code}
                         maxLength={128}
                         placeholder="请输入应用包编码"
                         onValueChange={(code) => setForm((current) => ({ ...current, code }))}
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td className="role-info-cell mono">{form.code || "-"}</td>
+                    <AdminInfoCell
+                      state={mode === "detail" ? "display" : "readonly"}
+                      mono
+                    >
+                      {form.code || "-"}
+                    </AdminInfoCell>
                   )}
                   <th>
                     <span className={editable ? "is-required" : undefined}>名称</span>
                   </th>
                   {editable ? (
-                    <td className="role-info-cell role-info-cell--edit">
+                    <AdminInfoCell state="editable">
                       <TableInput
                         value={form.name}
                         maxLength={128}
                         placeholder="请输入应用包名称"
                         onValueChange={(name) => setForm((current) => ({ ...current, name }))}
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td className="role-info-cell">{form.name || "-"}</td>
+                    <AdminInfoCell>{form.name || "-"}</AdminInfoCell>
                   )}
                   <th>类型</th>
                   {editable ? (
-                    <td className="role-info-cell role-info-cell--edit">
+                    <AdminInfoCell state="editable">
                       <TableSelect
                         value={form.packageType}
                         options={packageTypeOptions}
@@ -251,54 +265,56 @@ export function UserFeaturePackageManageDrawer({
                           setForm((current) => ({ ...current, packageType: String(value) }))
                         }
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td className="role-info-cell">
+                    <AdminInfoCell>
                       {resolveOptionLabel(packageTypeOptions, form.packageType)}
-                    </td>
+                    </AdminInfoCell>
                   )}
                 </tr>
                 <tr>
                   <th>状态</th>
                   {editable ? (
-                    <td className="role-info-cell role-info-cell--edit">
+                    <AdminInfoCell state="editable">
                       <TableSelect
                         value={enabledValue}
                         options={statusOptions}
                         onValueChange={(value) => setEnabledValue(String(value))}
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td className="role-info-cell">
+                    <AdminInfoCell>
                       <BzTag type={form.enabled ? "success" : "danger"}>
                         {form.enabled ? "启用" : "停用"}
                       </BzTag>
-                    </td>
+                    </AdminInfoCell>
                   )}
                   <th>默认包</th>
                   {editable ? (
-                    <td className="role-info-cell role-info-cell--edit">
+                    <AdminInfoCell state="editable">
                       <TableSelect
                         value={defaultPackageValue}
                         options={defaultPackageOptions}
                         onValueChange={(value) => setDefaultPackageValue(String(value))}
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td className="role-info-cell">
+                    <AdminInfoCell>
                       <BzTag type={form.defaultPackage ? "success" : "info"}>
                         {form.defaultPackage ? "是" : "否"}
                       </BzTag>
-                    </td>
+                    </AdminInfoCell>
                   )}
                   <th>授权应用</th>
-                  <td className="role-info-cell">{selectedApplicationCount} 个</td>
+                  <AdminInfoCell state={editable ? "readonly" : "display"}>
+                    {selectedApplicationCount} 个
+                  </AdminInfoCell>
                 </tr>
                 <tr>
                   <th>描述</th>
                   {editable ? (
-                    <td
-                      className="role-info-cell role-info-cell--edit"
+                    <AdminInfoCell
+                      state="editable"
                       colSpan={5}
                     >
                       <TableTextArea
@@ -310,14 +326,14 @@ export function UserFeaturePackageManageDrawer({
                           setForm((current) => ({ ...current, description }))
                         }
                       />
-                    </td>
+                    </AdminInfoCell>
                   ) : (
-                    <td
-                      className="role-info-cell user-feature-package-description-cell"
+                    <AdminInfoCell
+                      className="user-feature-package-description-cell"
                       colSpan={5}
                     >
                       {form.description || "-"}
-                    </td>
+                    </AdminInfoCell>
                   )}
                 </tr>
               </tbody>
@@ -377,38 +393,50 @@ export function UserFeaturePackageManageDrawer({
                           .filter(Boolean)
                           .join(" ")}
                       >
-                        <div className="admin-grid-table__cell admin-grid-table__cell--check">
-                          <BzCheckbox
-                            modelValue={selected}
+                        <div
+                          className={`admin-grid-table__cell admin-grid-table__cell--check${editable ? " admin-grid-table__cell--editable" : ""}`}
+                        >
+                          <TableCheckbox
+                            value={selected}
                             disabled={!editable || (!application.enabled && !selected)}
                             onValueChange={(checked) => toggleApplication(application.id, checked)}
                           />
                         </div>
-                        <div className="admin-grid-table__cell user-feature-access-table__name">
+                        <div
+                          className={`admin-grid-table__cell user-feature-access-table__name${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                        >
                           {application.name}
                         </div>
-                        <div className="admin-grid-table__cell mono">{application.code}</div>
-                        <div className="admin-grid-table__cell">
+                        <div
+                          className={`admin-grid-table__cell mono${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                        >
+                          {application.code}
+                        </div>
+                        <div
+                          className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                        >
                           <BzTag type={application.enabled ? "success" : "danger"}>
                             {application.enabled ? "启用" : "停用"}
                           </BzTag>
                         </div>
-                        <div className="admin-grid-table__cell user-feature-access-table__features">
+                        <div
+                          className={`admin-grid-table__cell user-feature-access-table__features${editable ? " admin-grid-table__cell--editable" : ""}`}
+                        >
                           {selected ? (
                             <>
-                              <BzCheckbox
-                                modelValue={allSelected}
+                              <TableCheckbox
+                                value={allSelected}
                                 disabled={!editable}
                                 onValueChange={(checked) =>
                                   toggleAllFeatures(application.id, checked)
                                 }
                               >
                                 全部
-                              </BzCheckbox>
+                              </TableCheckbox>
                               {application.features.map((feature) => (
-                                <BzCheckbox
+                                <TableCheckbox
                                   key={feature.id}
-                                  modelValue={
+                                  value={
                                     allSelected || Boolean(access?.featureIds.includes(feature.id))
                                   }
                                   disabled={
@@ -421,7 +449,7 @@ export function UserFeaturePackageManageDrawer({
                                   }
                                 >
                                   {feature.name}
-                                </BzCheckbox>
+                                </TableCheckbox>
                               ))}
                             </>
                           ) : (

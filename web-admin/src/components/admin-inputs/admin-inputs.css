@@ -10,6 +10,16 @@
   display: grid;
 }
 
+.table-checkbox-control {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.table-checkbox-control.is-disabled {
+  color: var(--color-text-secondary);
+}
+
 td:has(> .table-input-control) {
   position: relative;
   padding: 0;

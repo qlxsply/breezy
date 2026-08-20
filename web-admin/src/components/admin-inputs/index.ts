@@ -1,3 +1,4 @@
+export { TableCheckbox, type TableCheckboxProps } from "./TableCheckbox";
 export { TableDateTimeInput, type TableDateTimeInputProps } from "./TableDateTimeInput";
 export { TableInput, type TableInputProps } from "./TableInput";
 export {

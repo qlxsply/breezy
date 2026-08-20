@@ -917,7 +917,9 @@ function DefaultConfigEditor({
                   <td>
                     <BzTag size="small">{field.type}</BzTag>
                   </td>
-                  <AdminInfoCell state={editable && !field.readOnly ? "editable" : "display"}>
+                  <AdminInfoCell
+                    state={editable ? (field.readOnly ? "readonly" : "editable") : "display"}
+                  >
                     {editable
                       ? field.readOnly
                         ? displayValue(item, field)

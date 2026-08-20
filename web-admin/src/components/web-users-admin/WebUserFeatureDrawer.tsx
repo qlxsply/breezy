@@ -12,15 +12,8 @@ import {
   AdminDetailTable,
 } from "@admin/components/admin/AdminDetailTable";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import {
-  BzButton,
-  BzCheckbox,
-  BzEmpty,
-  BzInput,
-  BzOption,
-  BzSelect,
-  BzTag,
-} from "@admin/components/bz";
+import { TableCheckbox, TableSelect } from "@admin/components/admin-inputs";
+import { BzButton, BzEmpty, BzInput, BzTag } from "@admin/components/bz";
 import { formatDateTime } from "@admin/core/formatter";
 import { message } from "@admin/core/message";
 import type { ExternalUserEntry, ExternalUserStatus } from "@admin/types/external-user-admin";
@@ -312,26 +305,40 @@ export function WebUserFeatureDrawer({
                                 .filter(Boolean)
                                 .join(" ")}
                             >
-                              <div className="admin-grid-table__cell admin-grid-table__cell--check">
-                                <BzCheckbox
-                                  modelValue={selected}
+                              <div
+                                className={`admin-grid-table__cell admin-grid-table__cell--check${editable ? " admin-grid-table__cell--editable" : ""}`}
+                              >
+                                <TableCheckbox
+                                  value={selected}
                                   disabled={!editable || (!entry.enabled && !selected)}
                                   onValueChange={(checked) => updatePackages(entry.id, checked)}
                                 />
                               </div>
-                              <div className="admin-grid-table__cell web-user-package-table__name">
+                              <div
+                                className={`admin-grid-table__cell web-user-package-table__name${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                              >
                                 {entry.name}
                               </div>
-                              <div className="admin-grid-table__cell mono">{entry.code}</div>
-                              <div className="admin-grid-table__cell">
+                              <div
+                                className={`admin-grid-table__cell mono${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                              >
+                                {entry.code}
+                              </div>
+                              <div
+                                className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                              >
                                 {packageTypeLabels[entry.packageType] || entry.packageType}
                               </div>
-                              <div className="admin-grid-table__cell">
+                              <div
+                                className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                              >
                                 <BzTag type={entry.enabled ? "success" : "danger"}>
                                   {entry.enabled ? "启用" : "停用"}
                                 </BzTag>
                               </div>
-                              <div className="admin-grid-table__cell">
+                              <div
+                                className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                              >
                                 <BzTag type={entry.defaultPackage ? "success" : "info"}>
                                   {entry.defaultPackage ? "是" : "否"}
                                 </BzTag>
@@ -392,69 +399,77 @@ export function WebUserFeatureDrawer({
                             key={application.id}
                             className="admin-grid-table__row web-user-capability-table__row"
                           >
-                            <div className="admin-grid-table__cell web-user-capability-table__name">
+                            <div
+                              className={`admin-grid-table__cell web-user-capability-table__name${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                            >
                               {application.name}
                             </div>
-                            <div className="admin-grid-table__cell mono">{application.code}</div>
-                            <div className="admin-grid-table__cell">
+                            <div
+                              className={`admin-grid-table__cell mono${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                            >
+                              {application.code}
+                            </div>
+                            <div
+                              className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                            >
                               <BzTag type={application.enabled ? "success" : "danger"}>
                                 {application.enabled ? "启用" : "停用"}
                               </BzTag>
                             </div>
-                            <div className="admin-grid-table__cell">
+                            <div
+                              className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                            >
                               {resolveScopeLabel(application.packageAccessScope)}
                             </div>
-                            <div className="admin-grid-table__cell">
+                            <div
+                              className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--editable" : ""}`}
+                            >
                               {editable ? (
-                                <BzSelect
-                                  modelValue={resolveApplicationAccessMode(application)}
+                                <TableSelect
+                                  value={resolveApplicationAccessMode(application)}
+                                  options={[
+                                    { label: "继承应用包", value: "INHERIT" },
+                                    { label: "开放全部功能", value: "FULL" },
+                                    { label: "按功能开放", value: "PARTIAL" },
+                                    { label: "禁止访问", value: "DISABLE" },
+                                  ]}
+                                  allowClear={false}
                                   disabled={!application.enabled}
                                   onValueChange={(value) =>
                                     updateApplicationMode(
                                       application.id,
-                                      (value || "INHERIT") as ApplicationAccessMode,
+                                      (Array.isArray(value)
+                                        ? value[0]
+                                        : value) as ApplicationAccessMode,
                                     )
                                   }
-                                >
-                                  <BzOption
-                                    label="继承应用包"
-                                    value="INHERIT"
-                                  />
-                                  <BzOption
-                                    label="开放全部功能"
-                                    value="FULL"
-                                  />
-                                  <BzOption
-                                    label="按功能开放"
-                                    value="PARTIAL"
-                                  />
-                                  <BzOption
-                                    label="禁止访问"
-                                    value="DISABLE"
-                                  />
-                                </BzSelect>
+                                />
                               ) : (
                                 resolveApplicationModeLabel(application)
                               )}
                             </div>
-                            <div className="admin-grid-table__cell">
+                            <div
+                              className={`admin-grid-table__cell${editable ? " admin-grid-table__cell--readonly" : ""}`}
+                            >
                               <BzTag type={application.effectiveVisible ? "success" : "warning"}>
                                 {application.effectiveVisible ? "可见" : "不可见"}
                               </BzTag>
                             </div>
-                            <div className="admin-grid-table__cell user-feature-access-table__features web-user-capability-table__features">
+                            <div
+                              className={`admin-grid-table__cell user-feature-access-table__features web-user-capability-table__features${editable ? " admin-grid-table__cell--editable" : ""}`}
+                            >
                               {application.features.length > 0 ? (
                                 <>
-                                  <BzCheckbox
-                                    modelValue={isFullFeatureRange(application)}
+                                  <TableCheckbox
+                                    value={isFullFeatureRange(application)}
                                     disabled
                                   >
                                     全部
-                                  </BzCheckbox>
+                                  </TableCheckbox>
                                   {application.features.map((feature) => (
-                                    <BzCheckbox
+                                    <TableCheckbox
                                       key={feature.id}
-                                      modelValue={
+                                      value={
                                         isFullFeatureRange(application) || feature.effectiveEnabled
                                       }
                                       disabled={
@@ -469,7 +484,7 @@ export function WebUserFeatureDrawer({
                                       }
                                     >
                                       {feature.name}
-                                    </BzCheckbox>
+                                    </TableCheckbox>
                                   ))}
                                 </>
                               ) : (

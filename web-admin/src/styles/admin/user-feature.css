@@ -159,6 +159,19 @@
   width: 100%;
 }
 
+.user-feature-access-table .admin-grid-table__cell--editable,
+.web-user-package-table .admin-grid-table__cell--editable,
+.web-user-capability-table .admin-grid-table__cell--editable {
+  background: var(--color-bg-surface-selected);
+}
+
+.user-feature-access-table .admin-grid-table__cell--readonly,
+.web-user-package-table .admin-grid-table__cell--readonly,
+.web-user-capability-table .admin-grid-table__cell--readonly {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface-soft);
+}
+
 @media (max-width: 900px) {
   .web-user-capability-toolbar .role-permission-toolbar__actions {
     align-items: stretch;

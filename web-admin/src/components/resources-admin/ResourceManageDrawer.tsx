@@ -9,7 +9,12 @@ import {
 } from "@admin/api/resources";
 import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
-import { TableInput, TableSelect, TableTextArea } from "@admin/components/admin-inputs";
+import {
+  TableCheckbox,
+  TableInput,
+  TableSelect,
+  TableTextArea,
+} from "@admin/components/admin-inputs";
 import { BzButton, BzSwitch } from "@admin/components/bz";
 import { message } from "@admin/core/message";
 import { refreshRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
@@ -131,7 +136,7 @@ export function ResourceManageDrawer({
   parentId,
   allResources,
   permissions,
-  canEdit: _canEdit,
+  canEdit,
   canPermissionEdit,
   onClose,
   onSaved,
@@ -141,7 +146,7 @@ export function ResourceManageDrawer({
   const [formError, setFormError] = useState("");
 
   const isDetail = mode === "detail";
-  const editable = !isDetail;
+  const editable = !isDetail && canEdit;
   const typeLocked = mode === "edit"; // 编辑时不可更改资源类型
 
   const rowMap = useMemo(() => {
@@ -264,7 +269,7 @@ export function ResourceManageDrawer({
   }
 
   async function handleSave() {
-    if (isDetail) return;
+    if (!editable) return;
     const error = validateForm();
     setFormError(error);
     if (error) return;
@@ -329,7 +334,7 @@ export function ResourceManageDrawer({
   ) {
     return (
       <AdminInfoCell
-        state="display"
+        state={isDetail ? "display" : "readonly"}
         mono={mono}
         colSpan={colSpan}
       >
@@ -349,7 +354,17 @@ export function ResourceManageDrawer({
     value: string,
     placeholder: string,
     onChange: (v: string) => void,
-    { mono, disabled, maxLength }: { mono?: boolean; disabled?: boolean; maxLength?: number } = {},
+    {
+      mono,
+      disabled,
+      maxLength,
+      type,
+    }: {
+      mono?: boolean;
+      disabled?: boolean;
+      maxLength?: number;
+      type?: "text" | "number";
+    } = {},
   ) {
     if (disabled) return renderValue(value, { mono });
     return (
@@ -359,6 +374,7 @@ export function ResourceManageDrawer({
       >
         <TableInput
           value={value}
+          type={type}
           maxLength={maxLength}
           placeholder={placeholder}
           onValueChange={onChange}
@@ -446,7 +462,7 @@ export function ResourceManageDrawer({
         ? `${RESOURCE_TYPE_LABEL[form.resourceType]}详情`
         : "编辑资源";
 
-  const footer = isDetail ? (
+  const footer = !editable ? (
     <BzButton onClick={onClose}>关闭</BzButton>
   ) : (
     <>
@@ -544,7 +560,7 @@ export function ResourceManageDrawer({
                         String(form.sortNo),
                         "例如：10",
                         (v) => updateForm("sortNo", Number(v || 0)),
-                        { mono: true, maxLength: 10 },
+                        { mono: true, maxLength: 10, type: "number" },
                       )
                     : renderValue(form.sortNo, { mono: true })}
                 </tr>
@@ -637,28 +653,27 @@ export function ResourceManageDrawer({
               <div className="role-manage-section__title">权限码绑定</div>
               <div className="role-manage-section__stat">共 {form.permissionIds.length} 项</div>
             </div>
-            <div className="resource-manage-permission-box">
+            <div
+              className={`resource-manage-permission-box${canSavePermissions ? "" : " is-readonly"}`}
+            >
               {permissions.length ? (
                 permissions.map((permission) => {
                   const checked = form.permissionIds.includes(permission.id);
                   return (
-                    <label
+                    <TableCheckbox
                       key={permission.id}
                       className="resource-manage-permission-item"
+                      value={checked}
+                      disabled={!canSavePermissions}
+                      onValueChange={(value) => togglePermission(permission.id, value)}
                     >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={!canSavePermissions}
-                        onChange={(event) => togglePermission(permission.id, event.target.checked)}
-                      />
                       <span>{permission.name}</span>
                       <span className="resource-manage-permission-code">({permission.code})</span>
-                    </label>
+                    </TableCheckbox>
                   );
                 })
               ) : (
-                <div className="role-info-cell">暂无权限码绑定</div>
+                <div className="admin-info-cell--readonly">暂无权限码绑定</div>
               )}
             </div>
           </section>

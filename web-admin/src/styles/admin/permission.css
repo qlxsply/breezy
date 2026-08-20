@@ -392,6 +392,7 @@
 }
 
 .api-sort-data-table .is-code,
+.api-sort-edit-table .is-code,
 .api-sort-input.is-code,
 .api-sort-direction-value .is-code {
   font-family: var(--font-family-mono);
@@ -466,6 +467,20 @@
 
 .api-sort-edit-table__cell {
   padding: 5px 10px;
+}
+
+.api-sort-edit-table__cell.admin-info-cell--editable {
+  background: var(--color-bg-surface-selected);
+}
+
+.api-sort-edit-table__cell > .table-input-control {
+  width: 100%;
+  margin: 0;
+}
+
+.api-sort-edit-table__cell:has(.table-input-control:focus-within) {
+  z-index: 1;
+  box-shadow: inset 0 0 0 1px var(--primary-color);
 }
 
 .api-sort-edit-table__head > :first-child,

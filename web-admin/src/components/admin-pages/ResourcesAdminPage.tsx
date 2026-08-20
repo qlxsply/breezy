@@ -613,7 +613,7 @@ export function ResourcesAdminPage() {
             parentId={drawerParentId}
             allResources={rows}
             permissions={permissions}
-            canEdit={canEdit}
+            canEdit={drawerMode === "create" ? canCreate : canEdit}
             canPermissionEdit={canPermissionEdit}
             onClose={closeDrawer}
             onSaved={() => void reload()}

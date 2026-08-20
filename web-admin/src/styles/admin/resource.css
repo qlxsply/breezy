@@ -448,6 +448,9 @@
 
 .resource-manage-permission-box.is-readonly {
   grid-template-columns: 1fr;
+  padding: var(--space-3);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface-soft);
 }
 
 .resource-manage-permission-item {
