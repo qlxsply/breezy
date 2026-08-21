@@ -1,3 +1,5 @@
+import { get, post } from "@admin/shared/transport";
+
 import type {
   DiagnosticCapability,
   DiagnosticConfigPayload,
@@ -6,7 +8,6 @@ import type {
   DiagnosticSession,
   DiagnosticSnapshot,
 } from "../types/diagnostic";
-import { get, post } from "./http";
 
 const BASE = "/admin/diagnostic";
 

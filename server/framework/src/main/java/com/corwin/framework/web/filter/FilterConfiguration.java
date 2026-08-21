@@ -11,8 +11,7 @@ import org.springframework.web.filter.CorsFilter;
 /**
  * Configuration for CORS and other servlet-level filters.
  * <p>
- * Configures a global CORS filter that allows all origins, headers, and
- * methods, with support for credentials and common exposed headers.
+ * Configures public bearer-token CORS without allowing cross-origin cookies.
  *
  * @author Corwin 2025/10/11
  */
@@ -22,10 +21,10 @@ public class FilterConfiguration {
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);    // allow cookies / credentials
-        config.addAllowedOriginPattern("*"); // allow all origins
-        config.addAllowedHeader("*");        // allow all headers
-        config.addAllowedMethod("*");        // allow all HTTP methods
+        config.setAllowCredentials(false);
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
         config.addExposedHeader("Content-Disposition");
         config.addExposedHeader("Content-Type");
         config.addExposedHeader("Content-Length");

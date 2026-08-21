@@ -10,14 +10,19 @@ import {
   stopDiagnostic,
   updateDiagnosticConfig,
 } from "@admin/api/diagnostic";
-import {
-  type AdminDetailSection,
-  AdminDetailTable,
-} from "@admin/components/admin/AdminDetailTable";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { formatDateTime, formatDecimal } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
+import { usePermission } from "@admin/features/resources/model/resource-store";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateTime, formatDecimal } from "@admin/shared/lib/formatter";
+import { type AdminDetailSection, AdminDetailTable } from "@admin/shared/ui/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { BzButton } from "@admin/shared/ui/bz/BzButton";
+import { BzCard } from "@admin/shared/ui/bz/BzCard";
+import { BzCheckbox } from "@admin/shared/ui/bz/BzCheckbox";
+import { BzEmpty } from "@admin/shared/ui/bz/BzEmpty";
+import { BzInput } from "@admin/shared/ui/bz/BzInput";
+import { BzSwitch } from "@admin/shared/ui/bz/BzSwitch";
+import type { BzTableColumn } from "@admin/shared/ui/bz/BzTable";
+import { BzTable } from "@admin/shared/ui/bz/BzTable";
 import type {
   DiagnosticCapability,
   DiagnosticConfigPayload,
@@ -27,15 +32,6 @@ import type {
   DiagnosticSnapshot,
 } from "@admin/types/diagnostic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
-import { BzCheckbox } from "../bz/BzCheckbox";
-import { BzEmpty } from "../bz/BzEmpty";
-import { BzInput } from "../bz/BzInput";
-import { BzSwitch } from "../bz/BzSwitch";
-import type { BzTableColumn } from "../bz/BzTable";
-import { BzTable } from "../bz/BzTable";
 
 const itemOptions: Array<{ label: string; value: DiagnosticItem; description: string }> = [
   { label: "JVM", value: "JVM", description: "关注堆、非堆、GC 与进程 CPU。" },
@@ -237,10 +233,10 @@ export function DiagnosticPage() {
   const [config, setConfig] = useState<DiagnosticConfigPayload>(createDefaultConfig());
   const [drawerForm, setDrawerForm] = useState<DiagnosticConfigPayload>(createDefaultConfig());
 
-  const canView = hasResourceCodeAccess("diagnostic-view");
-  const canStart = hasResourceCodeAccess("diagnostic-start");
-  const canEdit = hasResourceCodeAccess("diagnostic-edit");
-  const canStop = hasResourceCodeAccess("diagnostic-stop");
+  const canView = usePermission("diagnostic-view");
+  const canStart = usePermission("diagnostic-start");
+  const canEdit = usePermission("diagnostic-edit");
+  const canStop = usePermission("diagnostic-stop");
   const isActive = status?.status === "ACTIVE";
 
   const canViewRef = useRef(canView);

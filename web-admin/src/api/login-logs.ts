@@ -1,7 +1,8 @@
 // /src/api/login-logs.ts
+import { post } from "@admin/shared/transport";
+import type { PageResult, PageRule, SortRule } from "@admin/shared/types/pagination";
+
 import type { LoginLogEntry } from "../types/login-log";
-import type { PageResult, PageRule, SortRule } from "../types/page";
-import { post } from "./http";
 
 const BASE = "/sys/login-logs";
 

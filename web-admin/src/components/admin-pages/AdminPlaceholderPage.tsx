@@ -1,4 +1,4 @@
-import { BzCard } from "@admin/components/bz";
+import { BzCard } from "@admin/shared/ui/bz";
 
 export function AdminPlaceholderPage({
   title,

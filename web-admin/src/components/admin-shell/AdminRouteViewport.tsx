@@ -3,17 +3,17 @@
 import { renderMappedAdminPage } from "@admin/components/admin-pages/page-map";
 import {
   getCurrentRouteTitle,
+  isPublicAdminSelfServicePath,
   useAdminBreadcrumb,
   useAdminRouteResolved,
 } from "@admin/components/admin-shell/admin-routes";
-import { BzButton, BzCard } from "@admin/components/bz";
 import {
-  getCurrentUserType,
-  useAuthLoaded,
+  useAuthSession,
   useCurrentUserType,
   useIsAuthenticated,
-} from "@admin/core/registry/auth-registry";
-import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+} from "@admin/features/auth/model/auth-store";
+import { useResourceStatus } from "@admin/features/resources/model/resource-store";
+import { BzButton, BzCard } from "@admin/shared/ui/bz";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -53,11 +53,12 @@ export function AdminRouteViewport({
   const routePathname = usePathname() ?? "/admin";
   const pathname = path ?? routePathname;
   const router = useRouter();
-  const authLoaded = useAuthLoaded();
+  const authSession = useAuthSession();
+  const authLoaded = authSession.status !== "idle" && authSession.status !== "loading";
   const authenticated = useIsAuthenticated();
   const currentUserType = useCurrentUserType();
-  const permissionsLoaded = useIsRegistryLoaded();
-  const registryLoaded = useIsRegistryLoaded();
+  const resourceStatus = useResourceStatus();
+  const selfServiceRoute = isPublicAdminSelfServicePath(pathname);
   const breadcrumb = useAdminBreadcrumb(pathname);
   const resolved = useAdminRouteResolved(pathname);
 
@@ -68,15 +69,18 @@ export function AdminRouteViewport({
     if (!authLoaded) {
       return;
     }
+    if (authSession.status === "error") {
+      return;
+    }
     if (!authenticated) {
       const redirect = encodeURIComponent(pathname);
       router.replace(`/admin/login?redirect=${redirect}`);
       return;
     }
-    if (getCurrentUserType() !== "ADMIN") {
+    if (currentUserType !== "ADMIN") {
       router.replace("/");
     }
-  }, [active, authLoaded, authenticated, pathname, router]);
+  }, [active, authLoaded, authSession.status, authenticated, currentUserType, pathname, router]);
 
   if (!authLoaded) {
     return (
@@ -84,6 +88,16 @@ export function AdminRouteViewport({
         badge="系统 / 加载中"
         title="正在初始化后台"
         description="后台登录态、资源树、权限和通知能力正在加载，请稍候。"
+      />
+    );
+  }
+
+  if (authSession.status === "error") {
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 初始化失败"
+        title="后台会话恢复失败"
+        description={authSession.error || "无法连接后台服务，请刷新页面后重试。"}
       />
     );
   }
@@ -108,7 +122,17 @@ export function AdminRouteViewport({
     );
   }
 
-  if (!registryLoaded || !permissionsLoaded) {
+  if (resourceStatus === "error" && !selfServiceRoute) {
+    return (
+      <AdminPlaceholderCard
+        badge="系统 / 初始化失败"
+        title="后台资源加载失败"
+        description="无法验证当前页面权限，请刷新页面后重试。"
+      />
+    );
+  }
+
+  if (resourceStatus !== "ready" && !selfServiceRoute) {
     return (
       <AdminPlaceholderCard
         badge="系统 / 同步中"

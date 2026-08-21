@@ -7,16 +7,24 @@ import {
   listPhysicalFileLogicalRefs,
   listSystemNodes,
 } from "@admin/api/system-files";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import {
-  type AdminDetailSection,
-  AdminDetailTable,
-} from "@admin/components/admin/AdminDetailTable";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
-import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
+import { usePermission } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { message } from "@admin/shared/lib/feedback/message";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { type AdminDetailSection, AdminDetailTable } from "@admin/shared/ui/admin/AdminDetailTable";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
+import { BzAlert } from "@admin/shared/ui/bz/BzAlert";
+import { BzButton } from "@admin/shared/ui/bz/BzButton";
+import { BzCard } from "@admin/shared/ui/bz/BzCard";
+import { BzEmpty } from "@admin/shared/ui/bz/BzEmpty";
+import { BzFormItem } from "@admin/shared/ui/bz/BzFormItem";
+import { BzInput } from "@admin/shared/ui/bz/BzInput";
+import { BzLoading } from "@admin/shared/ui/bz/BzLoading";
+import { BzOption } from "@admin/shared/ui/bz/BzOption";
+import { BzSelect } from "@admin/shared/ui/bz/BzSelect";
+import { BzTable, type BzTableColumn } from "@admin/shared/ui/bz/BzTable";
+import { BzTag } from "@admin/shared/ui/bz/BzTag";
 import type {
   PhysicalFileDetail,
   StorageListQuery,
@@ -25,18 +33,6 @@ import type {
   SystemFileItem,
 } from "@admin/types/file-storage";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { BzAlert } from "../bz/BzAlert";
-import { BzButton } from "../bz/BzButton";
-import { BzCard } from "../bz/BzCard";
-import { BzEmpty } from "../bz/BzEmpty";
-import { BzFormItem } from "../bz/BzFormItem";
-import { BzInput } from "../bz/BzInput";
-import { BzLoading } from "../bz/BzLoading";
-import { BzOption } from "../bz/BzOption";
-import { BzSelect } from "../bz/BzSelect";
-import { BzTable, type BzTableColumn } from "../bz/BzTable";
-import { BzTag } from "../bz/BzTag";
 
 const PREVIEW_SIZE_LIMIT = 5 * 1024 * 1024;
 
@@ -111,11 +107,11 @@ function isTextType(contentType: string): boolean {
 }
 
 export function SystemFilesPage() {
-  const canAdmin = hasResourceCodeAccess("system-file-admin-view");
-  const canPhysical = hasResourceCodeAccess("system-file-physical-view");
-  const canReverse = hasResourceCodeAccess("system-file-reference-view");
-  const canView = hasResourceCodeAccess("system-file-preview");
-  const canDownload = hasResourceCodeAccess("system-file-download");
+  const canAdmin = usePermission("system-file-admin-view");
+  const canPhysical = usePermission("system-file-physical-view");
+  const canReverse = usePermission("system-file-reference-view");
+  const canView = usePermission("system-file-preview");
+  const canDownload = usePermission("system-file-download");
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");

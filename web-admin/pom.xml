@@ -41,7 +41,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>npm-install</id>
+            <id>npm-ci</id>
             <phase>generate-resources</phase>
             <goals>
               <goal>npm</goal>
@@ -49,7 +49,7 @@
             <configuration>
               <workingDirectory>${project.basedir}</workingDirectory>
               <installDirectory>${project.build.directory}/frontend</installDirectory>
-              <arguments>install</arguments>
+              <arguments>ci</arguments>
             </configuration>
           </execution>
           <execution>

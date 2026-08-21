@@ -1,5 +1,6 @@
 "use client";
 
+import { login, resolveLandingPathForUser } from "@admin/features/auth/service/auth-service";
 import {
   BzAlert,
   BzButton,
@@ -7,18 +8,11 @@ import {
   BzFormItem,
   BzInput,
   type BzInputRef,
-} from "@admin/components/bz";
-import {
-  type AuthSpace,
-  login,
-  resolveLandingPathForUser,
-} from "@admin/core/registry/auth-registry";
-import { ensureRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
+} from "@admin/shared/ui/bz";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface AuthLoginPageCardProps {
-  scope: AuthSpace;
   formTitle: string;
   returnLabel: string;
   returnTo: string;
@@ -27,7 +21,6 @@ interface AuthLoginPageCardProps {
 }
 
 export function AuthLoginPageCard({
-  scope,
   formTitle,
   returnLabel,
   returnTo,
@@ -69,9 +62,7 @@ export function AuthLoginPageCard({
       setSubmitting(true);
       setError("");
 
-      const current = await login(scope, username.trim(), password);
-      await ensureRegistryLoaded(true);
-      await ensureRegistryLoaded();
+      const current = await login(username.trim(), password);
       router.push(resolveRedirectPath(current.userType));
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");

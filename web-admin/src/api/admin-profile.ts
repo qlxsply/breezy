@@ -1,5 +1,6 @@
+import { get, put } from "@admin/shared/transport";
+
 import type { LoginEvent } from "../types/login-log";
-import { get, put } from "./http";
 
 export interface AdminProfileLoginActivityEntry {
   id: string;

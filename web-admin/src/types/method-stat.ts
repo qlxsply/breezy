@@ -1,4 +1,4 @@
-import type { PageQuery } from "./page";
+import type { PageQuery } from "@admin/shared/types/pagination";
 
 export type MethodStatSortDirection = "ASC" | "DESC";
 

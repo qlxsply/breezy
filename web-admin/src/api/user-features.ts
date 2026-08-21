@@ -1,4 +1,6 @@
-import type { PageResult, PageRule, SortRule } from "../types/page";
+import { del, get, post, put } from "@admin/shared/transport";
+import type { PageResult, PageRule, SortRule } from "@admin/shared/types/pagination";
+
 import type {
   SaveUserFeaturePackageRequest,
   SaveUserFeatureUserManagementRequest,
@@ -10,7 +12,6 @@ import type {
   UserFeatureUserFeatureEntry,
   UserFeatureUserManagementEntry,
 } from "../types/user-feature";
-import { del, get, post, put } from "./http";
 
 const BASE = "/user-features";
 

@@ -1,5 +1,7 @@
 node_modules
+.next
 dist
+target
 coverage
 .vite
 .cache
@@ -8,6 +10,9 @@ public/mock
 *.min.css
 *.svg
 *.log
+tsconfig.tsbuildinfo
+.env*
+!.env.example
 pnpm-lock.yaml
 package-lock.json
 yarn.lock

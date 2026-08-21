@@ -1,6 +1,7 @@
+import { get, post, put } from "@admin/shared/transport";
+import type { PageResult } from "@admin/shared/types/pagination";
+
 import type { ExternalUserEntry } from "../types/external-user-admin";
-import type { PageResult } from "../types/page";
-import { get, post, put } from "./http";
 
 const BASE = "/web-users";
 

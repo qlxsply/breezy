@@ -1,19 +1,18 @@
 "use client";
 
-import { BzAlert, BzButton, BzCard, BzForm, BzFormItem, BzInput } from "@admin/components/bz";
-import { resolveBootstrapUrl } from "@admin/core/bootstrap-config";
-import { bzConfirm } from "@admin/core/confirm";
-import { getPublicRuntimeEnv } from "@admin/core/env";
-import { formatDateTime, formatDecimal } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
-import { readJson, writeJson } from "@admin/core/storage";
+import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateTime, formatDecimal } from "@admin/shared/lib/formatter";
+import { readJson, writeJson } from "@admin/shared/lib/storage";
+import { getRuntimeConfig, resolveBootstrapUrl } from "@admin/shared/transport";
+import { BzAlert, BzButton, BzCard, BzForm, BzFormItem, BzInput } from "@admin/shared/ui/bz";
 import { useState } from "react";
 
 const DEMO_STORAGE_KEY = "breezy:admin:capability-demo";
 
 export function AdminCapabilityDemo() {
   const [text, setText] = useState(readJson<string>(DEMO_STORAGE_KEY, ""));
-  const env = getPublicRuntimeEnv();
+  const runtimeConfig = getRuntimeConfig();
 
   async function handleConfirmDemo() {
     const accepted = await bzConfirm({
@@ -83,7 +82,7 @@ export function AdminCapabilityDemo() {
         </div>
 
         <div style={{ display: "grid", gap: 6, color: "#475569", fontSize: 13 }}>
-          <div>API Base：{env.apiBaseUrl}</div>
+          <div>API Base：{runtimeConfig.apiBaseUrl}</div>
           <div>Bootstrap URL：{resolveBootstrapUrl()}</div>
           <div>当前时间格式化：{formatDateTime(Date.now())}</div>
           <div>数值格式化：{formatDecimal(123456.789)}</div>

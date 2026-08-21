@@ -1,11 +1,12 @@
+import { del, get, post, put } from "@admin/shared/transport";
+import type { PageResult } from "@admin/shared/types/pagination";
+
 import type {
   MethodStatGlobalSwitch,
   MethodStatMethodSwitch,
   MethodStatStatsItem,
   MethodStatStatsPageRequest,
 } from "../types/method-stat";
-import type { PageResult } from "../types/page";
-import { del, get, post, put } from "./http";
 
 const QUERY_BASE = "/method-stat/query";
 const MANAGE_BASE = "/method-stat/manage";

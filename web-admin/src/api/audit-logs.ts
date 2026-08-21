@@ -1,6 +1,7 @@
+import { get, post } from "@admin/shared/transport";
+import type { PageResult, PageRule, SortRule } from "@admin/shared/types/pagination";
+
 import type { AuditLevel, AuditLogEntry } from "../types/audit-log";
-import type { PageResult, PageRule, SortRule } from "../types/page";
-import { get, post } from "./http";
 
 const BASE = "/sys/audit-logs";
 

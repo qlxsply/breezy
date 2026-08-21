@@ -1,0 +1,62 @@
+.tableScope :global(.bz-table__inner) {
+  table-layout: fixed;
+}
+
+.tableScope :global(.bz-table__inner) th.headerCell,
+.tableScope :global(.bz-table__inner) td.cell {
+  min-width: 4em;
+  white-space: nowrap;
+}
+
+.text {
+  display: block;
+  min-width: 4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--font-family-mono);
+}
+
+.subdued {
+  color: var(--color-text-secondary);
+}
+
+.tagList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4em;
+  max-width: 100%;
+  overflow: hidden;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+.tagLabel {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionsCell {
+  min-width: 0;
+}
+
+.tableScope .actionsCell :global(.admin-action-bar) {
+  min-width: 0;
+  overflow: visible;
+}

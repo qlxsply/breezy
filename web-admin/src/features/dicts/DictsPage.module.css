@@ -1,0 +1,51 @@
+.itemsSection {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.manageStatusSwitch {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+}
+
+.itemsTableDragCell {
+  padding: 0 !important;
+  text-align: center !important;
+}
+
+.itemsTableOrder {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+}
+
+.itemsTable :global(.bz-table__inner tbody tr.is-drag-target td) {
+  background: var(--color-bg-surface-selected);
+}
+
+.itemRemark {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(.bz-table__inner) th.typeDescriptionCell,
+:global(.bz-table__inner) td.typeDescriptionCell {
+  width: 260px;
+  max-width: 260px;
+}
+
+.typeDescriptionText {
+  display: block;
+  width: 100%;
+}
+
+.itemEditorForm :global(.bz-input),
+.itemEditorForm :global(.bz-select),
+.itemEditorForm :global(.bz-text-field__control) {
+  border-radius: 0;
+}

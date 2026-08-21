@@ -1,14 +1,14 @@
 "use client";
 
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminInfoCell } from "@admin/components/admin/AdminInfoCell";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
 import {
   TableCheckbox,
   TableInput,
   TableSelect,
   TableTextArea,
-} from "@admin/components/admin-inputs";
-import { BzButton, BzInput, BzTag } from "@admin/components/bz";
+} from "@admin/shared/ui/admin/inputs";
+import { BzButton, BzInput, BzTag } from "@admin/shared/ui/bz";
 import type {
   SaveUserFeaturePackageRequest,
   UserFeatureAccessScope,
@@ -198,21 +198,21 @@ export function UserFeaturePackageManageDrawer({
   return (
     <AdminEntityDrawer
       open={open}
-      className="role-manage-drawer user-feature-package-drawer"
+      className="admin-entity-manage-drawer user-feature-package-drawer"
       title={mode === "create" ? "新增应用包" : mode === "edit" ? "编辑应用包" : "应用包详情"}
       width="1180px"
       loading={loading}
       onClose={onClose}
       footer={footer}
     >
-      <div className="role-manage-shell">
-        <section className="role-manage-section">
-          <div className="role-manage-section__head">
-            <div className="role-manage-section__title">应用包信息</div>
+      <div className="admin-entity-shell">
+        <section className="admin-entity-section">
+          <div className="admin-entity-section__head">
+            <div className="admin-entity-section__title">应用包信息</div>
           </div>
-          <div className="role-info-table-wrap">
+          <div className="admin-info-table-wrap">
             <table
-              className="role-info-table"
+              className="admin-info-table"
               aria-label="应用包信息"
             >
               <tbody>
@@ -341,31 +341,31 @@ export function UserFeaturePackageManageDrawer({
           </div>
         </section>
 
-        <section className="role-manage-section">
-          <div className="role-manage-section__head">
-            <div className="role-manage-section__title">应用授权</div>
-            <div className="role-manage-section__stat">
+        <section className="admin-entity-section">
+          <div className="admin-entity-section__head">
+            <div className="admin-entity-section__title">应用授权</div>
+            <div className="admin-entity-section__stat">
               已选 {selectedApplicationCount} / {rows.length} 个应用
             </div>
           </div>
-          <div className="role-permission-toolbar user-feature-access-toolbar">
+          <div className="admin-permission-toolbar user-feature-access-toolbar">
             <BzInput
               modelValue={keyword}
               placeholder="搜索应用或功能"
               clearable
-              className="role-permission-toolbar__search"
+              className="admin-permission-toolbar__search"
               onValueChange={setKeyword}
             />
             {editable ? (
               <BzButton
-                className="permission-toolbar-button"
+                className="admin-permission-toolbar-button"
                 onClick={() => setAccesses({})}
               >
                 清空选择
               </BzButton>
             ) : null}
           </div>
-          <div className="admin-grid-table role-permission-table user-feature-access-table">
+          <div className="admin-grid-table admin-permission-table user-feature-access-table">
             <div className="admin-grid-table__viewport">
               <div className="admin-grid-table__row admin-grid-table__row--head user-feature-access-table__head">
                 <div className="admin-grid-table__cell admin-grid-table__cell--check" />
@@ -376,7 +376,7 @@ export function UserFeaturePackageManageDrawer({
               </div>
               <div className="admin-grid-table__body">
                 {filteredRows.length === 0 ? (
-                  <div className="permission-empty">暂无可授权应用</div>
+                  <div className="admin-permission-empty-state">暂无可授权应用</div>
                 ) : (
                   filteredRows.map((application) => {
                     const access = accesses[application.id];

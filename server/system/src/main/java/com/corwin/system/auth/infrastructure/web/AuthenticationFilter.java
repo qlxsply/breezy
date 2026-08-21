@@ -1,6 +1,7 @@
 package com.corwin.system.auth.infrastructure.web;
 
 import com.corwin.framework.constant.HttpHeaderNames;
+import com.corwin.framework.error.BizException;
 import com.corwin.framework.json.Json;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.auth.SseTicketService;
@@ -37,6 +38,7 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
 
     private final AuthPrincipalAuthenticator authenticator;
     private final OpaqueTokenService opaqueTokenService;
+    private final AdminAuthCookieService cookieService;
     private final Optional<SseTicketService> sseTicketService;
 
     @Override
@@ -44,14 +46,21 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         CtxUtil.setPrincipal(AuthPrincipal.guest());
         CtxUtil.clearTokenHash();
+        boolean sessionAuthentication = false;
         try {
-            String authorization = request.getHeader(HttpHeaderNames.AUTHORIZATION);
-            String rawToken = resolveToken(authorization);
+            String bearerToken = resolveBearerToken(request.getHeader(HttpHeaderNames.AUTHORIZATION));
+            String sessionToken = cookieService.readSession(request);
             AuthPrincipal principal;
-            if (!rawToken.isBlank()) {
-                principal = isJwt(rawToken) ? authenticator.authenticateUserToken(
-                        rawToken) : authenticator.authenticateAdminToken(rawToken);
-                String tokenHash = opaqueTokenService.hash(rawToken);
+            if (!bearerToken.isBlank()) {
+                if (!isJwt(bearerToken)) {
+                    throw new BizException(AuthError.INVALID_TOKEN);
+                }
+                principal = authenticator.authenticateUserToken(bearerToken);
+                CtxUtil.setPrincipal(principal);
+            } else if (!sessionToken.isBlank()) {
+                sessionAuthentication = true;
+                principal = authenticator.authenticateAdminToken(sessionToken);
+                String tokenHash = opaqueTokenService.hash(sessionToken);
                 CtxUtil.setPrincipal(principal);
                 CtxUtil.setTokenHash(tokenHash);
             } else {
@@ -61,6 +70,16 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
                 }
             }
         } catch (RuntimeException ex) {
+            if (sessionAuthentication) {
+                cookieService.clearSession(response);
+            }
+            String authorization = request.getHeader(HttpHeaderNames.AUTHORIZATION);
+            if (isPublicAdminAuthPath(request) && (authorization == null || authorization.isBlank())) {
+                CtxUtil.setPrincipal(AuthPrincipal.guest());
+                CtxUtil.clearTokenHash();
+                filterChain.doFilter(request, response);
+                return;
+            }
             writeError(response, resolveError(ex));
             return;
         }
@@ -83,19 +102,30 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
         return authenticator.authenticateSseTicket(payload);
     }
 
-    private String resolveToken(String authorization) {
+    private String resolveBearerToken(String authorization) {
         if (authorization == null || authorization.isBlank()) {
             return "";
         }
         String trimmed = authorization.trim();
-        if (trimmed.regionMatches(true, 0, "Bearer ", 0, 7)) {
-            return trimmed.substring(7).trim();
+        if (!trimmed.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            throw new BizException(AuthError.INVALID_TOKEN);
         }
-        return trimmed;
+        String token = trimmed.substring(7).trim();
+        if (token.isBlank()) {
+            throw new BizException(AuthError.INVALID_TOKEN);
+        }
+        return token;
     }
 
     private boolean isJwt(String rawToken) {
         return rawToken.indexOf('.') > 0 && rawToken.indexOf('.') != rawToken.lastIndexOf('.');
+    }
+
+    private boolean isPublicAdminAuthPath(HttpServletRequest request) {
+        return switch (request.getRequestURI()) {
+            case "/api/admin/auth/login", "/api/admin/auth/logout", "/api/admin/auth/csrf" -> true;
+            default -> false;
+        };
     }
 
     private AuthError resolveError(RuntimeException ex) {

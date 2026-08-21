@@ -1,0 +1,252 @@
+.page {
+  min-width: 0;
+}
+
+.sortSwitchLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sortSwitchLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sortDataTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.sortDataTable th,
+.sortDataTable td {
+  height: 40px;
+  padding: 7px 12px;
+  text-align: left;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sortDataTable th {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-bg-surface-soft);
+}
+
+.sortDataTable th:last-child,
+.sortDataTable td:last-child {
+  border-right: 0;
+}
+
+.sortDataTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.sortDataTable .code,
+.sortEditTable .code,
+.sortDirectionValue .code {
+  font-family: var(--font-family-mono);
+}
+
+.sortTablePanel {
+  overflow: hidden;
+  margin: 0;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+}
+
+.sortTableTitleRow {
+  min-height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-surface-soft);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sortTableTitle {
+  padding: 0 12px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sortTableAddAction {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+}
+
+.sortEditGrid {
+  background: var(--color-bg-surface);
+}
+
+.sortEditHead,
+.sortEditRow {
+  display: grid;
+  grid-template-columns: 40px var(--api-sort-columns) 40px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.sortEditHead {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-bg-surface-soft);
+}
+
+.sortEditRow {
+  background: var(--color-bg-surface);
+}
+
+.sortEditHead > *,
+.sortEditRow > * {
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sortEditHead > * {
+  padding: 0 10px;
+}
+
+.sortEditCell {
+  padding: 5px 10px;
+}
+
+.sortEditCell:global(.admin-info-cell--editable) {
+  background: var(--color-bg-surface-selected);
+}
+
+.sortEditCell > :global(.table-input-control) {
+  width: 100%;
+  margin: 0;
+}
+
+.sortEditCell:has(:global(.table-input-control:focus-within)) {
+  z-index: 1;
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.sortEditHead > :first-child,
+.sortEditHead > :last-child,
+.sortDragCell,
+.sortRowActions {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+.sortEditHead > :last-child,
+.sortEditRow > :last-child {
+  border-right: 0;
+}
+
+.sortEditHead > .sortTableAddAction {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.sortRowActions {
+  justify-content: center;
+}
+
+.sortDragCell {
+  display: grid;
+  place-items: center;
+}
+
+.sortDragHandle {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+}
+
+.sortDragHandle:hover {
+  color: var(--color-text-secondary);
+}
+
+.sortDragHandle:active {
+  cursor: grabbing;
+}
+
+.sortInput {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  outline: none;
+}
+
+.sortInput:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.sortInput.code {
+  font-family: var(--font-family-mono);
+}
+
+.sortDirectionGroup,
+.sortDirectionValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortDirectionButton {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+}
+
+.sortDirectionButton:hover,
+.sortDirectionButton:global(.is-active) {
+  color: var(--primary-color);
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary-border);
+}
+
+.sortDirectionValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortEmptyRow {
+  min-height: 40px;
+  padding: 10px 12px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  background: var(--color-bg-surface-soft);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sortDataTable tbody tr:last-child td,
+.sortEditRow:last-child > *,
+.sortEditGrid > .sortEmptyRow:last-child {
+  border-bottom: 0;
+}

@@ -1,10 +1,20 @@
 "use client";
 
 import { pageExternalUsers, updateExternalUser } from "@admin/api/web-users";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import {
+  WebUserFeatureDrawer,
+  type WebUserFeatureDrawerMode,
+} from "@admin/components/web-users-admin/WebUserFeatureDrawer";
+import { usePermission, useResourceStatus } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateTime } from "@admin/shared/lib/formatter";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
 import {
   BzButton,
   BzFormItem,
@@ -15,25 +25,14 @@ import {
   BzTable,
   type BzTableColumn,
   BzTag,
-} from "@admin/components/bz";
-import {
-  WebUserFeatureDrawer,
-  type WebUserFeatureDrawerMode,
-} from "@admin/components/web-users-admin/WebUserFeatureDrawer";
-import { bzConfirm } from "@admin/core/confirm";
-import { formatDateTime } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
-import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
+} from "@admin/shared/ui/bz";
 import type { ExternalUserEntry, ExternalUserStatus } from "@admin/types/external-user-admin";
-import type { PageResult } from "@admin/types/page";
 import { useEffect, useMemo, useState } from "react";
 
 const pageSizeOptions = [10, 20, 30, 50, 100];
 
 export function WebUsersAdminPage() {
-  const permissionsLoaded = useIsRegistryLoaded();
+  const permissionsLoaded = useResourceStatus() === "ready";
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<ExternalUserEntry[]>([]);
   const [page, setPage] = useState<PageResult<ExternalUserEntry>>({
@@ -56,11 +55,11 @@ export function WebUsersAdminPage() {
   const [drawerUserId, setDrawerUserId] = useState<string | null>(null);
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
-  const canView = hasResourceCodeAccess("web-user-manage-view");
-  const canEdit = hasResourceCodeAccess("web-user-manage-edit");
-  const canFeatureView = hasResourceCodeAccess("user-feature-user-view");
-  const canFeatureSave = hasResourceCodeAccess("user-feature-user-edit");
-  const canPackageView = hasResourceCodeAccess("user-feature-package-view");
+  const canView = usePermission("web-user-manage-view");
+  const canEdit = usePermission("web-user-manage-edit");
+  const canFeatureView = usePermission("user-feature-user-view");
+  const canFeatureSave = usePermission("user-feature-user-edit");
+  const canPackageView = usePermission("user-feature-package-view");
 
   useEffect(() => {
     if (!permissionsLoaded) return;

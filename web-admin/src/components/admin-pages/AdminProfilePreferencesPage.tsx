@@ -1,19 +1,18 @@
 "use client";
 
-import { getMyConfigs, updateMyConfig } from "@admin/api/configs";
-import { listPublicDictOptions, type PublicDictItem } from "@admin/api/dicts";
+import { usePersonalizedConfigs } from "@admin/features/auth/model/auth-store";
+import { applyPersonalizedConfigs } from "@admin/features/auth/service/auth-service";
+import { getMyConfigs, updateMyConfig } from "@admin/features/configs/api/client";
+import { listPublicDictionaryOptions as listPublicDictOptions } from "@admin/features/dicts/public/dictionary-client";
+import type { PublicDictionaryItem as PublicDictItem } from "@admin/features/dicts/public/types";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateByPattern, resolveUserTimeZoneCode } from "@admin/shared/lib/formatter";
 import {
   type AdminDetailSection,
   AdminDetailTable,
   AdminEditableSection,
-} from "@admin/components/admin";
-import { BzButton, BzOption, BzSelect, BzSwitch } from "@admin/components/bz";
-import { formatDateByPattern, resolveUserTimeZoneCode } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
-import {
-  applyPersonalizedConfigs,
-  usePersonalizedConfigs,
-} from "@admin/core/registry/auth-registry";
+} from "@admin/shared/ui/admin";
+import { BzButton, BzOption, BzSelect, BzSwitch } from "@admin/shared/ui/bz";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface OptionItem {

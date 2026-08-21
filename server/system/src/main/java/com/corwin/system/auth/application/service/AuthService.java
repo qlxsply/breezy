@@ -96,7 +96,9 @@ public class AuthService {
 
             AuthPrincipal principal = new AuthPrincipal(user.getId(), user.getUsername(), user.getUserType(),
                     DefaultUser.isAdmin(user.getId()), permissionCodes);
-            authPrincipalAuthenticator.cacheSession(tokenHash, principal, Duration.between(now, expiresAt));
+            Duration cacheTtl = Duration.between(now, expiresAt).compareTo(authConfigService.sessionCacheTtl()) < 0
+                    ? Duration.between(now, expiresAt) : authConfigService.sessionCacheTtl();
+            authPrincipalAuthenticator.cacheSession(tokenHash, principal, cacheTtl);
 
             loginLogService.logLoginSuccess(user);
             return new LoginView(rawToken, null, String.valueOf(expiresAt.toEpochMilli()), null,
@@ -143,10 +145,9 @@ public class AuthService {
      * @return true if logout was processed
      */
     public boolean logout() {
-        AuthPrincipal principal = securityContextService.current();
+        AuthPrincipal principal = securityContextService.currentOptional().orElse(null);
         String tokenHash = CtxUtil.getTokenHash();
-        if (tokenHash == null || tokenHash.isBlank()) {
-            loginLogService.logLogoutFailure(principal.userId(), principal.username(), "logout without token");
+        if (principal == null || tokenHash == null || tokenHash.isBlank()) {
             return true;
         }
 

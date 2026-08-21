@@ -1,21 +1,18 @@
 "use client";
 
-import { batchListDictOptions } from "@admin/api/dicts";
 import {
   getUserFeatureUserManagement,
   pageUserFeaturePackages,
   saveUserFeatureUserManagement,
 } from "@admin/api/user-features";
 import { getExternalUser } from "@admin/api/web-users";
-import {
-  type AdminDetailSection,
-  AdminDetailTable,
-} from "@admin/components/admin/AdminDetailTable";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { TableCheckbox, TableSelect } from "@admin/components/admin-inputs";
-import { BzButton, BzEmpty, BzInput, BzTag } from "@admin/components/bz";
-import { formatDateTime } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
+import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateTime } from "@admin/shared/lib/formatter";
+import { type AdminDetailSection, AdminDetailTable } from "@admin/shared/ui/admin/AdminDetailTable";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { TableCheckbox, TableSelect } from "@admin/shared/ui/admin/inputs";
+import { BzButton, BzEmpty, BzInput, BzTag } from "@admin/shared/ui/bz";
 import type { ExternalUserEntry, ExternalUserStatus } from "@admin/types/external-user-admin";
 import type {
   UserFeatureAccessScope,
@@ -238,7 +235,7 @@ export function WebUserFeatureDrawer({
       loading={loading}
       title={mode === "detail" ? "用户详情" : "用户维护"}
       width="1180px"
-      className="role-manage-drawer web-user-feature-drawer"
+      className="admin-entity-manage-drawer web-user-feature-drawer"
       onClose={onClose}
       footer={
         <>
@@ -256,10 +253,10 @@ export function WebUserFeatureDrawer({
       }
     >
       {user ? (
-        <div className="role-manage-shell web-user-feature-shell">
-          <section className="role-manage-section">
-            <div className="role-manage-section__head">
-              <div className="role-manage-section__title">用户信息</div>
+        <div className="admin-entity-shell web-user-feature-shell">
+          <section className="admin-entity-section">
+            <div className="admin-entity-section__head">
+              <div className="admin-entity-section__title">用户信息</div>
             </div>
             <AdminDetailTable
               sections={basicSections}
@@ -268,19 +265,19 @@ export function WebUserFeatureDrawer({
           </section>
 
           {!canViewFeatures ? (
-            <section className="role-manage-section">
+            <section className="admin-entity-section">
               <BzEmpty description="当前账号无权查看用户功能能力" />
             </section>
           ) : management ? (
             <>
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">应用包</div>
-                  <div className="role-manage-section__stat">
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">应用包</div>
+                  <div className="admin-entity-section__stat">
                     已分配 {selectedPackageIds.length} 个
                   </div>
                 </div>
-                <div className="admin-grid-table role-permission-table web-user-package-table">
+                <div className="admin-grid-table admin-permission-table web-user-package-table">
                   <div className="admin-grid-table__viewport">
                     <div className="admin-grid-table__row admin-grid-table__row--head web-user-package-table__head">
                       <div className="admin-grid-table__cell admin-grid-table__cell--check" />
@@ -347,33 +344,33 @@ export function WebUserFeatureDrawer({
                           );
                         })
                       ) : (
-                        <div className="permission-empty">暂未分配应用包</div>
+                        <div className="admin-permission-empty-state">暂未分配应用包</div>
                       )}
                     </div>
                   </div>
                 </div>
               </section>
 
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">功能能力</div>
-                  <div className="role-manage-section__stat">
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">功能能力</div>
+                  <div className="admin-entity-section__stat">
                     {applications.filter((application) => application.effectiveVisible).length}{" "}
                     个应用可用
                   </div>
                 </div>
-                <div className="role-permission-toolbar web-user-capability-toolbar">
+                <div className="admin-permission-toolbar web-user-capability-toolbar">
                   <BzInput
                     modelValue={keyword}
                     placeholder="搜索应用名称或编码"
                     clearable
-                    className="role-permission-toolbar__search"
+                    className="admin-permission-toolbar__search"
                     onValueChange={setKeyword}
                   />
-                  <div className="role-permission-toolbar__actions">
+                  <div className="admin-permission-toolbar__actions">
                     {editable ? (
                       <BzButton
-                        className="permission-toolbar-button"
+                        className="admin-permission-toolbar-button"
                         onClick={clearPersonalization}
                       >
                         重置
@@ -381,7 +378,7 @@ export function WebUserFeatureDrawer({
                     ) : null}
                   </div>
                 </div>
-                <div className="admin-grid-table role-permission-table web-user-capability-table">
+                <div className="admin-grid-table admin-permission-table web-user-capability-table">
                   <div className="admin-grid-table__viewport">
                     <div className="admin-grid-table__row admin-grid-table__row--head web-user-capability-table__head">
                       <div className="admin-grid-table__cell">应用名称</div>
@@ -496,7 +493,7 @@ export function WebUserFeatureDrawer({
                           </div>
                         ))
                       ) : (
-                        <div className="permission-empty">暂无匹配应用或功能</div>
+                        <div className="admin-permission-empty-state">暂无匹配应用或功能</div>
                       )}
                     </div>
                   </div>

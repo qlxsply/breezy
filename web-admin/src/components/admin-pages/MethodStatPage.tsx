@@ -10,11 +10,15 @@ import {
   updateMethodStatGlobalSwitch,
   updateMethodStatMethodSwitch,
 } from "@admin/api/method-stat";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { usePermission } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { message } from "@admin/shared/lib/feedback/message";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
 import {
   BzButton,
   BzFormItem,
@@ -26,16 +30,12 @@ import {
   BzTable,
   type BzTableColumn,
   BzTag,
-} from "@admin/components/bz";
-import { message } from "@admin/core/message";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
+} from "@admin/shared/ui/bz";
 import type {
   MethodStatSortBy,
   MethodStatSortDirection,
   MethodStatStatsItem,
 } from "@admin/types/method-stat";
-import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
@@ -111,10 +111,10 @@ export function MethodStatPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detail, setDetail] = useState<MethodStatStatsItem | null>(null);
 
-  const canStatsView = hasResourceCodeAccess("method-stat-view");
-  const canSwitchView = hasResourceCodeAccess("method-stat-switch-view");
-  const canSwitchEdit = hasResourceCodeAccess("method-stat-switch-edit");
-  const canStatClear = hasResourceCodeAccess("method-stat-clear");
+  const canStatsView = usePermission("method-stat-view");
+  const canSwitchView = usePermission("method-stat-switch-view");
+  const canSwitchEdit = usePermission("method-stat-switch-edit");
+  const canStatClear = usePermission("method-stat-clear");
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
 
@@ -652,19 +652,19 @@ export function MethodStatPage() {
         title="方法统计详情"
         width="1080px"
         loading={detailLoading}
-        className="role-manage-drawer method-stat-detail-drawer"
+        className="admin-entity-manage-drawer method-stat-detail-drawer"
         onClose={() => setDetailOpen(false)}
         footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
       >
         {detail ? (
-          <div className="role-manage-shell">
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">方法信息</div>
+          <div className="admin-entity-shell">
+            <section className="admin-entity-section">
+              <div className="admin-entity-section__head">
+                <div className="admin-entity-section__title">方法信息</div>
               </div>
-              <div className="role-info-table-wrap">
+              <div className="admin-info-table-wrap">
                 <table
-                  className="role-info-table"
+                  className="admin-info-table"
                   aria-label="方法信息"
                 >
                   <tbody>
@@ -694,13 +694,13 @@ export function MethodStatPage() {
               </div>
             </section>
 
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">采集状态</div>
+            <section className="admin-entity-section">
+              <div className="admin-entity-section__head">
+                <div className="admin-entity-section__title">采集状态</div>
               </div>
-              <div className="role-info-table-wrap">
+              <div className="admin-info-table-wrap">
                 <table
-                  className="role-info-table"
+                  className="admin-info-table"
                   aria-label="采集状态"
                 >
                   <tbody>
@@ -721,13 +721,13 @@ export function MethodStatPage() {
               </div>
             </section>
 
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">统计指标</div>
+            <section className="admin-entity-section">
+              <div className="admin-entity-section__head">
+                <div className="admin-entity-section__title">统计指标</div>
               </div>
-              <div className="role-info-table-wrap">
+              <div className="admin-info-table-wrap">
                 <table
-                  className="role-info-table method-stat-metrics-table"
+                  className="admin-info-table method-stat-metrics-table"
                   aria-label="统计指标"
                 >
                   <tbody>

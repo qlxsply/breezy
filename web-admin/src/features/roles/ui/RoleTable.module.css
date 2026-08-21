@@ -1,0 +1,88 @@
+.tableScope :global(.bz-table__scroll) {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tableScope :global(.bz-table__inner) {
+  min-width: 1280px;
+  table-layout: fixed;
+}
+
+.tableScope :global(.bz-table__inner) th,
+.tableScope :global(.bz-table__inner) td {
+  height: 44px;
+  padding: 10px 12px;
+  border-right: var(--border-width-1) solid var(--color-border-muted);
+  border-bottom: var(--border-width-1) solid var(--color-border-muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.tableScope :global(.bz-table__inner) th {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-bg-surface-soft);
+}
+
+.tableScope :global(.bz-table__inner) td {
+  background: var(--color-bg-surface);
+}
+
+.tableScope :global(.bz-table__inner) tbody tr:hover td {
+  background: var(--color-bg-surface-selected);
+}
+
+.tableScope :global(.bz-table__inner) th:last-child,
+.tableScope :global(.bz-table__inner) td:last-child {
+  border-right: none;
+}
+
+.codeColumn,
+.actionsColumn {
+  position: sticky;
+  z-index: 5;
+}
+
+.codeColumn:global(.is-sticky-left) {
+  left: 0;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.actionsColumn:global(.is-sticky-right) {
+  right: 0;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.tableScope :global(.bz-table__inner) th.codeColumn,
+.tableScope :global(.bz-table__inner) th.actionsColumn {
+  z-index: 8;
+  background: var(--color-bg-surface-soft);
+}
+
+.tableScope :global(.bz-table__inner) td.codeColumn,
+.tableScope :global(.bz-table__inner) td.actionsColumn {
+  background: var(--color-bg-surface);
+}
+
+.tableScope :global(.bz-table__inner) tbody tr:hover td.codeColumn,
+.tableScope :global(.bz-table__inner) tbody tr:hover td.actionsColumn {
+  background: var(--color-bg-surface-selected);
+}
+
+.text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  color: var(--color-text-primary);
+}
+
+.mono {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}

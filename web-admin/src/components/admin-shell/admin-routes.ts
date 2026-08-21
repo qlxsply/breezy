@@ -1,8 +1,13 @@
 "use client";
 
-import { getResources, hasMenuAccess, useResources } from "@admin/core/registry/resources-registry";
-import { resolveResourceIconUrl } from "@admin/core/resource-icon";
-import type { ResourceEntry, ResourceNodeType } from "@admin/types/resource-admin";
+import { resolveResourceIconUrl } from "@admin/features/resources/model/resource-icon";
+import {
+  getResourceSnapshot,
+  hasMenuAccess,
+  useResources,
+  useResourceState,
+} from "@admin/features/resources/model/resource-store";
+import type { ResourceEntry, ResourceNodeType } from "@admin/features/resources/model/types";
 import { useMemo } from "react";
 
 export interface AdminRouteMeta {
@@ -134,6 +139,17 @@ const staticAdminRoutes: AdminRouteMeta[] = [
   },
 ];
 
+const PUBLIC_SELF_SERVICE_PATHS = new Set([
+  "/admin/profile",
+  "/admin/profile/password",
+  "/admin/profile/preferences",
+  "/admin/help",
+]);
+
+export function isPublicAdminSelfServicePath(pathname: string): boolean {
+  return PUBLIC_SELF_SERVICE_PATHS.has(normalizePath(pathname));
+}
+
 function normalizePath(pathname: string): string {
   if (pathname === "/admin/") {
     return "/admin";
@@ -143,7 +159,7 @@ function normalizePath(pathname: string): string {
 
 export function getAdminRoute(pathname: string): AdminRouteMeta | undefined {
   const normalized = normalizePath(pathname);
-  const resourceRoute = buildDynamicRouteList(getResources()).find(
+  const resourceRoute = buildDynamicRouteList([...getResourceSnapshot().items]).find(
     (route) => route.path === normalized,
   );
   return resourceRoute ?? staticAdminRoutes.find((route) => route.path === normalized);
@@ -151,7 +167,7 @@ export function getAdminRoute(pathname: string): AdminRouteMeta | undefined {
 
 export function getAdminBreadcrumb(pathname: string): Array<{ label: string; href?: string }> {
   const normalized = normalizePath(pathname);
-  const resources = getResources();
+  const resources = [...getResourceSnapshot().items];
   if (resources.length > 0) {
     const matched = buildBreadcrumbFromResources(normalized, resources);
     if (matched.length > 0) {
@@ -175,10 +191,7 @@ export function getCurrentRouteTitle(pathname: string): string {
 
 export function useAdminMenuTree(): AdminMenuNode[] {
   const resources = useResources();
-  return useMemo(
-    () => (resources.length > 0 ? buildMenuTreeFromResources(resources) : buildFallbackMenuTree()),
-    [resources],
-  );
+  return useMemo(() => buildMenuTreeFromResources([...resources]), [resources]);
 }
 
 export function useAdminBreadcrumb(pathname: string): Array<{ label: string; href?: string }> {
@@ -186,7 +199,7 @@ export function useAdminBreadcrumb(pathname: string): Array<{ label: string; hre
   return useMemo(() => {
     const normalized = normalizePath(pathname);
     if (resources.length > 0) {
-      const breadcrumb = buildBreadcrumbFromResources(normalized, resources);
+      const breadcrumb = buildBreadcrumbFromResources(normalized, [...resources]);
       if (breadcrumb.length > 0) {
         return breadcrumb;
       }
@@ -196,23 +209,22 @@ export function useAdminBreadcrumb(pathname: string): Array<{ label: string; hre
 }
 
 export function useAdminRouteResolved(pathname: string): AdminResolvedRoute {
-  const resources = useResources();
+  const resourceState = useResourceState();
   return useMemo(() => {
     const normalized = normalizePath(pathname);
+    const resources = [...resourceState.items];
     const route = resolveAdminRoute(normalized, resources);
     if (!route) {
       return { exists: false, accessible: false };
     }
-    if (!route.resourceId) {
+    if (isPublicAdminSelfServicePath(normalized)) {
       return { route, exists: true, accessible: true };
     }
-    const resourceMap = new Map(resources.map((item) => [item.id, item]));
-    const resource = resourceMap.get(route.resourceId);
-    if (!resource) {
+    if (!route.resourceId) {
       return { route, exists: true, accessible: false };
     }
-    return { route, exists: true, accessible: hasMenuAccess(resource, resourceMap) };
-  }, [pathname, resources]);
+    return { route, exists: true, accessible: hasMenuAccess(resourceState, route.resourceId) };
+  }, [pathname, resourceState]);
 }
 
 function resolveAdminRoute(
@@ -260,38 +272,6 @@ function buildMenuTreeFromResources(resources: ResourceEntry[]): AdminMenuNode[]
   });
 
   return sortMenuTree(roots).filter(isVisibleMenuNode);
-}
-
-function buildFallbackMenuTree(): AdminMenuNode[] {
-  const sectionMap = new Map<string, AdminMenuNode>();
-
-  staticAdminRoutes
-    .filter((route) => !route.hidden)
-    .sort((a, b) => a.sectionOrder - b.sectionOrder || a.order - b.order)
-    .forEach((route) => {
-      const key = `${route.sectionOrder}:${route.section}`;
-      const section = sectionMap.get(key) ?? {
-        id: key,
-        title: route.section,
-        order: route.sectionOrder,
-        iconUrl: resolveResourceIconUrl(null, "DIRECTORY") ?? "",
-        nodeType: "DIRECTORY" as ResourceNodeType,
-        children: [],
-      };
-      section.children.push({
-        id: route.path,
-        title: route.title,
-        path: route.path,
-        order: route.order,
-        iconUrl: resolveResourceIconUrl(null, "MENU") ?? "",
-        nodeType: "MENU",
-        resourceId: route.resourceId,
-        children: [],
-      });
-      sectionMap.set(key, section);
-    });
-
-  return sortMenuTree(Array.from(sectionMap.values()));
 }
 
 function flattenMenuRoutes(nodes: AdminMenuNode[]): AdminRouteMeta[] {

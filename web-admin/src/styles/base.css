@@ -68,3 +68,49 @@ textarea {
   color: inherit;
   font: inherit;
 }
+
+.runtime-config-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-bg-app);
+}
+
+.runtime-config-gate__panel {
+  width: min(440px, 100%);
+  padding: 32px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+}
+
+.runtime-config-gate__eyebrow {
+  margin-bottom: 8px;
+  color: var(--primary-color);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.runtime-config-gate__panel h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.runtime-config-gate__panel p {
+  margin: 12px 0 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.runtime-config-gate__panel button {
+  height: 36px;
+  margin-top: 20px;
+  padding: 0 16px;
+  color: #fff;
+  background: var(--primary-color);
+  border: 0;
+  cursor: pointer;
+}

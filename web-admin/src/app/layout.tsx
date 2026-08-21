@@ -2,7 +2,10 @@ import "@fontsource-variable/inter/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght.css";
 import "./globals.css";
 
-import { BzUiRoot } from "@admin/components/bz";
+import { RuntimeConfigGate } from "@admin/runtime/config/RuntimeConfigGate";
+import { BzFeedbackBridge } from "@admin/runtime/feedback/BzFeedbackBridge";
+import { SessionLifecycleBridge } from "@admin/runtime/session/SessionLifecycleBridge";
+import { BzUiRoot } from "@admin/shared/ui/bz";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,7 +21,13 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body>
-        <BzUiRoot>{children}</BzUiRoot>
+        <RuntimeConfigGate>
+          <SessionLifecycleBridge />
+          <BzUiRoot>
+            <BzFeedbackBridge />
+            {children}
+          </BzUiRoot>
+        </RuntimeConfigGate>
       </body>
     </html>
   );

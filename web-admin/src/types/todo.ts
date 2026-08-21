@@ -1,4 +1,4 @@
-import type { PageQuery, PageResult } from "./page";
+import type { PageQuery, PageResult } from "@admin/shared/types/pagination";
 
 export type TodoStatus = "TODO" | "PAUSED" | "DONE";
 

@@ -1,0 +1,114 @@
+.tableScope :global(.bz-table__scroll) {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tableScope :global(.bz-table__inner) {
+  min-width: 1332px;
+  table-layout: fixed;
+}
+
+.tableScope :global(.bz-table__inner) th,
+.tableScope :global(.bz-table__inner) td {
+  height: 44px;
+  padding: 10px 12px;
+  border-right: var(--border-width-1) solid var(--color-border-muted);
+  border-bottom: var(--border-width-1) solid var(--color-border-muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.tableScope :global(.bz-table__inner) th {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-bg-surface-soft);
+}
+
+.tableScope :global(.bz-table__inner) td {
+  background: var(--color-bg-surface);
+}
+
+.tableScope :global(.bz-table__inner) tbody tr:hover td {
+  background: var(--color-bg-surface-selected);
+}
+
+.tableScope :global(.bz-table__inner) th:last-child,
+.tableScope :global(.bz-table__inner) td:last-child {
+  border-right: none;
+}
+
+.selectColumn,
+.usernameColumn,
+.actionsColumn {
+  position: sticky;
+  z-index: 5;
+}
+
+.selectColumn:global(.is-sticky-left) {
+  left: 0;
+}
+
+.usernameColumn:global(.is-sticky-left) {
+  left: 0;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.usernameColumn:global(.has-select-offset) {
+  left: 48px;
+}
+
+.actionsColumn:global(.is-fixed-right) {
+  right: 0;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.tableScope :global(.bz-table__inner) th.selectColumn,
+.tableScope :global(.bz-table__inner) th.usernameColumn,
+.tableScope :global(.bz-table__inner) th.actionsColumn {
+  z-index: 8;
+  background: var(--color-bg-surface-soft);
+}
+
+.tableScope :global(.bz-table__inner) td.selectColumn,
+.tableScope :global(.bz-table__inner) td.usernameColumn,
+.tableScope :global(.bz-table__inner) td.actionsColumn {
+  background: var(--color-bg-surface);
+}
+
+.tableScope :global(.bz-table__inner) tbody tr:hover td.selectColumn,
+.tableScope :global(.bz-table__inner) tbody tr:hover td.usernameColumn,
+.tableScope :global(.bz-table__inner) tbody tr:hover td.actionsColumn {
+  background: var(--color-bg-surface-selected);
+}
+
+.tableScope :global(.bz-table__inner) th.selectColumn,
+.tableScope :global(.bz-table__inner) td.selectColumn {
+  padding-right: 0;
+  padding-left: 0;
+  text-align: center;
+}
+
+.text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.primaryText {
+  color: var(--color-text-primary);
+}
+
+.mono {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}
+
+.checkbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--primary-color);
+}

@@ -9,8 +9,9 @@ import com.corwin.system.auth.application.view.AuthUserView;
 import com.corwin.system.auth.application.view.LoginView;
 import com.corwin.system.auth.interfaces.web.req.ChangePasswordReq;
 import com.corwin.system.auth.interfaces.web.req.LoginReq;
+import com.corwin.system.auth.interfaces.web.res.AdminLoginResponseRes;
 import com.corwin.system.auth.interfaces.web.res.AuthUserRes;
-import com.corwin.system.auth.interfaces.web.res.LoginResponseRes;
+import com.corwin.system.auth.infrastructure.web.AdminAuthCookieService;
 import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.auth.published.PermitAll;
 import com.corwin.system.resource.published.ApiMeta;
@@ -18,7 +19,13 @@ import com.corwin.system.resource.published.ApiModuleCode;
 import com.corwin.system.user.application.service.UserConfigAppService;
 import com.corwin.system.user.application.view.UserConfigView;
 import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
-import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -35,10 +42,13 @@ public class AdminAuthController {
 
     private final AuthService authService;
     private final UserConfigAppService userConfigAppService;
+    private final AdminAuthCookieService cookieService;
 
-    public AdminAuthController(AuthService authService, UserConfigAppService userConfigAppService) {
+    public AdminAuthController(AuthService authService, UserConfigAppService userConfigAppService,
+            AdminAuthCookieService cookieService) {
         this.authService = authService;
         this.userConfigAppService = userConfigAppService;
+        this.cookieService = cookieService;
     }
 
     /**
@@ -46,10 +56,18 @@ public class AdminAuthController {
      */
     @PostMapping("/login")
     @PermitAll
-    public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
+    public ApiResponse<AdminLoginResponseRes> login(@RequestBody LoginReq req, HttpServletResponse response) {
         LoginView result = authService.login(new LoginCommand(req.account(), req.password()));
-        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
-                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
+        cookieService.writeSession(response, result.token(), result.accessTokenExpiresAt());
+        cookieService.rotateCsrf(response);
+        return ApiResponse.ok(new AdminLoginResponseRes(result.accessTokenExpiresAt(), toAuthDto(result.user())));
+    }
+
+    @GetMapping("/csrf")
+    @PermitAll
+    public ApiResponse<Boolean> csrf(HttpServletResponse response) {
+        cookieService.rotateCsrf(response);
+        return ApiResponse.ok(true);
     }
 
     /**
@@ -65,9 +83,14 @@ public class AdminAuthController {
      * Logs out the current admin user by revoking the session.
      */
     @PostMapping("/logout")
-    @Authenticated(userType = UserType.ADMIN)
-    public ApiResponse<Boolean> logout() {
-        return ApiResponse.ok(authService.logout());
+    @PermitAll
+    public ApiResponse<Boolean> logout(HttpServletResponse response) {
+        try {
+            return ApiResponse.ok(authService.logout());
+        } finally {
+            cookieService.clearSession(response);
+            cookieService.rotateCsrf(response);
+        }
     }
 
     /**

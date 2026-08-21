@@ -1,39 +1,40 @@
+import { ApisPage } from "@admin/features/apis/ApisPage";
+import { ConfigsPage } from "@admin/features/configs/ConfigsPage";
+import { DictsPage } from "@admin/features/dicts/DictsPage";
+import { ResourcesPage } from "@admin/features/resources/management/ResourcesPage";
+import { RolesPage } from "@admin/features/roles/RolesPage";
+import { UsersPage } from "@admin/features/users/UsersPage";
+
 import { AdminHelpPage } from "./AdminHelpPage";
 import { AdminHomePage } from "./AdminHomePage";
 import { AdminPlaceholderPage } from "./AdminPlaceholderPage";
 import { AdminProfilePage } from "./AdminProfilePage";
 import { AdminProfilePasswordPage } from "./AdminProfilePasswordPage";
 import { AdminProfilePreferencesPage } from "./AdminProfilePreferencesPage";
-import { ApisAdminPage } from "./ApisAdminPage";
 import { AuditLogsPage } from "./AuditLogsPage";
-import { ConfigsAdminPage } from "./ConfigsAdminPage";
 import { DiagnosticPage } from "./DiagnosticPage";
-import { DictAdminPage } from "./DictAdminPage";
 import { LoginLogsPage } from "./LoginLogsPage";
 import { MethodStatPage } from "./MethodStatPage";
-import { ResourcesAdminPage } from "./ResourcesAdminPage";
-import { RolesAdminPage } from "./RolesAdminPage";
 import { SystemFilesPage } from "./SystemFilesPage";
 import { UserFeatureApplicationsPage } from "./UserFeatureApplicationsPage";
 import { UserFeaturePackagesPage } from "./UserFeaturePackagesPage";
-import { UsersAdminPage } from "./UsersAdminPage";
 import { WebUsersAdminPage } from "./WebUsersAdminPage";
 
 type PageRenderer = () => React.ReactNode;
 
 const pageMap = new Map<string, PageRenderer>([
   ["/admin", () => <AdminHomePage />],
-  ["/admin/apis", () => <ApisAdminPage />],
+  ["/admin/apis", () => <ApisPage />],
   ["/admin/audit-logs", () => <AuditLogsPage />],
-  ["/admin/configs", () => <ConfigsAdminPage />],
+  ["/admin/configs", () => <ConfigsPage />],
   ["/admin/diagnostic", () => <DiagnosticPage />],
-  ["/admin/dicts", () => <DictAdminPage />],
+  ["/admin/dicts", () => <DictsPage />],
   ["/admin/login-logs", () => <LoginLogsPage />],
   ["/admin/method-stat", () => <MethodStatPage />],
-  ["/admin/resources", () => <ResourcesAdminPage />],
-  ["/admin/roles", () => <RolesAdminPage />],
+  ["/admin/resources", () => <ResourcesPage />],
+  ["/admin/roles", () => <RolesPage />],
   ["/admin/system-files", () => <SystemFilesPage />],
-  ["/admin/users", () => <UsersAdminPage />],
+  ["/admin/users", () => <UsersPage />],
   ["/admin/help", () => <AdminHelpPage />],
   ["/admin/profile", () => <AdminProfilePage />],
   ["/admin/profile/password", () => <AdminProfilePasswordPage />],

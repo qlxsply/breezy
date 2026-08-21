@@ -113,63 +113,6 @@
   min-width: 0;
 }
 
-.dict-drawer-stack {
-  display: grid;
-  gap: var(--space-5);
-}
-
-.dict-items-section {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.dict-manage-status-switch {
-  display: flex;
-  align-items: center;
-  min-height: 30px;
-}
-
-.dict-items-table__drag-cell {
-  padding: 0 !important;
-  text-align: center !important;
-}
-
-.dict-items-table__order {
-  color: var(--color-text-muted);
-  font-family: var(--font-family-mono);
-  font-size: 12px;
-}
-
-.dict-items-table .bz-table__inner tbody tr.is-drag-target td {
-  background: var(--color-bg-surface-selected);
-}
-
-.dict-item-remark {
-  display: block;
-  width: 100%;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bz-table__inner th.dict-type-description-cell,
-.bz-table__inner td.dict-type-description-cell {
-  width: 260px;
-  max-width: 260px;
-}
-
-.dict-type-description-text {
-  display: block;
-  width: 100%;
-}
-
-.dict-item-editor-form .bz-input,
-.dict-item-editor-form .bz-select,
-.dict-item-editor-form .bz-text-field__control {
-  border-radius: 0;
-}
-
 .preferences-page-panel {
   display: grid;
   background: var(--color-bg-surface);

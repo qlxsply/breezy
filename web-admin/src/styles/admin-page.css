@@ -4,11 +4,8 @@
 @import "./admin/drawer.css";
 @import "./admin/forms.css";
 @import "./admin/detail-table.css";
-@import "./admin/permission.css";
-@import "./admin/resource.css";
 @import "./admin/detail.css";
 @import "./admin/dict-pagination.css";
-@import "./admin/configs.css";
 @import "./admin/method-stat.css";
 @import "./admin/diagnostic.css";
 @import "./admin/log-pages.css";

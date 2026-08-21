@@ -5,11 +5,16 @@ import {
   pageUserFeatureApplications,
   updateUserFeatureApplicationStatus,
 } from "@admin/api/user-features";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import { usePermission, useResourceStatus } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
+import { message } from "@admin/shared/lib/feedback/message";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
 import {
   BzButton,
   BzFormItem,
@@ -20,13 +25,7 @@ import {
   BzTable,
   type BzTableColumn,
   BzTag,
-} from "@admin/components/bz";
-import { bzConfirm } from "@admin/core/confirm";
-import { message } from "@admin/core/message";
-import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import type { PageResult } from "@admin/types/page";
+} from "@admin/shared/ui/bz";
 import type { UserFeatureApplicationEntry, UserFeatureItemEntry } from "@admin/types/user-feature";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -38,7 +37,7 @@ function resolveAppIconUrl(icon?: string | null): string | null {
 }
 
 export function UserFeatureApplicationsPage() {
-  const permissionsLoaded = useIsRegistryLoaded();
+  const permissionsLoaded = useResourceStatus() === "ready";
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<UserFeatureApplicationEntry[]>([]);
   const [page, setPage] = useState<PageResult<UserFeatureApplicationEntry>>({
@@ -63,8 +62,8 @@ export function UserFeatureApplicationsPage() {
     useAdminQueryPanelLayout(queryPanelVisible);
   const loadedRef = useRef(false);
 
-  const canView = hasResourceCodeAccess("user-feature-application-view");
-  const canToggle = hasResourceCodeAccess("user-feature-application-edit");
+  const canView = usePermission("user-feature-application-view");
+  const canToggle = usePermission("user-feature-application-edit");
 
   useEffect(() => {
     if (loadedRef.current) return;
@@ -404,19 +403,19 @@ export function UserFeatureApplicationsPage() {
         loading={detailLoading}
         title="应用详情"
         width="1180px"
-        className="role-manage-drawer"
+        className="admin-entity-manage-drawer"
         onClose={() => setDetailOpen(false)}
         footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
       >
         {detail ? (
-          <div className="role-manage-shell">
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">应用信息</div>
+          <div className="admin-entity-shell">
+            <section className="admin-entity-section">
+              <div className="admin-entity-section__head">
+                <div className="admin-entity-section__title">应用信息</div>
               </div>
-              <div className="role-info-table-wrap">
+              <div className="admin-info-table-wrap">
                 <table
-                  className="role-info-table"
+                  className="admin-info-table"
                   aria-label="应用详情"
                 >
                   <tbody>
@@ -454,10 +453,10 @@ export function UserFeatureApplicationsPage() {
               </div>
             </section>
 
-            <section className="role-manage-section">
-              <div className="role-manage-section__head">
-                <div className="role-manage-section__title">应用功能</div>
-                <div className="role-manage-section__stat">共 {detail.features.length} 项</div>
+            <section className="admin-entity-section">
+              <div className="admin-entity-section__head">
+                <div className="admin-entity-section__title">应用功能</div>
+                <div className="admin-entity-section__stat">共 {detail.features.length} 项</div>
               </div>
               <div className="admin-table-surface user-feature-application-detail-table">
                 <BzTable

@@ -1,5 +1,5 @@
 import { AdminShell } from "@admin/components/admin-shell/AdminShell";
-import { AdminRuntimeBootstrap } from "@admin/components/runtime/AdminRuntimeBootstrap";
+import { AdminRuntimeBootstrap } from "@admin/runtime/AdminRuntimeBootstrap";
 
 export default function AdminShellLayout({
   children,

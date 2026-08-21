@@ -1,33 +1,30 @@
 "use client";
 
-import { batchListDictOptions } from "@admin/api/dicts";
 import { pageLoginLogs } from "@admin/api/login-logs";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import {
-  AdminDateTimeRangeField,
-  buildAdminDateTimeRangeSubmitParams,
-} from "@admin/components/admin/AdminDateTimeRangeField";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
-import { formatDateTime } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import type { DictItem } from "@admin/types/dict-admin";
+import { useDateTimePreferences } from "@admin/features/auth/model/use-date-time-preferences";
+import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
+import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/types";
+import { usePermission } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { buildDateTimeRangeSubmitValue, formatDateTime } from "@admin/shared/lib/formatter";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminDateTimeRangeField } from "@admin/shared/ui/admin/AdminDateTimeRangeField";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
+import { BzButton } from "@admin/shared/ui/bz/BzButton";
+import { BzEmpty } from "@admin/shared/ui/bz/BzEmpty";
+import { BzFormItem } from "@admin/shared/ui/bz/BzFormItem";
+import { BzInput } from "@admin/shared/ui/bz/BzInput";
+import { BzOverflowTooltip } from "@admin/shared/ui/bz/BzOverflowTooltip";
+import { BzPagination } from "@admin/shared/ui/bz/BzPagination";
+import type { BzTableColumn } from "@admin/shared/ui/bz/BzTable";
+import { BzTable } from "@admin/shared/ui/bz/BzTable";
+import { BzTag } from "@admin/shared/ui/bz/BzTag";
 import type { LoginLogEntry } from "@admin/types/login-log";
-import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { BzButton } from "../bz/BzButton";
-import { BzEmpty } from "../bz/BzEmpty";
-import { BzFormItem } from "../bz/BzFormItem";
-import { BzInput } from "../bz/BzInput";
-import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
-import { BzPagination } from "../bz/BzPagination";
-import type { BzTableColumn } from "../bz/BzTable";
-import { BzTable } from "../bz/BzTable";
-import { BzTag } from "../bz/BzTag";
 
 type DictMeta = { label: string; tagType?: string | null };
 
@@ -54,6 +51,7 @@ function resolveTagType(metaMap: Record<string, DictMeta>, value?: string | null
 }
 
 export function LoginLogsPage() {
+  const { dateTimePattern, timeZone } = useDateTimePreferences();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<LoginLogEntry[]>([]);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -81,7 +79,7 @@ export function LoginLogsPage() {
   const { queryCardRef, queryGridRef, queryExpanded, setQueryExpanded, querySingleRow } =
     useAdminQueryPanelLayout(queryPanelVisible);
 
-  const canView = hasResourceCodeAccess("login-log-view");
+  const canView = usePermission("login-log-view");
 
   const pageNoRef = useRef(pageNo);
   const pageSizeRef = useRef(pageSize);
@@ -186,10 +184,7 @@ export function LoginLogsPage() {
             size="small"
             type={
               resolveTagType(loginEventMetaMap, row.eventType) as
-                | "info"
-                | "warning"
-                | "danger"
-                | "success"
+                "info" | "warning" | "danger" | "success"
             }
           >
             {resolveLabel(loginEventMetaMap, row.eventType)}
@@ -308,6 +303,8 @@ export function LoginLogsPage() {
                 <AdminDateTimeRangeField
                   startValue={startAtDraft}
                   endValue={endAtDraft}
+                  dateTimePattern={dateTimePattern}
+                  timeZone={timeZone}
                   onRangeChange={({ start, end }) => {
                     setStartAtDraft(start);
                     setEndAtDraft(end);
@@ -396,20 +393,20 @@ export function LoginLogsPage() {
           open={detailOpen}
           title="登录日志详情"
           width="1180px"
-          className="role-manage-drawer"
+          className="admin-entity-manage-drawer"
           onClose={closeDetail}
           footer={<BzButton onClick={closeDetail}>关闭</BzButton>}
         >
           {detail ? (
-            <div className="role-manage-shell">
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">登录日志信息</div>
+            <div className="admin-entity-shell">
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">登录日志信息</div>
                 </div>
 
-                <div className="role-info-table-wrap">
+                <div className="admin-info-table-wrap">
                   <table
-                    className="role-info-table"
+                    className="admin-info-table"
                     aria-label="登录日志详情"
                   >
                     <tbody>
@@ -422,10 +419,7 @@ export function LoginLogsPage() {
                             size="small"
                             type={
                               resolveTagType(loginEventMetaMap, detail.eventType) as
-                                | "info"
-                                | "warning"
-                                | "danger"
-                                | "success"
+                                "info" | "warning" | "danger" | "success"
                             }
                           >
                             {resolveLabel(loginEventMetaMap, detail.eventType)}
@@ -490,7 +484,7 @@ export function LoginLogsPage() {
 }
 
 function buildRequestRange(start: string, end: string): { startAt?: string; endAt?: string } {
-  const range = buildAdminDateTimeRangeSubmitParams(start, end);
+  const range = buildDateTimeRangeSubmitValue(start, end);
   return {
     startAt: range.startTimestamp || undefined,
     endAt: range.endTimestamp || undefined,

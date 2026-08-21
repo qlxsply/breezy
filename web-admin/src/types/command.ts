@@ -1,6 +1,6 @@
 // /src/types/command.ts
 
-import type { ResourceEntry } from "./resource-admin";
+import type { ResourceEntry } from "@admin/features/resources/model/types";
 
 export type SearchModeType = "setting" | "info" | "tool";
 

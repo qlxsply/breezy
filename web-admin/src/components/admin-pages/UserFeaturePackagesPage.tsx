@@ -1,6 +1,5 @@
 "use client";
 
-import { batchListDictOptions } from "@admin/api/dicts";
 import {
   createUserFeaturePackage,
   deleteUserFeaturePackage,
@@ -10,10 +9,21 @@ import {
   updateUserFeaturePackage,
   updateUserFeaturePackageStatus,
 } from "@admin/api/user-features";
-import { createAdminActionsColumn } from "@admin/components/admin/admin-actions-column";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { AdminTableTools } from "@admin/components/admin/AdminTableTools";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
+import {
+  type UserFeaturePackageDrawerMode,
+  UserFeaturePackageManageDrawer,
+} from "@admin/components/user-feature-packages/UserFeaturePackageManageDrawer";
+import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
+import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/types";
+import { usePermission, useResourceStatus } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
+import { message } from "@admin/shared/lib/feedback/message";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
 import {
   BzButton,
   BzFormItem,
@@ -24,19 +34,8 @@ import {
   BzTable,
   BzTag,
   BzTooltip,
-} from "@admin/components/bz";
-import type { BzTableColumn } from "@admin/components/bz/BzTable";
-import {
-  type UserFeaturePackageDrawerMode,
-  UserFeaturePackageManageDrawer,
-} from "@admin/components/user-feature-packages/UserFeaturePackageManageDrawer";
-import { bzConfirm } from "@admin/core/confirm";
-import { message } from "@admin/core/message";
-import { useIsRegistryLoaded } from "@admin/core/registry/bootstrap-registry";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
-import type { DictItem } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
+} from "@admin/shared/ui/bz";
+import type { BzTableColumn } from "@admin/shared/ui/bz/BzTable";
 import type {
   SaveUserFeaturePackageRequest,
   UserFeatureApplicationEntry,
@@ -71,7 +70,7 @@ function resolveTagType(metaMap: Record<string, DictMeta>, value?: string | null
 }
 
 export function UserFeaturePackagesPage() {
-  const permissionsLoaded = useIsRegistryLoaded();
+  const permissionsLoaded = useResourceStatus() === "ready";
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<UserFeaturePackageEntry[]>([]);
   const [applications, setApplications] = useState<UserFeatureApplicationEntry[]>([]);
@@ -102,8 +101,8 @@ export function UserFeaturePackagesPage() {
 
   const metadataLoadedRef = useRef(false);
 
-  const canView = hasResourceCodeAccess("user-feature-package-view");
-  const canEdit = hasResourceCodeAccess("user-feature-package-edit");
+  const canView = usePermission("user-feature-package-view");
+  const canEdit = usePermission("user-feature-package-edit");
 
   const packageTypeOptions = useMemo(
     () => Object.entries(packageTypeMetaMap).map(([value, meta]) => ({ value, label: meta.label })),

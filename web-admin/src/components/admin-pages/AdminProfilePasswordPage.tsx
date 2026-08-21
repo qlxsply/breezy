@@ -1,10 +1,11 @@
 "use client";
 
-import { getPasswordPolicyConfig, type PasswordPolicyConfig } from "@admin/api/configs";
-import { AdminFormSection } from "@admin/components/admin";
-import { BzButton, BzForm, BzFormItem, BzInput } from "@admin/components/bz";
-import { message } from "@admin/core/message";
-import { changePassword } from "@admin/core/registry/auth-registry";
+import { changePassword } from "@admin/features/auth/service/auth-service";
+import { getPasswordPolicyConfig } from "@admin/features/configs/api/client";
+import type { PasswordPolicyConfig } from "@admin/features/configs/model/password-policy";
+import { message } from "@admin/shared/lib/feedback/message";
+import { AdminFormSection } from "@admin/shared/ui/admin";
+import { BzButton, BzForm, BzFormItem, BzInput } from "@admin/shared/ui/bz";
 import { useEffect, useMemo, useState } from "react";
 
 function buildPasswordRuleText(rule: PasswordPolicyConfig | null): string {
@@ -29,7 +30,8 @@ function validatePasswordByPolicy(password: string, rule: PasswordPolicyConfig):
   if (rule.passwordRequireLetter && !/[A-Za-z]/.test(password)) return "新密码必须包含字母";
   if (rule.passwordRequireUpper && !/[A-Z]/.test(password)) return "新密码必须包含大写字母";
   if (rule.passwordRequireLower && !/[a-z]/.test(password)) return "新密码必须包含小写字母";
-  if (rule.passwordRequireSpecial && !/[^A-Za-z0-9]/.test(password)) return "新密码必须包含特殊字符";
+  if (rule.passwordRequireSpecial && !/[^A-Za-z0-9]/.test(password))
+    return "新密码必须包含特殊字符";
   return null;
 }
 
@@ -84,7 +86,7 @@ export function AdminProfilePasswordPage() {
 
     setSaving(true);
     try {
-      await changePassword("internal", oldPasswordValue, newPasswordValue);
+      await changePassword(oldPasswordValue, newPasswordValue);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -108,20 +110,50 @@ export function AdminProfilePasswordPage() {
               footerClassName="profile-password-section__footer"
               footerAlign="left"
               footer={
-                <BzButton buttonType="primary" loading={saving || policyLoading} onClick={() => void submit()}>
+                <BzButton
+                  buttonType="primary"
+                  loading={saving || policyLoading}
+                  onClick={() => void submit()}
+                >
                   确认
                 </BzButton>
               }
             >
               <BzForm className="password-form">
-                <BzFormItem label="当前密码" contentWidth={240}>
-                  <BzInput modelValue={oldPassword} type="password" placeholder="请输入当前密码" onValueChange={setOldPassword} />
+                <BzFormItem
+                  label="当前密码"
+                  contentWidth={240}
+                >
+                  <BzInput
+                    modelValue={oldPassword}
+                    type="password"
+                    placeholder="请输入当前密码"
+                    onValueChange={setOldPassword}
+                  />
                 </BzFormItem>
-                <BzFormItem label="新密码" meta={passwordRuleText} contentWidth={240}>
-                  <BzInput modelValue={newPassword} type="password" placeholder="请输入新密码" onValueChange={setNewPassword} />
+                <BzFormItem
+                  label="新密码"
+                  meta={passwordRuleText}
+                  contentWidth={240}
+                >
+                  <BzInput
+                    modelValue={newPassword}
+                    type="password"
+                    placeholder="请输入新密码"
+                    onValueChange={setNewPassword}
+                  />
                 </BzFormItem>
-                <BzFormItem label="确认新密码" meta="请再次输入与新密码一致的内容" contentWidth={240}>
-                  <BzInput modelValue={confirmPassword} type="password" placeholder="请再次输入新密码" onValueChange={setConfirmPassword} />
+                <BzFormItem
+                  label="确认新密码"
+                  meta="请再次输入与新密码一致的内容"
+                  contentWidth={240}
+                >
+                  <BzInput
+                    modelValue={confirmPassword}
+                    type="password"
+                    placeholder="请再次输入新密码"
+                    onValueChange={setConfirmPassword}
+                  />
                 </BzFormItem>
               </BzForm>
             </AdminFormSection>

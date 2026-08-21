@@ -1,16 +1,16 @@
 "use client";
 
 import brandLogo from "@admin/assets/brand-logo.png";
-import { formatDateTime } from "@admin/core/formatter";
-import { message } from "@admin/core/message";
-import { logout, useAuthUser, usePersonalizedConfigs } from "@admin/core/registry/auth-registry";
+import { useAuthUser, usePersonalizedConfigs } from "@admin/features/auth/model/auth-store";
 import {
-  markAllRead,
-  markRead,
   useUnreadCount,
   useUnreadList,
-} from "@admin/core/registry/notifications-registry";
-import { resolveResourceIconUrl } from "@admin/core/resource-icon";
+} from "@admin/features/notifications/model/notification-store";
+import { markAllRead, markRead } from "@admin/features/notifications/service/notification-service";
+import { resolveResourceIconUrl } from "@admin/features/resources/model/resource-icon";
+import { logoutSession } from "@admin/runtime/session/session-service";
+import { message } from "@admin/shared/lib/feedback/message";
+import { formatDateTime } from "@admin/shared/lib/formatter";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -715,7 +715,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => void logout()}
+                        onClick={() => void logoutSession()}
                       >
                         退出登录
                       </button>

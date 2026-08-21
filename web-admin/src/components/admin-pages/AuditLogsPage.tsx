@@ -1,35 +1,32 @@
 "use client";
 
 import { getAuditLog, pageAuditLogs } from "@admin/api/audit-logs";
-import { batchListDictOptions } from "@admin/api/dicts";
-import {
-  AdminDateTimeRangeField,
-  buildAdminDateTimeRangeSubmitParams,
-} from "@admin/components/admin/AdminDateTimeRangeField";
-import { AdminEntityDrawer } from "@admin/components/admin/AdminEntityDrawer";
-import { AdminListPageTemplate } from "@admin/components/admin/AdminListPageTemplate";
-import { useAdminQueryPanelLayout } from "@admin/components/admin/useAdminQueryPanelLayout";
-import { formatDateTime } from "@admin/core/formatter";
-import { hasResourceCodeAccess } from "@admin/core/registry/resources-registry";
-import type { AdminActionItem } from "@admin/types/admin-action";
+import { useDateTimePreferences } from "@admin/features/auth/model/use-date-time-preferences";
+import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
+import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/types";
+import { usePermission } from "@admin/features/resources/model/resource-store";
+import { useAdminQueryPanelLayout } from "@admin/shared/hooks/useAdminQueryPanelLayout";
+import { buildDateTimeRangeSubmitValue, formatDateTime } from "@admin/shared/lib/formatter";
+import type { PageResult } from "@admin/shared/types/pagination";
+import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
+import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import { AdminDateTimeRangeField } from "@admin/shared/ui/admin/AdminDateTimeRangeField";
+import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
+import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
+import { BzButton } from "@admin/shared/ui/bz/BzButton";
+import { BzEmpty } from "@admin/shared/ui/bz/BzEmpty";
+import { BzFormItem } from "@admin/shared/ui/bz/BzFormItem";
+import { BzInput } from "@admin/shared/ui/bz/BzInput";
+import { BzOption } from "@admin/shared/ui/bz/BzOption";
+import { BzOverflowTooltip } from "@admin/shared/ui/bz/BzOverflowTooltip";
+import { BzPagination } from "@admin/shared/ui/bz/BzPagination";
+import { BzSelect } from "@admin/shared/ui/bz/BzSelect";
+import type { BzTableColumn } from "@admin/shared/ui/bz/BzTable";
+import { BzTable } from "@admin/shared/ui/bz/BzTable";
+import { BzTag } from "@admin/shared/ui/bz/BzTag";
 import type { AuditLevel, AuditLogEntry } from "@admin/types/audit-log";
-import type { DictItem } from "@admin/types/dict-admin";
-import type { PageResult } from "@admin/types/page";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { createAdminActionsColumn } from "../admin/admin-actions-column";
-import { AdminTableTools } from "../admin/AdminTableTools";
-import { BzButton } from "../bz/BzButton";
-import { BzEmpty } from "../bz/BzEmpty";
-import { BzFormItem } from "../bz/BzFormItem";
-import { BzInput } from "../bz/BzInput";
-import { BzOption } from "../bz/BzOption";
-import { BzOverflowTooltip } from "../bz/BzOverflowTooltip";
-import { BzPagination } from "../bz/BzPagination";
-import { BzSelect } from "../bz/BzSelect";
-import type { BzTableColumn } from "../bz/BzTable";
-import { BzTable } from "../bz/BzTable";
-import { BzTag } from "../bz/BzTag";
 
 type DictMeta = { label: string; tagType?: string | null };
 
@@ -69,6 +66,7 @@ function resolveTagType(metaMap: Record<string, DictMeta>, value?: string | null
 }
 
 export function AuditLogsPage() {
+  const { dateTimePattern, timeZone } = useDateTimePreferences();
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<AuditLogEntry[]>([]);
   const [page, setPage] = useState<PageResult<AuditLogEntry>>({
@@ -124,7 +122,7 @@ export function AuditLogsPage() {
   const auditActionOptions = useMemo(() => toOptions(auditActionMetaMap), [auditActionMetaMap]);
   const auditLevelOptions = useMemo(() => toOptions(auditLevelMetaMap), [auditLevelMetaMap]);
 
-  const canView = hasResourceCodeAccess("audit-log-view");
+  const canView = usePermission("audit-log-view");
 
   const pageNoRef = useRef(pageNo);
   const pageSizeRef = useRef(pageSize);
@@ -245,7 +243,7 @@ export function AuditLogsPage() {
   ]);
 
   function buildRequestRange(start: string, end: string): { startAt?: string; endAt?: string } {
-    const range = buildAdminDateTimeRangeSubmitParams(start, end);
+    const range = buildDateTimeRangeSubmitValue(start, end);
     return {
       startAt: range.startTimestamp || undefined,
       endAt: range.endTimestamp || undefined,
@@ -339,10 +337,7 @@ export function AuditLogsPage() {
           size="small"
           type={
             resolveTagType(userTypeMetaMap, row.operatorUserType) as
-              | "info"
-              | "warning"
-              | "danger"
-              | "success"
+              "info" | "warning" | "danger" | "success"
           }
         >
           {resolveLabel(userTypeMetaMap, row.operatorUserType)}
@@ -374,10 +369,7 @@ export function AuditLogsPage() {
           size="small"
           type={
             resolveTagType(auditLevelMetaMap, row.auditLevel) as
-              | "info"
-              | "warning"
-              | "danger"
-              | "success"
+              "info" | "warning" | "danger" | "success"
           }
         >
           {resolveLabel(auditLevelMetaMap, row.auditLevel)}
@@ -552,6 +544,8 @@ export function AuditLogsPage() {
                 <AdminDateTimeRangeField
                   startValue={startAtDraft}
                   endValue={endAtDraft}
+                  dateTimePattern={dateTimePattern}
+                  timeZone={timeZone}
                   onRangeChange={({ start, end }) => {
                     setStartAtDraft(start);
                     setEndAtDraft(end);
@@ -641,20 +635,20 @@ export function AuditLogsPage() {
           loading={detailLoading}
           title="审计日志详情"
           width="1180px"
-          className="role-manage-drawer"
+          className="admin-entity-manage-drawer"
           onClose={() => setDetailOpen(false)}
           footer={<BzButton onClick={() => setDetailOpen(false)}>关闭</BzButton>}
         >
           {detail ? (
-            <div className="role-manage-shell">
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">基础信息</div>
+            <div className="admin-entity-shell">
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">基础信息</div>
                 </div>
 
-                <div className="role-info-table-wrap">
+                <div className="admin-info-table-wrap">
                   <table
-                    className="role-info-table"
+                    className="admin-info-table"
                     aria-label="审计日志基础信息"
                   >
                     <tbody>
@@ -677,10 +671,7 @@ export function AuditLogsPage() {
                             size="small"
                             type={
                               resolveTagType(userTypeMetaMap, detail.operatorUserType) as
-                                | "info"
-                                | "warning"
-                                | "danger"
-                                | "success"
+                                "info" | "warning" | "danger" | "success"
                             }
                           >
                             {resolveLabel(userTypeMetaMap, detail.operatorUserType)}
@@ -706,10 +697,7 @@ export function AuditLogsPage() {
                             size="small"
                             type={
                               resolveTagType(auditLevelMetaMap, detail.auditLevel) as
-                                | "info"
-                                | "warning"
-                                | "danger"
-                                | "success"
+                                "info" | "warning" | "danger" | "success"
                             }
                           >
                             {resolveLabel(auditLevelMetaMap, detail.auditLevel)}
@@ -744,14 +732,14 @@ export function AuditLogsPage() {
                 </div>
               </section>
 
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">请求信息</div>
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">请求信息</div>
                 </div>
 
-                <div className="role-info-table-wrap">
+                <div className="admin-info-table-wrap">
                   <table
-                    className="role-info-table"
+                    className="admin-info-table"
                     aria-label="审计日志请求信息"
                   >
                     <tbody>
@@ -782,14 +770,14 @@ export function AuditLogsPage() {
                 </div>
               </section>
 
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">审计摘要</div>
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">审计摘要</div>
                 </div>
 
-                <div className="role-info-table-wrap">
+                <div className="admin-info-table-wrap">
                   <table
-                    className="role-info-table"
+                    className="admin-info-table"
                     aria-label="审计日志摘要"
                   >
                     <tbody>
@@ -814,14 +802,14 @@ export function AuditLogsPage() {
                 </div>
               </section>
 
-              <section className="role-manage-section">
-                <div className="role-manage-section__head">
-                  <div className="role-manage-section__title">请求与响应</div>
+              <section className="admin-entity-section">
+                <div className="admin-entity-section__head">
+                  <div className="admin-entity-section__title">请求与响应</div>
                 </div>
 
-                <div className="role-info-table-wrap">
+                <div className="admin-info-table-wrap">
                   <table
-                    className="role-info-table"
+                    className="admin-info-table"
                     aria-label="审计日志请求与响应"
                   >
                     <tbody>
