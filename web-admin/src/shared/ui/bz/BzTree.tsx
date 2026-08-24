@@ -3,8 +3,9 @@
 import type { MouseEvent, ReactNode } from "react";
 import { useState } from "react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TreeNodeData = { [key: string]: any };
+import styles from "./BzTree.module.css";
+
+type TreeNodeData = Record<string, unknown>;
 
 interface TreePropsMap {
   label?: string;
@@ -63,20 +64,20 @@ function TreeNode({
   }
 
   return (
-    <div className="bz-tree-node">
+    <div>
       <div
-        className="bz-tree-node__line"
+        className={styles.line}
         style={{ paddingLeft: `${level * 16}px` }}
       >
         <button
-          className="bz-tree-node__toggle"
+          className={styles.toggle}
           type="button"
           onClick={handleToggle}
           disabled={isLeaf}
         >
           {isLeaf ? "" : expanded ? "▾" : "▸"}
         </button>
-        <div className="bz-tree-node__content">
+        <div className={styles.content}>
           {renderContent ? renderContent(node) : String(node[propsMap.label] ?? "-")}
         </div>
       </div>
@@ -124,7 +125,7 @@ export function BzTree({
   }
 
   return (
-    <div className="bz-tree">
+    <div className={styles.tree}>
       {data.map((node) => (
         <TreeNode
           key={readNodeKey(node, nodeKey)}

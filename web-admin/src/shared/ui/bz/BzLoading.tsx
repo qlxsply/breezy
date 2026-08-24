@@ -1,3 +1,5 @@
+import styles from "./BzLoading.module.css";
+
 interface BzLoadingProps {
   loading?: boolean;
   children?: React.ReactNode;
@@ -7,16 +9,16 @@ interface BzLoadingProps {
 
 export function BzLoading({ loading = false, children, text, className }: BzLoadingProps) {
   return (
-    <div className={["bz-loading-container", className].filter(Boolean).join(" ")}>
+    <div className={[styles.container, className].filter(Boolean).join(" ")}>
       {children}
       {loading ? (
         <div
-          className="bz-loading-mask"
+          className={styles.mask}
           aria-live="polite"
         >
           <div>
             <div
-              className="bz-loading-spinner"
+              className={styles.spinner}
               aria-hidden="true"
             />
             {text ? (

@@ -1,0 +1,458 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.pageStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3-5);
+}
+
+.panel {
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: 0;
+  box-shadow: var(--shadow-card);
+}
+
+.tableCard {
+  --bz-card-body-padding: 18px 20px;
+  --bz-card-header-padding: 10px 20px 10px;
+}
+
+.listCard {
+  box-shadow: none;
+}
+
+.listCard {
+  --bz-card-body-padding: 0;
+}
+
+.listCard .circleButton {
+  border: var(--border-width-1) solid var(--color-border-strong);
+  box-shadow: none;
+}
+
+.tableCard > header {
+  border-bottom: none;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.tableTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.tableTools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.listRegion {
+  overflow: hidden;
+}
+
+.listQueryPanel {
+  padding: 12px 14px;
+  background: var(--color-bg-surface);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.listToolbarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 50px;
+  padding: 8px 14px;
+  background: var(--color-bg-surface-soft);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.listBusinessActions,
+.listQueryTools,
+.batchToolbar {
+  display: flex;
+  align-items: center;
+}
+
+.listBusinessActions {
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.listQueryTools {
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+.listTableArea,
+.listCard .tableSurface {
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+}
+
+.batchToolbar {
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 50px;
+  padding: 8px 14px;
+  background: var(--color-bg-surface-soft);
+  border-bottom: var(--border-width-1) solid var(--color-border);
+}
+
+.batchToolbarSummary {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.batchToolbarActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.toolbarPrimary {
+  min-height: var(--size-control-sm);
+  padding: 4px 15px;
+  border-radius: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: none;
+}
+
+.circleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  padding: 0;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-surface);
+  border: none;
+  border-radius: 0;
+  box-shadow: var(--shadow-surface);
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.circleButton:hover {
+  color: var(--color-brand-600);
+  background: var(--color-brand-50);
+}
+
+.circleButton.active {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  box-shadow: var(--shadow-brand-strong);
+}
+
+.circleButton.active:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-brand-600);
+  border-color: var(--color-brand-600);
+}
+
+.circleButton:active {
+  transform: scale(0.96);
+}
+
+.circleButton svg {
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
+}
+
+.tableSurface {
+  overflow: hidden;
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: 0;
+}
+
+.queryLayout {
+  --admin-query-collapsed-height: 76px;
+  --admin-query-expanded-height: 999px;
+  --admin-query-field-width: 320px;
+}
+
+.queryGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--admin-query-field-width)), var(--admin-query-field-width))
+  );
+  gap: var(--space-4);
+  justify-content: start;
+  align-items: start;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+
+.queryLayout.collapsed .queryGrid {
+  max-height: var(--admin-query-collapsed-height, 60px);
+}
+
+.queryLayout.expanded .queryGrid {
+  max-height: var(--admin-query-expanded-height, 1000px);
+}
+
+.queryLayout.singleRow .queryGrid {
+  max-height: none;
+  overflow: visible;
+}
+
+.queryField {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: var(--admin-query-field-width);
+}
+
+.queryField > div {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  width: 100%;
+}
+
+.queryFieldLabel {
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.queryFieldControl {
+  width: 100%;
+}
+
+.queryActions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  width: 100%;
+  max-width: var(--admin-query-field-width);
+  align-self: end;
+}
+
+.queryLayout.collapsed .queryActions {
+  grid-row: 1;
+  grid-column: -2 / -1;
+}
+
+.queryLayout.expanded .queryActions,
+.queryLayout.singleRow .queryActions {
+  grid-row: auto;
+  grid-column: auto;
+}
+
+.filterSecondary,
+.filterPrimary {
+  min-height: var(--size-control-sm);
+  padding: 0 15px;
+  border-radius: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.filterPrimary {
+  box-shadow: var(--shadow-brand-soft);
+}
+
+.filterToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--size-control-sm);
+  padding: 0 2px;
+  color: var(--color-brand-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.16s ease;
+}
+
+.filterToggle:hover {
+  color: var(--color-brand-700);
+}
+
+.filterToggleIcon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: var(--border-width-strong) solid currentColor;
+  border-bottom: var(--border-width-strong) solid currentColor;
+}
+
+.filterToggleIcon.up {
+  transform: rotate(225deg) translateY(-1px);
+}
+
+.filterToggleIcon.down {
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.filterToggle:focus-visible {
+  outline: none;
+  border-radius: 0;
+  box-shadow: var(--shadow-focus-brand);
+}
+
+.gridTable {
+  display: grid;
+  min-height: 0;
+  border: 1px solid var(--color-border);
+}
+
+.gridViewport {
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+.gridBody {
+  min-height: 0;
+}
+
+.gridRow {
+  display: grid;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gridHead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f1f5f9;
+}
+
+.gridCell {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 10px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.gridCell.editable,
+.gridRow.selected .gridCell {
+  background: var(--color-bg-surface-selected);
+}
+
+.gridCell.readonly {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface-soft);
+}
+
+.gridRow .gridCell:last-child {
+  border-right: 0;
+}
+
+.gridFooter {
+  background: var(--color-bg-surface);
+  border: 0;
+}
+
+.gridHead .gridCell {
+  height: 38px;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-bold);
+}
+
+.gridCheck,
+.gridHead .gridCheck {
+  justify-content: center;
+}
+
+.gridHead .gridCheck {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.nodeCheckbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .queryLayout {
+    --admin-query-field-width: 300px;
+  }
+
+  .tableHeader {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .listToolbarRow,
+  .batchToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .listQueryTools,
+  .batchToolbarActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .gridTable,
+  .gridBody {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .queryLayout {
+    --admin-query-field-width: 100%;
+  }
+
+  .queryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .queryLayout.collapsed .queryActions {
+    grid-row: auto;
+    grid-column: auto;
+  }
+}

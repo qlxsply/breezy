@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import styles from "./BzPagination.module.css";
+
 interface BzPaginationProps {
   total: number;
   pageSize: number;
@@ -61,12 +63,13 @@ export function BzPagination({
   }
 
   return (
-    <div className="bz-pagination">
+    <div className={styles.pagination}>
       {showSizeChanger ? (
-        <div className="bz-pagination__size">
+        <div className={styles.size}>
           <span>每页</span>
           <select
-            className="bz-pagination__size-select"
+            className={styles.sizeSelect}
+            aria-label="每页条数"
             value={pageSize}
             onChange={(event) => {
               const nextPageSize = Number(event.currentTarget.value);
@@ -86,10 +89,10 @@ export function BzPagination({
           <span>项</span>
         </div>
       ) : null}
-      <div className="bz-pagination__pages">
+      <div className={styles.pages}>
         {showFirstLast ? (
           <button
-            className="bz-page-btn"
+            className={styles.pageButton}
             type="button"
             disabled={isFirstPage}
             onClick={() => goToPage(1)}
@@ -98,7 +101,7 @@ export function BzPagination({
           </button>
         ) : null}
         <button
-          className="bz-page-btn"
+          className={styles.pageButton}
           type="button"
           disabled={isFirstPage}
           onClick={() => goToPage(currentPage - 1)}
@@ -109,7 +112,9 @@ export function BzPagination({
           typeof token === "number" ? (
             <button
               key={`${token}-${index}`}
-              className={`bz-page-btn${token === currentPage ? " is-active" : ""}`}
+              className={[styles.pageButton, token === currentPage ? styles.active : ""]
+                .filter(Boolean)
+                .join(" ")}
               type="button"
               aria-current={token === currentPage ? "page" : undefined}
               onClick={() => goToPage(token)}
@@ -119,14 +124,14 @@ export function BzPagination({
           ) : (
             <span
               key={`${token}-${index}`}
-              className="bz-page-ellipsis"
+              className={styles.ellipsis}
             >
               ...
             </span>
           ),
         )}
         <button
-          className="bz-page-btn"
+          className={styles.pageButton}
           type="button"
           disabled={isLastPage}
           onClick={() => goToPage(currentPage + 1)}
@@ -135,7 +140,7 @@ export function BzPagination({
         </button>
         {showFirstLast ? (
           <button
-            className="bz-page-btn"
+            className={styles.pageButton}
             type="button"
             disabled={isLastPage}
             onClick={() => goToPage(totalPages)}
@@ -146,7 +151,7 @@ export function BzPagination({
       </div>
       {showJumper ? (
         <form
-          className="bz-pagination__jump"
+          className={styles.jump}
           onSubmit={(event) => {
             event.preventDefault();
             const raw = Number(jumpValue);
@@ -156,7 +161,7 @@ export function BzPagination({
         >
           <span>跳转</span>
           <input
-            className="bz-pagination__jump-input"
+            className={styles.jumpInput}
             type="number"
             min={1}
             max={totalPages}
@@ -165,7 +170,7 @@ export function BzPagination({
           />
           <span>页</span>
           <button
-            className="bz-page-btn"
+            className={styles.pageButton}
             type="submit"
           >
             确定

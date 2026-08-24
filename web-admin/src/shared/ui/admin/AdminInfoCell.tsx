@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import styles from "./AdminEntity.module.css";
+
 export type AdminInfoCellState = "display" | "editable" | "readonly";
 
 interface AdminInfoCellProps {
@@ -23,11 +25,10 @@ export function AdminInfoCell({
     <td
       colSpan={colSpan}
       className={[
-        "admin-info-cell",
-        "admin-info-cell",
-        `admin-info-cell--${state}`,
-        state === "editable" ? "admin-info-cell--edit" : "",
-        mono ? "mono" : "",
+        styles.infoCell,
+        state === "readonly" ? styles.infoCellReadonly : "",
+        state === "editable" ? `${styles.infoCellEditable} ${styles.infoCellEdit}` : "",
+        mono ? styles.mono : "",
         className,
       ]
         .filter(Boolean)

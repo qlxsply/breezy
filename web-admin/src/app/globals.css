@@ -1,6 +1,2 @@
-@import "../style.css";
-@import "./admin-shell.css";
-@import "../shared/ui/bz/bz.css";
-@import "../shared/ui/bz/loading.css";
-@import "../shared/ui/admin/inputs/inputs.css";
-@import "../shared/ui/admin/admin-entity.css";
+@import "../styles/theme.css";
+@import "../styles/base.css";

@@ -113,8 +113,8 @@ export function UserTable({
       key: "username",
       title: "账号",
       width: 200,
-      className: `${styles.usernameColumn} is-sticky-left${batchMode ? " has-select-offset" : ""}`,
-      headerClassName: `${styles.usernameColumn} is-sticky-left${batchMode ? " has-select-offset" : ""}`,
+      className: `${styles.usernameColumn}${batchMode ? ` ${styles.hasSelectOffset}` : ""}`,
+      headerClassName: `${styles.usernameColumn}${batchMode ? ` ${styles.hasSelectOffset}` : ""}`,
       render: (row) => (
         <BzOverflowTooltip text={row.username}>
           <span className={`${styles.text} ${styles.primaryText}`}>{row.username}</span>

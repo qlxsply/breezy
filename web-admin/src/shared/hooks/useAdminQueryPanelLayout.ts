@@ -25,8 +25,11 @@ export function useAdminQueryPanelLayout(queryPanelVisible: boolean) {
       cancelAnimationFrame(frame);
 
       frame = window.requestAnimationFrame(() => {
-        const fields = Array.from(grid.querySelectorAll<HTMLElement>(".admin-query-field"));
-        const actions = grid.querySelector<HTMLElement>(".admin-query-actions");
+        const items = Array.from(grid.children).filter(
+          (element): element is HTMLElement => element instanceof HTMLElement,
+        );
+        const actions = items.at(-1) ?? null;
+        const fields = items.slice(0, -1);
 
         if (fields.length === 0) {
           card.style.removeProperty("--admin-query-collapsed-height");

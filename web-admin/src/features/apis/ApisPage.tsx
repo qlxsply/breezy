@@ -16,6 +16,7 @@ import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/ty
 import { usePermission } from "@admin/features/resources/permissions";
 import { useAdminPagedQuery } from "@admin/shared/hooks/useAdminPagedQuery";
 import { message } from "@admin/shared/lib/feedback/message";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
 import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
@@ -248,13 +249,13 @@ export function ApisPage() {
 
   function renderBasicSection(api: ApiEntry, ariaLabel: string, readonly = false) {
     return (
-      <section className="admin-entity-section">
-        <div className="admin-entity-section__head">
-          <div className="admin-entity-section__title">基础信息</div>
+      <section className={entityStyles.section}>
+        <div className={entityStyles.sectionHead}>
+          <div className={entityStyles.sectionTitle}>基础信息</div>
         </div>
-        <div className="admin-info-table-wrap">
+        <div className={entityStyles.infoTableWrap}>
           <table
-            className="admin-info-table"
+            className={entityStyles.infoTable}
             aria-label={ariaLabel}
           >
             <tbody>
@@ -295,13 +296,13 @@ export function ApisPage() {
 
   function renderAuditSection(api: ApiEntry, ariaLabel: string, readonly = false) {
     return (
-      <section className="admin-entity-section">
-        <div className="admin-entity-section__head">
-          <div className="admin-entity-section__title">权限与审计</div>
+      <section className={entityStyles.section}>
+        <div className={entityStyles.sectionHead}>
+          <div className={entityStyles.sectionTitle}>权限与审计</div>
         </div>
-        <div className="admin-info-table-wrap">
+        <div className={entityStyles.infoTableWrap}>
           <table
-            className="admin-info-table"
+            className={entityStyles.infoTable}
             aria-label={ariaLabel}
           >
             <tbody>
@@ -330,9 +331,9 @@ export function ApisPage() {
 
   function renderSortDetailSection(options: ApiSortOptions) {
     return (
-      <section className="admin-entity-section">
-        <div className="admin-entity-section__head">
-          <div className="admin-entity-section__title">排序规则</div>
+      <section className={entityStyles.section}>
+        <div className={entityStyles.sectionHead}>
+          <div className={entityStyles.sectionTitle}>排序规则</div>
           <BzTag
             size="small"
             type={options.enabled ? "success" : "info"}
@@ -352,9 +353,9 @@ export function ApisPage() {
 
   function renderSortEditorSection() {
     return (
-      <section className="admin-entity-section">
-        <div className="admin-entity-section__head">
-          <div className="admin-entity-section__title">排序规则</div>
+      <section className={entityStyles.section}>
+        <div className={entityStyles.sectionHead}>
+          <div className={entityStyles.sectionTitle}>排序规则</div>
           <div className={styles.sortSwitchLine}>
             <BzSwitch
               modelValue={sortEnabled}
@@ -695,7 +696,7 @@ export function ApisPage() {
               title="接口详情"
               width="1180px"
               loading={detailLoading}
-              className="admin-entity-manage-drawer"
+              className={entityStyles.manageDrawer}
               onClose={() => {
                 detailRequestRef.current?.abort();
                 detailRequestRef.current = null;
@@ -718,7 +719,7 @@ export function ApisPage() {
               }
             >
               {detailItem ? (
-                <div className="admin-entity-shell">
+                <div className={entityStyles.shell}>
                   {renderBasicSection(detailItem, "接口基础信息")}
                   {renderAuditSection(detailItem, "接口权限与审计")}
                   {renderSortDetailSection(detailSortOptions)}
@@ -730,7 +731,7 @@ export function ApisPage() {
               title="接口维护"
               width="980px"
               loading={maintainLoading}
-              className="admin-entity-manage-drawer"
+              className={entityStyles.manageDrawer}
               onClose={() => {
                 if (sortSaving) return;
                 closeMaintain();
@@ -754,7 +755,7 @@ export function ApisPage() {
               }
             >
               {maintainItem ? (
-                <div className="admin-entity-shell">
+                <div className={entityStyles.shell}>
                   {renderBasicSection(maintainItem, "维护排序规则基础信息", true)}
                   {renderAuditSection(maintainItem, "维护排序规则权限与审计", true)}
                   {renderSortEditorSection()}
@@ -1051,7 +1052,7 @@ function SortRuleEditTable({
               </div>
               {renderRow(index).map((cell, cellIndex) => (
                 <div
-                  className={`${styles.sortEditCell} admin-info-cell--editable`}
+                  className={`${styles.sortEditCell} ${entityStyles.infoCellEditable}`}
                   key={cellIndex}
                 >
                   {cell}

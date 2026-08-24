@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useRef } from "react";
 
 import { BzIconClose } from "./BzIconClose";
+import styles from "./BzInput.module.css";
 
 interface BzInputProps {
   modelValue?: string | number | null;
@@ -56,11 +57,13 @@ export const BzInput = forwardRef<BzInputRef, BzInputProps>(function BzInput(
 
   return (
     <div
-      className={["bz-input", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+      className={[styles.root, disabled ? styles.disabled : "", className]
+        .filter(Boolean)
+        .join(" ")}
     >
       <input
         ref={inputRef}
-        className="bz-input__inner"
+        className={styles.inner}
         value={textValue}
         placeholder={placeholder}
         disabled={disabled}
@@ -76,7 +79,7 @@ export const BzInput = forwardRef<BzInputRef, BzInputProps>(function BzInput(
       />
       {clearable && hasValue && !disabled && !readOnly ? (
         <button
-          className="bz-input__clear"
+          className={styles.clear}
           type="button"
           onClick={() => {
             onValueChange?.("");

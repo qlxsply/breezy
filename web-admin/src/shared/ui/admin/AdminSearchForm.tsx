@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from "react";
 
 import { BzButton } from "../bz/BzButton";
 import { BzFormItem } from "../bz/BzFormItem";
+import styles from "./AdminSearchForm.module.css";
 
 interface AdminSearchFormProps {
   visible: boolean;
@@ -35,8 +36,8 @@ export function AdminSearchForm({
     <div
       ref={queryCardRef}
       className={[
-        "admin-query-layout",
-        querySingleRow ? "is-single-row" : queryExpanded ? "is-expanded" : "is-collapsed",
+        styles.layout,
+        querySingleRow ? styles.singleRow : queryExpanded ? styles.expanded : styles.collapsed,
         className,
       ]
         .filter(Boolean)
@@ -44,20 +45,20 @@ export function AdminSearchForm({
     >
       <form
         ref={queryGridRef}
-        className="bz-form admin-query-grid"
+        className={styles.grid}
         onSubmit={submit}
       >
         {children}
-        <div className="admin-query-actions">
+        <div className={styles.actions}>
           <BzButton
-            className="admin-filter-secondary"
+            className={styles.secondary}
             disabled={disabled}
             onClick={onReset}
           >
             重置
           </BzButton>
           <BzButton
-            className="admin-filter-primary"
+            className={styles.primary}
             buttonType="primary"
             nativeType="submit"
             disabled={disabled}
@@ -66,13 +67,13 @@ export function AdminSearchForm({
           </BzButton>
           {!querySingleRow ? (
             <button
-              className="admin-filter-toggle"
+              className={styles.toggle}
               type="button"
               aria-expanded={queryExpanded}
               onClick={() => setQueryExpanded((value) => !value)}
             >
               <span>{queryExpanded ? "收起" : "展开"}</span>
-              <i className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`} />
+              <i className={`${styles.toggleIcon} ${queryExpanded ? styles.up : styles.down}`} />
             </button>
           ) : null}
         </div>
@@ -83,9 +84,9 @@ export function AdminSearchForm({
 
 export function AdminSearchField({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
-    <BzFormItem className="admin-query-field">
-      <div className="admin-query-field__label">{label}</div>
-      <div className="admin-query-field__control">{children}</div>
+    <BzFormItem className={styles.field}>
+      <div className={styles.label}>{label}</div>
+      <div className={styles.control}>{children}</div>
     </BzFormItem>
   );
 }

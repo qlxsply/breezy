@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import styles from "./AdminSection.module.css";
+
 export interface AdminSectionProps {
   title: ReactNode;
   right?: ReactNode;
@@ -20,18 +22,14 @@ export function AdminSection({
   rightClassName,
 }: AdminSectionProps) {
   return (
-    <section className={["admin-section", className].filter(Boolean).join(" ")}>
-      <div className={["admin-section__head", headClassName].filter(Boolean).join(" ")}>
-        <div className="admin-section__title">{title}</div>
+    <section className={[styles.section, className].filter(Boolean).join(" ")}>
+      <div className={[styles.head, headClassName].filter(Boolean).join(" ")}>
+        <div className={styles.title}>{title}</div>
         {right ? (
-          <div className={["admin-section__right", rightClassName].filter(Boolean).join(" ")}>
-            {right}
-          </div>
+          <div className={[styles.right, rightClassName].filter(Boolean).join(" ")}>{right}</div>
         ) : null}
       </div>
-      <div className={["admin-section__body", bodyClassName].filter(Boolean).join(" ")}>
-        {children}
-      </div>
+      <div className={bodyClassName}>{children}</div>
     </section>
   );
 }

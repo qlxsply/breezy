@@ -14,7 +14,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
 - 前端
     - 管理后台（`web-admin/`）：React 19 + Next.js 16 + TypeScript
     - 用户端（`web/`）：Vue 3 + Vue Router + Vite 6 + TypeScript
-    - Bz UI（`web/src/components/bz` 与 `web-admin/src/components/bz` 自研组件体系）
+    - Bz UI（`web/src/components/bz` 与 `web-admin/src/shared/ui/bz` 自研组件体系）
 
 ## 架构设计
 
@@ -26,7 +26,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `infrastructure.*`：持久化、调度、安全等基础设施实现
     - ORM 约定：基础单表增删改查使用 JPA；分页查询、动态条件查询统一使用 MyBatis Mapper XML 实现
 - 前端资源驱动的菜单与权限
-    - `/registry` 返回资源树，驱动动态路由与菜单
+    - `/api/admin/menu-resources` 返回资源树，驱动菜单可见性和权限；后台页面由编译期存在的 Next.js 物理路由提供
     - 资源类型/范围/打开方式统一约定（MENU/BUTTON，SETTING/TOOL 等）
     - 权限以资源 ID 与权限码双通道控制
     - 系统资源定义文件为 `server/bootstrap/src/main/resources/bootstarp/resources.xml`（历史目录名为 `bootstarp`，保持与现有工程一致）
@@ -1173,15 +1173,15 @@ cd web; npm run build
 | T5 | 全局状态、运行时和权限基础设施重构 | 已完成 |
 | T6 | 后台分页查询与表单基础抽象 | 已完成 |
 | T7 | 平台管理功能垂直切片迁移 | 已完成 |
-| T8 | 运维与可观测功能垂直切片迁移 | 未开始 |
-| T9 | 用户能力、自助页和认证功能垂直切片迁移 | 未开始 |
-| T10 | 真实 App Router、路由权限与代码分割重构 | 未开始 |
-| T11 | 全局 CSS 清理与样式隔离收口 | 未开始 |
-| T12 | 测试、CI、体积预算与最终清理 | 未开始 |
+| T8 | 运维与可观测功能垂直切片迁移 | 已完成 |
+| T9 | 用户能力、自助页和认证功能垂直切片迁移 | 已完成 |
+| T10 | 真实 App Router、路由权限与代码分割重构 | 已完成 |
+| T11 | 全局 CSS 清理与样式隔离收口 | 已完成 |
+| T12 | 测试、CI、体积预算与最终清理 | 已完成 |
 
 ### 六、执行规则
 
-- 当前已完成 T1-T7，等待用户确认后执行 T8。
+- T1-T12 已全部完成，后续变更必须持续通过 `web-admin` 的质量、架构、体积和 E2E 门禁。
 - 用户确认后严格按任务顺序推进，一次只执行一个任务。
 - 每个任务必须独立恢复到可编译、可运行、可验证状态，并在完成后暂停等待确认。
 - 同一任务内完成新结构迁移、全部引用更新和旧实现删除，不创建临时转发或兼容层。

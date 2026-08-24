@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 import { BzLoading } from "./BzLoading";
 import { BzOverflowTooltip } from "./BzOverflowTooltip";
+import styles from "./BzSimpleTable.module.css";
 
 export interface BzSimpleTableColumn<Row> {
   key: keyof Row | string;
@@ -52,7 +53,7 @@ export function BzSimpleTable<Row>({
       : String((row as Record<string, unknown>)[String(column.key)] ?? "-");
     return (
       <BzOverflowTooltip text={text}>
-        <span className="cell-text">{text}</span>
+        <span className={styles.cellText}>{text}</span>
       </BzOverflowTooltip>
     );
   }
@@ -60,17 +61,17 @@ export function BzSimpleTable<Row>({
   return (
     <BzLoading
       loading={loading}
-      className="bz-simple-table__loading-wrap"
+      className={styles.loadingWrap}
     >
-      <div className="bz-simple-table">
-        <table className="bz-simple-table__inner">
+      <div className={styles.table}>
+        <table className={styles.inner}>
           <thead>
             <tr>
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
                   style={resolveColumnStyle(column)}
-                  className={column.align ? `is-${column.align}` : undefined}
+                  className={column.align ? styles[column.align] : undefined}
                 >
                   {column.title}
                 </th>
@@ -85,7 +86,7 @@ export function BzSimpleTable<Row>({
                     <td
                       key={String(column.key)}
                       style={resolveColumnStyle(column)}
-                      className={column.align ? `is-${column.align}` : undefined}
+                      className={column.align ? styles[column.align] : undefined}
                     >
                       {column.render
                         ? column.render(row, rowIndex)
@@ -99,7 +100,7 @@ export function BzSimpleTable<Row>({
             <tbody>
               <tr>
                 <td
-                  className="bz-simple-table__empty"
+                  className={styles.empty}
                   colSpan={Math.max(columns.length, 1)}
                 >
                   {emptyText}

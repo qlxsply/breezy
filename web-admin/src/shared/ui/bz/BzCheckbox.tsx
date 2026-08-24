@@ -1,3 +1,5 @@
+import styles from "./BzCheckbox.module.css";
+
 interface BzCheckboxProps {
   modelValue?: boolean;
   disabled?: boolean;
@@ -18,15 +20,15 @@ export function BzCheckbox({
   return (
     <label
       className={[
-        "bz-checkbox",
-        modelValue ? "is-checked" : "",
-        disabled ? "is-disabled" : "",
+        styles.checkbox,
+        modelValue ? styles.checked : "",
+        disabled ? styles.disabled : "",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
-      <span className="bz-checkbox__input">
+      <span className={styles.input}>
         <input
           type="checkbox"
           checked={modelValue}
@@ -37,9 +39,9 @@ export function BzCheckbox({
             onChange?.(checked);
           }}
         />
-        <span className="bz-checkbox__inner" />
+        <span className={styles.inner} />
       </span>
-      {children ? <span className="bz-checkbox__label">{children}</span> : null}
+      {children ? <span className={styles.label}>{children}</span> : null}
     </label>
   );
 }

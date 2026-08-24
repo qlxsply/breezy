@@ -1,0 +1,44 @@
+.host {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  z-index: 2000;
+  display: grid;
+  gap: 10px;
+  width: min(480px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+
+.message {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.24);
+}
+
+.success {
+  background: rgba(22, 101, 52, 0.96);
+}
+
+.warning {
+  background: rgba(146, 64, 14, 0.96);
+}
+
+.error {
+  background: rgba(153, 27, 27, 0.96);
+}
+
+.content {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.close {
+  color: #fff;
+  opacity: 0.86;
+}

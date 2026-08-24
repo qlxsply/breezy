@@ -1,0 +1,80 @@
+.picker {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  background: #fff;
+}
+
+.inputWrap:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+}
+
+.disabled .inputWrap {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.input {
+  width: 100%;
+  height: 30px;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 58px 0 10px;
+  font-size: 13px;
+  color: inherit;
+}
+
+.input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.input::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.input:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.clear {
+  position: absolute;
+  right: 24px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.clear:hover {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.icon {
+  position: absolute;
+  right: 8px;
+  font-size: 13px;
+  pointer-events: none;
+}

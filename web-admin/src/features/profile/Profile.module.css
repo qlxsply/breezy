@@ -1,0 +1,56 @@
+.pagePanel {
+  display: grid;
+  gap: 18px;
+}
+.detailTable {
+  --admin-detail-stack-gap: 0;
+  --admin-detail-section-background: transparent;
+  --admin-detail-section-border: none;
+  --admin-detail-table-border: var(--border-width-1) solid var(--color-border);
+  --admin-detail-label-width: 150px;
+  --admin-detail-label-mobile-width: 150px;
+  --admin-detail-cell-height: 43px;
+  --admin-detail-cell-padding: 0 12px;
+  --admin-detail-cell-vertical-align: middle;
+  --admin-detail-label-white-space: nowrap;
+  --admin-detail-value-min-height: 43px;
+  --bz-control-min-height: 31px;
+  --bz-control-inner-height: 29px;
+  --bz-control-border: 1px solid transparent;
+  --bz-control-focus-border: var(--primary-color);
+  --bz-control-focus-shadow: none;
+}
+.activitySection {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: 4px;
+}
+.activityMeta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+.passwordBody {
+  display: grid;
+  gap: 0;
+}
+
+.passwordSection {
+  max-width: 680px;
+}
+
+.passwordFooter {
+  display: flex;
+}
+.passwordForm {
+  width: 100%;
+}
+.preferenceValue {
+  color: var(--color-text-primary);
+}
+.preferencesTable {
+  --bz-control-min-height: 30px;
+  --bz-control-inner-height: 30px;
+  --bz-control-border: 1px solid transparent;
+  --bz-control-focus-border: var(--primary-color);
+  --bz-control-focus-shadow: none;
+}

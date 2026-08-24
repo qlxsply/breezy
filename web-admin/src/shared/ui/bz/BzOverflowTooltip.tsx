@@ -3,6 +3,8 @@
 import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import styles from "./BzOverflowTooltip.module.css";
+
 type PopoverPlacement = "top" | "bottom";
 
 interface BzOverflowTooltipProps {
@@ -204,7 +206,7 @@ export function BzOverflowTooltip({
     <>
       <span
         ref={triggerRef}
-        className={["bz-overflow-tooltip__trigger", className].filter(Boolean).join(" ")}
+        className={[styles.trigger, className].filter(Boolean).join(" ")}
         onClick={handleTriggerClick}
       >
         {children}
@@ -213,7 +215,7 @@ export function BzOverflowTooltip({
         ? createPortal(
             <div
               ref={popoverRef}
-              className={["bz-overflow-tooltip__popover", `is-${popover.placement}`].join(" ")}
+              className={[styles.popover, styles[popover.placement]].join(" ")}
               style={{
                 top: `${popover.top}px`,
                 left: `${popover.left}px`,
@@ -222,10 +224,10 @@ export function BzOverflowTooltip({
                 pointerEvents: popover.ready ? "auto" : "none",
               }}
             >
-              <div className="bz-overflow-tooltip__content">{normalizedText}</div>
+              <div className={styles.content}>{normalizedText}</div>
               <button
                 type="button"
-                className="bz-overflow-tooltip__copy"
+                className={styles.copy}
                 aria-label="复制全部内容"
                 onClick={(event) => {
                   event.stopPropagation();
@@ -233,7 +235,7 @@ export function BzOverflowTooltip({
                 }}
               >
                 <span
-                  className="bz-overflow-tooltip__glyph"
+                  className={styles.glyph}
                   aria-hidden="true"
                 >
                   {copied ? <CheckIcon /> : <CopyIcon />}
@@ -272,7 +274,7 @@ async function copyText(text: string): Promise<boolean> {
 function CopyIcon() {
   return (
     <svg
-      className="bz-overflow-tooltip__svg is-copy"
+      className={[styles.svg, styles.copyIcon].join(" ")}
       viewBox="0 0 24 24"
       fill="none"
     >
@@ -299,7 +301,7 @@ function CopyIcon() {
 function CheckIcon() {
   return (
     <svg
-      className="bz-overflow-tooltip__svg is-check"
+      className={[styles.svg, styles.checkIcon].join(" ")}
       viewBox="0 0 24 24"
       fill="none"
     >

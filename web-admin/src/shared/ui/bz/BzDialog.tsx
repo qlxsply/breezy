@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { BzButton } from "./BzButton";
+import styles from "./BzDialog.module.css";
 import { BzIconClose } from "./BzIconClose";
 
 const openDialogStack: symbol[] = [];
@@ -124,7 +125,7 @@ export function BzDialog({
 
   return createPortal(
     <div
-      className="bz-dialog-overlay"
+      className={styles.overlay}
       style={overlayStyle}
       onClick={() => {
         const allowCloseOnOverlay = closeOnClickModal ?? closeOnOverlay;
@@ -134,17 +135,17 @@ export function BzDialog({
       }}
     >
       <div
-        className="bz-dialog"
+        className={styles.dialog}
         style={dialogStyle}
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="bz-dialog__header">
-          <div className="bz-dialog__title">{title}</div>
+        <header className={styles.header}>
+          <div className={styles.title}>{title}</div>
           {showClose ? (
             <button
-              className="bz-dialog__close"
+              className={styles.close}
               type="button"
               onClick={handleCancel}
             >
@@ -153,9 +154,9 @@ export function BzDialog({
           ) : null}
         </header>
 
-        <section className="bz-dialog__body">{children}</section>
+        <section className={styles.body}>{children}</section>
 
-        <footer className="bz-dialog__footer">
+        <footer className={styles.footer}>
           {footer ?? (
             <>
               <BzButton onClick={handleCancel}>{cancelText}</BzButton>

@@ -1,9 +1,16 @@
-.root :global(.admin-entity-drawer__body) {
-  background: var(--color-bg-surface-soft);
+.root {
+  --admin-entity-drawer-body-background: var(--color-bg-surface-soft);
 }
 
-.root :global(.admin-entity-shell) {
+.shell {
   gap: var(--space-4);
+}
+
+.mono {
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  word-break: break-all;
 }
 
 .root :global(.config-value-table-wrap) {
@@ -86,14 +93,7 @@
   width: 15%;
 }
 
-.root :global(.config-value-table .mono) {
-  color: var(--color-text-muted);
-  font-family: var(--font-family-mono);
-  font-size: 12px;
-  word-break: break-all;
-}
-
-.root :global(.config-value-table-wrap .bz-button) {
+.root :global(.config-value-table-wrap) button {
   border-radius: 0;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .root :global(.config-preview-result) {
-  color: var(--primary-color) !important;
+  color: var(--primary-color);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -113,7 +113,7 @@
 }
 
 .root :global(.config-action-column) {
-  width: 84px !important;
+  width: 84px;
 }
 
 .root :global(.config-message-table) {
@@ -124,7 +124,7 @@
   height: 40px;
   color: var(--color-text-muted);
   font-size: 12px;
-  text-align: center !important;
+  text-align: center;
 }
 
 .root :global(.config-whitelist-table) {
@@ -162,14 +162,14 @@
 
 .root :global(.config-whitelist-table tbody td) {
   box-sizing: border-box;
-  height: 40px !important;
+  height: 40px;
 }
 
 .root :global(.config-whitelist-table tbody td:nth-child(2)) {
   padding: 0;
 }
 
-.root :global(.config-whitelist-table tbody td:nth-child(3) > .table-input-control) {
+.root :global(.config-whitelist-table tbody td:nth-child(3)) > div {
   margin: 3px 12px 4px;
 }
 
@@ -177,8 +177,8 @@
 .root :global(.config-whitelist-table__action-cell) {
   width: 42px;
   height: 40px;
-  padding: 0 !important;
-  text-align: center !important;
+  padding: 0;
+  text-align: center;
 }
 
 .root :global(.config-string-list-editor) {
@@ -212,7 +212,7 @@
 
 .root :global(.config-string-list-table tbody td) {
   box-sizing: border-box;
-  height: 40px !important;
+  height: 40px;
 }
 
 .root
@@ -243,22 +243,22 @@
 .root :global(.config-string-list-table__drag-cell) {
   width: 42px;
   height: 40px;
-  padding: 0 !important;
-  text-align: center !important;
+  padding: 0;
+  text-align: center;
 }
 
 .root :global(.config-string-list-table__value-cell) {
-  height: 40px !important;
-  padding: 0 10px !important;
+  height: 40px;
+  padding: 0 10px;
 }
 
-.root :global(.config-string-list-table__value-cell .table-input-control) {
+.root :global(.config-string-list-table__value-cell) > div {
   min-width: 320px;
   margin: 3px 12px 4px;
 }
 
-.root :global(.config-whitelist-table tbody tr.is-drag-target td),
-.root :global(.config-string-list-table tbody tr.is-drag-target td) {
+.root :global(.config-whitelist-table tbody tr).dragTarget td,
+.root :global(.config-string-list-table tbody tr).dragTarget td {
   background: var(--color-bg-surface-selected);
 }
 
@@ -270,8 +270,8 @@
 
 .root :global(.config-string-list-empty) {
   height: 40px;
-  color: var(--color-text-muted) !important;
-  text-align: center !important;
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 .root :global(.config-time-calibration-table) {
@@ -314,41 +314,32 @@
   width: 40%;
 }
 
-.root :global(.config-vapid-table td:nth-child(4) .table-input-control) {
+.root :global(.config-vapid-table td:nth-child(4)) > div {
   min-width: 320px;
 }
 
-.root :global(.config-vapid-key-cell .config-vapid-key-control) {
+.root :global(.config-vapid-key-cell) .vapidKeyControl {
   min-height: 72px;
-}
-
-.root :global(.config-vapid-key-cell .config-vapid-key-control.table-common-input) {
   height: 72px;
 }
 
-.root
-  :global(
-    .config-vapid-key-cell .config-vapid-key-control.table-common-input .table-common-input__inner
-  ) {
+.root :global(.config-vapid-key-cell) .vapidKeyControl > input {
   line-height: 72px;
 }
 
-.root
-  :global(
-    .config-vapid-key-cell .config-vapid-key-control.table-text-area .table-text-area__input
-  ) {
+.root :global(.config-vapid-key-cell) .vapidKeyControl > textarea {
   min-height: 72px;
 }
 
 .root :global(.config-preference-switch-cell),
-.root :global(.config-default-switch-table td:has(> .bz-switch)),
+.root :global(.config-default-switch-table td:has(> label)),
 .root :global(.config-message-switch-cell) {
-  vertical-align: middle !important;
+  vertical-align: middle;
 }
 
-.root :global(.config-preference-switch-cell > .bz-switch),
-.root :global(.config-default-switch-table td > .bz-switch),
-.root :global(.config-message-switch-cell > .bz-switch) {
+.root :global(.config-preference-switch-cell) > label,
+.root :global(.config-default-switch-table td) > label,
+.root :global(.config-message-switch-cell) > label {
   vertical-align: middle;
 }
 
@@ -427,8 +418,8 @@
 }
 
 @media (max-width: 760px) {
-  .root :global(.admin-info-table) {
-    min-width: 860px;
+  .root {
+    --admin-info-table-min-width: 860px;
   }
 
   .root :global(.config-value-table) {

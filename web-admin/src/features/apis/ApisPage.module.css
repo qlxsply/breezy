@@ -122,16 +122,16 @@
   padding: 5px 10px;
 }
 
-.sortEditCell:global(.admin-info-cell--editable) {
+.sortEditCell {
   background: var(--color-bg-surface-selected);
 }
 
-.sortEditCell > :global(.table-input-control) {
+.sortEditCell > * {
   width: 100%;
   margin: 0;
 }
 
-.sortEditCell:has(:global(.table-input-control:focus-within)) {
+.sortEditCell:has(> :focus-within) {
   z-index: 1;
   box-shadow: inset 0 0 0 1px var(--primary-color);
 }
@@ -204,30 +204,6 @@
 
 .sortInput.code {
   font-family: var(--font-family-mono);
-}
-
-.sortDirectionGroup,
-.sortDirectionValue {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.sortDirectionButton {
-  width: 30px;
-  height: 30px;
-  display: inline-grid;
-  place-items: center;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-}
-
-.sortDirectionButton:hover,
-.sortDirectionButton:global(.is-active) {
-  color: var(--primary-color);
-  background: var(--color-primary-bg);
-  border-color: var(--color-primary-border);
 }
 
 .sortDirectionValue {

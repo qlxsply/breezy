@@ -1,19 +1,7 @@
 import { get, post, put, type RequestOptions } from "@admin/shared/transport";
-import type { UserConfigItem } from "@admin/shared/types/user-config";
 
-import type { AuthUser, AuthUserType } from "../model/types";
-
-interface AuthUserPayload {
-  id: string | null;
-  account: string | null;
-  userType?: AuthUserType | null;
-  configs?: UserConfigItem[];
-}
-
-interface AdminLoginPayload {
-  sessionExpiresAt: string;
-  user: AuthUserPayload;
-}
+import type { AuthUser } from "../model/types";
+import type { AdminLoginPayload, AuthUserPayload } from "./payload";
 
 export async function loginAdmin(
   account: string,
@@ -25,6 +13,7 @@ export async function loginAdmin(
     { account, password },
     options,
   );
+  if (!payload.user) throw new Error("登录响应缺少用户信息");
   return toAuthUser(payload.user);
 }
 
@@ -46,12 +35,14 @@ export function changeAdminPassword(
 }
 
 function toAuthUser(payload: AuthUserPayload): AuthUser {
+  const id = String(payload.id ?? "");
   const account = payload.account || "";
+  if (!id || !account || payload.userType !== "ADMIN") throw new Error("认证用户信息无效");
   return {
-    id: payload.id,
-    username: account,
+    id,
     account,
-    userType: payload.userType || "GUEST",
-    configs: payload.configs,
+    userType: payload.userType,
+    mustChangePassword: Boolean(payload.mustChangePassword),
+    configs: Array.isArray(payload.configs) ? payload.configs : [],
   };
 }

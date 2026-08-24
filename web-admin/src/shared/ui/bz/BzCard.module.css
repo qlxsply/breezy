@@ -1,0 +1,31 @@
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.always {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.hover {
+  transition: box-shadow 0.2s ease;
+}
+
+.hover:hover {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.09);
+}
+
+.never {
+  box-shadow: none;
+}
+
+.header {
+  padding: var(--bz-card-header-padding, 12px 16px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.body {
+  padding: var(--bz-card-body-padding, 16px);
+}

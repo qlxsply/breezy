@@ -17,6 +17,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import styles from "./TableSelect.module.css";
 import {
   TableSelectCheckIcon,
   TableSelectClearIcon,
@@ -558,8 +559,8 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
         ref={popupRef}
         id={listboxId}
         className={[
-          "table-select-popup",
-          !currentVisible ? "is-hidden" : "",
+          styles.popup,
+          !currentVisible ? styles.hidden : "",
           dropdownMenuClassName,
           popupClassName,
         ]
@@ -574,9 +575,9 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
         onMouseLeave={handleHoverLeave}
       >
         {loading ? (
-          <div className="table-select-popup__empty">加载中...</div>
+          <div className={styles.empty}>加载中...</div>
         ) : visibleOptions.length === 0 ? (
-          <div className="table-select-popup__empty">{notFoundContent}</div>
+          <div className={styles.empty}>{notFoundContent}</div>
         ) : (
           visibleOptions.map((option, index) => {
             const previousGroup = visibleOptions[index - 1]?.groupLabel;
@@ -584,7 +585,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
             return (
               <div key={option.key}>
                 {option.groupLabel && option.groupLabel !== previousGroup ? (
-                  <div className="table-select-popup__group">{option.groupLabel}</div>
+                  <div className={styles.group}>{option.groupLabel}</div>
                 ) : null}
                 <div
                   ref={(node) => {
@@ -597,10 +598,10 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
                     }
                   }}
                   className={[
-                    "table-select-popup__option",
-                    selected ? "is-selected" : "",
-                    option.key === activeKey ? "is-active" : "",
-                    option.disabled ? "is-disabled" : "",
+                    styles.option,
+                    selected ? styles.selected : "",
+                    option.key === activeKey ? styles.active : "",
+                    option.disabled ? styles.optionDisabled : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -612,16 +613,16 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
                 >
                   {multiple ? (
                     <span
-                      className="table-select-popup__checkbox"
+                      className={styles.checkbox}
                       aria-hidden="true"
                     >
                       {selected ? <TableSelectCheckIcon size={11} /> : null}
                     </span>
                   ) : null}
-                  <span className="table-select-popup__label">{option.label}</span>
+                  <span className={styles.label}>{option.label}</span>
                   {!multiple && selected ? (
                     <span
-                      className="table-select-popup__check"
+                      className={styles.check}
                       aria-hidden="true"
                     >
                       <TableSelectCheckIcon />
@@ -639,15 +640,12 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
     <div
       ref={rootRef}
       className={[
-        "table-input-control",
-        "table-select",
-        `is-${size}`,
-        currentVisible ? "is-open" : "",
-        disabled ? "is-disabled" : "",
-        loading ? "is-loading" : "",
-        !animation ? "has-no-animation" : "",
-        status ? `is-${status}` : "",
-        multiple ? "is-multiple" : "",
+        styles.select,
+        styles[size],
+        currentVisible ? styles.open : "",
+        disabled ? styles.disabled : "",
+        !animation ? styles.noAnimation : "",
+        status ? styles[status] : "",
         className,
       ]
         .filter(Boolean)
@@ -664,11 +662,11 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
       onMouseLeave={handleHoverLeave}
     >
       {triggerContent ?? (
-        <div className="table-select__content">
-          {addBefore ? <span className="table-select__add-before">{addBefore}</span> : null}
-          {prefix ? <span className="table-select__prefix">{prefix}</span> : null}
+        <div className={styles.content}>
+          {addBefore ? <span className={styles.addBefore}>{addBefore}</span> : null}
+          {prefix ? <span className={styles.prefix}>{prefix}</span> : null}
           {multiple ? (
-            <div className="table-select__tags">
+            <div className={styles.tags}>
               {displayedTags.values.map((item, index) => {
                 const option = optionMap.get(String(item));
                 const label = option?.label ?? item;
@@ -686,7 +684,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
                 return (
                   <span
                     key={String(item)}
-                    className="table-select__tag"
+                    className={styles.tag}
                     draggable={dragToSort && selectedValues.length > 1}
                     onDragStart={(event) => {
                       if (dragToSort) {
@@ -716,7 +714,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
                   >
                     {tag ?? (
                       <>
-                        <span className="table-select__tag-label">{label}</span>
+                        <span className={styles.tagLabel}>{label}</span>
                         {closable && removeIcon !== null ? (
                           <button
                             type="button"
@@ -731,7 +729,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
                 );
               })}
               {displayedTags.hiddenCount > 0 ? (
-                <span className="table-select__tag table-select__tag--summary">
+                <span className={`${styles.tag} ${styles.summaryTag}`}>
                   {displayedTags.render?.(displayedTags.hiddenCount) ??
                     `+${displayedTags.hiddenCount}`}
                 </span>
@@ -739,7 +737,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
               {searchable ? (
                 <input
                   ref={searchRef}
-                  className="table-select__search"
+                  className={styles.search}
                   value={currentInputValue}
                   placeholder={selectedValues.length === 0 ? placeholder : ""}
                   disabled={disabled || loading}
@@ -768,7 +766,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
           ) : searchable && currentVisible ? (
             <input
               ref={searchRef}
-              className="table-select__search"
+              className={styles.search}
               value={currentInputValue}
               placeholder={placeholder}
               disabled={disabled || loading}
@@ -789,7 +787,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
             <button
               ref={controlRef}
               id={id}
-              className="table-select__value"
+              className={styles.value}
               type="button"
               disabled={disabled || loading}
               role="combobox"
@@ -826,7 +824,7 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
           ) : null}
           {clearable && selectedValues.length > 0 && !disabled && !loading ? (
             <button
-              className="table-select__clear"
+              className={styles.clear}
               type="button"
               title="取消选中"
               aria-label="取消选中内容"
@@ -840,14 +838,14 @@ export const TableSelect = forwardRef<TableSelectHandle, TableSelectProps>(funct
             </button>
           ) : null}
           <span
-            className="table-select__suffix"
+            className={styles.suffix}
             aria-hidden="true"
           >
             {loading ? (
-              <span className="table-select__spinner" />
+              <span className={styles.spinner} />
             ) : (
               (suffixIcon ??
-              (arrowIcon === undefined ? <span className="table-select__arrow" /> : arrowIcon))
+              (arrowIcon === undefined ? <span className={styles.arrow} /> : arrowIcon))
             )}
           </span>
         </div>

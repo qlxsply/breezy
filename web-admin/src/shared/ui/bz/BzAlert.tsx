@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import styles from "./BzAlert.module.css";
 import { BzIconClose } from "./BzIconClose";
 
 export interface BzAlertProps {
@@ -26,17 +27,17 @@ export function BzAlert({
   }
 
   return (
-    <div className={["bz-alert", `bz-alert--${type}`, className].filter(Boolean).join(" ")}>
+    <div className={[styles.alert, styles[type], className].filter(Boolean).join(" ")}>
       {showIcon ? (
         <span
-          className="bz-alert__icon"
+          className={styles.icon}
           aria-hidden="true"
         />
       ) : null}
-      <div className="bz-alert__title">{title}</div>
+      <div className={styles.title}>{title}</div>
       {closable ? (
         <button
-          className="bz-alert__close bz-dialog__close"
+          className={styles.close}
           type="button"
           onClick={() => setClosed(true)}
         >

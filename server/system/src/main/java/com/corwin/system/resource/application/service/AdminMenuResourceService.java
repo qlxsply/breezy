@@ -105,7 +105,7 @@ public class AdminMenuResourceService {
         List<AdminMenuResourceView> children = childrenByParentId.getOrDefault(resource.id(), List.of()).stream()
                 .map(child -> buildTreeNode(child, childrenByParentId)).toList();
         return new AdminMenuResourceView(resource.id(), resource.parentId(), resource.name(), resource.icon(),
-                resource.code(), resource.type(), resource.url(), resource.loadTarget(), resource.orderNo(), children);
+                resource.code(), resource.type(), resource.url(), resource.orderNo(), children);
     }
 
     private void includeAncestors(Set<Long> includedIds, Map<Long, Resource> resourceById) {
@@ -127,7 +127,7 @@ public class AdminMenuResourceService {
         return new AdminMenuResourceView("resource:" + resource.getId(),
                 resource.getParentId() == null ? null : "resource:" + resource.getParentId(), resource.getName(),
                 resource.getIcon(), resource.getCode(), resource.getResourceType().name(), resolveUrl(resource),
-                resolveLoadTarget(resource), resource.getSortNo() == null ? 0 : resource.getSortNo(), List.of());
+                resource.getSortNo() == null ? 0 : resource.getSortNo(), List.of());
     }
 
     private boolean resourceVisibleAndEnabled(Resource resource) {
@@ -142,10 +142,6 @@ public class AdminMenuResourceService {
 
     private String resolveUrl(Resource resource) {
         return resource.getResourceType() == ResourceType.BUTTON ? "NONE" : blankToEmpty(resource.getPath());
-    }
-
-    private String resolveLoadTarget(Resource resource) {
-        return resource.getResourceType() == ResourceType.BUTTON ? "NONE" : blankToEmpty(resource.getComponent());
     }
 
     private String blankToEmpty(String value) {

@@ -4,8 +4,10 @@ import type {
   RoleGrantSelection,
 } from "@admin/features/roles/model/types";
 import { formatDateTime } from "@admin/shared/lib/formatter";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
+import layoutStyles from "@admin/shared/ui/admin/AdminPageLayout.module.css";
 import { TableInput, TableSelect } from "@admin/shared/ui/admin/inputs";
 import { BzAlert } from "@admin/shared/ui/bz/BzAlert";
 import { BzButton } from "@admin/shared/ui/bz/BzButton";
@@ -13,6 +15,7 @@ import { BzInput } from "@admin/shared/ui/bz/BzInput";
 import { BzTag } from "@admin/shared/ui/bz/BzTag";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
+import treeStyles from "./RolePermissionTree.module.css";
 import { RolePermissionTreeNode, type RolePermissionTreeNodeView } from "./RolePermissionTreeNode";
 
 type DiffStatus = "added" | "removed";
@@ -439,11 +442,11 @@ export function RolePermissionDialog({
   }
 
   const footer = (
-    <div className="admin-drawer-footer">
-      <div className="admin-drawer-footer__summary">
+    <div className={entityStyles.drawerFooter}>
+      <div className={entityStyles.drawerFooterSummary}>
         {confirming ? "确认保存后，受影响用户重新登录后权限才会完全生效。" : ""}
       </div>
-      <div className="admin-drawer-footer__actions">
+      <div className={entityStyles.drawerFooterActions}>
         {!confirming ? (
           <>
             <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
@@ -494,7 +497,9 @@ export function RolePermissionDialog({
     }
     return renderValueCell(
       <BzTag
-        className={`admin-info-status-tag${form.enabled ? " is-enabled" : " is-disabled"}`}
+        className={`${entityStyles.statusTag} ${
+          form.enabled ? entityStyles.statusEnabled : entityStyles.statusDisabled
+        }`}
         type={form.enabled ? "success" : "danger"}
       >
         {form.enabled ? "启用" : "停用"}
@@ -527,7 +532,7 @@ export function RolePermissionDialog({
         <TableInput
           value={value}
           placeholder={placeholder}
-          className={options?.mono ? "mono" : undefined}
+          className={options?.mono ? entityStyles.mono : undefined}
           onValueChange={onChange}
         />
       </AdminInfoCell>
@@ -545,28 +550,30 @@ export function RolePermissionDialog({
   return (
     <AdminEntityDrawer
       open
-      className="admin-entity-manage-drawer"
+      className={entityStyles.manageDrawer}
       title={drawerTitle}
       width="1180px"
       loading={loading}
       onClose={onClose}
       footer={footer}
     >
-      <div className="admin-entity-shell">
-        <section className="admin-entity-section">
-          <div className="admin-entity-section__head">
-            <div className="admin-entity-section__title">角色信息</div>
+      <div className={entityStyles.shell}>
+        <section className={entityStyles.section}>
+          <div className={entityStyles.sectionHead}>
+            <div className={entityStyles.sectionTitle}>角色信息</div>
           </div>
 
-          <div className="admin-info-table-wrap">
+          <div className={entityStyles.infoTableWrap}>
             <table
-              className="admin-info-table"
+              className={entityStyles.infoTable}
               aria-label="角色信息"
             >
               <tbody>
                 <tr>
                   <th>
-                    <span className={basicEditable ? "is-required" : undefined}>角色编码</span>
+                    <span className={basicEditable ? entityStyles.required : undefined}>
+                      角色编码
+                    </span>
                   </th>
                   {basicEditable
                     ? renderEditableTextCell(
@@ -577,7 +584,9 @@ export function RolePermissionDialog({
                       )
                     : renderValueCell(form.code || "-", { mono: true })}
                   <th>
-                    <span className={basicEditable ? "is-required" : undefined}>角色名称</span>
+                    <span className={basicEditable ? entityStyles.required : undefined}>
+                      角色名称
+                    </span>
                   </th>
                   {basicEditable
                     ? renderEditableTextCell(form.name, "请输入角色名称", (value) =>
@@ -585,7 +594,7 @@ export function RolePermissionDialog({
                       )
                     : renderValueCell(form.name || "-")}
                   <th>
-                    <span className={basicEditable ? "is-required" : undefined}>状态</span>
+                    <span className={basicEditable ? entityStyles.required : undefined}>状态</span>
                   </th>
                   {renderStatusValue()}
                 </tr>
@@ -619,43 +628,43 @@ export function RolePermissionDialog({
               title={error}
               type="error"
               showIcon
-              className="form-error admin-entity-error"
+              className={`form-error ${entityStyles.error}`}
             />
           ) : null}
         </section>
 
         {showPermissionSection ? (
           !confirming ? (
-            <section className="admin-entity-section">
-              <div className="admin-entity-section__head">
-                <div className="admin-entity-section__title">权限内容</div>
-                <div className="admin-entity-section__stat">{summaryText}</div>
+            <section className={entityStyles.section}>
+              <div className={entityStyles.sectionHead}>
+                <div className={entityStyles.sectionTitle}>权限内容</div>
+                <div className={entityStyles.sectionStat}>{summaryText}</div>
               </div>
 
-              <div className="admin-permission-toolbar">
+              <div className={entityStyles.permissionToolbar}>
                 <BzInput
                   modelValue={keyword}
                   placeholder="搜索资源名称/编码/类型"
                   clearable
-                  className="admin-permission-toolbar__search"
+                  className={entityStyles.permissionToolbarSearch}
                   onValueChange={setKeyword}
                 />
-                <div className="admin-permission-toolbar__actions">
+                <div className={entityStyles.permissionToolbarActions}>
                   <BzButton
-                    className="admin-permission-toolbar-button"
+                    className={entityStyles.permissionToolbarButton}
                     onClick={expandAll}
                   >
                     全部展开
                   </BzButton>
                   <BzButton
-                    className="admin-permission-toolbar-button"
+                    className={entityStyles.permissionToolbarButton}
                     onClick={collapseAll}
                   >
                     全部收起
                   </BzButton>
                   {permissionEditable ? (
                     <BzButton
-                      className="admin-permission-toolbar-button"
+                      className={entityStyles.permissionToolbarButton}
                       onClick={clearAll}
                     >
                       清空选择
@@ -664,16 +673,18 @@ export function RolePermissionDialog({
                 </div>
               </div>
 
-              <div className="admin-grid-table admin-permission-table">
+              <div className={`${layoutStyles.gridTable} admin-permission-table`}>
                 <div
-                  className="admin-grid-table__viewport"
+                  className={layoutStyles.gridViewport}
                   ref={treeWrapRef}
                 >
-                  <div className="admin-grid-table__row admin-grid-table__row--head admin-permission-table__head">
-                    <div className="admin-grid-table__cell admin-grid-table__cell--check">
+                  <div
+                    className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${treeStyles.tableHead}`}
+                  >
+                    <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`}>
                       {permissionEditable ? (
                         <input
-                          className="admin-node-checkbox"
+                          className={treeStyles.nodeCheckbox}
                           type="checkbox"
                           checked={allRowsSelected}
                           ref={(el) => {
@@ -683,22 +694,26 @@ export function RolePermissionDialog({
                         />
                       ) : null}
                     </div>
-                    <div className="admin-grid-table__cell admin-permission-cell--resource">
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--resource`}>
                       资源名称
                     </div>
-                    <div className="admin-grid-table__cell admin-permission-cell--type">类型</div>
-                    <div className="admin-grid-table__cell admin-permission-cell--code">
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
+                      类型
+                    </div>
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--code`}>
                       资源编码
                     </div>
-                    <div className="admin-grid-table__cell admin-permission-cell--status">状态</div>
-                    <div className="admin-grid-table__cell admin-permission-cell--actions">
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
+                      状态
+                    </div>
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
                       按钮权限
                     </div>
                   </div>
 
-                  <div className="admin-grid-table__body">
+                  <div className={layoutStyles.gridBody}>
                     {filteredRoots.length === 0 ? (
-                      <div className="admin-permission-empty-state">暂无可授权资源</div>
+                      <div className={treeStyles.emptyState}>暂无可授权资源</div>
                     ) : (
                       filteredRoots.map((node) => (
                         <RolePermissionTreeNode
@@ -719,37 +734,43 @@ export function RolePermissionDialog({
               </div>
             </section>
           ) : (
-            <section className="admin-entity-section">
-              <div className="admin-entity-section__head">
-                <div className="admin-entity-section__title-wrap">
-                  <div className="admin-entity-section__title">确认权限变更</div>
-                  <div className="admin-entity-section__hint">
+            <section className={entityStyles.section}>
+              <div className={entityStyles.sectionHead}>
+                <div className={entityStyles.sectionTitleWrap}>
+                  <div className={entityStyles.sectionTitle}>确认权限变更</div>
+                  <div className={entityStyles.sectionHint}>
                     绿色描边表示新增权限，红色删除线表示移除权限，未变化节点仅用于展示层级路径。
                   </div>
                 </div>
-                <div className="admin-entity-section__stat">{diffSummaryText}</div>
+                <div className={entityStyles.sectionStat}>{diffSummaryText}</div>
               </div>
 
-              <div className="admin-grid-table admin-permission-table">
-                <div className="admin-grid-table__viewport">
-                  <div className="admin-grid-table__row admin-grid-table__row--head admin-permission-table__head">
-                    <div className="admin-grid-table__cell admin-grid-table__cell--check" />
-                    <div className="admin-grid-table__cell admin-permission-cell--resource">
+              <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+                <div className={layoutStyles.gridViewport}>
+                  <div
+                    className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${treeStyles.tableHead}`}
+                  >
+                    <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`} />
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--resource`}>
                       资源名称
                     </div>
-                    <div className="admin-grid-table__cell admin-permission-cell--type">类型</div>
-                    <div className="admin-grid-table__cell admin-permission-cell--code">
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
+                      类型
+                    </div>
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--code`}>
                       资源编码
                     </div>
-                    <div className="admin-grid-table__cell admin-permission-cell--status">状态</div>
-                    <div className="admin-grid-table__cell admin-permission-cell--actions">
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
+                      状态
+                    </div>
+                    <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
                       按钮权限
                     </div>
                   </div>
 
-                  <div className="admin-grid-table__body">
+                  <div className={layoutStyles.gridBody}>
                     {diffRoots.length === 0 ? (
-                      <div className="admin-permission-empty-state">权限未发生变更</div>
+                      <div className={treeStyles.emptyState}>权限未发生变更</div>
                     ) : (
                       diffRoots.map((node) => (
                         <RolePermissionTreeNode

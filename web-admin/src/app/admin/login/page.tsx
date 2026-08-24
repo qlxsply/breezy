@@ -1,4 +1,4 @@
-import { AuthLoginPageCard } from "@admin/components/auth/AuthLoginPageCard";
+import { AuthLoginPageCard } from "@admin/features/auth/ui/AuthLoginPageCard";
 
 export default function AdminLoginPage() {
   return (

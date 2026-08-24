@@ -1,5 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
+import styles from "./BzTag.module.css";
+
 interface BzTagProps extends HTMLAttributes<HTMLSpanElement> {
   type?: "info" | "warning" | "danger" | "success";
   size?: "small" | "medium";
@@ -16,9 +18,7 @@ export function BzTag({
   return (
     <span
       {...rest}
-      className={["bz-tag", `bz-tag--${type}`, `bz-tag--${size}`, className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[styles.tag, styles[type], styles[size], className].filter(Boolean).join(" ")}
     >
       {children}
     </span>

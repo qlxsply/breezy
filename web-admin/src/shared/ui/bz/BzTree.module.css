@@ -1,0 +1,36 @@
+.tree {
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  background: #fff;
+  padding: 8px;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 0;
+}
+
+.line:hover {
+  background: #f8fafc;
+}
+
+.toggle {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.toggle:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}

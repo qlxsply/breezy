@@ -137,16 +137,6 @@ html[data-theme="light"] {
   --text-muted: var(--color-text-muted);
   --border-color: var(--color-border);
   --highlight-bg: var(--color-bg-surface-selected);
-
-  --el-color-primary: var(--color-brand-500);
-  --el-color-primary-dark-2: var(--color-brand-600);
-  --el-color-primary-light-3: var(--color-brand-400);
-  --el-color-primary-light-5: #93c5fd;
-  --el-color-primary-light-7: var(--color-brand-200);
-  --el-color-primary-light-8: var(--color-brand-100);
-  --el-color-primary-light-9: var(--color-brand-50);
-  --el-border-radius-base: var(--radius-lg);
-  --el-font-family: var(--font-family-sans);
 }
 
 @media (prefers-color-scheme: dark) {

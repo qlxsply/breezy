@@ -16,6 +16,7 @@ validate_path() {
   printf '%s' "$value" | grep -Eq '^/[A-Za-z0-9._~/-]*$' || fail "$name must be a same-origin path"
   case "$value" in
     //*) fail "$name must not be protocol-relative" ;;
+    /) ;;
     */) fail "$name must not end with /" ;;
   esac
 }

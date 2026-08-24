@@ -1,4 +1,8 @@
 import type { RoleGrantResourceEntry } from "@admin/features/roles/model/types";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
+import layoutStyles from "@admin/shared/ui/admin/AdminPageLayout.module.css";
+
+import styles from "./RolePermissionTree.module.css";
 
 type DiffStatus = "added" | "removed";
 
@@ -22,8 +26,8 @@ interface RolePermissionTreeNodeProps {
 
 function resolveDiffClass(nodeId: string, diffStatusById?: Map<string, DiffStatus>): string {
   const status = diffStatusById?.get(nodeId);
-  if (status === "added") return "is-diff-added";
-  if (status === "removed") return "is-diff-removed";
+  if (status === "added") return styles.diffAdded;
+  if (status === "removed") return styles.diffRemoved;
   return "";
 }
 
@@ -46,19 +50,19 @@ function resolveNodeKind(
 }
 
 function resolveDepthClass(depth: number): string {
-  if (depth <= 0) return "admin-permission-resource--depth-0";
-  if (depth === 1) return "admin-permission-resource--depth-1";
-  if (depth === 2) return "admin-permission-resource--depth-2";
-  if (depth === 3) return "admin-permission-resource--depth-3";
-  if (depth === 4) return "admin-permission-resource--depth-4";
-  return "admin-permission-resource--depth-5";
+  if (depth <= 0) return styles.depth0;
+  if (depth === 1) return styles.depth1;
+  if (depth === 2) return styles.depth2;
+  if (depth === 3) return styles.depth3;
+  if (depth === 4) return styles.depth4;
+  return styles.depth5;
 }
 
 function renderNodeIcon(expanded: boolean, hasNestedChildren: boolean) {
   if (!hasNestedChildren) {
     return (
       <svg
-        className="admin-permission-node-toggle__icon"
+        className={styles.nodeToggleIcon}
         viewBox="0 0 14 14"
         aria-hidden="true"
       >
@@ -74,7 +78,7 @@ function renderNodeIcon(expanded: boolean, hasNestedChildren: boolean) {
 
   return expanded ? (
     <svg
-      className="admin-permission-node-toggle__icon"
+      className={styles.nodeToggleIcon}
       viewBox="0 0 14 14"
       aria-hidden="true"
     >
@@ -89,7 +93,7 @@ function renderNodeIcon(expanded: boolean, hasNestedChildren: boolean) {
     </svg>
   ) : (
     <svg
-      className="admin-permission-node-toggle__icon"
+      className={styles.nodeToggleIcon}
       viewBox="0 0 14 14"
       aria-hidden="true"
     >
@@ -134,20 +138,25 @@ export function RolePermissionTreeNode({
   }
 
   function typeClass() {
-    if (kind === "DIRECTORY") return "admin-permission-tag-dir";
-    if (kind === "MENU") return "admin-permission-tag-menu";
-    if (kind === "BUTTON") return "admin-permission-tag-button";
-    return "admin-permission-tag-function";
+    if (kind === "DIRECTORY") return styles.tagDirectory;
+    if (kind === "MENU") return styles.tagMenu;
+    if (kind === "BUTTON") return styles.tagButton;
+    return styles.tagFunction;
+  }
+
+  function kindClass() {
+    if (kind === "DIRECTORY") return styles.directory;
+    if (kind === "MENU") return styles.menu;
+    if (kind === "BUTTON") return "";
+    return styles.function;
   }
 
   return (
     <>
-      <div
-        className={`admin-grid-table__row admin-permission-row--${kind.toLowerCase()} ${diffClass}`}
-      >
-        <div className="admin-grid-table__cell admin-grid-table__cell--check">
+      <div className={`${layoutStyles.gridRow} ${styles.row} ${kindClass()} ${diffClass}`}>
+        <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`}>
           <input
-            className="admin-node-checkbox"
+            className={styles.nodeCheckbox}
             type="checkbox"
             checked={checked}
             disabled={readonly || !canEdit || !node.row.enabled}
@@ -158,39 +167,37 @@ export function RolePermissionTreeNode({
           />
         </div>
 
-        <div className="admin-grid-table__cell admin-permission-cell--resource">
-          <div className={`admin-permission-resource ${resolveDepthClass(depth)}`}>
+        <div className={`${layoutStyles.gridCell} ${styles.resourceCell}`}>
+          <div className={`${styles.resource} ${resolveDepthClass(depth)}`}>
             <button
-              className={`admin-permission-node-toggle${!hasNestedChildren ? " is-placeholder" : ""}`}
+              className={`${styles.nodeToggle}${!hasNestedChildren ? ` ${styles.placeholder}` : ""}`}
               type="button"
               onClick={() => hasNestedChildren && onToggleExpand(node.row.id)}
             >
               {renderNodeIcon(expanded, hasNestedChildren)}
             </button>
-            <span className="admin-permission-resource__name">{node.row.name}</span>
+            <span className={styles.resourceName}>{node.row.name}</span>
           </div>
         </div>
 
-        <div className="admin-grid-table__cell admin-permission-cell--type">
-          <span className={`admin-permission-tag ${typeClass()}`}>{typeLabel()}</span>
+        <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
+          <span className={`${styles.tag} ${typeClass()}`}>{typeLabel()}</span>
         </div>
 
-        <div className="admin-grid-table__cell admin-permission-cell--code mono">
+        <div className={`${layoutStyles.gridCell} ${entityStyles.mono}`}>
           {node.row.code || "-"}
         </div>
 
-        <div className="admin-grid-table__cell admin-permission-cell--status">
-          <span
-            className={`admin-permission-status${node.row.enabled ? " is-enabled" : " is-disabled"}`}
-          >
+        <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
+          <span className={`${styles.status}${node.row.enabled ? "" : ` ${styles.disabled}`}`}>
             {node.row.enabled ? "启用" : "停用"}
           </span>
         </div>
 
-        <div className="admin-grid-table__cell admin-permission-cell--actions">
+        <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
           {buttonChildren.length > 0 ? (
             <div
-              className="admin-permission-button-list"
+              className={styles.buttonList}
               role="group"
               aria-label={`${node.row.name}按钮权限`}
             >
@@ -200,16 +207,16 @@ export function RolePermissionTreeNode({
                   <label
                     key={child.row.id}
                     className={[
-                      "admin-permission-button-chip",
-                      buttonChecked ? "is-checked" : "",
-                      readonly || !canEdit || !child.row.enabled ? "is-disabled" : "",
+                      styles.buttonChip,
+                      buttonChecked ? styles.checked : "",
+                      readonly || !canEdit || !child.row.enabled ? styles.disabled : "",
                       resolveDiffClass(child.row.id, diffStatusById),
                     ]
                       .filter(Boolean)
                       .join(" ")}
                   >
                     <input
-                      className="admin-permission-button-chip__checkbox"
+                      className={styles.buttonCheckbox}
                       type="checkbox"
                       checked={buttonChecked}
                       disabled={readonly || !canEdit || !child.row.enabled}
@@ -220,13 +227,13 @@ export function RolePermissionTreeNode({
                         })
                       }
                     />
-                    <span className="admin-permission-button-chip__name">{child.row.name}</span>
+                    <span className={styles.buttonName}>{child.row.name}</span>
                   </label>
                 );
               })}
             </div>
           ) : (
-            <span className="admin-permission-empty">-</span>
+            <span className={styles.empty}>-</span>
           )}
         </div>
       </div>

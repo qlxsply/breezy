@@ -1,0 +1,340 @@
+.input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 39px;
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+}
+
+td:has(> .input) {
+  position: relative;
+  padding: 0;
+  transition:
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+td:has(> .input:focus-within) {
+  z-index: 1;
+  background: var(--color-bg-surface-selected);
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.field {
+  min-width: 0;
+  height: var(--size-control-sm);
+  align-self: center;
+  margin: 0 var(--space-3);
+  background: transparent;
+}
+
+.field.disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-bg-surface-soft);
+}
+
+.field.invalid {
+  box-shadow: inset 0 0 0 1px var(--color-danger-500);
+}
+
+.inner {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--color-text-primary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  line-height: var(--size-control-sm);
+}
+
+.inner::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.inner:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.trigger {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.triggerCell {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  place-items: stretch;
+  border-left: 1px solid var(--color-border-table);
+  background: transparent;
+}
+
+.triggerCell.disabled {
+  background: var(--color-bg-surface-soft);
+}
+
+.input:focus-within .triggerCell {
+  border-left-color: var(--primary-color);
+}
+
+.trigger:hover:not(:disabled) {
+  color: var(--primary-color);
+  background: linear-gradient(var(--color-bg-surface-hover), var(--color-bg-surface-hover)) 0 1px /
+    calc(100% - 1px) calc(100% - 2px) no-repeat;
+}
+
+.trigger:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.picker {
+  z-index: 2200;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-floating);
+}
+
+.picker button {
+  font: inherit;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 34px 34px minmax(0, 1fr) 34px 34px;
+  height: 42px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-table);
+}
+
+.header > button,
+.header > div > button,
+.compactHeader button {
+  height: 40px;
+  padding: 0;
+  border: 0;
+  color: var(--color-text-secondary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.header > button {
+  font-size: 18px;
+}
+
+.header > div {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.header > div > button {
+  width: auto;
+  padding: 0 3px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.header button:hover,
+.compactHeader button:hover,
+.grid button:hover:not(:disabled) {
+  color: var(--primary-color);
+  background: var(--color-bg-surface-hover);
+}
+
+.compactHeader {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  height: 42px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-table);
+}
+
+.compactHeader strong {
+  font-size: 13px;
+  text-align: center;
+}
+
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekdays {
+  height: 38px;
+  padding: 4px 8px 0;
+}
+
+.weekdays span {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.days {
+  grid-auto-rows: 38px;
+  padding: 0 8px 8px;
+}
+
+.days button {
+  position: relative;
+  display: grid;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--color-text-primary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.days button > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+}
+
+.days button:hover:not(:disabled) > span {
+  background: var(--color-bg-surface-hover);
+}
+
+.days button.outside {
+  color: var(--color-text-disabled);
+}
+
+.days button.today:not(.selected) > span {
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.days button.selected > span {
+  color: var(--color-text-inverse);
+  background: var(--primary-color);
+}
+
+.days button:disabled,
+.grid button:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 52px;
+  padding: 10px 12px 12px;
+}
+
+.grid button {
+  padding: 0;
+  border: 0;
+  color: var(--color-text-primary);
+  background: transparent;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.grid button.selected {
+  color: var(--primary-color);
+  background: var(--color-bg-surface-selected);
+}
+
+.timeTitle {
+  display: grid;
+  height: 42px;
+  place-items: center;
+  border-bottom: 1px solid var(--color-border-table);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.time {
+  display: flex;
+  height: 252px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border-table);
+}
+
+.timeColumn {
+  height: 252px;
+  min-width: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-right: 1px solid var(--color-border-table);
+  scrollbar-width: none;
+  scroll-snap-type: y mandatory;
+}
+
+.timeColumn:last-child {
+  border-right: 0;
+}
+
+.timeColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.timeColumn ul {
+  margin: 0;
+  padding: 108px 0;
+  list-style: none;
+}
+
+.timeColumn li {
+  display: grid;
+  height: 36px;
+  place-items: center;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  scroll-snap-align: center;
+  user-select: none;
+}
+
+.timeColumn li:hover,
+.timeColumn li.selected {
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface-hover);
+}
+
+.footer {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--color-bg-surface);
+}
+
+.footer > div {
+  display: flex;
+  gap: 6px;
+}
+
+.footer > button {
+  border-radius: 0;
+}

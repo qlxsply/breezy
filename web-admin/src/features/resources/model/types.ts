@@ -23,7 +23,6 @@ export interface ResourceEntry {
   scope: ResourceScope; // 仅 MENU 时生效
   openMode: ResourceOpenMode;
   url: string; // openMode=PAGE 时使用的路由路径
-  loadTarget: string; // 组件路径（用于动态 import）
   orderNo: number;
   level: ResourceLevel;
   enabled: boolean;

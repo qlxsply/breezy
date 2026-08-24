@@ -4,10 +4,10 @@ export type AuthUserType = "ADMIN" | "USER" | "GUEST";
 export type AuthSessionStatus = "idle" | "loading" | "authenticated" | "anonymous" | "error";
 
 export interface AuthUser {
-  id: string | null;
-  username: string | null;
-  account?: string | null;
+  id: string;
+  account: string;
   userType: AuthUserType;
+  mustChangePassword: boolean;
   configs?: UserConfigItem[];
 }
 

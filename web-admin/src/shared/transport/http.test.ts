@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { get, post, registerUnauthorizedHandler } from "./http";
+import {
+  type ApiError,
+  get,
+  getBlob,
+  getJson,
+  getResponse,
+  type HttpError,
+  post,
+  registerUnauthorizedHandler,
+} from "./http";
 
 function envelope<T>(data: T) {
   return {
@@ -13,6 +22,7 @@ function envelope<T>(data: T) {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -78,6 +88,101 @@ describe("HTTP transport", () => {
     await expect(get("/invalid")).rejects.toMatchObject({
       kind: "invalid-response",
     });
+  });
+
+  it("classifies timeout and network failures", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init.signal?.addEventListener("abort", () =>
+              reject(new DOMException("", "AbortError")),
+            );
+          }),
+      ),
+    );
+
+    const timeoutAssertion = expect(get("/slow", { timeoutMs: 20 })).rejects.toMatchObject({
+      kind: "timeout",
+      message: "请求超时",
+    });
+    await vi.advanceTimersByTimeAsync(20);
+    await timeoutAssertion;
+
+    vi.useRealTimers();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("connection refused")));
+    await expect(get("/offline")).rejects.toMatchObject({
+      kind: "network",
+      message: "网络请求失败",
+    });
+  });
+
+  it("distinguishes business API errors from ordinary HTTP errors", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ...envelope(null),
+            success: false,
+            code: "RESOURCE_FORBIDDEN",
+            msg: "无权操作",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ msg: "服务暂不可用" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(get("/business-error")).rejects.toEqual(
+      expect.objectContaining<ApiError>({
+        name: "ApiError",
+        kind: "api",
+        code: "RESOURCE_FORBIDDEN",
+        message: "无权操作",
+      }),
+    );
+    await expect(get("/http-error")).rejects.toEqual(
+      expect.objectContaining<HttpError>({
+        name: "HttpError",
+        kind: "http",
+        status: 503,
+        message: "服务暂不可用",
+      }),
+    );
+  });
+
+  it("returns envelope data, plain JSON, blobs, and raw responses in their requested modes", async () => {
+    const rawResponse = new Response("raw", { status: 200 });
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify(envelope({ id: "admin" })), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ id: "plain" }), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+        .mockResolvedValueOnce(new Response("export-content"))
+        .mockResolvedValueOnce(rawResponse),
+    );
+
+    await expect(get<{ id: string }>("/envelope")).resolves.toEqual({ id: "admin" });
+    await expect(getJson<{ id: string }>("/json")).resolves.toEqual({ id: "plain" });
+    await expect(getBlob("/blob").then((blob) => blob.text())).resolves.toBe("export-content");
+    await expect(getResponse("/response")).resolves.toBe(rawResponse);
   });
 
   it("preserves caller cancellation", async () => {

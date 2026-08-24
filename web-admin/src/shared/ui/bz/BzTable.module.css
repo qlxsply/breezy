@@ -1,0 +1,133 @@
+.loadingWrap,
+.table,
+.scroll {
+  width: 100%;
+}
+
+.scroll {
+  overflow-x: var(--bz-table-overflow-x, auto);
+  overflow-y: var(--bz-table-overflow-y, hidden);
+}
+
+.inner {
+  width: var(--bz-table-width, 100%);
+  min-width: var(--bz-table-min-width, 0);
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: var(--bz-table-layout, auto);
+}
+
+.inner th,
+.inner td {
+  padding: var(--bz-table-cell-padding, 12px 14px);
+  border-bottom: var(--bz-table-cell-border-bottom, 1px solid #e5e7eb);
+  text-align: left;
+  vertical-align: middle;
+  background: var(--bz-table-cell-background, #fff);
+  font-size: var(--bz-table-font-size, 13px);
+}
+
+.inner th {
+  color: #475569;
+  font-weight: 600;
+  white-space: var(--bz-table-header-white-space, nowrap);
+}
+
+.small .inner th,
+.small .inner td {
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.inner tbody tr:hover td {
+  background: var(--bz-table-row-hover-background, #fafcff);
+}
+
+.inner
+  tbody
+  tr.selectable
+  > td:not(:has(button, a, input, select, textarea, [role="button"], [role="link"])) {
+  cursor: pointer;
+}
+
+.inner tbody tr.selected > td,
+.inner tbody tr.selected:hover > td {
+  background: #eff6ff;
+}
+
+.selectionCell {
+  padding-right: 0;
+  padding-left: 0;
+  text-align: center;
+}
+
+.selectionCheckbox {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--primary-color, #3b82f6);
+  cursor: pointer;
+}
+
+.selectionCheckbox:disabled {
+  cursor: not-allowed;
+}
+
+.inner th.fixedLeft,
+.inner td.fixedLeft,
+.inner th.stickyLeft,
+.inner td.stickyLeft {
+  position: sticky;
+  left: 0;
+}
+
+.inner th.fixedLeft,
+.inner th.stickyLeft {
+  z-index: 12;
+  background: #fff;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.inner td.fixedLeft,
+.inner td.stickyLeft {
+  z-index: 8;
+  background: #fff;
+  box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.inner tbody tr:hover td.fixedLeft,
+.inner tbody tr:hover td.stickyLeft {
+  background: var(--bz-table-row-hover-background, #fafcff);
+}
+
+.inner th.fixedRight,
+.inner td.fixedRight,
+.inner th.stickyRight,
+.inner td.stickyRight {
+  position: sticky;
+  right: 0;
+}
+
+.inner th.fixedRight,
+.inner th.stickyRight {
+  z-index: 12;
+  background: #fff;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.inner td.fixedRight,
+.inner td.stickyRight {
+  z-index: 8;
+  background: #fff;
+  box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
+}
+
+.inner tbody tr:hover td.fixedRight,
+.inner tbody tr:hover td.stickyRight {
+  background: var(--bz-table-row-hover-background, #fafcff);
+}
+
+.empty {
+  color: #94a3b8;
+  text-align: center;
+}

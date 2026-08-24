@@ -3,8 +3,8 @@
 ## 1. 文档状态
 
 - 需求名称：`web-admin` 高可用、可维护、可扩展结构性重构
-- 当前状态：实施中
-- 实施状态：T1-T7 已完成，等待确认 T8
+- 当前状态：已完成
+- 实施状态：T1-T12 已完成
 - 主要范围：`web-admin/`
 - 关联范围：认证 Cookie 契约、Nginx 同源代理和部署配置涉及必要的后端及部署调整
 - 实施原则：不保留旧结构兼容层，不引入临时转发文件，不允许新旧实现长期并存
@@ -641,6 +641,17 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 - 不存在文件请求旁路。
 - 原技术目录中的对应文件全部删除。
 
+完成情况：
+
+- audit-logs、login-logs、method-stat、diagnostic、system-files 已迁入独立 feature，API Payload、稳定 Model 和按钮权限码按切片集中维护。
+- 三个普通分页列表已统一使用 `useAdminPagedQuery`、`AdminSearchForm` 和 `AdminTablePagination`，具备请求取消、请求代次、末页回退和内联错误反馈。
+- Diagnostic 已改为完成后再调度的串行轮询，刷新请求使用 AbortController 与 generation 双重隔离；服务端配置和抽屉草稿分离，后台刷新不再覆盖未保存输入。
+- MethodStat 的开关和清理操作增加同步 mutation 锁，详情请求支持取消，列表刷新统一复用 T6 生命周期。
+- SystemFiles 的列表、预览、物理详情和反向引用使用独立请求生命周期；Blob URL 由稳定 ref 统一释放，反向引用请求已按后端契约修正为 POST，预览和下载均只经过统一 Transport。
+- 五个功能的专属样式已迁入 CSS Modules，日志详情的真正共享预格式化样式归入 `shared/ui/admin`；旧日志、诊断、方法统计及系统文件全局选择器已删除。
+- 原 `src/components/admin-pages`、`src/api`、`src/types` 中五个功能对应文件已删除，`page-map.tsx` 和 `resources.xml` 已更新为 feature 页面标识。
+- 前端 22 项测试、lint、format check、typecheck、生产 build 和后端 compile 通过。
+
 依赖任务：T4、T5、T6。
 
 ### T9：用户能力、自助页和认证功能垂直切片迁移
@@ -679,6 +690,20 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 - 重复 `auth.ts`、认证 Payload 和未使用 API 删除。
 - 原技术目录中的对应文件全部删除。
 
+完成情况：
+
+- web-users、user-feature-applications、user-feature-packages、profile、home、help 和登录 UI 已迁入独立 feature；原顶层 `src/api`、`src/types` 及对应业务组件目录已迁空。
+- 三个用户能力普通列表已统一使用 `useAdminPagedQuery`、`AdminSearchForm` 和 `AdminTablePagination`，列表具备取消、请求代次、末页回退和内联错误反馈。
+- applications 与 packages 通过明确的 `public/catalog` 边界共享应用和应用包目录，web-users 不再进入其他 feature 的内部 API 或 Model。
+- 用户能力、应用包和应用详情抽屉补充 AbortController 生命周期；状态维护、删除和保存增加同步 mutation 锁及单一错误反馈。
+- 认证核心继续保持单 Cookie、单 Transport、单 authStore；历史重复 `auth.ts` 已在前置任务删除，本任务进一步拆分 Auth Payload、补齐 `mustChangePassword`、删除 `username/account` 双字段和未使用 Store 订阅导出。
+- 登录重定向仅接受安全的后台站内路径，拒绝协议相对地址和登录页自循环；首次强制改密用户直接进入修改密码页，修改成功后同步认证模型。
+- profile API 已拆分 Payload 与 Model，错误且未使用的登录活动 GET 分页 API 删除；密码不再 trim，密码策略由 profile 边界验证后进入页面。
+- 偏好页请求具备取消与统一加载反馈，编辑草稿不再被外部配置更新覆盖；自助配置后端改为仅要求 ADMIN 登录态，与不进入资源授权树的自助页约定一致。
+- 空白工作台已实现为真实账号工作台；帮助页删除未实现快捷键说明；没有独立领域能力的 permission policy 占位路由、静态路由、资源定义和组件已全部删除。
+- 相关业务样式已迁入 CSS Modules，旧 auth、profile、help、user-feature 和占位全局选择器删除；`resources.xml` 已同步当前 feature 页面标识。
+- 前端 22 项测试、lint、format check、typecheck、生产 build、后端 system 编译及 `git diff --check` 通过。
+
 依赖任务：T3-T6。
 
 ### T10：真实 App Router、路由权限与代码分割重构
@@ -716,6 +741,16 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 - catch-all 客户端分发代码为 0。
 - 后台不同页面不再共享完全相同的全量业务 chunk。
 
+完成情况：
+
+- 15 个资源菜单页和 4 个后台自助页均已建立真实 `page.tsx`，登录页保持在受保护布局之外，静态导出共生成 20 个后台页面。
+- 受保护布局统一处理登录态和 ADMIN 身份，资源页与自助页采用独立路由分组；资源菜单权限集中在路由边界，自助页只要求 ADMIN 登录态。
+- catch-all、`pageMap`、`KNOWN_ADMIN_SLUGS`、静态业务路由表和客户端页面二次分发已删除；菜单 bootstrap 响应不再返回组件加载目标。
+- 标签页保活改为缓存 App Router 提供的页面节点，不再从壳体同步导入业务页面；关闭和刷新标签时同步清理或重建缓存实例。
+- 已建立标准 loading、error 和 not-found 边界；未登录、非管理员、资源未就绪、资源加载失败和无菜单权限均由集中路由边界处理。
+- Next 生产构建清单确认页面物理路径与 URL 一一对应；不同页面的 client reference manifest 只包含各自 feature，不再共享全部业务页面模块。
+- 前端 22 项测试、lint、format check、typecheck、生产 build、后端 system 编译及 `git diff --check` 通过。
+
 依赖任务：T7、T8、T9。
 
 ### T11：全局 CSS 清理与样式隔离收口
@@ -750,6 +785,14 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 - `.el-*`、`#app` 遗留为 0。
 - 非必要 `!important` 为 0。
 - 关键页面视觉回归通过。
+
+完成情况：
+
+- 根级 `globals.css` 仅保留主题 token 与基础 reset，登录页和根页面不再通过全局入口加载后台壳体、页面或 Bz 业务样式。
+- 后台壳体、shared admin、表格输入、Bz UI 及全部 feature 样式已迁入组件级或功能级 CSS Modules，旧 `style.css`、`admin-shell.css`、`styles/admin/**` 和聚合样式入口已删除。
+- `.el-*`、`--el-*`、`#app`、历史分页/占位规则、宽泛未归属类和 `!important` 已清零；portal、拖拽状态及跨组件定制改用模块类或 CSS 变量。
+- Next 生产构建切换为 webpack 严格 CSS 分块，导出产物确认登录页不加载 `AdminShell` 或后台 feature CSS，后台页面按路由加载各自样式。
+- 前端 22 项测试、lint、format check、typecheck、生产 build 及 `git diff --check` 通过。
 
 依赖任务：T4、T7-T10。
 
@@ -793,6 +836,17 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 - `npm run test:e2e`
 - 架构依赖检查和 bundle budget 通过。
 
+完成情况：
+
+- Vitest/Testing Library 扩展为 8 个测试文件、35 项测试，覆盖 HTTP timeout/network/业务错误/响应模式、401 会话结束、运行时配置并发与重试、资源继承权限、分页竞态和路由守卫。
+- 新增 Playwright Chromium 门禁，5 条 E2E 覆盖匿名跳转、管理员登录、菜单 403、用户筛选分页及新增抽屉保存，使用静态 preview 与集中 API mock 独立运行。
+- 新增 `check:architecture`，持续检查最终目录、层级和跨 feature public 契约、普通 fetch 归属、显式 `any`、TypeScript 绕过、旧路径和旧样式残留。
+- 新增 `check:bundle` 和固定预算；当前登录路由峰值 679.7 KiB raw / 212.7 KiB gzip，后台最大路由 911.5 KiB / 277.9 KiB，20 个后台路由保持 20 个独立 page chunk。
+- 新增 GitHub Actions，固定 Node 24.16.0 与 npm 11.13.0，执行安装、生产依赖审计、格式、lint、typecheck、架构、单测、构建、体积及 E2E 全门禁。
+- 后台壳体与守卫迁入 app 组合层，删除顶层 `components`、未使用 storage、显式 `any` 和 `.gitignore` Markdown 围栏；跨 feature auth 能力收敛到 `public` 契约。
+- Preview Origin 校验补齐凭据、query 和 hash 拒绝；Docker 路径契约统一；Nginx 静态资源启用 gzip。
+- `npm ci`、`npm audit --omit=dev`、全部质量命令、生产构建、bundle budget、35 项单测和 5 项 E2E 均通过。
+
 依赖任务：T1-T11。
 
 ## 9. 任务总表
@@ -806,11 +860,11 @@ ui/*.tsx             # 组件 Props 和局部 UI 类型优先就近定义
 | T5       | 全局状态、运行时和权限基础设施重构      | P11-P13、P17、P19            | 已完成 |
 | T6       | 后台分页查询与表单基础抽象              | P18、P19                     | 已完成 |
 | T7       | 平台管理功能垂直切片迁移                | P01、P02、P12、P14、P17、P18 | 已完成 |
-| T8       | 运维与可观测功能垂直切片迁移            | P01、P02、P11、P12、P14、P18 | 未开始 |
-| T9       | 用户能力、自助页和认证功能垂直切片迁移  | P01、P02、P11-P14、P17、P18  | 未开始 |
-| T10      | 真实 App Router、路由权限与代码分割重构 | P03、P16、P17                | 未开始 |
-| T11      | 全局 CSS 清理与样式隔离收口             | P14、P16                     | 未开始 |
-| T12      | 测试、CI、体积预算与最终清理            | 全部问题的持续门禁           | 未开始 |
+| T8       | 运维与可观测功能垂直切片迁移            | P01、P02、P11、P12、P14、P18 | 已完成 |
+| T9       | 用户能力、自助页和认证功能垂直切片迁移  | P01、P02、P11-P14、P17、P18  | 已完成 |
+| T10      | 真实 App Router、路由权限与代码分割重构 | P03、P16、P17                | 已完成 |
+| T11      | 全局 CSS 清理与样式隔离收口             | P14、P16                     | 已完成 |
+| T12      | 测试、CI、体积预算与最终清理            | 全部问题的持续门禁           | 已完成 |
 
 ## 10. 全局完成标准
 

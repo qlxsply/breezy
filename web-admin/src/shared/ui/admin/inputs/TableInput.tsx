@@ -2,6 +2,8 @@
 
 import { forwardRef, type InputHTMLAttributes, useState } from "react";
 
+import styles from "./TableInput.module.css";
+
 export interface TableInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
   "defaultValue" | "type" | "value"
@@ -36,10 +38,9 @@ export const TableInput = forwardRef<HTMLInputElement, TableInputProps>(function
   return (
     <div
       className={[
-        "table-input-control",
-        "table-common-input",
-        disabled ? "is-disabled" : "",
-        readOnly ? "is-readonly" : "",
+        styles.control,
+        disabled ? styles.disabled : "",
+        readOnly ? styles.readonly : "",
         className,
       ]
         .filter(Boolean)
@@ -48,7 +49,7 @@ export const TableInput = forwardRef<HTMLInputElement, TableInputProps>(function
       <input
         {...rest}
         ref={ref}
-        className="table-common-input__inner"
+        className={styles.inner}
         type={type}
         value={currentValue}
         maxLength={maxLength}

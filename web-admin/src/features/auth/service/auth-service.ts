@@ -65,8 +65,13 @@ export async function login(account: string, password: string): Promise<AuthUser
   return user;
 }
 
-export function changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
-  return changeAdminPassword(oldPassword, newPassword);
+export async function changePassword(oldPassword: string, newPassword: string): Promise<boolean> {
+  const changed = await changeAdminPassword(oldPassword, newPassword);
+  const current = getAuthSessionSnapshot().user;
+  if (changed && current?.mustChangePassword) {
+    updateAuthUser({ ...current, mustChangePassword: false });
+  }
+  return changed;
 }
 
 export function revokeAuthSession(): Promise<boolean> {

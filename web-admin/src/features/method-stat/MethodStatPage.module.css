@@ -1,0 +1,70 @@
+.globalAction {
+  min-width: 88px;
+}
+
+.tableScope {
+  --bz-table-overflow-x: auto;
+  --bz-table-overflow-y: auto;
+  --bz-table-width: max-content;
+  --bz-table-min-width: 100%;
+}
+
+.tableScope table th,
+.tableScope table td {
+  height: 44px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: nowrap;
+}
+
+.methodColumn {
+  left: 0;
+  z-index: 5;
+}
+
+.tableScope table th.methodColumn {
+  background: var(--color-bg-surface-soft);
+}
+
+.tableScope table td.methodColumn {
+  background: var(--color-bg-surface);
+}
+
+.tableScope table tbody tr:hover td.methodColumn {
+  background: var(--color-bg-surface-selected);
+}
+
+.method {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detailDrawer {
+  --admin-entity-drawer-body-background: var(--color-bg-page);
+}
+
+.detailCode {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  word-break: break-all;
+}
+
+.metricsTable th,
+.metricsTable td {
+  white-space: nowrap;
+}
+
+.metricsTable td {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .globalAction {
+    min-width: 76px;
+  }
+}

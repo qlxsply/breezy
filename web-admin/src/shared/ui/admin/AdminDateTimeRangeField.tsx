@@ -11,6 +11,8 @@ import type {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import styles from "./AdminDateTimeRangeField.module.css";
+
 export interface AdminDateTimeRangeFieldProps {
   startValue?: string;
   endValue?: string;
@@ -50,6 +52,13 @@ const RANGE_ROWS: RangeRow[] = ["start", "end"];
 const DATE_PARTS: DateTimePart[] = ["year", "month", "day"];
 const TIME_PARTS: DateTimePart[] = ["hour", "minute", "second"];
 
+function cx(...classNames: Array<string | false | null | undefined>): string {
+  return classNames
+    .filter((className): className is string => Boolean(className))
+    .map((className) => styles[className])
+    .join(" ");
+}
+
 export function AdminDateTimeRangeField({
   startValue = "",
   endValue = "",
@@ -81,7 +90,7 @@ export function AdminDateTimeRangeField({
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const margin = 12;
-    const width = Math.max(320, Math.min(540, viewportWidth - margin * 2));
+    const width = Math.min(540, viewportWidth - margin * 2);
     let left = triggerRect.left;
     if (left + width > viewportWidth - margin) {
       left = Math.max(margin, viewportWidth - width - margin);
@@ -130,22 +139,22 @@ export function AdminDateTimeRangeField({
   return (
     <div
       ref={rootRef}
-      className="admin-datetime-range"
+      className={cx("admin-datetime-range")}
     >
       <button
         ref={triggerRef}
-        className={`admin-datetime-range-trigger${displayText ? " has-value" : ""}${open ? " is-open" : ""}`}
+        className={cx("admin-datetime-range-trigger", open && "is-open")}
         type="button"
         title={displayText || placeholder}
         onClick={() => setOpen((value) => !value)}
       >
         <span
-          className={`admin-datetime-range-trigger__text${displayText ? "" : " is-placeholder"}`}
+          className={cx("admin-datetime-range-trigger__text", !displayText && "is-placeholder")}
         >
           {displayText || placeholder}
         </span>
         <span
-          className="admin-datetime-range-trigger__icon"
+          className={cx("admin-datetime-range-trigger__icon")}
           aria-hidden="true"
         >
           <CalendarIcon />
@@ -156,7 +165,7 @@ export function AdminDateTimeRangeField({
         ? createPortal(
             <div
               ref={panelRef}
-              className="admin-datetime-range-popover"
+              className={cx("admin-datetime-range-popover")}
               style={panelStyle}
             >
               <AdminDateTimeRangePanel
@@ -508,13 +517,16 @@ function AdminDateTimeRangePanel({
     : "";
 
   return (
-    <div className="admin-datetime-range-panel">
-      <div className="admin-datetime-range-panel__sidebar">
-        <div className="admin-datetime-range-panel__sidebar-title">快捷范围</div>
+    <div className={cx("admin-datetime-range-panel")}>
+      <div className={cx("admin-datetime-range-panel__sidebar")}>
+        <div className={cx("admin-datetime-range-panel__sidebar-title")}>快捷范围</div>
         {shortcuts.map((shortcut) => (
           <button
             key={shortcut.key}
-            className={`admin-datetime-range-panel__shortcut${shortcut.key === activeShortcut ? " is-active" : ""}`}
+            className={cx(
+              "admin-datetime-range-panel__shortcut",
+              shortcut.key === activeShortcut && "is-active",
+            )}
             type="button"
             onClick={() => applyShortcut(shortcut.key)}
           >
@@ -525,25 +537,31 @@ function AdminDateTimeRangePanel({
 
       <div
         ref={mainRef}
-        className="admin-datetime-range-panel__main"
+        className={cx("admin-datetime-range-panel__main")}
       >
         {RANGE_ROWS.map((row) => (
           <div
             key={row}
-            className="admin-datetime-range-panel__row"
+            className={cx("admin-datetime-range-panel__row")}
           >
-            <div className="admin-datetime-range-panel__row-label">
+            <div className={cx("admin-datetime-range-panel__row-label")}>
               {row === "start" ? "开始时间" : "结束时间"}
             </div>
             <div
               ref={(element) => setDateFieldRef(row, element)}
-              className={`admin-datetime-range-panel__seg-field${activePicker?.row === row && activePicker.type === "date" ? " is-active" : ""}`}
+              className={cx(
+                "admin-datetime-range-panel__seg-field",
+                activePicker?.row === row && activePicker.type === "date" && "is-active",
+              )}
               onClick={(event) => handleFieldShellClick(event, row, "date")}
             >
-              <div className="admin-datetime-range-panel__segments">
+              <div className={cx("admin-datetime-range-panel__segments")}>
                 <input
                   ref={(element) => setInputRef(row, "year", element)}
-                  className="admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--year"
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--year",
+                  )}
                   value={range[row].year}
                   inputMode="numeric"
                   maxLength={4}
@@ -556,10 +574,13 @@ function AdminDateTimeRangePanel({
                     setError("");
                   }}
                 />
-                <span className="admin-datetime-range-panel__seg-separator">/</span>
+                <span className={cx("admin-datetime-range-panel__seg-separator")}>/</span>
                 <input
                   ref={(element) => setInputRef(row, "month", element)}
-                  className="admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--date"
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--date",
+                  )}
                   value={range[row].month}
                   inputMode="numeric"
                   maxLength={2}
@@ -572,10 +593,13 @@ function AdminDateTimeRangePanel({
                     setError("");
                   }}
                 />
-                <span className="admin-datetime-range-panel__seg-separator">/</span>
+                <span className={cx("admin-datetime-range-panel__seg-separator")}>/</span>
                 <input
                   ref={(element) => setInputRef(row, "day", element)}
-                  className="admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--date"
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--date",
+                  )}
                   value={range[row].day}
                   inputMode="numeric"
                   maxLength={2}
@@ -590,7 +614,7 @@ function AdminDateTimeRangePanel({
                 />
               </div>
               <button
-                className="admin-datetime-range-panel__icon-button"
+                className={cx("admin-datetime-range-panel__icon-button")}
                 type="button"
                 onClick={() => openDatePicker(row)}
               >
@@ -599,13 +623,19 @@ function AdminDateTimeRangePanel({
             </div>
             <div
               ref={(element) => setTimeFieldRef(row, element)}
-              className={`admin-datetime-range-panel__seg-field${activePicker?.row === row && activePicker.type === "time" ? " is-active" : ""}`}
+              className={cx(
+                "admin-datetime-range-panel__seg-field",
+                activePicker?.row === row && activePicker.type === "time" && "is-active",
+              )}
               onClick={(event) => handleFieldShellClick(event, row, "time")}
             >
-              <div className="admin-datetime-range-panel__segments">
+              <div className={cx("admin-datetime-range-panel__segments")}>
                 <input
                   ref={(element) => setInputRef(row, "hour", element)}
-                  className="admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--time"
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--time",
+                  )}
                   value={range[row].hour}
                   inputMode="numeric"
                   maxLength={2}
@@ -619,10 +649,13 @@ function AdminDateTimeRangePanel({
                     setError("");
                   }}
                 />
-                <span className="admin-datetime-range-panel__seg-separator">:</span>
+                <span className={cx("admin-datetime-range-panel__seg-separator")}>:</span>
                 <input
                   ref={(element) => setInputRef(row, "minute", element)}
-                  className="admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--time"
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--time",
+                  )}
                   value={range[row].minute}
                   inputMode="numeric"
                   maxLength={2}
@@ -637,13 +670,20 @@ function AdminDateTimeRangePanel({
                   }}
                 />
                 <span
-                  className={`admin-datetime-range-panel__seg-separator${precision === "second" ? "" : " is-hidden"}`}
+                  className={cx(
+                    "admin-datetime-range-panel__seg-separator",
+                    precision !== "second" && "is-hidden",
+                  )}
                 >
                   :
                 </span>
                 <input
                   ref={(element) => setInputRef(row, "second", element)}
-                  className={`admin-datetime-range-panel__seg-input admin-datetime-range-panel__seg-input--time${precision === "second" ? "" : " is-hidden"}`}
+                  className={cx(
+                    "admin-datetime-range-panel__seg-input",
+                    "admin-datetime-range-panel__seg-input--time",
+                    precision !== "second" && "is-hidden",
+                  )}
                   value={precision === "second" ? range[row].second : ""}
                   inputMode="numeric"
                   maxLength={2}
@@ -659,7 +699,7 @@ function AdminDateTimeRangePanel({
                 />
               </div>
               <button
-                className="admin-datetime-range-panel__icon-button"
+                className={cx("admin-datetime-range-panel__icon-button")}
                 type="button"
                 onClick={() => openTimePicker(row)}
               >
@@ -669,12 +709,12 @@ function AdminDateTimeRangePanel({
           </div>
         ))}
 
-        {error ? <div className="admin-datetime-range-panel__error">{error}</div> : null}
+        {error ? <div className={cx("admin-datetime-range-panel__error")}>{error}</div> : null}
 
         {activePicker ? (
           <div
             ref={pickerRef}
-            className="admin-datetime-range-panel__picker-popover"
+            className={cx("admin-datetime-range-panel__picker-popover")}
             style={pickerStyle}
           >
             {activePicker.type === "date" ? (
@@ -702,15 +742,15 @@ function AdminDateTimeRangePanel({
           </div>
         ) : null}
 
-        <div className="admin-datetime-range-panel__footer">
+        <div className={cx("admin-datetime-range-panel__footer")}>
           <button
-            className="admin-datetime-range-panel__clear"
+            className={cx("admin-datetime-range-panel__clear")}
             type="button"
             onClick={clearRange}
           >
             清空
           </button>
-          <div className="admin-datetime-range-panel__footer-actions">
+          <div className={cx("admin-datetime-range-panel__footer-actions")}>
             <BzButton onClick={onCancel}>取消</BzButton>
             <BzButton
               buttonType="primary"
@@ -747,11 +787,11 @@ function CalendarPanel({
   const cells = buildCalendarCells(month.year, month.month);
 
   return (
-    <div className="admin-datetime-range-calendar">
-      <div className="admin-datetime-range-calendar__head">
-        <div className="admin-datetime-range-calendar__title">
+    <div className={cx("admin-datetime-range-calendar")}>
+      <div className={cx("admin-datetime-range-calendar__head")}>
+        <div className={cx("admin-datetime-range-calendar__title")}>
           <select
-            className="admin-datetime-range-calendar__select"
+            className={cx("admin-datetime-range-calendar__select")}
             value={month.year}
             aria-label="选择年份"
             onChange={(event) => onYearChange(Number(event.currentTarget.value))}
@@ -766,7 +806,7 @@ function CalendarPanel({
             ))}
           </select>
           <select
-            className="admin-datetime-range-calendar__select"
+            className={cx("admin-datetime-range-calendar__select")}
             value={month.month}
             aria-label="选择月份"
             onChange={(event) => onMonthChange(Number(event.currentTarget.value))}
@@ -782,26 +822,24 @@ function CalendarPanel({
           </select>
         </div>
       </div>
-      <div className="admin-datetime-range-calendar__weekdays">
+      <div className={cx("admin-datetime-range-calendar__weekdays")}>
         {["一", "二", "三", "四", "五", "六", "日"].map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
-      <div className="admin-datetime-range-calendar__grid">
+      <div className={cx("admin-datetime-range-calendar__grid")}>
         {cells.map((cell) => {
           const active = cell.value === selectedDate;
           const isToday = cell.value === today;
           return (
             <button
               key={cell.key}
-              className={[
+              className={cx(
                 "admin-datetime-range-calendar__cell",
-                cell.muted ? "is-muted" : "",
-                isToday ? "is-today" : "",
-                active ? "is-active" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+                cell.muted && "is-muted",
+                isToday && "is-today",
+                active && "is-active",
+              )}
               type="button"
               onClick={() => onSelect(cell.value)}
             >
@@ -810,7 +848,7 @@ function CalendarPanel({
           );
         })}
       </div>
-      <div className="admin-datetime-range-calendar__footer">
+      <div className={cx("admin-datetime-range-calendar__footer")}>
         <button
           type="button"
           onClick={() => onSelect("")}
@@ -846,7 +884,7 @@ function TimePanel({
   useEffect(() => {
     [hourRef.current, minuteRef.current, secondRef.current].forEach((column) => {
       const activeCell = column?.querySelector<HTMLElement>(
-        ".admin-datetime-range-time__cell.is-active",
+        `.${styles["admin-datetime-range-time__cell"]}.${styles["is-active"]}`,
       );
       if (column && activeCell) {
         column.scrollTop = Math.max(0, activeCell.offsetTop - 56);
@@ -855,7 +893,7 @@ function TimePanel({
   }, [selectedHour, selectedMinute, selectedSecond, precision]);
 
   return (
-    <div className={`admin-datetime-range-time${precision === "second" ? " is-second" : ""}`}>
+    <div className={cx("admin-datetime-range-time", precision === "second" && "is-second")}>
       <TimeColumn
         columnRef={hourRef}
         values={buildNumberList(0, 23)}
@@ -894,12 +932,12 @@ function TimeColumn({
   return (
     <div
       ref={columnRef}
-      className="admin-datetime-range-time__column"
+      className={cx("admin-datetime-range-time__column")}
     >
       {values.map((value) => (
         <button
           key={value}
-          className={`admin-datetime-range-time__cell${value === selected ? " is-active" : ""}`}
+          className={cx("admin-datetime-range-time__cell", value === selected && "is-active")}
           type="button"
           onClick={() => onSelect(value)}
         >

@@ -20,6 +20,7 @@ import { useAdminPagedQuery } from "@admin/shared/hooks/useAdminPagedQuery";
 import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
 import { message } from "@admin/shared/lib/feedback/message";
 import { AdminListPageTemplate } from "@admin/shared/ui/admin/AdminListPageTemplate";
+import layoutStyles from "@admin/shared/ui/admin/AdminPageLayout.module.css";
 import { AdminSearchField, AdminSearchForm } from "@admin/shared/ui/admin/AdminSearchForm";
 import { AdminTablePagination } from "@admin/shared/ui/admin/AdminTablePagination";
 import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
@@ -375,7 +376,7 @@ export function RolesPage() {
       businessActions={
         canCreate ? (
           <BzButton
-            className="admin-toolbar-primary"
+            className={layoutStyles.toolbarPrimary}
             buttonType="primary"
             onClick={openCreate}
           >

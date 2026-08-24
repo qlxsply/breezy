@@ -20,6 +20,7 @@ import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
 import { message } from "@admin/shared/lib/feedback/message";
 import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
 import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import layoutStyles from "@admin/shared/ui/admin/AdminPageLayout.module.css";
 import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
 import type { BzTableColumn } from "@admin/shared/ui/bz";
 import {
@@ -154,7 +155,10 @@ export function ResourcesPage() {
                 type="button"
                 onClick={() => hasChildren && toggleExpand(row.id)}
               >
-                <BzChevronIcon direction={expanded || hasActiveFilter ? "down" : "right"} />
+                <BzChevronIcon
+                  className={styles.chevron}
+                  direction={expanded || hasActiveFilter ? "down" : "right"}
+                />
               </button>
               <span className={`${styles.nameMain} ${styles.cellEllipsis}`}>{row.name}</span>
             </div>
@@ -418,11 +422,11 @@ export function ResourcesPage() {
   }
 
   return (
-    <div className={`admin-page ${styles.root}`}>
-      <div className="content">
-        <div className="admin-page-stack">
+    <div className={`${layoutStyles.page} ${styles.root}`}>
+      <div className={layoutStyles.content}>
+        <div className={layoutStyles.pageStack}>
           <BzCard
-            className={`admin-panel admin-table-card ${styles.card}`}
+            className={`${layoutStyles.panel} ${layoutStyles.tableCard} ${styles.card}`}
             shadow="never"
           >
             <div className={styles.region}>
@@ -431,25 +435,25 @@ export function ResourcesPage() {
                   <div
                     ref={queryCardRef}
                     className={[
-                      "admin-query-layout",
+                      layoutStyles.queryLayout,
                       querySingleRow
-                        ? "is-single-row"
+                        ? layoutStyles.singleRow
                         : queryExpanded
-                          ? "is-expanded"
-                          : "is-collapsed",
+                          ? layoutStyles.expanded
+                          : layoutStyles.collapsed,
                     ].join(" ")}
                   >
                     <form
                       ref={queryGridRef}
-                      className="bz-form admin-query-grid"
+                      className={layoutStyles.queryGrid}
                       onSubmit={(event) => {
                         event.preventDefault();
                         applyFilters();
                       }}
                     >
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">关键字</div>
-                        <div className="admin-query-field__control">
+                      <BzFormItem className={layoutStyles.queryField}>
+                        <div className={layoutStyles.queryFieldLabel}>关键字</div>
+                        <div className={layoutStyles.queryFieldControl}>
                           <BzInput
                             modelValue={keywordDraft}
                             placeholder="搜索资源名称 / 编码 / 路径 / 组件"
@@ -461,9 +465,9 @@ export function ResourcesPage() {
                           />
                         </div>
                       </BzFormItem>
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">资源类型</div>
-                        <div className="admin-query-field__control">
+                      <BzFormItem className={layoutStyles.queryField}>
+                        <div className={layoutStyles.queryFieldLabel}>资源类型</div>
+                        <div className={layoutStyles.queryFieldControl}>
                           <BzSelect
                             modelValue={typeFilterDraft}
                             placeholder="全部类型"
@@ -489,9 +493,9 @@ export function ResourcesPage() {
                           </BzSelect>
                         </div>
                       </BzFormItem>
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">启用状态</div>
-                        <div className="admin-query-field__control">
+                      <BzFormItem className={layoutStyles.queryField}>
+                        <div className={layoutStyles.queryFieldLabel}>启用状态</div>
+                        <div className={layoutStyles.queryFieldControl}>
                           <BzSelect
                             modelValue={enabledFilterDraft}
                             placeholder="全部状态"
@@ -509,9 +513,9 @@ export function ResourcesPage() {
                           </BzSelect>
                         </div>
                       </BzFormItem>
-                      <BzFormItem className="admin-query-field">
-                        <div className="admin-query-field__label">内置状态</div>
-                        <div className="admin-query-field__control">
+                      <BzFormItem className={layoutStyles.queryField}>
+                        <div className={layoutStyles.queryFieldLabel}>内置状态</div>
+                        <div className={layoutStyles.queryFieldControl}>
                           <BzSelect
                             modelValue={builtinFilterDraft}
                             placeholder="全部"
@@ -529,16 +533,16 @@ export function ResourcesPage() {
                           </BzSelect>
                         </div>
                       </BzFormItem>
-                      <div className="admin-query-actions">
+                      <div className={layoutStyles.queryActions}>
                         <BzButton
-                          className="admin-filter-secondary"
+                          className={layoutStyles.filterSecondary}
                           nativeType="button"
                           onClick={resetFilters}
                         >
                           重置
                         </BzButton>
                         <BzButton
-                          className="admin-filter-primary"
+                          className={layoutStyles.filterPrimary}
                           buttonType="primary"
                           nativeType="button"
                           onClick={applyFilters}
@@ -547,14 +551,14 @@ export function ResourcesPage() {
                         </BzButton>
                         {!querySingleRow ? (
                           <button
-                            className="admin-filter-toggle"
+                            className={layoutStyles.filterToggle}
                             type="button"
                             aria-expanded={queryExpanded}
                             onClick={() => setQueryExpanded((value) => !value)}
                           >
                             <span>{queryExpanded ? "收起" : "展开"}</span>
                             <i
-                              className={`admin-filter-toggle__icon ${queryExpanded ? "is-up" : "is-down"}`}
+                              className={`${layoutStyles.filterToggleIcon} ${queryExpanded ? layoutStyles.up : layoutStyles.down}`}
                               aria-hidden="true"
                             />
                           </button>
@@ -569,7 +573,7 @@ export function ResourcesPage() {
                 <div className={styles.businessActions}>
                   {canCreate ? (
                     <BzButton
-                      className="admin-toolbar-primary"
+                      className={layoutStyles.toolbarPrimary}
                       buttonType="primary"
                       onClick={openCreateRoot}
                     >
@@ -579,7 +583,7 @@ export function ResourcesPage() {
                 </div>
                 <div className={styles.queryTools}>
                   <button
-                    className="admin-vben-circle-button"
+                    className={`${layoutStyles.circleButton} ${styles.circleButton}`}
                     type="button"
                     title="全部展开"
                     onClick={expandAll}
@@ -598,7 +602,7 @@ export function ResourcesPage() {
                     </svg>
                   </button>
                   <button
-                    className="admin-vben-circle-button"
+                    className={`${layoutStyles.circleButton} ${styles.circleButton}`}
                     type="button"
                     title="全部收起"
                     onClick={collapseAll}
@@ -623,7 +627,9 @@ export function ResourcesPage() {
                 </div>
               </div>
 
-              <div className={`admin-table-surface ${styles.tableArea} ${styles.tableScope}`}>
+              <div
+                className={`${layoutStyles.tableSurface} ${styles.tableArea} ${styles.tableScope}`}
+              >
                 {loadError ? (
                   <BzAlert
                     key={loadError}

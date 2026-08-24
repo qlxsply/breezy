@@ -1,0 +1,503 @@
+.admin-datetime-range,
+.admin-datetime-range-popover {
+  --admin-dt-font-size: var(--font-size-sm);
+  --admin-dt-control-height: var(--size-control-sm);
+  --admin-dt-inner-height: 30px;
+  --admin-dt-border-color: var(--color-border-strong);
+  --admin-dt-border-color-inner: var(--color-border-soft);
+  --admin-dt-radius: var(--radius-md);
+  --admin-dt-radius-inner: var(--radius-xs);
+  --admin-dt-text-color: var(--color-text-secondary);
+  --admin-dt-text-color-strong: var(--color-text-primary);
+  --admin-dt-label-color: var(--color-text-muted);
+  --admin-dt-placeholder-color: var(--color-text-disabled);
+  --admin-dt-muted-color: var(--color-text-muted);
+  --admin-dt-primary-color: var(--color-brand-500);
+  --admin-dt-primary-bg: var(--color-brand-soft);
+  --admin-dt-year-width: 4ch;
+  --admin-dt-part-width: 2ch;
+  --admin-dt-date-separator-width: 11px;
+  --admin-dt-time-separator-width: 8px;
+  --admin-dt-icon-width: 28px;
+  --admin-dt-date-field-width: 152px;
+  --admin-dt-time-field-width: 116px;
+  color: var(--admin-dt-text-color);
+  font-family: inherit;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range,
+.admin-datetime-range *,
+.admin-datetime-range-popover,
+.admin-datetime-range-popover * {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.admin-datetime-range {
+  width: 100%;
+}
+
+.admin-datetime-range-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: var(--admin-dt-control-height);
+  min-height: var(--admin-dt-control-height);
+  padding: 0 10px;
+  color: var(--admin-dt-text-color);
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--admin-dt-border-color);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-control-height);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.admin-datetime-range-trigger:hover,
+.admin-datetime-range-trigger.is-open {
+  border-color: var(--color-brand-500);
+}
+
+.admin-datetime-range-trigger:focus-visible {
+  outline: none;
+  border-color: var(--color-brand-500);
+  box-shadow: var(--shadow-focus-brand);
+}
+
+.admin-datetime-range-trigger__text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-dt-text-color);
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-control-height);
+  white-space: nowrap;
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.admin-datetime-range-trigger__text.is-placeholder {
+  color: var(--admin-dt-placeholder-color);
+}
+
+.admin-datetime-range-trigger__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--size-icon-md);
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
+  color: var(--color-text-muted);
+}
+
+.admin-datetime-range-trigger__icon svg {
+  width: var(--size-icon-md);
+  height: var(--size-icon-md);
+}
+
+.admin-datetime-range-popover {
+  z-index: 2200;
+  overflow: visible;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-floating);
+}
+
+.admin-datetime-range-panel {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  min-height: 220px;
+}
+
+.admin-datetime-range-panel__sidebar {
+  padding: var(--space-3) 10px;
+  background: var(--color-bg-sidebar);
+  border-right: var(--border-width-1) solid var(--color-border-soft);
+}
+
+.admin-datetime-range-panel__sidebar-title {
+  margin-bottom: var(--space-1-5);
+  color: var(--admin-dt-muted-color);
+  font-size: var(--font-size-xs);
+}
+
+.admin-datetime-range-panel__shortcut {
+  display: block;
+  width: 100%;
+  height: 30px;
+  padding: 0 5px;
+  color: var(--admin-dt-text-color-strong);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-panel__shortcut:hover,
+.admin-datetime-range-panel__shortcut.is-active {
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
+}
+
+.admin-datetime-range-panel__main {
+  position: relative;
+  min-height: 220px;
+  padding: 14px 16px 52px;
+  overflow: visible;
+}
+
+.admin-datetime-range-panel__row {
+  display: grid;
+  grid-template-columns: 68px var(--admin-dt-date-field-width) var(--admin-dt-time-field-width);
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.admin-datetime-range-panel__row-label {
+  color: var(--admin-dt-label-color);
+  font-size: var(--admin-dt-font-size);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--admin-dt-control-height);
+}
+
+.admin-datetime-range-panel__seg-field {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--admin-dt-control-height);
+  overflow: hidden;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--admin-dt-border-color-inner);
+  border-radius: var(--admin-dt-radius-inner);
+}
+
+.admin-datetime-range-panel__seg-field:hover,
+.admin-datetime-range-panel__seg-field.is-active,
+.admin-datetime-range-panel__seg-field:focus-within {
+  border-color: var(--admin-dt-primary-color);
+}
+
+.admin-datetime-range-panel__segments {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  padding: 0 var(--space-1-5);
+}
+
+.admin-datetime-range-panel__seg-input {
+  flex: 0 0 auto;
+  min-width: 0;
+  height: var(--admin-dt-inner-height);
+  padding: 0;
+  color: var(--admin-dt-text-color-strong);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: var(--admin-dt-font-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--admin-dt-inner-height);
+  text-align: center;
+}
+
+.admin-datetime-range-panel__seg-input::placeholder {
+  color: var(--admin-dt-placeholder-color);
+  font-size: var(--admin-dt-font-size);
+  line-height: var(--admin-dt-inner-height);
+  opacity: 1;
+}
+
+.admin-datetime-range-panel__seg-input--year {
+  flex-basis: var(--admin-dt-year-width);
+  width: var(--admin-dt-year-width);
+}
+
+.admin-datetime-range-panel__seg-input--date,
+.admin-datetime-range-panel__seg-input--time {
+  flex-basis: var(--admin-dt-part-width);
+  width: var(--admin-dt-part-width);
+}
+
+.admin-datetime-range-panel__seg-separator {
+  flex: 0 0 var(--admin-dt-date-separator-width);
+  width: var(--admin-dt-date-separator-width);
+  height: var(--admin-dt-inner-height);
+  color: var(--admin-dt-muted-color);
+  font-size: var(--admin-dt-font-size);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--admin-dt-inner-height);
+  text-align: center;
+  user-select: none;
+}
+
+.admin-datetime-range-panel__seg-input--time + .admin-datetime-range-panel__seg-separator {
+  flex-basis: var(--admin-dt-time-separator-width);
+  width: var(--admin-dt-time-separator-width);
+}
+
+.admin-datetime-range-panel__seg-separator.is-hidden,
+.admin-datetime-range-panel__seg-input.is-hidden {
+  display: none;
+}
+
+.admin-datetime-range-panel__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--admin-dt-icon-width);
+  width: var(--admin-dt-icon-width);
+  height: var(--admin-dt-inner-height);
+  color: var(--admin-dt-muted-color);
+  background: var(--color-bg-surface);
+  border: none;
+  border-left: var(--border-width-1) solid var(--color-border-soft);
+  cursor: pointer;
+}
+
+.admin-datetime-range-panel__icon-button:hover {
+  color: var(--admin-dt-primary-color);
+  background: var(--color-bg-surface-hover);
+}
+
+.admin-datetime-range-panel__icon-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.admin-datetime-range-panel__error {
+  margin-top: var(--space-2);
+  color: var(--color-danger-500);
+  font-size: var(--font-size-xs);
+}
+
+.admin-datetime-range-panel__picker-popover {
+  position: absolute;
+  z-index: 5;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border-soft);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-popover);
+}
+
+.admin-datetime-range-calendar {
+  width: 260px;
+  padding: var(--space-3);
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-calendar__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.admin-datetime-range-calendar__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}
+
+.admin-datetime-range-calendar__select {
+  height: 26px;
+  padding: 0 22px 0 var(--space-2);
+  color: var(--admin-dt-text-color-strong);
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid transparent;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+  outline: none;
+}
+
+.admin-datetime-range-calendar__select:hover,
+.admin-datetime-range-calendar__select:focus {
+  border-color: var(--admin-dt-primary-color);
+}
+
+.admin-datetime-range-calendar__weekdays,
+.admin-datetime-range-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.admin-datetime-range-calendar__weekdays {
+  margin-bottom: var(--space-1-5);
+  color: var(--admin-dt-muted-color);
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+.admin-datetime-range-calendar__cell {
+  height: 28px;
+  color: var(--admin-dt-text-color-strong);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-size: var(--admin-dt-font-size);
+  cursor: pointer;
+}
+
+.admin-datetime-range-calendar__cell:hover {
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
+}
+
+.admin-datetime-range-calendar__cell.is-muted {
+  color: var(--color-text-disabled);
+}
+
+.admin-datetime-range-calendar__cell.is-active {
+  color: var(--color-text-inverse);
+  background: var(--admin-dt-primary-color);
+}
+
+.admin-datetime-range-calendar__cell.is-today:not(.is-active) {
+  color: var(--admin-dt-primary-color);
+  font-weight: var(--font-weight-medium);
+}
+
+.admin-datetime-range-calendar__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: var(--space-2-5);
+  padding-top: var(--space-2-5);
+  border-top: var(--border-width-1) solid var(--color-border-soft);
+}
+
+.admin-datetime-range-calendar__footer button {
+  color: var(--admin-dt-primary-color);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-time {
+  display: grid;
+  grid-template-columns: repeat(2, 56px);
+  max-height: 188px;
+  padding: 0;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-time.is-second {
+  grid-template-columns: repeat(3, 56px);
+}
+
+.admin-datetime-range-time__column {
+  max-height: 188px;
+  overflow-y: auto;
+  border-right: var(--border-width-1) solid var(--color-border-soft);
+  background: var(--color-bg-surface);
+}
+
+.admin-datetime-range-time__column::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+}
+
+.admin-datetime-range-time__column::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-sm);
+}
+
+.admin-datetime-range-time__column:last-child {
+  border-right: none;
+}
+
+.admin-datetime-range-time__cell {
+  display: block;
+  width: 100%;
+  height: 28px;
+  color: var(--admin-dt-text-color-strong);
+  background: var(--color-bg-surface);
+  border: none;
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-time__cell:hover {
+  color: var(--admin-dt-primary-color);
+  background: var(--admin-dt-primary-bg);
+}
+
+.admin-datetime-range-time__cell.is-active {
+  color: var(--admin-dt-primary-color);
+  font-weight: var(--font-weight-medium);
+  background: var(--admin-dt-primary-bg);
+}
+
+.admin-datetime-range-panel__footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 10px 16px;
+  background: var(--color-bg-surface);
+  border-top: var(--border-width-1) solid var(--color-border-soft);
+}
+
+.admin-datetime-range-panel__clear {
+  height: var(--size-control-sm);
+  padding: 0 var(--space-2);
+  color: var(--admin-dt-label-color);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: var(--admin-dt-font-size);
+}
+
+.admin-datetime-range-panel__clear:hover {
+  background: var(--color-bg-surface-hover);
+}
+
+.admin-datetime-range-panel__footer-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+@media (max-width: 768px) {
+  .admin-datetime-range-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-datetime-range-panel__sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-1);
+    border-right: none;
+    border-bottom: var(--border-width-1) solid var(--color-border-soft);
+  }
+
+  .admin-datetime-range-panel__sidebar-title {
+    grid-column: 1 / -1;
+  }
+
+  .admin-datetime-range-panel__row {
+    grid-template-columns: 68px 1fr;
+  }
+
+  .admin-datetime-range-panel__row > .admin-datetime-range-panel__seg-field:last-child {
+    grid-column: 2 / 3;
+  }
+}

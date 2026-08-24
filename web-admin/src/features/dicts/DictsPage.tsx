@@ -26,8 +26,10 @@ import { bzConfirm } from "@admin/shared/lib/feedback/confirm";
 import { message } from "@admin/shared/lib/feedback/message";
 import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
 import { createAdminActionsColumn } from "@admin/shared/ui/admin/admin-actions-column";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
+import layoutStyles from "@admin/shared/ui/admin/AdminPageLayout.module.css";
 import { AdminSearchField, AdminSearchForm } from "@admin/shared/ui/admin/AdminSearchForm";
 import { AdminTablePagination } from "@admin/shared/ui/admin/AdminTablePagination";
 import { AdminTableTools } from "@admin/shared/ui/admin/AdminTableTools";
@@ -700,7 +702,7 @@ export function DictsPage() {
         headerClassName: styles.typeDescriptionCell,
         render: (row) => (
           <span
-            className={`cell-text ${styles.typeDescriptionText}`}
+            className={styles.typeDescriptionText}
             title={row.description || undefined}
           >
             {row.description || "-"}
@@ -815,8 +817,8 @@ export function DictsPage() {
 
   if (!canView) {
     return (
-      <div className="admin-page">
-        <div className="content">
+      <div className={layoutStyles.page}>
+        <div className={layoutStyles.content}>
           <BzAlert
             title="暂无权限访问字典管理"
             type="warning"
@@ -828,16 +830,16 @@ export function DictsPage() {
   }
 
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
+    <div className={layoutStyles.page}>
+      <div className={layoutStyles.content}>
+        <div className={layoutStyles.pageStack}>
           <BzCard
-            className="admin-panel admin-table-card admin-list-card"
+            className={`${layoutStyles.panel} ${layoutStyles.tableCard} ${layoutStyles.listCard}`}
             shadow="never"
           >
-            <div className="admin-list-region">
+            <div className={layoutStyles.listRegion}>
               {queryPanelVisible ? (
-                <div className="admin-list-query-panel">
+                <div className={layoutStyles.listQueryPanel}>
                   <AdminSearchForm
                     visible={queryPanelVisible}
                     onSubmit={submit}
@@ -868,11 +870,11 @@ export function DictsPage() {
               ) : null}
 
               {batchMode ? (
-                <div className="admin-batch-toolbar">
-                  <div className="admin-batch-toolbar__summary">
+                <div className={layoutStyles.batchToolbar}>
+                  <div className={layoutStyles.batchToolbarSummary}>
                     批量删除中，已选 {selectedTypeIds.length} 项
                   </div>
-                  <div className="admin-batch-toolbar__actions">
+                  <div className={layoutStyles.batchToolbarActions}>
                     <BzButton
                       buttonType="primary"
                       disabled={selectedTypeIds.length === 0}
@@ -891,11 +893,11 @@ export function DictsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="admin-list-toolbar-row">
-                  <div className="admin-list-business-actions">
+                <div className={layoutStyles.listToolbarRow}>
+                  <div className={layoutStyles.listBusinessActions}>
                     {canCreate ? (
                       <BzButton
-                        className="admin-toolbar-primary"
+                        className={layoutStyles.toolbarPrimary}
                         buttonType="primary"
                         onClick={openCreateType}
                       >
@@ -906,7 +908,7 @@ export function DictsPage() {
                       <BzButton onClick={() => setBatchMode(true)}>批量删除</BzButton>
                     ) : null}
                   </div>
-                  <div className="admin-list-query-tools">
+                  <div className={layoutStyles.listQueryTools}>
                     <AdminTableTools
                       queryPanelVisible={queryPanelVisible}
                       onToggleQueryPanel={() => setQueryPanelVisible((value) => !value)}
@@ -916,7 +918,7 @@ export function DictsPage() {
                 </div>
               )}
 
-              <div className="admin-table-surface admin-list-table-area">
+              <div className={`${layoutStyles.tableSurface} ${layoutStyles.listTableArea}`}>
                 {error ? (
                   <BzAlert
                     key={error.message}
@@ -961,7 +963,7 @@ export function DictsPage() {
           open={drawerOpen}
           title={drawerTitle}
           width="1180px"
-          className="admin-entity-manage-drawer"
+          className={entityStyles.manageDrawer}
           loading={drawerLoading}
           onClose={closeDrawer}
           footer={drawerFooter}
@@ -975,20 +977,22 @@ export function DictsPage() {
             />
           ) : null}
           {currentType || drawerMode === "create" ? (
-            <div className="admin-entity-shell">
-              <section className="admin-entity-section">
-                <div className="admin-entity-section__head">
-                  <div className="admin-entity-section__title">字典基础信息</div>
+            <div className={entityStyles.shell}>
+              <section className={entityStyles.section}>
+                <div className={entityStyles.sectionHead}>
+                  <div className={entityStyles.sectionTitle}>字典基础信息</div>
                 </div>
-                <div className="admin-info-table-wrap">
+                <div className={entityStyles.infoTableWrap}>
                   <table
-                    className="admin-info-table"
+                    className={entityStyles.infoTable}
                     aria-label="字典基础信息"
                   >
                     <tbody>
                       <tr>
                         <th>
-                          <span className={drawerMode === "create" ? "is-required" : undefined}>
+                          <span
+                            className={drawerMode === "create" ? entityStyles.required : undefined}
+                          >
                             编码
                           </span>
                         </th>
@@ -1015,12 +1019,14 @@ export function DictsPage() {
                           </AdminInfoCell>
                         )}
                         <th>
-                          <span className={drawerMode !== "detail" ? "is-required" : undefined}>
+                          <span
+                            className={drawerMode !== "detail" ? entityStyles.required : undefined}
+                          >
                             名称
                           </span>
                         </th>
                         {drawerMode === "detail" ? (
-                          <AdminInfoCell className="table-input-display-cell">
+                          <AdminInfoCell className={styles.inputDisplayCell}>
                             {currentType?.name || "-"}
                           </AdminInfoCell>
                         ) : (
@@ -1037,7 +1043,7 @@ export function DictsPage() {
                         )}
                         <th>值类型</th>
                         {drawerMode === "detail" ? (
-                          <AdminInfoCell className="table-input-display-cell">
+                          <AdminInfoCell className={styles.inputDisplayCell}>
                             {currentType?.valueType
                               ? resolveValueTypeLabel(currentType.valueType)
                               : "-"}
@@ -1061,7 +1067,7 @@ export function DictsPage() {
                       <tr>
                         <th>结构</th>
                         {drawerMode === "detail" ? (
-                          <AdminInfoCell className="table-input-display-cell">
+                          <AdminInfoCell className={styles.inputDisplayCell}>
                             {currentType?.structureType
                               ? resolveStructureTypeLabel(currentType.structureType)
                               : "-"}
@@ -1115,7 +1121,7 @@ export function DictsPage() {
                         <th>枚举类</th>
                         {drawerMode === "detail" ? (
                           <AdminInfoCell
-                            className="table-input-display-cell"
+                            className={styles.inputDisplayCell}
                             mono
                             colSpan={5}
                           >
@@ -1165,13 +1171,13 @@ export function DictsPage() {
                 </div>
               </section>
 
-              <section className={`admin-entity-section ${styles.itemsSection}`}>
-                <div className="admin-entity-section__head">
-                  <div className="admin-entity-section__title">字典项</div>
-                  <div className="admin-table-tools">
+              <section className={`${entityStyles.section} ${styles.itemsSection}`}>
+                <div className={entityStyles.sectionHead}>
+                  <div className={entityStyles.sectionTitle}>字典项</div>
+                  <div className={layoutStyles.tableTools}>
                     {drawerMode !== "detail" && canEdit ? (
                       <BzButton
-                        className="admin-toolbar-primary"
+                        className={layoutStyles.toolbarPrimary}
                         buttonType="primary"
                         onClick={openCreateItem}
                       >
@@ -1180,7 +1186,7 @@ export function DictsPage() {
                     ) : null}
                     {drawerMode !== "create" ? (
                       <button
-                        className="admin-vben-circle-button"
+                        className={layoutStyles.circleButton}
                         type="button"
                         title="刷新字典项"
                         onClick={() => void refreshDrawerItems()}
@@ -1200,7 +1206,7 @@ export function DictsPage() {
                     ) : null}
                   </div>
                 </div>
-                <div className={`admin-table-surface ${styles.itemsTable}`}>
+                <div className={`${layoutStyles.tableSurface} ${styles.itemsTable}`}>
                   <BzTable
                     columns={itemColumns}
                     data={currentItems}
@@ -1208,7 +1214,7 @@ export function DictsPage() {
                     emptyText="暂无字典项"
                     size="small"
                     rowClassName={(row) =>
-                      itemDragTargetId === row.id ? "is-drag-target" : undefined
+                      itemDragTargetId === row.id ? styles.dragTarget : undefined
                     }
                     onRowDragOver={(event, row) => dragOverItem(event, row.id)}
                     onRowDrop={(event, row) => void dropItem(event, row.id)}
@@ -1241,7 +1247,7 @@ export function DictsPage() {
           }
         >
           <BzForm onSubmit={(event) => event.preventDefault()}>
-            <div className={`group-form-grid ${styles.itemEditorForm}`}>
+            <div className={`${styles.itemEditorGrid} ${styles.itemEditorForm}`}>
               <BzFormItem label="编码">
                 <BzTextField
                   modelValue={itemForm.code}
@@ -1291,7 +1297,7 @@ export function DictsPage() {
               </BzFormItem>
               <BzFormItem
                 label="备注"
-                className="group-form-grid__wide"
+                className={styles.itemEditorWide}
               >
                 <BzTextField
                   modelValue={itemForm.description}

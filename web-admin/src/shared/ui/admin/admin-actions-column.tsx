@@ -2,6 +2,8 @@ import type { AdminActionItem } from "@admin/shared/ui/admin/admin-action";
 import { AdminActionBar, estimateAdminActionBarWidth } from "@admin/shared/ui/admin/AdminActionBar";
 import type { BzTableColumn } from "@admin/shared/ui/bz/BzTable";
 
+import styles from "./AdminActionBar.module.css";
+
 interface CreateAdminActionsColumnOptions<Row> {
   rows?: Row[];
   getActions: (row: Row) => AdminActionItem[];
@@ -47,8 +49,8 @@ export function createAdminActionsColumn<Row>({
     width: useIntrinsicWidth ? "1%" : resolvedWidth,
     minWidth: minWidth ?? resolvedWidth,
     disableRowSelection: true,
-    className: ["admin-actions-column", stickyClassName].filter(Boolean).join(" "),
-    headerClassName: ["admin-actions-column", stickyHeaderClassName].filter(Boolean).join(" "),
+    className: [styles.actionsColumn, stickyClassName].filter(Boolean).join(" "),
+    headerClassName: [styles.actionsColumn, stickyHeaderClassName].filter(Boolean).join(" "),
     render: (row) => <AdminActionBar actions={getActions(row)} />,
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useDateTimePreferences } from "@admin/features/auth/preferences";
+import { useDateTimePreferences } from "@admin/features/auth/public/session";
 import type {
   ConfigFieldSpec,
   ConfigItem,
@@ -15,6 +15,7 @@ import {
   formatUserPreferenceDate,
   getUserTimeZone,
 } from "@admin/shared/lib/formatter";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
 import {
@@ -644,9 +645,9 @@ export function ConfigManageDrawer({
   }
 
   const footer = (
-    <div className="admin-drawer-footer">
-      <div className="admin-drawer-footer__summary" />
-      <div className="admin-drawer-footer__actions">
+    <div className={entityStyles.drawerFooter}>
+      <div className={entityStyles.drawerFooterSummary} />
+      <div className={entityStyles.drawerFooterActions}>
         <BzButton
           disabled={saving}
           onClick={onClose}
@@ -673,12 +674,12 @@ export function ConfigManageDrawer({
       width="1180px"
       loading={loading}
       closeDisabled={saving}
-      className={`admin-entity-manage-drawer ${styles.root}`}
+      className={`${entityStyles.manageDrawer} ${styles.root}`}
       onClose={onClose}
       footer={footer}
     >
       {item ? (
-        <div className="admin-entity-shell">
+        <div className={`${entityStyles.shell} ${styles.shell}`}>
           {item.loadWarning ? (
             <BzAlert
               title={item.loadWarning}
@@ -696,9 +697,9 @@ export function ConfigManageDrawer({
             />
           ) : null}
           <ConfigBasicInfo item={item} />
-          <section className="admin-entity-section">
-            <div className="admin-entity-section__head">
-              <div className="admin-entity-section__title">当前生效值</div>
+          <section className={entityStyles.section}>
+            <div className={entityStyles.sectionHead}>
+              <div className={entityStyles.sectionTitle}>当前生效值</div>
               {editable && item.editorId === "message-type-config" ? (
                 <BzButton
                   buttonType="primary"
@@ -776,9 +777,9 @@ export function ConfigManageDrawer({
             )}
           </section>
           {editable ? (
-            <section className="admin-entity-section">
-              <div className="admin-entity-section__head">
-                <div className="admin-entity-section__title">变更说明</div>
+            <section className={entityStyles.section}>
+              <div className={entityStyles.sectionHead}>
+                <div className={entityStyles.sectionTitle}>变更说明</div>
               </div>
               <div className="config-value-table-wrap">
                 <table className="config-value-table config-change-table">
@@ -813,20 +814,20 @@ function isAbortError(error: unknown): boolean {
 function ConfigBasicInfo({ item }: { item: ConfigItem }) {
   const status = statusMeta(item);
   return (
-    <section className="admin-entity-section">
-      <div className="admin-entity-section__head">
-        <div className="admin-entity-section__title">基本信息</div>
+    <section className={entityStyles.section}>
+      <div className={entityStyles.sectionHead}>
+        <div className={entityStyles.sectionTitle}>基本信息</div>
       </div>
-      <div className="admin-info-table-wrap">
+      <div className={entityStyles.infoTableWrap}>
         <table
-          className="admin-info-table"
+          className={entityStyles.infoTable}
           aria-label="配置基本信息"
         >
           <tbody>
             <tr>
               <th>配置键</th>
               <td
-                className="admin-info-cell mono"
+                className={`${entityStyles.infoCell} ${styles.mono}`}
                 colSpan={5}
               >
                 {item.key}
@@ -834,27 +835,27 @@ function ConfigBasicInfo({ item }: { item: ConfigItem }) {
             </tr>
             <tr>
               <th>配置名称</th>
-              <td className="admin-info-cell">{item.title}</td>
+              <td className={entityStyles.infoCell}>{item.title}</td>
               <th>状态</th>
-              <td className="admin-info-cell">
+              <td className={entityStyles.infoCell}>
                 <BzTag type={status.type}>{status.label}</BzTag>
               </td>
               <th>编辑器</th>
-              <td className="admin-info-cell mono">{item.editorId}</td>
+              <td className={`${entityStyles.infoCell} ${styles.mono}`}>{item.editorId}</td>
             </tr>
             <tr>
               <th>模块</th>
-              <td className="admin-info-cell">{item.module}</td>
+              <td className={entityStyles.infoCell}>{item.module}</td>
               <th>分组</th>
-              <td className="admin-info-cell">{item.group}</td>
+              <td className={entityStyles.infoCell}>{item.group}</td>
               <th>生效方式</th>
-              <td className="admin-info-cell">
+              <td className={entityStyles.infoCell}>
                 {item.activationPolicy === "DYNAMIC" ? "动态生效" : "重启后生效"}
               </td>
             </tr>
             <tr>
               <th>值来源</th>
-              <td className="admin-info-cell">
+              <td className={entityStyles.infoCell}>
                 {item.source === "DATABASE_OVERRIDE"
                   ? "数据库配置"
                   : item.source === "INVALID_DATABASE_FALLBACK"
@@ -862,14 +863,16 @@ function ConfigBasicInfo({ item }: { item: ConfigItem }) {
                     : "代码默认值"}
               </td>
               <th>配置版本</th>
-              <td className="admin-info-cell mono">{item.persistedRevision}</td>
+              <td className={`${entityStyles.infoCell} ${styles.mono}`}>
+                {item.persistedRevision}
+              </td>
               <th>Schema 版本</th>
-              <td className="admin-info-cell mono">{item.schemaVersion}</td>
+              <td className={`${entityStyles.infoCell} ${styles.mono}`}>{item.schemaVersion}</td>
             </tr>
             <tr>
               <th>说明</th>
               <td
-                className="admin-info-cell"
+                className={entityStyles.infoCell}
                 colSpan={5}
               >
                 {item.description || "-"}
@@ -920,7 +923,7 @@ function DefaultConfigEditor({
                   key={field.path}
                   className={fieldViolations.length ? "is-error" : undefined}
                 >
-                  <td className="mono">{field.path}</td>
+                  <td className={styles.mono}>{field.path}</td>
                   <td>{field.title}</td>
                   <td>
                     <BzTag size="small">{field.type}</BzTag>
@@ -997,7 +1000,7 @@ function DecimalPolicyEditor({
                 violations.some((violation) => violation.path === "scale") ? "is-error" : undefined
               }
             >
-              <td className="mono">scale</td>
+              <td className={styles.mono}>scale</td>
               <td>小数位数</td>
               <td>最终结果保留的小数位数，范围 0 至 20</td>
               <AdminInfoCell state={editable && scaleField ? "editable" : "display"}>
@@ -1021,7 +1024,7 @@ function DecimalPolicyEditor({
                   : undefined
               }
             >
-              <td className="mono">roundingMode</td>
+              <td className={styles.mono}>roundingMode</td>
               <td>舍入模式</td>
               <td>
                 {ROUNDING_MODE_OPTIONS.find((option) => option.value === roundingMode)
@@ -1072,8 +1075,8 @@ function DecimalPolicyEditor({
             {selectedSamples.map((sample) => (
               <tr key={sample.scene}>
                 <td>{sample.scene}</td>
-                <td className="mono">{sample.source}</td>
-                <td className="mono config-preview-result">
+                <td className={styles.mono}>{sample.source}</td>
+                <td className={`${styles.mono} config-preview-result`}>
                   {roundDecimalText(sample.source, scale, roundingMode)}
                 </td>
               </tr>
@@ -1168,7 +1171,7 @@ function TimeOffsetEditor({
                 violations.some((violation) => violation.path === "mode") ? "is-error" : undefined
               }
             >
-              <td className="mono">mode</td>
+              <td className={styles.mono}>mode</td>
               <td>{modeField?.title || "模拟模式"}</td>
               <AdminInfoCell state={editable && modeField ? "editable" : "display"}>
                 {editable && modeField ? (
@@ -1192,7 +1195,7 @@ function TimeOffsetEditor({
                     : undefined
                 }
               >
-                <td className="mono">offsetSeconds</td>
+                <td className={styles.mono}>offsetSeconds</td>
                 <td>{offsetField?.title || "时间偏移秒数"}</td>
                 <AdminInfoCell state={editable && offsetField ? "editable" : "display"}>
                   {editable && offsetField ? (
@@ -1204,7 +1207,7 @@ function TimeOffsetEditor({
                       onValueChange={(value) => onChange(offsetField, value)}
                     />
                   ) : (
-                    <span className="mono">{String(inputs.offsetSeconds ?? "")}</span>
+                    <span className={styles.mono}>{String(inputs.offsetSeconds ?? "")}</span>
                   )}
                 </AdminInfoCell>
                 <AdminInfoCell state={editable && offsetField ? "editable" : "display"}>
@@ -1216,7 +1219,7 @@ function TimeOffsetEditor({
                       onValueChange={changeOffsetDateTime}
                     />
                   ) : (
-                    <span className="mono config-preview-result">
+                    <span className={`${styles.mono} config-preview-result`}>
                       {formatDateTime(now + offsetSeconds * 1000)}
                     </span>
                   )}
@@ -1230,7 +1233,7 @@ function TimeOffsetEditor({
                     : undefined
                 }
               >
-                <td className="mono">fixedEpochMillis</td>
+                <td className={styles.mono}>fixedEpochMillis</td>
                 <td>{fixedField?.title || "固定时间"}</td>
                 <AdminInfoCell state={editable && fixedField ? "editable" : "display"}>
                   {editable && fixedField ? (
@@ -1242,7 +1245,7 @@ function TimeOffsetEditor({
                       onValueChange={(value) => onChange(fixedField, value)}
                     />
                   ) : (
-                    <span className="mono">{String(inputs.fixedEpochMillis ?? "")}</span>
+                    <span className={styles.mono}>{String(inputs.fixedEpochMillis ?? "")}</span>
                   )}
                 </AdminInfoCell>
                 <AdminInfoCell state={editable && fixedField ? "editable" : "display"}>
@@ -1254,7 +1257,7 @@ function TimeOffsetEditor({
                       onValueChange={changeFixedDateTime}
                     />
                   ) : (
-                    <span className="mono config-preview-result">
+                    <span className={`${styles.mono} config-preview-result`}>
                       {formatDateTime(fixedEpochMillis)}
                     </span>
                   )}
@@ -1335,7 +1338,7 @@ function UserPreferenceDefaultsEditor({
                         : undefined
                     }
                   >
-                    <td className="mono">{field.path}</td>
+                    <td className={styles.mono}>{field.path}</td>
                     <td>{field.title}</td>
                     <td>
                       {field.path === "timeZone"
@@ -1408,7 +1411,7 @@ function UserPreferenceDefaultsEditor({
           <tbody>
             <tr>
               <td>日期时间</td>
-              <td className="mono config-preview-result">
+              <td className={`${styles.mono} config-preview-result`}>
                 {formatUserPreferenceDate(now, timeZone, dateTimeFormat, false)}
               </td>
               <td>
@@ -1417,7 +1420,7 @@ function UserPreferenceDefaultsEditor({
             </tr>
             <tr>
               <td>仅日期</td>
-              <td className="mono config-preview-result">
+              <td className={`${styles.mono} config-preview-result`}>
                 {formatUserPreferenceDate(now, timeZone, dateFormat, true)}
               </td>
               <td>
@@ -1452,8 +1455,8 @@ function UserPreferenceDefaultsEditor({
                         ? "小数"
                         : "普通数字"}
                 </td>
-                <td className="mono">{sample}</td>
-                <td className="mono config-preview-result">
+                <td className={styles.mono}>{sample}</td>
+                <td className={`${styles.mono} config-preview-result`}>
                   {formatPreferenceDecimal(sample, decimalFormat)}
                 </td>
               </tr>
@@ -1467,8 +1470,8 @@ function UserPreferenceDefaultsEditor({
 
 function ConfigPreviewTitle({ title, description }: { title: string; description: string }) {
   return (
-    <div className="admin-entity-section__head config-preview-title">
-      <strong className="admin-entity-section__title">{title}</strong>
+    <div className={`${entityStyles.sectionHead} config-preview-title`}>
+      <strong className={entityStyles.sectionTitle}>{title}</strong>
       <span>{description}</span>
     </div>
   );
@@ -1604,7 +1607,7 @@ function AuthWhitelistEditor({
           {rules.map((rule, index) => (
             <tr
               key={`${index}-${rule.type}`}
-              className={dragTarget === index ? "is-drag-target" : undefined}
+              className={dragTarget === index ? styles.dragTarget : undefined}
               onDragOver={(event) => dragOver(event, index)}
               onDrop={(event) => drop(event, index)}
             >
@@ -1778,7 +1781,7 @@ function LoggingFilterEditor({
                       className="config-string-list-table__title"
                       colSpan={2}
                     >
-                      <span className="mono">{field.path}</span>
+                      <span className={styles.mono}>{field.path}</span>
                       <strong>（{field.title}）</strong>
                     </th>
                     <th className="config-string-list-table__action-column">
@@ -1799,7 +1802,7 @@ function LoggingFilterEditor({
                       key={`${field.path}-${index}`}
                       className={
                         dragTarget?.path === field.path && dragTarget.index === index
-                          ? "is-drag-target"
+                          ? styles.dragTarget
                           : undefined
                       }
                       onDragOver={(event) => dragOver(event, field.path, index)}
@@ -1833,7 +1836,7 @@ function LoggingFilterEditor({
                             }
                           />
                         ) : (
-                          <span className="mono">{value}</span>
+                          <span className={styles.mono}>{value}</span>
                         )}
                       </AdminInfoCell>
                       <td className="config-string-list-table__action-cell">
@@ -1921,7 +1924,7 @@ function VapidEditor({
                 key={field.path}
                 className={fieldViolations.length ? "is-error" : undefined}
               >
-                <td className="mono">{field.path}</td>
+                <td className={styles.mono}>{field.path}</td>
                 <td>{field.title}</td>
                 <td>{descriptions[field.path] || field.description || "-"}</td>
                 <AdminInfoCell
@@ -1937,7 +1940,7 @@ function VapidEditor({
                       <TableTextArea
                         value={text}
                         rows={3}
-                        className="config-vapid-key-control"
+                        className={styles.vapidKeyControl}
                         showCount={false}
                         placeholder="请输入 VAPID 公钥"
                         onValueChange={(value) => onChange(field, value)}
@@ -1946,9 +1949,7 @@ function VapidEditor({
                       <TableInput
                         value={text}
                         type={field.sensitive ? "password" : "text"}
-                        className={
-                          field.path === "privateKey" ? "config-vapid-key-control" : undefined
-                        }
+                        className={field.path === "privateKey" ? styles.vapidKeyControl : undefined}
                         placeholder={
                           field.sensitive && item.sensitiveValuePresence[field.path]
                             ? "******（留空保持原值）"

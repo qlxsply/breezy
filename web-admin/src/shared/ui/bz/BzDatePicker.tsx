@@ -3,6 +3,7 @@
 import type { DateTimePrecision } from "@admin/shared/lib/formatter";
 import type { ChangeEvent, MouseEvent } from "react";
 
+import styles from "./BzDatePicker.module.css";
 import { BzIconClose } from "./BzIconClose";
 
 type PickerType = "date" | "datetime";
@@ -75,10 +76,10 @@ export function BzDatePicker({
   }
 
   return (
-    <div className={["bz-date-picker", disabled ? "is-disabled" : ""].filter(Boolean).join(" ")}>
-      <div className="bz-date-picker__input-wrap">
+    <div className={[styles.picker, disabled ? styles.disabled : ""].filter(Boolean).join(" ")}>
+      <div className={styles.inputWrap}>
         <input
-          className="bz-date-picker__input"
+          className={styles.input}
           type={inputType}
           step={type === "datetime" ? (precision === "second" ? 1 : 60) : undefined}
           value={inputValue}
@@ -88,14 +89,14 @@ export function BzDatePicker({
         />
         {clearable && hasValue && !disabled && (
           <button
-            className="bz-date-picker__clear"
+            className={styles.clear}
             type="button"
             onClick={clearValue}
           >
             <BzIconClose size={20} />
           </button>
         )}
-        <span className="bz-date-picker__icon">📅</span>
+        <span className={styles.icon}>📅</span>
       </div>
     </div>
   );

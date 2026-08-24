@@ -1,0 +1,61 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--bz-control-min-height, 32px);
+  border: var(--bz-control-border, 1px solid var(--border-color));
+  border-radius: var(--bz-control-radius, 0);
+  background: var(--bz-control-background, #fff);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.root:focus-within {
+  border-color: var(--bz-control-focus-border, #3b82f6);
+  box-shadow: var(--bz-control-focus-shadow, 0 0 0 2px rgba(59, 130, 246, 0.12));
+}
+
+.disabled {
+  background: #f8fafc;
+}
+
+.inner {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: var(--bz-control-inner-padding, 0 34px 0 10px);
+  height: var(--bz-control-inner-height, 30px);
+  color: var(--text-main, #111827);
+  font-size: var(--bz-control-font-size, 13px);
+}
+
+.inner:disabled {
+  cursor: not-allowed;
+  color: #94a3b8;
+}
+
+.clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.clear:hover {
+  color: #64748b;
+  background: #f1f5f9;
+}

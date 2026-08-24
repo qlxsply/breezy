@@ -1,6 +1,7 @@
 import type { CSSProperties, DragEvent, MouseEvent, ReactNode } from "react";
 
 import { BzLoading } from "./BzLoading";
+import styles from "./BzTable.module.css";
 
 export interface BzTableColumn<Row> {
   key: string;
@@ -30,11 +31,29 @@ interface BzTableProps<Row> {
   loading?: boolean;
   emptyText?: string;
   size?: "small" | "medium";
+  className?: string;
+  scrollClassName?: string;
+  tableClassName?: string;
   rowClassName?: (row: Row, rowIndex: number) => string | undefined;
   rowSelection?: BzTableRowSelection<Row>;
   onRowDragOver?: (event: DragEvent<HTMLTableRowElement>, row: Row, rowIndex: number) => void;
   onRowDrop?: (event: DragEvent<HTMLTableRowElement>, row: Row, rowIndex: number) => void;
   onRowDoubleClick?: (row: Row, rowIndex: number) => void;
+}
+
+const internalClassNames: Record<string, string> = {
+  "is-fixed-left": styles.fixedLeft,
+  "is-fixed-right": styles.fixedRight,
+  "is-sticky-left": styles.stickyLeft,
+  "is-sticky-right": styles.stickyRight,
+};
+
+function resolveClassName(value?: string): string | undefined {
+  if (!value) return undefined;
+  return value
+    .split(/\s+/)
+    .map((name) => internalClassNames[name] ?? name)
+    .join(" ");
 }
 
 function resolveCssSize(value?: number | string): string | undefined {
@@ -49,6 +68,9 @@ export function BzTable<Row>({
   loading = false,
   emptyText = "暂无数据",
   size = "medium",
+  className,
+  scrollClassName,
+  tableClassName,
   rowClassName,
   rowSelection,
   onRowDragOver,
@@ -107,23 +129,28 @@ export function BzTable<Row>({
   return (
     <BzLoading
       loading={loading}
-      className="bz-table__loading-wrap"
+      className={styles.loadingWrap}
     >
-      <div className={`bz-table bz-table--${size}`}>
-        <div className="bz-table__scroll">
-          <table className="bz-table__inner">
+      <div className={[styles.table, styles[size], className].filter(Boolean).join(" ")}>
+        <div className={[styles.scroll, scrollClassName].filter(Boolean).join(" ")}>
+          <table className={[styles.inner, tableClassName].filter(Boolean).join(" ")}>
             <thead>
               <tr>
                 {rowSelection ? (
                   <th
-                    className={`bz-table__selection-cell${rowSelection.columnClassName ? ` ${rowSelection.columnClassName}` : ""}`}
+                    className={[
+                      styles.selectionCell,
+                      resolveClassName(rowSelection.columnClassName),
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     style={{
                       width: resolveCssSize(rowSelection.columnWidth ?? 48),
                       minWidth: resolveCssSize(rowSelection.columnWidth ?? 48),
                     }}
                   >
                     <input
-                      className="bz-table__selection-checkbox"
+                      className={styles.selectionCheckbox}
                       type="checkbox"
                       checked={allCurrentPageSelected}
                       disabled={selectableEntries.length === 0}
@@ -143,7 +170,7 @@ export function BzTable<Row>({
                   <th
                     key={column.key}
                     style={resolveColumnStyle(column)}
-                    className={column.headerClassName}
+                    className={resolveClassName(column.headerClassName)}
                   >
                     {column.headerRender ? column.headerRender() : column.title}
                   </th>
@@ -161,9 +188,9 @@ export function BzTable<Row>({
                       key={String(resolveRowKey(row, rowIndex))}
                       className={[
                         customRowClass,
-                        rowSelection && rowSelectable ? "is-selectable" : "",
-                        rowSelection && !rowSelectable ? "is-selection-disabled" : "",
-                        rowSelection && rowSelected ? "is-selected" : "",
+                        rowSelection && rowSelectable ? styles.selectable : "",
+                        rowSelection && !rowSelectable ? styles.selectionDisabled : "",
+                        rowSelection && rowSelected ? styles.selected : "",
                       ]
                         .filter(Boolean)
                         .join(" ")}
@@ -173,14 +200,19 @@ export function BzTable<Row>({
                     >
                       {rowSelection ? (
                         <td
-                          className={`bz-table__selection-cell${rowSelection.columnClassName ? ` ${rowSelection.columnClassName}` : ""}`}
+                          className={[
+                            styles.selectionCell,
+                            resolveClassName(rowSelection.columnClassName),
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
                           style={{
                             width: resolveCssSize(rowSelection.columnWidth ?? 48),
                             minWidth: resolveCssSize(rowSelection.columnWidth ?? 48),
                           }}
                         >
                           <input
-                            className="bz-table__selection-checkbox"
+                            className={styles.selectionCheckbox}
                             type="checkbox"
                             checked={rowSelected}
                             disabled={!rowSelectable}
@@ -194,7 +226,7 @@ export function BzTable<Row>({
                         <td
                           key={column.key}
                           style={resolveColumnStyle(column)}
-                          className={column.className}
+                          className={resolveClassName(column.className)}
                           onClickCapture={(event) => toggleFromCell(event, row, rowIndex, column)}
                         >
                           {column.render ? column.render(row, rowIndex) : null}
@@ -208,7 +240,7 @@ export function BzTable<Row>({
               <tbody>
                 <tr>
                   <td
-                    className="bz-table__empty"
+                    className={styles.empty}
                     colSpan={Math.max(columns.length + (rowSelection ? 1 : 0), 1)}
                   >
                     {emptyText}

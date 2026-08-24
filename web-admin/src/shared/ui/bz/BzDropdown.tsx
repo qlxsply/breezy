@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import styles from "./BzDropdown.module.css";
 import { BzDropdownContext, type BzDropdownContextValue } from "./BzDropdownContext";
 
 interface BzDropdownProps {
@@ -10,6 +11,9 @@ interface BzDropdownProps {
   minWidth?: number;
   offset?: number;
   dropdownContent?: React.ReactNode;
+  className?: string;
+  triggerClassName?: string;
+  panelClassName?: string;
 }
 
 export function BzDropdown({
@@ -17,6 +21,9 @@ export function BzDropdown({
   minWidth = 120,
   offset = 6,
   dropdownContent,
+  className,
+  triggerClassName,
+  panelClassName,
 }: BzDropdownProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -116,11 +123,11 @@ export function BzDropdown({
     <BzDropdownContext.Provider value={contextValue}>
       <div
         ref={rootRef}
-        className="bz-dropdown"
+        className={[styles.dropdown, className].filter(Boolean).join(" ")}
       >
         <div
           ref={triggerRef}
-          className="bz-dropdown__trigger"
+          className={[styles.trigger, triggerClassName].filter(Boolean).join(" ")}
           onClick={toggle}
         >
           {children}
@@ -129,7 +136,7 @@ export function BzDropdown({
           createPortal(
             <div
               ref={panelRef}
-              className="bz-dropdown__panel"
+              className={[styles.panel, panelClassName].filter(Boolean).join(" ")}
               style={panelStyle}
             >
               {dropdownContent}

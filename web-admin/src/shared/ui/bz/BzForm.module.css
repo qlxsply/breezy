@@ -1,0 +1,9 @@
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.inline {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: start;
+}

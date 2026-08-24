@@ -1,8 +1,6 @@
 import { get, post, put, type RequestOptions } from "@admin/shared/transport";
 import type { PageResult } from "@admin/shared/types/pagination";
-import type { UserConfigItem } from "@admin/shared/types/user-config";
 
-import type { PasswordPolicyConfig } from "../model/password-policy";
 import type {
   ConfigActivationPolicy,
   ConfigChangeResult,
@@ -27,7 +25,6 @@ import type {
   ConfigUpdateRequestPayload,
   ConfigValidationPayload,
   ConfigValidationRequestPayload,
-  UserConfigUpdateRequestPayload,
 } from "./payload";
 
 const BASE = "/sys/configs";
@@ -135,30 +132,6 @@ export async function batchResetConfigDefaults(
   };
   const results = await post<ConfigChangePayload[]>(`${BASE}/batch-reset-default`, payload);
   return arrayOrEmpty(results).map(toConfigChange);
-}
-
-export function getMyConfigs(): Promise<UserConfigItem[]> {
-  return get<UserConfigItem[]>(`${BASE}/my`);
-}
-
-export function updateMyConfig(code: string, value: string): Promise<boolean> {
-  const payload: UserConfigUpdateRequestPayload = { value };
-  return put<boolean>(`${BASE}/my/${encodeURIComponent(code)}`, payload);
-}
-
-export async function getPasswordPolicyConfig(): Promise<PasswordPolicyConfig> {
-  const result = await getEffectiveConfig("system.security.password-policy");
-  const value = result.effectiveValue as Record<string, JsonValue>;
-  return {
-    passwordMinLength: Number(value.minLength),
-    passwordRequireDigit: Boolean(value.requireDigit),
-    passwordRequireLetter: Boolean(value.requireLetter),
-    passwordRequireUpper: Boolean(value.requireUpper),
-    passwordRequireLower: Boolean(value.requireLower),
-    passwordRequireSpecial: Boolean(value.requireSpecial),
-    passwordForceChangeOnFirstLogin: Boolean(value.forceChangeOnFirstLogin),
-    passwordForceChangeOnReset: Boolean(value.forceChangeOnReset),
-  };
 }
 
 function toConfigItem(payload: ConfigItemPayload): ConfigItem {

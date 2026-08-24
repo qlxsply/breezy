@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { BzPagination } from "../bz/BzPagination";
+import styles from "./AdminTablePagination.module.css";
 
 interface AdminTablePaginationProps {
   total: number;
@@ -32,9 +33,9 @@ export function AdminTablePagination({
   if (hideWhenEmpty && total <= 0) return null;
 
   return (
-    <div className="admin-table-pagination admin-list-table-footer">
-      <div className="admin-table-pagination__summary">{summary ?? `共 ${total} 条记录`}</div>
-      <div className="admin-table-pagination__controls">
+    <div className={styles.pagination}>
+      <div className={styles.summary}>{summary ?? `共 ${total} 条记录`}</div>
+      <div className={styles.controls}>
         <BzPagination
           total={total}
           pageSize={pageSize}

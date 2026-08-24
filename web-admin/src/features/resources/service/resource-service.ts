@@ -84,7 +84,6 @@ function normalizeResources(raw: unknown): ResourceEntry[] {
         scope: normalizeScope(record.scope, type, record.url ?? record.path, nodeType),
         openMode: normalizeOpenMode(record.openMode, type, nodeType),
         url: stringOr(record.url ?? record.path, ""),
-        loadTarget: stringOr(record.loadTarget ?? record.component, ""),
         orderNo: toNumber(record.orderNo ?? record.weight, index + 1),
         level: normalizeLevel(record.level, record.system),
         enabled: typeof record.enabled === "boolean" ? record.enabled : true,

@@ -1,0 +1,106 @@
+.toolButton.danger {
+  color: var(--color-danger-600);
+}
+
+.toolButton.active {
+  color: var(--color-text-inverse);
+  background: var(--color-success-500);
+  box-shadow: var(--shadow-success-strong);
+}
+
+.toolButton.active:hover {
+  color: var(--color-text-inverse);
+  background: var(--color-success-600);
+}
+
+.toolButton:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.pageBody,
+.drawerShell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionCard {
+  border-radius: 0;
+}
+
+.formControl {
+  width: 100%;
+}
+
+.selectionSection {
+  display: grid;
+  gap: var(--space-3);
+  padding: 14px;
+  background: var(--color-bg-surface);
+  border: var(--border-width-1) solid var(--color-border);
+  border-radius: 0;
+}
+
+.selectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.selectionTitle {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.selectionMeta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  white-space: nowrap;
+}
+
+.selectionTableWrap {
+  overflow: auto;
+  border: var(--border-width-1) solid var(--color-border-table);
+  border-radius: 0;
+}
+
+.selectionTableWrap table th,
+.selectionTableWrap table td {
+  vertical-align: middle;
+}
+
+.configBlock table {
+  table-layout: fixed;
+}
+
+.configBlock table th,
+.configBlock table td {
+  vertical-align: middle;
+}
+
+.configBlock label {
+  justify-content: center;
+}
+
+.eventDetails {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+@media (max-width: 960px) {
+  .pageBody,
+  .drawerShell {
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .selectionHeader {
+    flex-direction: column;
+  }
+}

@@ -1,6 +1,7 @@
 import { BzDropdown, BzDropdownItem, BzDropdownMenu } from "@admin/shared/ui/bz";
 
 import type { AdminActionItem } from "./admin-action";
+import styles from "./AdminActionBar.module.css";
 
 const MAX_DIRECT_ACTIONS = 3;
 const MORE_TRIGGER_LABEL = "更多";
@@ -47,11 +48,11 @@ export function AdminActionBar({ actions = [] }: { actions?: AdminActionItem[] }
   const { visibleActions, moreActions } = partitionAdminActions(actions);
 
   return (
-    <div className="admin-action-bar">
+    <div className={styles.bar}>
       {visibleActions.map((action) => (
         <button
           key={action.key}
-          className={`admin-action-link is-${action.level || "default"}`}
+          className={`${styles.link} ${styles[action.level || "default"]}`}
           type="button"
           disabled={action.disabled}
           onClick={action.onClick}
@@ -68,19 +69,18 @@ export function AdminActionBar({ actions = [] }: { actions?: AdminActionItem[] }
               {moreActions.map((action) => (
                 <BzDropdownItem
                   key={action.key}
+                  className={`${styles.dropdownItem} ${styles[action.level || "default"]}`}
                   disabled={action.disabled}
                   onClick={action.onClick}
                 >
-                  <span className={`admin-action-dropdown-item is-${action.level || "default"}`}>
-                    {action.label}
-                  </span>
+                  {action.label}
                 </BzDropdownItem>
               ))}
             </BzDropdownMenu>
           }
         >
           <button
-            className="admin-action-link is-more"
+            className={`${styles.link} ${styles.more}`}
             type="button"
           >
             更多

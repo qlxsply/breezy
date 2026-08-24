@@ -19,10 +19,6 @@ export function getAuthSessionSnapshot(): AuthSession {
   return authStore.getState();
 }
 
-export function subscribeAuthSession(listener: () => void): () => void {
-  return authStore.subscribe(listener);
-}
-
 export function setAuthLoading(): void {
   authStore.setState((state) => ({ ...state, status: "loading", error: null }));
 }

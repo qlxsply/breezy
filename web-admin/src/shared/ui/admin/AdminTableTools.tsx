@@ -1,3 +1,5 @@
+import styles from "./AdminTableTools.module.css";
+
 export function AdminTableTools({
   queryPanelVisible,
   onToggleQueryPanel,
@@ -10,7 +12,9 @@ export function AdminTableTools({
   return (
     <>
       <button
-        className={`admin-vben-circle-button${queryPanelVisible ? " is-active" : ""}`}
+        className={[styles.button, queryPanelVisible ? styles.active : ""]
+          .filter(Boolean)
+          .join(" ")}
         type="button"
         title={queryPanelVisible ? "关闭搜索框" : "打开搜索框"}
         onClick={onToggleQueryPanel}
@@ -32,7 +36,7 @@ export function AdminTableTools({
         </svg>
       </button>
       <button
-        className="admin-vben-circle-button"
+        className={styles.button}
         type="button"
         title="刷新列表"
         onClick={onRefresh}

@@ -1,0 +1,90 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.size,
+.jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted, #64748b);
+  font-size: 12px;
+}
+
+.sizeSelect,
+.jumpInput {
+  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--text-main, #111827);
+  background: #fff;
+}
+
+.jumpInput {
+  width: 68px;
+}
+
+.pages {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pageButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  background: #fff;
+  color: var(--text-main, #111827);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.pageButton:hover:not(:disabled):not(.active) {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.active,
+.active:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  cursor: default;
+}
+
+.pageButton:focus-visible {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+}
+
+.pageButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ellipsis {
+  color: #94a3b8;
+  font-size: 12px;
+}

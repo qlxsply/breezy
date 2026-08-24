@@ -1,3 +1,5 @@
+import styles from "./BzChevronIcon.module.css";
+
 interface BzChevronIconProps {
   direction?: "right" | "down";
   size?: number;
@@ -7,9 +9,7 @@ interface BzChevronIconProps {
 export function BzChevronIcon({ direction = "right", size = 14, className }: BzChevronIconProps) {
   return (
     <svg
-      className={["bz-chevron-icon", direction === "down" ? "is-down" : "is-right", className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[styles.icon, styles[direction], className].filter(Boolean).join(" ")}
       viewBox="0 0 16 16"
       width={size}
       height={size}

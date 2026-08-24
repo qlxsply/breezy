@@ -26,7 +26,12 @@ export default function nextConfig(phase: string): NextConfig {
             ];
           },
         }
-      : { distDir: "dist" }),
+      : {
+          distDir: "dist",
+          experimental: {
+            cssChunking: "strict",
+          },
+        }),
     images: {
       unoptimized: true,
     },

@@ -49,6 +49,6 @@ public class AdminMenuResourceController {
 
     private AdminMenuResourceRes toRes(AdminMenuResourceView view) {
         return new AdminMenuResourceRes(view.id(), view.parentId(), view.name(), view.icon(), view.code(), view.type(),
-                view.url(), view.loadTarget(), view.orderNo(), view.children().stream().map(this::toRes).toList());
+                view.url(), view.orderNo(), view.children().stream().map(this::toRes).toList());
     }
 }

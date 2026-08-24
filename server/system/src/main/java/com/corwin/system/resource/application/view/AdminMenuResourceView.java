@@ -15,7 +15,6 @@ public record AdminMenuResourceView(
         String code,
         String type,
         String url,
-        String loadTarget,
         int orderNo,
         List<AdminMenuResourceView> children
 ) {

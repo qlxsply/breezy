@@ -1,9 +1,9 @@
-.tableScope :global(.bz-table__inner) {
-  table-layout: fixed;
+.tableScope {
+  --bz-table-layout: fixed;
 }
 
-.tableScope :global(.bz-table__inner) th.headerCell,
-.tableScope :global(.bz-table__inner) td.cell {
+.tableScope table th.headerCell,
+.tableScope table td.cell {
   min-width: 4em;
   white-space: nowrap;
 }
@@ -56,7 +56,7 @@
   min-width: 0;
 }
 
-.tableScope .actionsCell :global(.admin-action-bar) {
+.tableScope .actionsCell > div {
   min-width: 0;
   overflow: visible;
 }

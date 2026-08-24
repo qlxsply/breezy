@@ -2,6 +2,8 @@
 
 import { Fragment, type ReactNode, useEffect, useMemo, useState } from "react";
 
+import styles from "./AdminDetailTable.module.css";
+
 type ValueAlign = "left" | "center" | "right";
 type FieldSpan = number | "full";
 
@@ -37,7 +39,7 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
 
   return (
     <div
-      className={["admin-detail-table-stack", variant === "plain" ? "is-plain" : ""]
+      className={[styles["admin-detail-table-stack"], variant === "plain" ? styles["is-plain"] : ""]
         .filter(Boolean)
         .join(" ")}
     >
@@ -45,21 +47,21 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
         <section
           key={String(section.title)}
           className={[
-            "admin-detail-table-section",
-            variant === "plain" ? "admin-detail-table-section--plain" : "",
+            styles["admin-detail-table-section"],
+            variant === "plain" ? styles["admin-detail-table-section--plain"] : "",
           ]
             .filter(Boolean)
             .join(" ")}
         >
           {variant === "sectioned" ? (
-            <div className="admin-detail-table-section__title">{section.title}</div>
+            <div className={styles["admin-detail-table-section__title"]}>{section.title}</div>
           ) : null}
-          <table className="admin-detail-table">
+          <table className={styles["admin-detail-table"]}>
             <colgroup>
               {Array.from({ length: pairCount }).flatMap((_, index) => [
                 <col
                   key={`label-${index}`}
-                  className="admin-detail-table__col--label"
+                  className={styles["admin-detail-table__col--label"]}
                 />,
                 <col key={`value-${index}`} />,
               ])}
@@ -70,7 +72,7 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
                   {row.map((field, fieldIndex) => (
                     <Fragment key={`${String(section.title)}-${rowIndex}-${fieldIndex}`}>
                       <th
-                        className="admin-detail-table__cell-label"
+                        className={styles["admin-detail-table__cell-label"]}
                         scope="row"
                       >
                         {field.label}
@@ -78,11 +80,11 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
                       <td
                         colSpan={field.spanPairs * 2 - 1}
                         className={[
-                          "admin-detail-table__cell-value",
+                          styles["admin-detail-table__cell-value"],
                           field.align === "center"
-                            ? "is-center"
+                            ? styles["is-center"]
                             : field.align === "right"
-                              ? "is-right"
+                              ? styles["is-right"]
                               : "",
                         ]
                           .filter(Boolean)
@@ -90,8 +92,8 @@ export function AdminDetailTable({ sections, variant = "sectioned" }: AdminDetai
                       >
                         <div
                           className={[
-                            "admin-detail-table__value-wrap",
-                            field.multiline ? "is-multiline" : "",
+                            styles["admin-detail-table__value-wrap"],
+                            field.multiline ? styles["is-multiline"] : "",
                           ]
                             .filter(Boolean)
                             .join(" ")}

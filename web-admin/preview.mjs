@@ -21,7 +21,14 @@ const contentTypes = new Map([
   [".woff2", "font/woff2"],
 ]);
 
-if (!/^https?:$/.test(apiUpstream.protocol) || apiUpstream.pathname !== "/") {
+if (
+  !/^https?:$/.test(apiUpstream.protocol) ||
+  apiUpstream.pathname !== "/" ||
+  apiUpstream.username ||
+  apiUpstream.password ||
+  apiUpstream.search ||
+  apiUpstream.hash
+) {
   throw new Error("ADMIN_API_UPSTREAM 必须是只包含 Origin 的 HTTP/HTTPS 地址");
 }
 

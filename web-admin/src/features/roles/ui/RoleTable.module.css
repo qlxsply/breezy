@@ -1,15 +1,12 @@
-.tableScope :global(.bz-table__scroll) {
-  overflow-x: auto;
-  overflow-y: hidden;
+.tableScope {
+  --bz-table-overflow-x: auto;
+  --bz-table-overflow-y: hidden;
+  --bz-table-min-width: 1280px;
+  --bz-table-layout: fixed;
 }
 
-.tableScope :global(.bz-table__inner) {
-  min-width: 1280px;
-  table-layout: fixed;
-}
-
-.tableScope :global(.bz-table__inner) th,
-.tableScope :global(.bz-table__inner) td {
+.tableScope table th,
+.tableScope table td {
   height: 44px;
   padding: 10px 12px;
   border-right: var(--border-width-1) solid var(--color-border-muted);
@@ -18,23 +15,23 @@
   vertical-align: middle;
 }
 
-.tableScope :global(.bz-table__inner) th {
+.tableScope table th {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   background: var(--color-bg-surface-soft);
 }
 
-.tableScope :global(.bz-table__inner) td {
+.tableScope table td {
   background: var(--color-bg-surface);
 }
 
-.tableScope :global(.bz-table__inner) tbody tr:hover td {
+.tableScope table tbody tr:hover td {
   background: var(--color-bg-surface-selected);
 }
 
-.tableScope :global(.bz-table__inner) th:last-child,
-.tableScope :global(.bz-table__inner) td:last-child {
+.tableScope table th:last-child,
+.tableScope table td:last-child {
   border-right: none;
 }
 
@@ -44,29 +41,29 @@
   z-index: 5;
 }
 
-.codeColumn:global(.is-sticky-left) {
+.codeColumn {
   left: 0;
   box-shadow: 8px 0 12px rgba(15, 23, 42, 0.06);
 }
 
-.actionsColumn:global(.is-sticky-right) {
+.actionsColumn {
   right: 0;
   box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
 }
 
-.tableScope :global(.bz-table__inner) th.codeColumn,
-.tableScope :global(.bz-table__inner) th.actionsColumn {
+.tableScope table th.codeColumn,
+.tableScope table th.actionsColumn {
   z-index: 8;
   background: var(--color-bg-surface-soft);
 }
 
-.tableScope :global(.bz-table__inner) td.codeColumn,
-.tableScope :global(.bz-table__inner) td.actionsColumn {
+.tableScope table td.codeColumn,
+.tableScope table td.actionsColumn {
   background: var(--color-bg-surface);
 }
 
-.tableScope :global(.bz-table__inner) tbody tr:hover td.codeColumn,
-.tableScope :global(.bz-table__inner) tbody tr:hover td.actionsColumn {
+.tableScope table tbody tr:hover td.codeColumn,
+.tableScope table tbody tr:hover td.actionsColumn {
   background: var(--color-bg-surface-selected);
 }
 

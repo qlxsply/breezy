@@ -99,7 +99,3 @@ export interface ConfigEffectivePayload {
   description?: string | null;
   effectiveValue?: JsonPayload;
 }
-
-export interface UserConfigUpdateRequestPayload {
-  value: string;
-}

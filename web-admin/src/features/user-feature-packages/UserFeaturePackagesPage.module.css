@@ -1,0 +1,19 @@
+.codeColumn {
+  left: 0;
+  z-index: 5;
+}
+
+.descriptionColumn {
+  min-width: 260px;
+}
+
+.descriptionWrap {
+  min-width: 0;
+}
+
+.descriptionEllipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

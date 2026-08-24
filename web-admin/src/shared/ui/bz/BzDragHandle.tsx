@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
+import styles from "./BzDragHandle.module.css";
+
 export type BzDragHandleProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   "children" | "type" | "draggable"
@@ -9,7 +11,7 @@ export function BzDragHandle({ className, title = "拖动调整顺序", ...props
   return (
     <button
       {...props}
-      className={["bz-drag-handle", className].filter(Boolean).join(" ")}
+      className={[styles.handle, "bz-drag-handle", className].filter(Boolean).join(" ")}
       type="button"
       draggable
       title={title}

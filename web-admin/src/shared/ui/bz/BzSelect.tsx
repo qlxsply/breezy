@@ -1,6 +1,7 @@
 import type { ReactNode, SelectHTMLAttributes } from "react";
 
 import { BzIconClose } from "./BzIconClose";
+import styles from "./BzSelect.module.css";
 
 interface BzSelectProps extends Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
@@ -30,11 +31,13 @@ export function BzSelect({
 
   return (
     <div
-      className={["bz-select", disabled ? "is-disabled" : "", className].filter(Boolean).join(" ")}
+      className={[styles.root, disabled ? styles.disabled : "", className]
+        .filter(Boolean)
+        .join(" ")}
     >
       <select
         {...rest}
-        className="bz-select__inner"
+        className={styles.inner}
         value={selectValue}
         disabled={disabled}
         onChange={(event) => {
@@ -48,7 +51,7 @@ export function BzSelect({
       </select>
       {clearable && hasValue && !disabled ? (
         <button
-          className="bz-select__clear"
+          className={styles.clear}
           type="button"
           onClick={() => {
             onValueChange?.(undefined);
@@ -58,7 +61,7 @@ export function BzSelect({
           <BzIconClose size={20} />
         </button>
       ) : null}
-      <span className="bz-select__arrow">▾</span>
+      <span className={styles.arrow}>▾</span>
     </div>
   );
 }

@@ -22,7 +22,7 @@ export function AdminReadonlyListSection({
     <AdminSection
       title={title}
       right={meta}
-      className={["admin-readonly-list-section", className].filter(Boolean).join(" ")}
+      className={className}
       headClassName={headClassName}
       bodyClassName={bodyClassName}
       rightClassName={rightClassName}

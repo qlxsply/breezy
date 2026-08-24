@@ -1,0 +1,46 @@
+.drawer {
+  --admin-entity-drawer-body-background: var(--color-bg-surface-soft);
+}
+.descriptionCell {
+  padding: var(--space-2) var(--space-3);
+  line-height: var(--line-height-normal);
+}
+.accessToolbar {
+  min-height: 36px;
+}
+.viewport {
+  max-height: 520px;
+  overflow: auto;
+}
+.head,
+.row {
+  grid-template-columns: 44px minmax(180px, 1fr) 150px 90px minmax(420px, 2.4fr);
+  min-width: 980px;
+}
+.body > .row:last-child {
+  border-bottom: 0;
+}
+.name {
+  font-weight: var(--font-weight-semibold);
+}
+.features {
+  align-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--space-1-5) var(--space-3);
+}
+.features label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  --bz-checkbox-gap: var(--space-1);
+}
+.features label > span:last-child {
+  display: inline-flex;
+  align-items: center;
+}
+.unselected {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

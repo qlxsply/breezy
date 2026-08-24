@@ -1,9 +1,6 @@
 .page {
+  --bz-card-body-padding: 0;
   box-shadow: none;
-}
-
-.page :global(.bz-card__body) {
-  padding: 0;
 }
 
 .region {
@@ -44,8 +41,7 @@
   flex: 0 0 auto;
 }
 
-.tableArea,
-.page :global(.admin-table-surface) {
+.tableArea {
   overflow: hidden;
   border: none;
   border-radius: 0;
@@ -56,11 +52,6 @@
   padding: 5px 20px;
   background: var(--color-bg-surface);
   border-top: 1px solid var(--color-border);
-}
-
-.page :global(.admin-vben-circle-button) {
-  border: 1px solid var(--color-border-strong);
-  box-shadow: none;
 }
 
 @media (max-width: 768px) {

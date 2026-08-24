@@ -6,6 +6,8 @@ import type { CSSProperties } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import styles from "./TableDateTimeInput.module.css";
+
 export interface TableDateTimeInputProps {
   value: string;
   disabled?: boolean;
@@ -256,7 +258,7 @@ export function TableDateTimeInput({
       ? createPortal(
           <div
             ref={panelRef}
-            className="table-date-time-picker"
+            className={styles.picker}
             data-mode={mode}
             style={panelStyle}
           >
@@ -293,7 +295,7 @@ export function TableDateTimeInput({
                 onChange={updateTime}
               />
             )}
-            <footer className="table-date-time-picker__footer">
+            <footer className={styles.footer}>
               <BzButton
                 size="small"
                 onClick={selectNow}
@@ -324,14 +326,16 @@ export function TableDateTimeInput({
   return (
     <div
       ref={rootRef}
-      className="table-date-time-input"
+      className={styles.input}
     >
       <div
         ref={triggerRef}
-        className={`table-date-time-input__field${disabled ? " is-disabled" : ""}${invalid ? " is-invalid" : ""}`}
+        className={[styles.field, disabled ? styles.disabled : "", invalid ? styles.invalid : ""]
+          .filter(Boolean)
+          .join(" ")}
       >
         <input
-          className="table-date-time-input__inner"
+          className={styles.inner}
           value={inputText}
           disabled={disabled}
           placeholder={placeholder || pattern}
@@ -352,9 +356,11 @@ export function TableDateTimeInput({
           }}
         />
       </div>
-      <div className={`table-date-time-input__trigger-cell${disabled ? " is-disabled" : ""}`}>
+      <div
+        className={[styles.triggerCell, disabled ? styles.disabled : ""].filter(Boolean).join(" ")}
+      >
         <button
-          className="table-date-time-input__trigger"
+          className={styles.trigger}
           type="button"
           disabled={disabled}
           aria-label="打开日期时间选择器"
@@ -422,11 +428,11 @@ function DatePanel({
           onPrevious={() => onYearBaseChange(yearBase - 10)}
           onNext={() => onYearBaseChange(yearBase + 10)}
         />
-        <div className="table-date-time-picker__grid">
+        <div className={styles.grid}>
           {years.map((year) => (
             <button
               type="button"
-              className={year === viewYear ? "is-selected" : undefined}
+              className={year === viewYear ? styles.selected : undefined}
               disabled={!yearSelectable(year, min, max)}
               key={year}
               onClick={() => onYearSelect(year)}
@@ -446,11 +452,11 @@ function DatePanel({
           onPrevious={() => onYearSelect(viewYear - 1)}
           onNext={() => onYearSelect(viewYear + 1)}
         />
-        <div className="table-date-time-picker__grid">
+        <div className={styles.grid}>
           {MONTHS_ZH.map((month, index) => (
             <button
               type="button"
-              className={index + 1 === viewMonth ? "is-selected" : undefined}
+              className={index + 1 === viewMonth ? styles.selected : undefined}
               disabled={!monthSelectable(viewYear, index + 1, min, max)}
               key={month}
               onClick={() => onMonthSelect(index + 1)}
@@ -468,7 +474,7 @@ function DatePanel({
   const today = currentZonedParts(timeZone);
   return (
     <>
-      <header className="table-date-time-picker__header">
+      <header className={styles.header}>
         <button
           type="button"
           title="上一年"
@@ -512,19 +518,19 @@ function DatePanel({
           »
         </button>
       </header>
-      <div className="table-date-time-picker__weekdays">
+      <div className={styles.weekdays}>
         {weekdays.map((weekday) => (
           <span key={weekday}>{weekday}</span>
         ))}
       </div>
-      <div className="table-date-time-picker__days">
+      <div className={styles.days}>
         {days.map((day) => (
           <button
             type="button"
             className={[
-              !day.currentMonth ? "is-outside" : "",
-              sameDate(day, draft) ? "is-selected" : "",
-              sameDate(day, today) ? "is-today" : "",
+              !day.currentMonth ? styles.outside : "",
+              sameDate(day, draft) ? styles.selected : "",
+              sameDate(day, today) ? styles.today : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -550,7 +556,7 @@ function PickerCompactHeader({
   onNext: () => void;
 }) {
   return (
-    <header className="table-date-time-picker__compact-header">
+    <header className={styles.compactHeader}>
       <button
         type="button"
         onClick={onPrevious}
@@ -581,8 +587,8 @@ function TimePanel({
 }) {
   return (
     <>
-      <div className="table-date-time-picker__time-title">选择时间</div>
-      <div className="table-date-time-picker__time">
+      <div className={styles.timeTitle}>选择时间</div>
+      <div className={styles.time}>
         {is12 ? (
           <TimeColumn
             unit="period"
@@ -642,7 +648,7 @@ function TimeColumn({
   return (
     <div
       ref={columnRef}
-      className="table-date-time-picker__time-column"
+      className={styles.timeColumn}
       onScroll={() => {
         if (timerRef.current !== null) window.clearTimeout(timerRef.current);
         timerRef.current = window.setTimeout(() => {
@@ -660,7 +666,7 @@ function TimeColumn({
       <ul>
         {values.map((item, index) => (
           <li
-            className={item === selected ? "is-selected" : undefined}
+            className={item === selected ? styles.selected : undefined}
             key={item}
             onClick={() => {
               columnRef.current?.scrollTo({ top: index * TIME_ROW_HEIGHT, behavior: "smooth" });

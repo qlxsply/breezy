@@ -1,3 +1,5 @@
+import styles from "./BzForm.module.css";
+
 interface BzFormProps {
   inline?: boolean;
   className?: string;
@@ -8,7 +10,7 @@ interface BzFormProps {
 export function BzForm({ inline = false, className, children, onSubmit }: BzFormProps) {
   return (
     <form
-      className={["bz-form", inline ? "is-inline" : "", className].filter(Boolean).join(" ")}
+      className={[styles.form, inline ? styles.inline : "", className].filter(Boolean).join(" ")}
       onSubmit={onSubmit}
     >
       {children}

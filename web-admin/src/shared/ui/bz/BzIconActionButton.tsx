@@ -1,5 +1,7 @@
 import type { CSSProperties, MouseEvent } from "react";
 
+import styles from "./BzIconActionButton.module.css";
+
 type IconName =
   | "plus"
   | "minus"
@@ -463,7 +465,7 @@ export function BzIconActionButton({
 
   return (
     <button
-      className={["bz-icon-action-button", `bz-icon-action-button--${tone}`].join(" ")}
+      className={[styles.button, styles[tone]].filter(Boolean).join(" ")}
       style={style}
       type={nativeType}
       disabled={disabled}

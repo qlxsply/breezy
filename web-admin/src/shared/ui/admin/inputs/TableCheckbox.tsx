@@ -3,6 +3,8 @@
 import { BzCheckbox } from "@admin/shared/ui/bz";
 import type { ReactNode } from "react";
 
+import styles from "./TableCheckbox.module.css";
+
 export interface TableCheckboxProps {
   value?: boolean;
   disabled?: boolean;
@@ -20,7 +22,7 @@ export function TableCheckbox({
 }: TableCheckboxProps) {
   return (
     <span
-      className={["table-checkbox-control", disabled ? "is-disabled" : "", className]
+      className={[styles.control, disabled ? styles.disabled : "", className]
         .filter(Boolean)
         .join(" ")}
     >

@@ -13,21 +13,10 @@ body {
   color: var(--text-color);
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
-  overflow: hidden;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-#app {
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-.app-shell {
-  height: 100% !important;
-  min-height: 0 !important;
 }
 
 *,

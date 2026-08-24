@@ -1,6 +1,7 @@
 "use client";
 
 import { BzIconClose } from "./BzIconClose";
+import styles from "./BzTextField.module.css";
 
 interface BzTextFieldProps {
   modelValue?: string;
@@ -17,6 +18,7 @@ interface BzTextFieldProps {
   onKeyUp?: (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  className?: string;
 }
 
 export function BzTextField({
@@ -34,6 +36,7 @@ export function BzTextField({
   onKeyUp,
   onFocus,
   onBlur,
+  className,
 }: BzTextFieldProps) {
   const hasValue = modelValue.length > 0;
   const currentLength = modelValue.length;
@@ -64,19 +67,19 @@ export function BzTextField({
   }
 
   return (
-    <div className="bz-text-field">
+    <div className={[styles.field, className].filter(Boolean).join(" ")}>
       <div
         className={[
-          "bz-text-field__control",
-          disabled ? "is-disabled" : "",
-          type === "textarea" ? "is-textarea" : "",
+          styles.control,
+          disabled ? styles.disabled : "",
+          type === "textarea" ? styles.textareaControl : "",
         ]
           .filter(Boolean)
           .join(" ")}
       >
         {type === "textarea" ? (
           <textarea
-            className="bz-text-field__textarea"
+            className={styles.textarea}
             value={modelValue}
             placeholder={placeholder}
             disabled={disabled}
@@ -91,7 +94,7 @@ export function BzTextField({
           />
         ) : (
           <input
-            className="bz-text-field__input"
+            className={styles.input}
             value={modelValue}
             placeholder={placeholder}
             disabled={disabled}
@@ -107,7 +110,7 @@ export function BzTextField({
         )}
         {clearable && hasValue && !disabled && !readonly && (
           <button
-            className="bz-text-field__clear"
+            className={styles.clear}
             type="button"
             onClick={clearValue}
           >
@@ -116,8 +119,8 @@ export function BzTextField({
         )}
       </div>
       {showCounter && typeof maxlength === "number" && (
-        <div className="bz-text-field__helper">
-          <div className="bz-text-field__counter">
+        <div className={styles.helper}>
+          <div className={styles.counter}>
             {currentLength}/{maxlength}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { BzButton } from "./BzButton";
+import styles from "./BzInputNumber.module.css";
 
 interface BzInputNumberProps {
   modelValue?: number;
@@ -28,15 +29,15 @@ export function BzInputNumber({
   }
 
   return (
-    <div className={["bz-input-number", disabled ? "is-disabled" : ""].filter(Boolean).join(" ")}>
+    <div className={[styles.root, disabled ? styles.disabled : ""].filter(Boolean).join(" ")}>
       <BzButton
-        className="bz-input-number__decrease"
+        className={styles.decrease}
         disabled={disabled || (modelValue || 0) <= min}
         onClick={() => adjust(-step)}
       >
         -
       </BzButton>
-      <div className="bz-input-number__input">
+      <div className={styles.input}>
         <input
           type="number"
           value={modelValue}
@@ -54,7 +55,7 @@ export function BzInputNumber({
         />
       </div>
       <BzButton
-        className="bz-input-number__increase"
+        className={styles.increase}
         disabled={disabled || (modelValue || 0) >= max}
         onClick={() => adjust(step)}
       >

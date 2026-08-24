@@ -1,0 +1,23 @@
+.footer {
+  display: flex;
+  margin-top: 16px;
+}
+
+.left {
+  justify-content: flex-start;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .footer > button {
+    width: 100%;
+  }
+}

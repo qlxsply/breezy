@@ -15,7 +15,6 @@ public record AdminMenuResourceRes(
         String code,
         String type,
         String url,
-        String loadTarget,
         int orderNo,
         List<AdminMenuResourceRes> children
 ) {

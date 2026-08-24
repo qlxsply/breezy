@@ -22,7 +22,7 @@ export function AdminEditableSection({
     <AdminSection
       title={title}
       right={actions}
-      className={["admin-editable-section", className].filter(Boolean).join(" ")}
+      className={className}
       headClassName={headClassName}
       bodyClassName={bodyClassName}
       rightClassName={rightClassName}

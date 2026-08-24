@@ -1,0 +1,34 @@
+.iconColumn {
+  left: 0;
+  z-index: 6;
+}
+
+.codeColumn {
+  left: 52px;
+  z-index: 5;
+}
+
+.iconCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconImage,
+.detailIcon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.iconFallback {
+  color: var(--color-text-muted);
+}
+
+.detailIcon {
+  vertical-align: middle;
+}
+
+.detailTable table tbody tr:last-child td {
+  border-bottom: none;
+}

@@ -1,0 +1,66 @@
+.drawer {
+  --admin-entity-drawer-body-background: var(--color-bg-surface-soft);
+}
+.featureShell {
+  gap: var(--space-4);
+}
+.packageViewport {
+  max-height: 320px;
+  overflow: auto;
+}
+.packageHead,
+.packageRow {
+  grid-template-columns: 44px minmax(180px, 1fr) 160px 120px 90px 90px;
+  min-width: 820px;
+}
+.name {
+  font-weight: var(--font-weight-semibold);
+}
+.capabilityToolbar {
+  width: 100%;
+}
+.capabilityToolbar .search {
+  flex: 1 1 0;
+  width: auto;
+  max-width: none;
+}
+.capabilityToolbar .actions {
+  flex: 0 0 auto;
+  align-items: center;
+}
+.capabilityToolbar .actions:empty {
+  display: none;
+}
+.capabilityToolbar .actions > span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+.capabilityViewport {
+  max-height: 560px;
+  overflow: auto;
+}
+.capabilityHead,
+.capabilityRow {
+  grid-template-columns: minmax(160px, 1fr) 130px 90px 110px 180px 90px minmax(300px, 2fr);
+  min-width: 1120px;
+}
+.packageBody > .packageRow:last-child,
+.capabilityBody > .capabilityRow:last-child {
+  border-bottom: 0;
+}
+.features {
+  align-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--space-1-5) var(--space-3);
+}
+.unselected {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+@media (max-width: 900px) {
+  .capabilityToolbar .actions {
+    align-items: stretch;
+  }
+}

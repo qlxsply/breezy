@@ -1,0 +1,37 @@
+.placeholder {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  padding: 14px;
+}
+
+.card {
+  padding: 28px;
+  background: color-mix(in srgb, var(--color-bg-surface) 92%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06);
+}
+
+.card h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.card p {
+  margin: 12px 0 0;
+  color: var(--color-text-tertiary);
+  line-height: 1.7;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  color: var(--color-brand-600);
+  background: var(--color-brand-100);
+  border-radius: var(--radius-round);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}

@@ -16,6 +16,7 @@ import type {
 } from "@admin/features/resources/management/model/types";
 import styles from "@admin/features/resources/management/ui/ResourceManageDrawer.module.css";
 import { message } from "@admin/shared/lib/feedback/message";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
 import {
@@ -446,7 +447,9 @@ export function ResourceManageDrawer({
     colSpan?: number,
   ) {
     if (!editable)
-      return renderCell(<pre className="admin-log-pre">{value || "-"}</pre>, { colSpan });
+      return renderCell(<pre className={entityStyles.preformattedValue}>{value || "-"}</pre>, {
+        colSpan,
+      });
     return (
       <AdminInfoCell
         state="editable"
@@ -508,7 +511,7 @@ export function ResourceManageDrawer({
   }
 
   function thRequired(required: boolean) {
-    return <span className={required ? "is-required" : undefined} />;
+    return <span className={required ? entityStyles.required : undefined} />;
   }
 
   const drawerTitle =
@@ -564,7 +567,7 @@ export function ResourceManageDrawer({
   return (
     <AdminEntityDrawer
       open
-      className={`admin-entity-manage-drawer ${styles.root}`}
+      className={`${entityStyles.manageDrawer} ${styles.root}`}
       title={drawerTitle}
       width="1000px"
       loading={loading}
@@ -572,15 +575,15 @@ export function ResourceManageDrawer({
       onClose={onClose}
       footer={footer}
     >
-      <div className="admin-entity-shell">
-        <section className="admin-entity-section">
-          <div className="admin-entity-section__head">
-            <div className="admin-entity-section__title">基础信息</div>
+      <div className={entityStyles.shell}>
+        <section className={entityStyles.section}>
+          <div className={entityStyles.sectionHead}>
+            <div className={entityStyles.sectionTitle}>基础信息</div>
           </div>
 
-          <div className="admin-info-table-wrap">
+          <div className={entityStyles.infoTableWrap}>
             <table
-              className="admin-info-table"
+              className={entityStyles.infoTable}
               aria-label="资源基础信息"
             >
               <tbody>
@@ -644,14 +647,14 @@ export function ResourceManageDrawer({
           </div>
         </section>
 
-        <section className="admin-entity-section">
-          <div className="admin-entity-section__head">
-            <div className="admin-entity-section__title">路由信息</div>
+        <section className={entityStyles.section}>
+          <div className={entityStyles.sectionHead}>
+            <div className={entityStyles.sectionTitle}>路由信息</div>
           </div>
 
-          <div className="admin-info-table-wrap">
+          <div className={entityStyles.infoTableWrap}>
             <table
-              className="admin-info-table"
+              className={entityStyles.infoTable}
               aria-label="资源路由信息"
             >
               <tbody>
@@ -682,14 +685,14 @@ export function ResourceManageDrawer({
           </div>
         </section>
 
-        <section className="admin-entity-section">
-          <div className="admin-entity-section__head">
-            <div className="admin-entity-section__title">状态配置</div>
+        <section className={entityStyles.section}>
+          <div className={entityStyles.sectionHead}>
+            <div className={entityStyles.sectionTitle}>状态配置</div>
           </div>
 
-          <div className="admin-info-table-wrap">
+          <div className={entityStyles.infoTableWrap}>
             <table
-              className="admin-info-table"
+              className={entityStyles.infoTable}
               aria-label="资源状态配置"
             >
               <tbody>
@@ -717,10 +720,10 @@ export function ResourceManageDrawer({
         </section>
 
         {showPermissionArea ? (
-          <section className="admin-entity-section">
-            <div className="admin-entity-section__head">
-              <div className="admin-entity-section__title">权限码绑定</div>
-              <div className="admin-entity-section__stat">共 {form.permissionIds.length} 项</div>
+          <section className={entityStyles.section}>
+            <div className={entityStyles.sectionHead}>
+              <div className={entityStyles.sectionTitle}>权限码绑定</div>
+              <div className={entityStyles.sectionStat}>共 {form.permissionIds.length} 项</div>
             </div>
             <div
               className={`${styles.permissionBox}${canSavePermissions ? "" : ` ${styles.readonly}`}`}
@@ -742,7 +745,7 @@ export function ResourceManageDrawer({
                   );
                 })
               ) : (
-                <div className="admin-info-cell--readonly">暂无权限码绑定</div>
+                <div className={entityStyles.infoCellReadonly}>暂无权限码绑定</div>
               )}
             </div>
           </section>

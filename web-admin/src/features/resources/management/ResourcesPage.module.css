@@ -1,12 +1,9 @@
 .root .card {
+  --bz-card-body-padding: 0;
   box-shadow: none;
 }
 
-.root .card :global(.bz-card__body) {
-  padding: 0;
-}
-
-.root .card :global(.admin-vben-circle-button) {
+.root .card .circleButton {
   border: var(--border-width-1) solid var(--color-border-strong);
   box-shadow: none;
 }
@@ -56,22 +53,15 @@
   border-radius: 0;
 }
 
-.tableScope :global(.bz-table__scroll) {
-  overflow-x: auto;
-  overflow-y: hidden;
+.tableScope {
+  --bz-table-overflow-x: auto;
+  --bz-table-overflow-y: hidden;
+  --bz-table-min-width: 1640px;
+  --bz-table-layout: fixed;
 }
 
-.tableScope :global(.bz-overflow-tooltip__trigger) {
-  min-width: 0;
-}
-
-.tableScope :global(.bz-table__inner) {
-  min-width: 1640px;
-  table-layout: fixed;
-}
-
-.tableScope :global(.bz-table__inner) th,
-.tableScope :global(.bz-table__inner) td {
+.tableScope table th,
+.tableScope table td {
   height: 44px;
   padding: 10px 12px;
   border-right: var(--border-width-1) solid var(--color-border-muted);
@@ -80,23 +70,23 @@
   vertical-align: middle;
 }
 
-.tableScope :global(.bz-table__inner) th {
+.tableScope table th {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   background: var(--color-bg-surface-soft);
 }
 
-.tableScope :global(.bz-table__inner) td {
+.tableScope table td {
   background: var(--color-bg-surface);
 }
 
-.tableScope :global(.bz-table__inner) tbody tr:hover td {
+.tableScope table tbody tr:hover td {
   background: var(--color-bg-surface-selected);
 }
 
-.tableScope :global(.bz-table__inner) th:last-child,
-.tableScope :global(.bz-table__inner) td:last-child {
+.tableScope table th:last-child,
+.tableScope table td:last-child {
   border-right: none;
 }
 
@@ -116,19 +106,19 @@
   box-shadow: -8px 0 12px rgba(15, 23, 42, 0.06);
 }
 
-.tableScope :global(.bz-table__inner) th.colName,
-.tableScope :global(.bz-table__inner) th.colActions {
+.tableScope table th.colName,
+.tableScope table th.colActions {
   z-index: 8;
   background: var(--color-bg-surface-soft);
 }
 
-.tableScope :global(.bz-table__inner) td.colName,
-.tableScope :global(.bz-table__inner) td.colActions {
+.tableScope table td.colName,
+.tableScope table td.colActions {
   background: var(--color-bg-surface);
 }
 
-.tableScope :global(.bz-table__inner) tbody tr:hover td.colName,
-.tableScope :global(.bz-table__inner) tbody tr:hover td.colActions {
+.tableScope table tbody tr:hover td.colName,
+.tableScope table tbody tr:hover td.colActions {
   background: var(--color-bg-surface-selected);
 }
 
@@ -148,7 +138,7 @@
 }
 
 .indent,
-.nameCell :global(.bz-chevron-icon) {
+.chevron {
   flex: 0 0 auto;
 }
 
@@ -185,17 +175,11 @@
   cursor: default;
 }
 
-.nameCell :global(.bz-chevron-icon) {
+.chevron {
   display: block;
   transition: transform 0.18s ease;
-}
-
-.nameCell :global(.bz-chevron-icon.is-right) {
-  transform: rotate(0deg);
-}
-
-.nameCell :global(.bz-chevron-icon.is-down) {
-  transform: rotate(90deg);
+  --bz-chevron-right-transform: rotate(0deg);
+  --bz-chevron-down-transform: rotate(90deg);
 }
 
 .nameMain {

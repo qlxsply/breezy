@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import styles from "./AdminListPageTemplate.module.css";
+
 interface AdminListPageTemplateProps {
   queryPanelVisible?: boolean;
   queryPanel?: ReactNode;
@@ -36,17 +38,13 @@ export function AdminListPageTemplate({
   tableAreaClassName,
 }: AdminListPageTemplateProps) {
   return (
-    <div className="admin-page">
-      <div className="content">
-        <div className="admin-page-stack">
-          <div className={["admin-list-template", className].filter(Boolean).join(" ")}>
-            <div className={["admin-list-region", regionClassName].filter(Boolean).join(" ")}>
+    <div className={styles.page}>
+      <div className={styles.content}>
+        <div className={styles.pageStack}>
+          <div className={[styles.template, className].filter(Boolean).join(" ")}>
+            <div className={[styles.region, regionClassName].filter(Boolean).join(" ")}>
               {queryPanelVisible && queryPanel ? (
-                <div
-                  className={["admin-list-query-panel", queryPanelClassName]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
+                <div className={[styles.queryPanel, queryPanelClassName].filter(Boolean).join(" ")}>
                   {queryPanel}
                 </div>
               ) : null}
@@ -54,22 +52,16 @@ export function AdminListPageTemplate({
               {batchToolbar ? (
                 batchToolbar
               ) : (
-                <div
-                  className={["admin-list-toolbar-row", toolbarRowClassName]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
+                <div className={[styles.toolbarRow, toolbarRowClassName].filter(Boolean).join(" ")}>
                   <div
-                    className={["admin-list-business-actions", businessActionsClassName]
+                    className={[styles.businessActions, businessActionsClassName]
                       .filter(Boolean)
                       .join(" ")}
                   >
                     {businessActions}
                   </div>
                   <div
-                    className={["admin-list-query-tools", queryToolsClassName]
-                      .filter(Boolean)
-                      .join(" ")}
+                    className={[styles.queryTools, queryToolsClassName].filter(Boolean).join(" ")}
                   >
                     {queryTools}
                   </div>
@@ -77,7 +69,7 @@ export function AdminListPageTemplate({
               )}
 
               <div
-                className={["admin-table-surface", "admin-list-table-area", tableAreaClassName]
+                className={[styles.tableSurface, styles.tableArea, tableAreaClassName]
                   .filter(Boolean)
                   .join(" ")}
               >

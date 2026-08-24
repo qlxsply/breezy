@@ -1,0 +1,9 @@
+.control {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.control.disabled {
+  color: var(--color-text-secondary);
+}

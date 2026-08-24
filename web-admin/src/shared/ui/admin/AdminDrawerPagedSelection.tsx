@@ -7,6 +7,10 @@ import { BzPagination } from "@admin/shared/ui/bz/BzPagination";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef } from "react";
 
+import styles from "./AdminDrawerPagedSelection.module.css";
+import entityStyles from "./AdminEntity.module.css";
+import layoutStyles from "./AdminPageLayout.module.css";
+
 export interface AdminDrawerPagedSelectionColumn<T> {
   key: string;
   title: ReactNode;
@@ -94,39 +98,39 @@ export function AdminDrawerPagedSelection<T>({
 
   return (
     <section
-      className={`admin-entity-section admin-drawer-paged-selection${editable ? " is-editable" : ""}`}
+      className={`${entityStyles.section} ${styles.selection}${editable ? ` ${styles.editable}` : ""}`}
     >
-      <div className="admin-entity-section__head">
-        <div className="admin-entity-section__title">{title}</div>
+      <div className={entityStyles.sectionHead}>
+        <div className={entityStyles.sectionTitle}>{title}</div>
       </div>
 
-      <div className="admin-drawer-paged-selection__toolbar">
+      <div className={styles.toolbar}>
         <TableInput
           value={keyword}
           placeholder={searchPlaceholder}
-          className="admin-drawer-paged-selection__search"
+          className={styles.search}
           onValueChange={onKeywordChange}
           onKeyUp={(event) => {
             if (event.key === "Enter") onSearch();
           }}
         />
-        <div className="admin-drawer-paged-selection__actions">
+        <div className={styles.actions}>
           <BzButton onClick={onReset}>重置</BzButton>
           <BzButton onClick={onSearch}>搜索</BzButton>
         </div>
       </div>
 
-      <div className="admin-grid-table admin-drawer-paged-selection__table">
-        <div className="admin-grid-table__viewport">
+      <div className={layoutStyles.gridTable}>
+        <div className={layoutStyles.gridViewport}>
           <div
-            className="admin-grid-table__row admin-grid-table__row--head"
+            className={`${layoutStyles.gridRow} ${layoutStyles.gridHead}`}
             style={{ gridTemplateColumns: template }}
           >
-            <div className="admin-grid-table__cell admin-grid-table__cell--check">
+            <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`}>
               {editable ? (
                 <input
                   ref={selectAllRef}
-                  className="admin-node-checkbox"
+                  className={layoutStyles.nodeCheckbox}
                   type="checkbox"
                   checked={currentPageAllSelected}
                   disabled={currentPageKeys.length === 0}
@@ -136,7 +140,7 @@ export function AdminDrawerPagedSelection<T>({
             </div>
             {columns.map((column) => (
               <div
-                className="admin-grid-table__cell"
+                className={layoutStyles.gridCell}
                 key={column.key}
               >
                 {column.title}
@@ -148,11 +152,9 @@ export function AdminDrawerPagedSelection<T>({
             loading={loading && rows.length > 0}
             text="加载中..."
           >
-            <div className="admin-grid-table__body">
+            <div className={layoutStyles.gridBody}>
               {rows.length === 0 ? (
-                <div className="admin-permission-empty-state">
-                  {loading ? "加载中..." : emptyText}
-                </div>
+                <div className={styles.empty}>{loading ? "加载中..." : emptyText}</div>
               ) : (
                 rows.map((row) => {
                   const key = rowKey(row);
@@ -161,16 +163,18 @@ export function AdminDrawerPagedSelection<T>({
                   return (
                     <div
                       key={key}
-                      className={`admin-grid-table__row admin-drawer-paged-selection__row${selected ? " is-selected" : ""}`}
+                      className={`${layoutStyles.gridRow} ${styles.row}${selected ? ` ${layoutStyles.selected}` : ""}`}
                       style={{ gridTemplateColumns: template }}
                       aria-selected={selected}
                       onClick={() => {
                         if (editable && selectable) updateRow(key, !selected);
                       }}
                     >
-                      <div className="admin-grid-table__cell admin-grid-table__cell--check">
+                      <div
+                        className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck} ${styles.cell}`}
+                      >
                         <input
-                          className="admin-node-checkbox"
+                          className={layoutStyles.nodeCheckbox}
                           type="checkbox"
                           checked={selected}
                           disabled={!editable || !selectable}
@@ -180,7 +184,7 @@ export function AdminDrawerPagedSelection<T>({
                       </div>
                       {columns.map((column) => (
                         <div
-                          className="admin-grid-table__cell"
+                          className={`${layoutStyles.gridCell} ${styles.cell}`}
                           key={column.key}
                         >
                           {column.render(row)}
@@ -195,11 +199,11 @@ export function AdminDrawerPagedSelection<T>({
         </div>
 
         {total > 0 ? (
-          <div className="dict-pagination-bar admin-grid-table__footer">
-            <div className="dict-pagination-summary">
+          <div className={styles.pagination}>
+            <div className={styles.summary}>
               共 {total} 条记录，已选 {selectedKeys.length} 项
             </div>
-            <div className="dict-pagination-right">
+            <div className={styles.controls}>
               <BzPagination
                 total={total}
                 pageSize={pageSize}

@@ -2,6 +2,8 @@
 
 import { type CSSProperties, forwardRef, type TextareaHTMLAttributes, useState } from "react";
 
+import styles from "./TableTextArea.module.css";
+
 export interface TableTextAreaProps extends Omit<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
   "style"
@@ -41,10 +43,9 @@ export const TableTextArea = forwardRef<HTMLTextAreaElement, TableTextAreaProps>
     return (
       <div
         className={[
-          "table-input-control",
-          "table-text-area",
-          disabled ? "is-disabled" : "",
-          readOnly ? "is-readonly" : "",
+          styles.control,
+          disabled ? styles.disabled : "",
+          readOnly ? styles.readonly : "",
           className,
         ]
           .filter(Boolean)
@@ -54,7 +55,7 @@ export const TableTextArea = forwardRef<HTMLTextAreaElement, TableTextAreaProps>
         <textarea
           {...rest}
           ref={ref}
-          className="table-text-area__input"
+          className={styles.input}
           value={currentValue}
           placeholder={placeholder}
           rows={rows}
@@ -73,14 +74,14 @@ export const TableTextArea = forwardRef<HTMLTextAreaElement, TableTextAreaProps>
         />
 
         <div
-          className="table-text-area__mirror"
+          className={styles.mirror}
           aria-hidden="true"
         >
-          <div className="table-text-area__mirror-content">
+          <div className={styles.mirrorContent}>
             <span>{currentValue}</span>
             {showCount && currentLength > 0 ? (
               <span
-                className="table-text-area__count"
+                className={styles.count}
                 data-state={countState}
               >
                 {maxLength ? `${currentLength}/${maxLength}` : currentLength}

@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
+import styles from "./BzButton.module.css";
+
 type BzButtonType = "default" | "primary" | "danger" | "success" | "warning";
 type BzButtonSize = "small" | "medium" | "large";
 
@@ -32,12 +34,11 @@ export function BzButton({
     <button
       {...rest}
       className={[
-        "bz-button",
-        `bz-button--${buttonType}`,
-        `bz-button--${size}`,
-        loading ? "is-loading" : "",
-        link || text ? "is-link" : "",
-        text ? "is-text" : "",
+        styles.button,
+        styles[buttonType],
+        styles[size],
+        link || text ? styles.link : "",
+        text ? styles.text : "",
         className,
       ]
         .filter(Boolean)
@@ -54,11 +55,11 @@ export function BzButton({
     >
       {loading ? (
         <span
-          className="bz-button-spinner"
+          className={styles.spinner}
           aria-hidden="true"
         />
       ) : null}
-      <span className="bz-button-text">{children}</span>
+      <span className={styles.label}>{children}</span>
     </button>
   );
 }

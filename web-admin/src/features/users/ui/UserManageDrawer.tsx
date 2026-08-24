@@ -2,6 +2,7 @@ import { pageAssignableRoles } from "@admin/features/users/api/client";
 import type { AssignableRole, UserEntry, UserStatus } from "@admin/features/users/model/types";
 import { formatDateTime } from "@admin/shared/lib/formatter";
 import { AdminDrawerPagedSelection } from "@admin/shared/ui/admin/AdminDrawerPagedSelection";
+import entityStyles from "@admin/shared/ui/admin/AdminEntity.module.css";
 import { AdminEntityDrawer } from "@admin/shared/ui/admin/AdminEntityDrawer";
 import { AdminInfoCell } from "@admin/shared/ui/admin/AdminInfoCell";
 import { TableInput, TableSelect } from "@admin/shared/ui/admin/inputs";
@@ -147,9 +148,9 @@ export function UserManageDrawer({
   }
 
   const footer = (
-    <div className="admin-drawer-footer">
-      <div className="admin-drawer-footer__summary" />
-      <div className="admin-drawer-footer__actions">
+    <div className={entityStyles.drawerFooter}>
+      <div className={entityStyles.drawerFooterSummary} />
+      <div className={entityStyles.drawerFooterActions}>
         <BzButton onClick={onClose}>{editable ? "取消" : "关闭"}</BzButton>
         {editable ? (
           <BzButton
@@ -189,7 +190,7 @@ export function UserManageDrawer({
           value={value}
           type={options?.password ? "password" : "text"}
           placeholder={placeholder}
-          className={options?.mono ? "mono" : undefined}
+          className={options?.mono ? entityStyles.mono : undefined}
           onValueChange={onChange}
         />
       </AdminInfoCell>
@@ -216,7 +217,9 @@ export function UserManageDrawer({
     }
     return renderValueCell(
       <BzTag
-        className={`admin-info-status-tag${status === "ENABLED" ? " is-enabled" : " is-disabled"}`}
+        className={`${entityStyles.statusTag} ${
+          status === "ENABLED" ? entityStyles.statusEnabled : entityStyles.statusDisabled
+        }`}
         type={status === "ENABLED" ? "success" : "danger"}
       >
         {status === "ENABLED" ? "启用" : "停用"}
@@ -227,28 +230,30 @@ export function UserManageDrawer({
   return (
     <AdminEntityDrawer
       open={open}
-      className="admin-entity-manage-drawer user-manage-drawer"
+      className={entityStyles.manageDrawer}
       title={mode === "create" ? "新增用户" : mode === "detail" ? "用户详情" : "编辑用户"}
       width="1180px"
       loading={loading}
       onClose={onClose}
       footer={footer}
     >
-      <div className="admin-entity-shell">
-        <section className="admin-entity-section">
-          <div className="admin-entity-section__head">
-            <div className="admin-entity-section__title">用户信息</div>
+      <div className={entityStyles.shell}>
+        <section className={entityStyles.section}>
+          <div className={entityStyles.sectionHead}>
+            <div className={entityStyles.sectionTitle}>用户信息</div>
           </div>
 
-          <div className="admin-info-table-wrap">
+          <div className={entityStyles.infoTableWrap}>
             <table
-              className="admin-info-table"
+              className={entityStyles.infoTable}
               aria-label="用户信息"
             >
               <tbody>
                 <tr>
                   <th>
-                    <span className={mode === "create" ? "is-required" : undefined}>用户名</span>
+                    <span className={mode === "create" ? entityStyles.required : undefined}>
+                      用户名
+                    </span>
                   </th>
                   {mode === "create"
                     ? renderEditableTextCell(username, "请输入用户名", setUsername, { mono: true })
@@ -258,7 +263,7 @@ export function UserManageDrawer({
                     <BzTag size="small">{resolveUserTypeLabel(currentUserType)}</BzTag>,
                   )}
                   <th>
-                    <span className={basicEditable ? "is-required" : undefined}>昵称</span>
+                    <span className={basicEditable ? entityStyles.required : undefined}>昵称</span>
                   </th>
                   {basicEditable
                     ? renderEditableTextCell(nickname, "请输入昵称", setNickname)
@@ -268,7 +273,7 @@ export function UserManageDrawer({
                 {mode === "create" ? (
                   <tr>
                     <th>
-                      <span className="is-required">初始密码</span>
+                      <span className={entityStyles.required}>初始密码</span>
                     </th>
                     {renderEditableTextCell(password, "请输入初始密码", setPassword, {
                       password: true,
@@ -276,7 +281,7 @@ export function UserManageDrawer({
                     <th>状态</th>
                     {renderValueCell(
                       <BzTag
-                        className="admin-info-status-tag is-enabled"
+                        className={`${entityStyles.statusTag} ${entityStyles.statusEnabled}`}
                         type="success"
                       >
                         启用
@@ -290,7 +295,9 @@ export function UserManageDrawer({
                     <tr>
                       <th>
                         <span
-                          className={mode === "edit" && canEditBasic ? "is-required" : undefined}
+                          className={
+                            mode === "edit" && canEditBasic ? entityStyles.required : undefined
+                          }
                         >
                           状态
                         </span>
@@ -320,7 +327,7 @@ export function UserManageDrawer({
               title={err}
               type="error"
               showIcon
-              className="form-error admin-entity-error"
+              className={`form-error ${entityStyles.error}`}
             />
           ) : null}
         </section>

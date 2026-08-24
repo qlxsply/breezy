@@ -1,3 +1,5 @@
+import styles from "./BzSwitch.module.css";
+
 interface BzSwitchProps {
   modelValue: boolean;
   disabled?: boolean;
@@ -5,6 +7,7 @@ interface BzSwitchProps {
   inactiveText?: string;
   onValueChange?: (value: boolean) => void;
   onChange?: (value: boolean) => void;
+  className?: string;
 }
 
 export function BzSwitch({
@@ -14,13 +17,21 @@ export function BzSwitch({
   inactiveText = "",
   onValueChange,
   onChange,
+  className,
 }: BzSwitchProps) {
   return (
     <label
-      className={`bz-switch${modelValue ? " is-checked" : ""}${disabled ? " is-disabled" : ""}`}
+      className={[
+        styles.switch,
+        modelValue ? styles.checked : "",
+        disabled ? styles.disabled : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <input
-        className="bz-switch__input"
+        className={styles.input}
         type="checkbox"
         checked={modelValue}
         disabled={disabled}
@@ -30,9 +41,9 @@ export function BzSwitch({
           onChange?.(checked);
         }}
       />
-      <span className="bz-switch__core" />
+      <span className={styles.core} />
       {activeText || inactiveText ? (
-        <span className="bz-switch__text">{modelValue ? activeText : inactiveText}</span>
+        <span className={styles.text}>{modelValue ? activeText : inactiveText}</span>
       ) : null}
     </label>
   );

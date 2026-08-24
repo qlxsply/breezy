@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import styles from "./AdminFormSection.module.css";
 import { AdminSection, type AdminSectionProps } from "./AdminSection";
 
 interface AdminFormSectionProps extends Pick<
@@ -28,7 +29,7 @@ export function AdminFormSection({
     <AdminSection
       title={title}
       right={actions}
-      className={["admin-form-section", className].filter(Boolean).join(" ")}
+      className={className}
       headClassName={headClassName}
       bodyClassName={bodyClassName}
       rightClassName={rightClassName}
@@ -36,7 +37,7 @@ export function AdminFormSection({
       {children}
       {footer ? (
         <div
-          className={["admin-form-section__footer", `is-${footerAlign}`, footerClassName]
+          className={[styles.footer, styles[footerAlign], footerClassName]
             .filter(Boolean)
             .join(" ")}
         >
