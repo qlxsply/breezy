@@ -1,0 +1,45 @@
+.gate {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-bg-app);
+}
+
+.panel {
+  width: min(440px, 100%);
+  padding: 32px;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  color: var(--primary-color);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panel h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.panel p {
+  margin: 12px 0 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.panel button {
+  height: 36px;
+  margin-top: 20px;
+  padding: 0 16px;
+  color: var(--color-text-inverse);
+  background: var(--primary-color);
+  border: 0;
+  cursor: pointer;
+}

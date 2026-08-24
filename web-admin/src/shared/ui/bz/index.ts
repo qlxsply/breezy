@@ -1,6 +1,7 @@
 export { BzAlert } from "./BzAlert";
 export { BzButton } from "./BzButton";
 export { BzButtonGroup } from "./BzButtonGroup";
+export { BzButtonLink } from "./BzButtonLink";
 export { BzCard } from "./BzCard";
 export { BzCheckbox } from "./BzCheckbox";
 export { BzChevronIcon } from "./BzChevronIcon";

@@ -1,5 +1,3 @@
-// /src/types/user-admin.ts
-
 export type UserStatus = "ENABLED" | "DISABLED";
 export type UserType = "SYSTEM" | "ADMIN" | "USER" | "GUEST";
 

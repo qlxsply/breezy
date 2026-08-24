@@ -3,6 +3,8 @@
 import { ensureRuntimeConfigLoaded, reloadRuntimeConfig } from "@admin/shared/transport";
 import { type ReactNode, useEffect, useState } from "react";
 
+import styles from "./RuntimeConfigGate.module.css";
+
 interface RuntimeConfigGateProps {
   children: ReactNode;
 }
@@ -14,7 +16,8 @@ export function RuntimeConfigGate({ children }: RuntimeConfigGateProps) {
   const load = (reload: boolean) => {
     setState("loading");
     setErrorMessage("");
-    void (reload ? reloadRuntimeConfig() : ensureRuntimeConfigLoaded())
+    const options = { requireComplete: true };
+    void (reload ? reloadRuntimeConfig(options) : ensureRuntimeConfigLoaded(options))
       .then(() => setState("ready"))
       .catch((error: unknown) => {
         setErrorMessage(error instanceof Error ? error.message : "运行时配置加载失败");
@@ -29,9 +32,9 @@ export function RuntimeConfigGate({ children }: RuntimeConfigGateProps) {
   if (state === "ready") return children;
 
   return (
-    <main className="runtime-config-gate">
-      <section className="runtime-config-gate__panel">
-        <div className="runtime-config-gate__eyebrow">Breezy Admin</div>
+    <main className={styles.gate}>
+      <section className={styles.panel}>
+        <div className={styles.eyebrow}>Breezy Admin</div>
         <h1>{state === "loading" ? "正在加载运行配置" : "运行配置不可用"}</h1>
         <p>
           {state === "loading"

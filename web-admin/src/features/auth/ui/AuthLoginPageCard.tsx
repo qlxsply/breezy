@@ -1,7 +1,11 @@
 "use client";
 
 import type { AuthUserType } from "@admin/features/auth/model/types";
-import { login, resolveLandingPathForUser } from "@admin/features/auth/service/auth-service";
+import {
+  login,
+  PASSWORD_CHANGE_PATH,
+  resolveLandingPathForUser,
+} from "@admin/features/auth/service/auth-service";
 import {
   BzAlert,
   BzButton,
@@ -64,9 +68,7 @@ export function AuthLoginPageCard({ formTitle, returnLabel, returnTo }: AuthLogi
 
       const current = await login(username.trim(), password);
       router.push(
-        current.mustChangePassword
-          ? "/admin/profile/password"
-          : resolveRedirectPath(current.userType),
+        current.mustChangePassword ? PASSWORD_CHANGE_PATH : resolveRedirectPath(current.userType),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "登录失败");

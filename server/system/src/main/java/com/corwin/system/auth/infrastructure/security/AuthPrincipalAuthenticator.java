@@ -106,7 +106,7 @@ public class AuthPrincipalAuthenticator {
         }
 
         AuthPrincipal principal = new AuthPrincipal(user.getId(), user.getUsername(), user.getUserType(),
-                DefaultUser.isAdmin(user.getId()), readPermissionSnapshot(session));
+                DefaultUser.isAdmin(user.getId()), user.isMustChangePassword(), readPermissionSnapshot(session));
         authSessionCacheService.set(tokenHash, principal, cacheTtl(session, now));
         refreshLastAccessIfNecessary(session, now, user.getUsername());
         return principal;

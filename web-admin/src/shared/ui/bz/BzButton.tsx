@@ -2,8 +2,8 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import styles from "./BzButton.module.css";
 
-type BzButtonType = "default" | "primary" | "danger" | "success" | "warning";
-type BzButtonSize = "small" | "medium" | "large";
+export type BzButtonType = "default" | "primary" | "danger" | "success" | "warning";
+export type BzButtonSize = "small" | "medium" | "large";
 
 interface BzButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
   buttonType?: BzButtonType;

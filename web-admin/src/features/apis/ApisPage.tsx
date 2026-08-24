@@ -12,7 +12,7 @@ import { API_PERMISSIONS } from "@admin/features/apis/permissions";
 import { ApiTable } from "@admin/features/apis/ui/ApiTable";
 import type { ApiTableRow } from "@admin/features/apis/ui/types";
 import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
-import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/types";
+import type { PublicDictionaryItem as DictItem } from "@admin/features/dicts/public/types";
 import { usePermission } from "@admin/features/resources/permissions";
 import { useAdminPagedQuery } from "@admin/shared/hooks/useAdminPagedQuery";
 import { message } from "@admin/shared/lib/feedback/message";

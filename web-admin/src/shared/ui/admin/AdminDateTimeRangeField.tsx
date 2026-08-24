@@ -89,18 +89,31 @@ export function AdminDateTimeRangeField({
     if (!triggerRef.current || !panelRef.current) return;
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const margin = 12;
+    const gap = 8;
     const width = Math.min(540, viewportWidth - margin * 2);
+    const panelHeight = panelRef.current.getBoundingClientRect().height;
+    const maxHeight = viewportHeight - margin * 2;
+    const visibleHeight = Math.min(panelHeight, maxHeight);
     let left = triggerRect.left;
     if (left + width > viewportWidth - margin) {
       left = Math.max(margin, viewportWidth - width - margin);
     }
+    const availableBelow = viewportHeight - triggerRect.bottom - gap - margin;
+    const availableAbove = triggerRect.top - gap - margin;
+    const top =
+      availableBelow < visibleHeight && availableAbove > availableBelow
+        ? Math.max(margin, triggerRect.top - gap - visibleHeight)
+        : Math.min(triggerRect.bottom + gap, viewportHeight - margin - visibleHeight);
 
     setPanelStyle({
       position: "fixed",
       left: `${left}px`,
-      top: `${triggerRect.bottom + 8}px`,
+      top: `${Math.max(margin, top)}px`,
       width: `${width}px`,
+      maxHeight: `${maxHeight}px`,
+      overflowY: panelHeight > maxHeight ? "auto" : "visible",
     });
   }
 
@@ -241,7 +254,15 @@ function AdminDateTimeRangePanel({
 
   useEffect(() => {
     if (!activePicker) return;
-    requestAnimationFrame(() => positionPicker(activePicker));
+    const update = () => positionPicker(activePicker);
+    const frame = requestAnimationFrame(update);
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
   }, [activePicker, calendarMonth, precision]);
 
   useEffect(() => {
@@ -278,9 +299,20 @@ function AdminDateTimeRangePanel({
     const width = picker.type === "date" ? 260 : precision === "second" ? 168 : 112;
     const maxLeft = Math.max(8, mainRect.width - width - 8);
     const left = clamp(anchorRect.left - mainRect.left, 8, maxLeft);
+    const margin = 12;
+    const gap = 8;
+    const pickerHeight = pickerRef.current?.getBoundingClientRect().height ?? 0;
+    const belowTop = anchorRect.bottom + gap;
+    const aboveTop = anchorRect.top - gap - pickerHeight;
+    const viewportTop =
+      belowTop + pickerHeight <= window.innerHeight - margin
+        ? belowTop
+        : aboveTop >= margin
+          ? aboveTop
+          : clamp(belowTop, margin, Math.max(margin, window.innerHeight - pickerHeight - margin));
     setPickerStyle({
       left: `${left}px`,
-      top: `${anchorRect.bottom - mainRect.top + 8}px`,
+      top: `${viewportTop - mainRect.top}px`,
       width: `${width}px`,
     });
   }

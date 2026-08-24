@@ -60,6 +60,9 @@ if (!fs.existsSync(distRoot) || !fs.existsSync(budgetPath)) {
 
 const budget = JSON.parse(fs.readFileSync(budgetPath, "utf8"));
 const htmlFiles = walk(distRoot).filter((file) => file.endsWith(".html"));
+const staticAssetFiles = walk(path.join(distRoot, "_next", "static")).filter((file) =>
+  /\.(?:js|css)$/.test(file),
+);
 const routes = htmlFiles
   .map((file) => {
     const assets = [...assetsFromHtml(fs.readFileSync(file, "utf8"))];
@@ -75,6 +78,17 @@ const routes = htmlFiles
   .sort((left, right) => left.route.localeCompare(right.route));
 
 const failures = [];
+const buildMtime = Math.max(...htmlFiles.map((file) => fs.statSync(file).mtimeMs));
+const sourceFiles = [
+  ...walk(path.join(projectRoot, "src")),
+  path.join(projectRoot, "next.config.ts"),
+  path.join(projectRoot, "package.json"),
+  path.join(projectRoot, "package-lock.json"),
+];
+const sourceMtime = Math.max(...sourceFiles.map((file) => fs.statSync(file).mtimeMs));
+if (sourceMtime > buildMtime + 1_000) {
+  failures.push("dist 早于当前源码或构建配置，请重新执行生产构建");
+}
 const routeGroups = [
   {
     name: "登录路由",
@@ -103,13 +117,14 @@ for (const group of routeGroups) {
   }
 }
 
-const referencedAssets = new Map();
-for (const route of routes) {
-  for (const measurement of route.measurements)
-    referencedAssets.set(measurement.asset, measurement);
-}
+const allStaticAssets = new Map(
+  staticAssetFiles.map((file) => {
+    const asset = `/${path.relative(distRoot, file).replaceAll(path.sep, "/")}`;
+    return [asset, measureAsset(asset)];
+  }),
+);
 const chunkFailures = [];
-for (const measurement of referencedAssets.values()) {
+for (const measurement of allStaticAssets.values()) {
   const type = path.extname(measurement.asset).slice(1);
   const limit = budget.singleChunk[type];
   if (limit && exceeds(measurement, limit)) chunkFailures.push({ ...measurement, limit });
@@ -117,7 +132,7 @@ for (const measurement of referencedAssets.values()) {
 
 print("\n单 chunk 预算");
 for (const [type, limit] of Object.entries(budget.singleChunk)) {
-  const matching = [...referencedAssets.values()].filter((item) => item.asset.endsWith(`.${type}`));
+  const matching = [...allStaticAssets.values()].filter((item) => item.asset.endsWith(`.${type}`));
   const largest = matching.sort((left, right) => right.raw - left.raw)[0];
   print(
     `- ${type.toUpperCase()}: 最大 ${largest ? `${formatBytes(largest.raw)} raw / ${formatBytes(largest.gzip)} gzip` : "无"}; 上限 ${formatBytes(limit.raw)} / ${formatBytes(limit.gzip)}`,

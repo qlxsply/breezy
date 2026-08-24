@@ -95,7 +95,7 @@ public class AuthService {
             loginSessionRepository.save(session);
 
             AuthPrincipal principal = new AuthPrincipal(user.getId(), user.getUsername(), user.getUserType(),
-                    DefaultUser.isAdmin(user.getId()), permissionCodes);
+                    DefaultUser.isAdmin(user.getId()), user.isMustChangePassword(), permissionCodes);
             Duration cacheTtl = Duration.between(now, expiresAt).compareTo(authConfigService.sessionCacheTtl()) < 0
                     ? Duration.between(now, expiresAt) : authConfigService.sessionCacheTtl();
             authPrincipalAuthenticator.cacheSession(tokenHash, principal, cacheTtl);
@@ -136,6 +136,10 @@ public class AuthService {
         user.updatePassword(BCrypt.hashpw(cmd.newPassword(), BCrypt.gensalt()), "bcrypt", principal.username());
         user.markMustChangePassword(false, principal.username());
         userRepository.save(user);
+        String tokenHash = CtxUtil.getTokenHash();
+        if (tokenHash != null && !tokenHash.isBlank()) {
+            authPrincipalAuthenticator.evictSession(tokenHash);
+        }
         return true;
     }
 

@@ -15,6 +15,7 @@ import java.util.Set;
  * @param username        the user's login name
  * @param userType        the user type ({@link UserType})
  * @param admin           whether the user has administrative privileges
+ * @param credentialsExpired whether credentials must be updated before normal access
  * @param permissionCodes the set of permission codes granted to the user
  * @author Corwin 2026/4/20
  */
@@ -23,6 +24,7 @@ public record AuthPrincipal(
         String username,
         UserType userType,
         boolean admin,
+        boolean credentialsExpired,
         Set<String> permissionCodes
 ) {
     public AuthPrincipal {
@@ -30,8 +32,13 @@ public record AuthPrincipal(
         userType = userType == null ? UserType.GUEST : userType;
     }
 
+    public AuthPrincipal(Long userId, String username, UserType userType, boolean admin,
+            Set<String> permissionCodes) {
+        this(userId, username, userType, admin, false, permissionCodes);
+    }
+
     public static AuthPrincipal guest() {
-        return new AuthPrincipal(null, null, UserType.GUEST, false, Set.of());
+        return new AuthPrincipal(null, null, UserType.GUEST, false, false, Set.of());
     }
 
     public boolean authenticated() {

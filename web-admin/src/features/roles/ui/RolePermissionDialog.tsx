@@ -628,7 +628,7 @@ export function RolePermissionDialog({
               title={error}
               type="error"
               showIcon
-              className={`form-error ${entityStyles.error}`}
+              className={entityStyles.error}
             />
           ) : null}
         </section>
@@ -673,7 +673,7 @@ export function RolePermissionDialog({
                 </div>
               </div>
 
-              <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+              <div className={layoutStyles.gridTable}>
                 <div
                   className={layoutStyles.gridViewport}
                   ref={treeWrapRef}
@@ -694,21 +694,11 @@ export function RolePermissionDialog({
                         />
                       ) : null}
                     </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--resource`}>
-                      资源名称
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
-                      类型
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--code`}>
-                      资源编码
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
-                      状态
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
-                      按钮权限
-                    </div>
+                    <div className={layoutStyles.gridCell}>资源名称</div>
+                    <div className={layoutStyles.gridCell}>类型</div>
+                    <div className={layoutStyles.gridCell}>资源编码</div>
+                    <div className={layoutStyles.gridCell}>状态</div>
+                    <div className={layoutStyles.gridCell}>按钮权限</div>
                   </div>
 
                   <div className={layoutStyles.gridBody}>
@@ -745,27 +735,17 @@ export function RolePermissionDialog({
                 <div className={entityStyles.sectionStat}>{diffSummaryText}</div>
               </div>
 
-              <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+              <div className={layoutStyles.gridTable}>
                 <div className={layoutStyles.gridViewport}>
                   <div
                     className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${treeStyles.tableHead}`}
                   >
                     <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`} />
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--resource`}>
-                      资源名称
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
-                      类型
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--code`}>
-                      资源编码
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
-                      状态
-                    </div>
-                    <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
-                      按钮权限
-                    </div>
+                    <div className={layoutStyles.gridCell}>资源名称</div>
+                    <div className={layoutStyles.gridCell}>类型</div>
+                    <div className={layoutStyles.gridCell}>资源编码</div>
+                    <div className={layoutStyles.gridCell}>状态</div>
+                    <div className={layoutStyles.gridCell}>按钮权限</div>
                   </div>
 
                   <div className={layoutStyles.gridBody}>

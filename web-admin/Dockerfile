@@ -7,7 +7,7 @@ RUN rm -f /etc/nginx/conf.d/default.conf \
 
 COPY --chown=101:101 nginx.conf /etc/nginx/templates/default.conf.template
 COPY --chown=101:101 dist/ /usr/share/nginx/html/
-COPY --chown=101:101 --chmod=755 docker-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+COPY --chown=101:101 --chmod=755 docker-runtime-config.sh /docker-entrypoint.d/10-runtime-config.sh
 
 ENV ADMIN_API_BASE_PATH=/api \
     ADMIN_BOOTSTRAP_PATH=/admin/menu-resources

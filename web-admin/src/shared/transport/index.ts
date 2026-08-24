@@ -1,5 +1,6 @@
 export type { ApiEnvelope, RequestOptions, ResponseMode } from "./http";
 export {
+  advanceSessionGeneration,
   ApiError,
   del,
   get,
@@ -7,6 +8,7 @@ export {
   getJson,
   getResponse,
   HttpError,
+  isSessionGenerationCurrent,
   patch,
   post,
   put,

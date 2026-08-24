@@ -306,7 +306,7 @@ export function WebUserFeatureDrawer({
                     已分配 {selectedPackageIds.length} 个
                   </div>
                 </div>
-                <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+                <div className={layoutStyles.gridTable}>
                   <div className={`${layoutStyles.gridViewport} ${styles.packageViewport}`}>
                     <div
                       className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${styles.packageHead}`}
@@ -409,7 +409,7 @@ export function WebUserFeatureDrawer({
                     ) : null}
                   </div>
                 </div>
-                <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+                <div className={layoutStyles.gridTable}>
                   <div className={`${layoutStyles.gridViewport} ${styles.capabilityViewport}`}>
                     <div
                       className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${styles.capabilityHead}`}

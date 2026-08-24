@@ -180,7 +180,7 @@ export function RolePermissionTreeNode({
           </div>
         </div>
 
-        <div className={`${layoutStyles.gridCell} admin-permission-cell--type`}>
+        <div className={layoutStyles.gridCell}>
           <span className={`${styles.tag} ${typeClass()}`}>{typeLabel()}</span>
         </div>
 
@@ -188,13 +188,13 @@ export function RolePermissionTreeNode({
           {node.row.code || "-"}
         </div>
 
-        <div className={`${layoutStyles.gridCell} admin-permission-cell--status`}>
+        <div className={layoutStyles.gridCell}>
           <span className={`${styles.status}${node.row.enabled ? "" : ` ${styles.disabled}`}`}>
             {node.row.enabled ? "启用" : "停用"}
           </span>
         </div>
 
-        <div className={`${layoutStyles.gridCell} admin-permission-cell--actions`}>
+        <div className={layoutStyles.gridCell}>
           {buttonChildren.length > 0 ? (
             <div
               className={styles.buttonList}

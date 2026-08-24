@@ -45,7 +45,7 @@ export class ApiError extends TransportError {
   }
 }
 
-type UnauthorizedHandler = () => void | Promise<void>;
+type UnauthorizedHandler = (sessionGeneration: number) => void | Promise<void>;
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const CSRF_COOKIE = "__Host-breezy-admin-csrf";
@@ -53,14 +53,23 @@ const CSRF_HEADER = "X-CSRF-Token";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 let unauthorizedHandler: UnauthorizedHandler | null = null;
-let unauthorizedPromise: Promise<void> | null = null;
+let unauthorizedOperation: { generation: number; promise: Promise<void> } | null = null;
 let csrfPromise: Promise<string> | null = null;
+let sessionGeneration = 0;
 
 export function registerUnauthorizedHandler(handler: UnauthorizedHandler): () => void {
   unauthorizedHandler = handler;
   return () => {
     if (unauthorizedHandler === handler) unauthorizedHandler = null;
   };
+}
+
+export function advanceSessionGeneration(): void {
+  sessionGeneration += 1;
+}
+
+export function isSessionGenerationCurrent(generation: number): boolean {
+  return generation === sessionGeneration;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -114,14 +123,17 @@ async function ensureCsrfToken(): Promise<string> {
   return csrfPromise;
 }
 
-async function handleUnauthorized(): Promise<void> {
-  if (!unauthorizedHandler) return;
-  if (!unauthorizedPromise) {
-    unauthorizedPromise = Promise.resolve(unauthorizedHandler()).finally(() => {
-      unauthorizedPromise = null;
+async function handleUnauthorized(requestSessionGeneration: number): Promise<void> {
+  if (!unauthorizedHandler || !isSessionGenerationCurrent(requestSessionGeneration)) return;
+  if (!unauthorizedOperation || unauthorizedOperation.generation !== requestSessionGeneration) {
+    const promise = Promise.resolve(unauthorizedHandler(requestSessionGeneration)).finally(() => {
+      if (unauthorizedOperation?.generation === requestSessionGeneration) {
+        unauthorizedOperation = null;
+      }
     });
+    unauthorizedOperation = { generation: requestSessionGeneration, promise };
   }
-  await unauthorizedPromise;
+  await unauthorizedOperation.promise;
 }
 
 function createAbortContext(signal: AbortSignal | undefined, timeoutMs: number) {
@@ -181,6 +193,7 @@ async function request<T>(
   mode: ResponseMode,
   options: InternalOptions = {},
 ): Promise<T> {
+  const requestSessionGeneration = sessionGeneration;
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(options.headers);
   headers.set("Accept", mode === "blob" ? "application/octet-stream, */*" : "application/json");
@@ -205,8 +218,8 @@ async function request<T>(
       signal: abort.signal,
     });
 
-    if (response.status === 401) {
-      const termination = handleUnauthorized();
+    if (response.status === 401 && requestSessionGeneration === sessionGeneration) {
+      const termination = handleUnauthorized(requestSessionGeneration);
       if (options.waitForSessionTermination === false) {
         void termination.catch((error: unknown) => {
           console.error("[transport] session termination failed", error);

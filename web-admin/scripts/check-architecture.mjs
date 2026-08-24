@@ -77,7 +77,7 @@ function print(line) {
 
 function resolveSourceImport(importer, specifier) {
   if (specifier.startsWith("@admin/")) {
-    return specifier.slice("@admin/".length);
+    return path.posix.normalize(specifier.slice("@admin/".length));
   }
   if (!specifier.startsWith(".")) return null;
   const resolved = path.resolve(path.dirname(importer), specifier);
@@ -122,6 +122,10 @@ function importSpecifiers(sourceFile) {
 function checkDependency(importer, specifier) {
   const imported = resolveSourceImport(importer, specifier);
   if (!imported) return;
+  if (imported === ".." || imported.startsWith("../")) {
+    report("非法 import", importer, `${specifier} 解析后超出 src`);
+    return;
+  }
 
   const from = sourceRelative(importer);
   const fromLayer = layerOf(from);
@@ -158,6 +162,22 @@ if (!fs.existsSync(sourceRoot)) {
 const allFiles = walk(sourceRoot);
 const sourceFiles = allFiles.filter((file) => sourceExtensions.has(path.extname(file)));
 const cssFiles = allFiles.filter((file) => path.extname(file) === ".css");
+const declaredLiteralClasses = new Set();
+
+for (const file of cssFiles) {
+  const text = fs.readFileSync(file, "utf8");
+  if (file.endsWith(".module.css")) {
+    for (const globalMatch of text.matchAll(/:global\(([\s\S]*?)\)/g)) {
+      for (const classMatch of globalMatch[1].matchAll(/\.([A-Za-z_][\w-]*)/g)) {
+        declaredLiteralClasses.add(classMatch[1]);
+      }
+    }
+  } else {
+    for (const match of text.matchAll(/\.([A-Za-z_][\w-]*)/g)) {
+      declaredLiteralClasses.add(match[1]);
+    }
+  }
+}
 
 for (const entry of fs.readdirSync(sourceRoot, { withFileTypes: true })) {
   if (!entry.isDirectory()) {
@@ -180,13 +200,12 @@ for (const file of allFiles) {
 
 for (const file of sourceFiles) {
   const text = fs.readFileSync(file, "utf8");
-  if (/@ts-(?:ignore|nocheck)\b/.test(text)) {
-    report("TypeScript 绕过", file, "禁止使用 @ts-ignore 或 @ts-nocheck");
+  if (/@ts-(?:ignore|nocheck|expect-error)\b/.test(text)) {
+    report("TypeScript 绕过", file, "禁止使用 TypeScript 错误抑制指令");
   }
   const kind = path.extname(file) === ".tsx" ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, kind);
   for (const specifier of importSpecifiers(sourceFile)) checkDependency(file, specifier);
-
   const visit = (node) => {
     if (node.kind === ts.SyntaxKind.AnyKeyword) {
       const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
@@ -201,9 +220,53 @@ for (const file of sourceFiles) {
       const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
       report("普通 fetch 归属", file, `第 ${position.line + 1} 行应通过 shared/transport`);
     }
+    if (
+      !file.endsWith(".test.tsx") &&
+      ts.isJsxAttribute(node) &&
+      node.name.text === "className" &&
+      node.initializer
+    ) {
+      for (const className of jsxLiteralClassNames(node.initializer)) {
+        if (!declaredLiteralClasses.has(className)) {
+          const position = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+          report(
+            "未定义全局样式",
+            file,
+            `第 ${position.line + 1} 行 className ${className} 没有对应的全局样式声明`,
+          );
+        }
+      }
+    }
     ts.forEachChild(node, visit);
   };
   visit(sourceFile);
+}
+
+function jsxLiteralClassNames(initializer) {
+  if (ts.isStringLiteral(initializer)) return classNamesFromText(initializer.text);
+  if (!ts.isJsxExpression(initializer) || !initializer.expression) return [];
+  const expression = initializer.expression;
+  if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
+    return classNamesFromText(expression.text);
+  }
+  if (ts.isTemplateExpression(expression)) {
+    return [
+      ...classNamesFromText(expression.head.text),
+      ...expression.templateSpans.flatMap((span) => classNamesFromText(span.literal.text)),
+    ];
+  }
+  if (ts.isArrayLiteralExpression(expression)) {
+    return expression.elements.flatMap((element) =>
+      ts.isStringLiteral(element) || ts.isNoSubstitutionTemplateLiteral(element)
+        ? classNamesFromText(element.text)
+        : [],
+    );
+  }
+  return [];
+}
+
+function classNamesFromText(text) {
+  return [...text.matchAll(/[A-Za-z_][\w-]*/g)].map((match) => match[0]);
 }
 
 for (const file of cssFiles) {

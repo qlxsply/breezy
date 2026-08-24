@@ -26,6 +26,7 @@ import {
 import { createPortal } from "react-dom";
 
 import {
+  ADMIN_SELF_SERVICE_ROUTES,
   type AdminMenuNode,
   getAdminSelfServiceRoute,
   useAdminBreadcrumb,
@@ -570,7 +571,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 className={shellClasses("topbar-icon", "round")}
                 type="button"
                 title="偏好设置"
-                onClick={() => openUtilityPage("/admin/profile/preferences")}
+                onClick={() => openUtilityPage(ADMIN_SELF_SERVICE_ROUTES.preferences.path)}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -698,25 +699,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <div className={shellClasses("user-menu")}>
                       <button
                         type="button"
-                        onClick={() => openUtilityPage("/admin/profile")}
+                        onClick={() => openUtilityPage(ADMIN_SELF_SERVICE_ROUTES.profile.path)}
                       >
                         个人中心
                       </button>
                       <button
                         type="button"
-                        onClick={() => openUtilityPage("/admin/profile/password")}
+                        onClick={() => openUtilityPage(ADMIN_SELF_SERVICE_ROUTES.password.path)}
                       >
                         修改密码
                       </button>
                       <button
                         type="button"
-                        onClick={() => openUtilityPage("/admin/profile/preferences")}
+                        onClick={() => openUtilityPage(ADMIN_SELF_SERVICE_ROUTES.preferences.path)}
                       >
                         偏好设置
                       </button>
                       <button
                         type="button"
-                        onClick={() => openUtilityPage("/admin/help")}
+                        onClick={() => openUtilityPage(ADMIN_SELF_SERVICE_ROUTES.help.path)}
                       >
                         问题与帮助
                       </button>
@@ -1070,24 +1071,8 @@ function resolveTabEntry(pathname: string, byPath: Map<string, MenuPathEntry>): 
   return {
     path: route.path,
     title: route.title,
-    iconUrl: resolveHiddenRouteIconUrl(route.path),
+    iconUrl: resolveResourceIconUrl(route.icon, "MENU") || "/admin-icons/default-menu.svg",
   };
-}
-
-function resolveHiddenRouteIconUrl(path: string): string {
-  if (path === "/admin/profile/preferences") {
-    return resolveResourceIconUrl("settings", "MENU") || "/admin-icons/default-menu.svg";
-  }
-  if (path === "/admin/profile") {
-    return resolveResourceIconUrl("user", "MENU") || "/admin-icons/default-menu.svg";
-  }
-  if (path === "/admin/profile/password") {
-    return resolveResourceIconUrl("shield", "MENU") || "/admin-icons/default-menu.svg";
-  }
-  if (path === "/admin/help") {
-    return resolveResourceIconUrl("book", "MENU") || "/admin-icons/default-menu.svg";
-  }
-  return resolveResourceIconUrl("menu", "MENU") || "/admin-icons/default-menu.svg";
 }
 
 function ResourceIconImage({

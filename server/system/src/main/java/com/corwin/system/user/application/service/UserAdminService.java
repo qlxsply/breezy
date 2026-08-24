@@ -10,6 +10,7 @@ import com.corwin.framework.util.HighDate;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.framework.web.sort.PageSpecSorts;
+import com.corwin.system.auth.application.service.InternalPermissionSessionService;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
 import com.corwin.system.role.domain.repo.RoleRepository;
 import com.corwin.system.user.application.command.BatchUpdateUserStatusCommand;
@@ -46,6 +47,7 @@ public class UserAdminService {
 
     private final UserRepository userRepository;
     private final PasswordPolicyService passwordPolicyService;
+    private final InternalPermissionSessionService internalPermissionSessionService;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
 
@@ -124,6 +126,7 @@ public class UserAdminService {
         String hash = BCrypt.hashpw(DEFAULT_RESET_PASSWORD, BCrypt.gensalt());
         user.resetPassword(hash, "", operator());
         userRepository.save(user);
+        internalPermissionSessionService.kickOutActiveSessions(List.of(id), operator());
     }
 
     /**

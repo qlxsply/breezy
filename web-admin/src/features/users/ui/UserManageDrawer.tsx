@@ -11,7 +11,7 @@ import { BzButton } from "@admin/shared/ui/bz/BzButton";
 import { BzTag } from "@admin/shared/ui/bz/BzTag";
 import { useEffect, useState } from "react";
 
-import tableStyles from "./UserTable.module.css";
+import styles from "./UserManageDrawer.module.css";
 
 interface UserManageDrawerProps {
   open: boolean;
@@ -327,7 +327,7 @@ export function UserManageDrawer({
               title={err}
               type="error"
               showIcon
-              className={`form-error ${entityStyles.error}`}
+              className={entityStyles.error}
             />
           ) : null}
         </section>
@@ -341,12 +341,12 @@ export function UserManageDrawer({
               {
                 key: "code",
                 title: "角色编码",
-                render: (role) => <span className={tableStyles.mono}>{role.code}</span>,
+                render: (role) => <span className={styles.mono}>{role.code}</span>,
               },
               {
                 key: "name",
                 title: "角色名称",
-                render: (role) => <span className={tableStyles.text}>{role.name}</span>,
+                render: (role) => <span className={styles.text}>{role.name}</span>,
               },
             ]}
             gridTemplateColumns="minmax(240px, 1fr) minmax(240px, 1fr)"

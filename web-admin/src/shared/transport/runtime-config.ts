@@ -10,6 +10,10 @@ const DEFAULT_CONFIG: RuntimeConfig = {
 };
 const CONFIG_KEYS = new Set<keyof RuntimeConfig>(["apiBaseUrl", "bootstrapPath"]);
 
+interface RuntimeConfigParseOptions {
+  requireComplete?: boolean;
+}
+
 let runtimeConfig: RuntimeConfig = DEFAULT_CONFIG;
 let loadingPromise: Promise<RuntimeConfig> | null = null;
 
@@ -24,7 +28,10 @@ function normalizePath(value: unknown, field: keyof RuntimeConfig, fallback: str
   return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
-export function parseRuntimeConfig(payload: unknown): RuntimeConfig {
+export function parseRuntimeConfig(
+  payload: unknown,
+  options: RuntimeConfigParseOptions = {},
+): RuntimeConfig {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     throw new Error("运行时配置必须是 JSON 对象");
   }
@@ -36,18 +43,35 @@ export function parseRuntimeConfig(payload: unknown): RuntimeConfig {
   if (unknownKey) {
     throw new Error(`运行时配置包含未知字段：${unknownKey}`);
   }
+  if (
+    options.requireComplete &&
+    (!Object.hasOwn(record, "apiBaseUrl") || !Object.hasOwn(record, "bootstrapPath"))
+  ) {
+    throw new Error("运行时配置必须显式声明 apiBaseUrl 和 bootstrapPath");
+  }
 
-  return Object.freeze({
-    apiBaseUrl: normalizePath(record.apiBaseUrl, "apiBaseUrl", DEFAULT_CONFIG.apiBaseUrl),
-    bootstrapPath: normalizePath(
-      record.bootstrapPath,
-      "bootstrapPath",
-      DEFAULT_CONFIG.bootstrapPath,
-    ),
-  });
+  const apiBaseUrl = normalizePath(record.apiBaseUrl, "apiBaseUrl", DEFAULT_CONFIG.apiBaseUrl);
+  const bootstrapPath = normalizePath(
+    record.bootstrapPath,
+    "bootstrapPath",
+    DEFAULT_CONFIG.bootstrapPath,
+  );
+  if (apiBaseUrl === "/" || bootstrapPath === "/") {
+    throw new Error("apiBaseUrl 和 bootstrapPath 不能是根路径");
+  }
+  if (!/^\/[A-Za-z][A-Za-z0-9_-]*$/.test(apiBaseUrl)) {
+    throw new Error("apiBaseUrl 必须是单个安全路径段");
+  }
+  if (apiBaseUrl === "/admin" || apiBaseUrl === "/healthz") {
+    throw new Error("apiBaseUrl 与前端保留路径冲突");
+  }
+  return Object.freeze({ apiBaseUrl, bootstrapPath });
 }
 
-export async function loadRuntimeConfig(fetcher: typeof fetch = fetch): Promise<RuntimeConfig> {
+export async function loadRuntimeConfig(
+  fetcher: typeof fetch = fetch,
+  options: RuntimeConfigParseOptions = {},
+): Promise<RuntimeConfig> {
   const response = await fetcher(RUNTIME_CONFIG_URL, {
     cache: "no-store",
     credentials: "same-origin",
@@ -57,13 +81,15 @@ export async function loadRuntimeConfig(fetcher: typeof fetch = fetch): Promise<
     throw new Error(`运行时配置加载失败：HTTP ${response.status}`);
   }
 
-  runtimeConfig = parseRuntimeConfig(await response.json());
+  runtimeConfig = parseRuntimeConfig(await response.json(), options);
   return runtimeConfig;
 }
 
-export function ensureRuntimeConfigLoaded(): Promise<RuntimeConfig> {
+export function ensureRuntimeConfigLoaded(
+  options: RuntimeConfigParseOptions = {},
+): Promise<RuntimeConfig> {
   if (!loadingPromise) {
-    loadingPromise = loadRuntimeConfig().catch((error) => {
+    loadingPromise = loadRuntimeConfig(fetch, options).catch((error) => {
       loadingPromise = null;
       throw error;
     });
@@ -71,9 +97,11 @@ export function ensureRuntimeConfigLoaded(): Promise<RuntimeConfig> {
   return loadingPromise;
 }
 
-export function reloadRuntimeConfig(): Promise<RuntimeConfig> {
+export function reloadRuntimeConfig(
+  options: RuntimeConfigParseOptions = {},
+): Promise<RuntimeConfig> {
   loadingPromise = null;
-  return ensureRuntimeConfigLoaded();
+  return ensureRuntimeConfigLoaded(options);
 }
 
 export function getRuntimeConfig(): RuntimeConfig {

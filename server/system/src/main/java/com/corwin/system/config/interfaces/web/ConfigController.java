@@ -64,7 +64,7 @@ public class ConfigController {
     }
 
     @GetMapping("/effective/{configKey}")
-    @Authenticated
+    @Authenticated(allowExpiredCredentials = true)
     public ApiResponse<ConfigEffectiveRes> effective(@PathVariable String configKey) {
         return ApiResponse.ok(toRes(configQueryService.effective(configKey)));
     }

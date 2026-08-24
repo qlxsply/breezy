@@ -55,11 +55,11 @@
 以下文件是当前规范的权威实现来源：
 
 - `src/styles/theme.css`
-- `src/styles/admin-page.css`
-- `src/styles/admin/table.css`
-- `src/styles/admin/drawer.css`
-- `src/styles/admin/permission.css`
-- `src/components/bz/bz-react.css`
+- `src/styles/base.css`
+- `src/shared/ui/bz/*.module.css`
+- `src/shared/ui/admin/*.module.css`
+- `src/shared/ui/admin/inputs/*.module.css`
+- `src/features/*/*.module.css`
 
 以下组件是后台页面默认基线：
 

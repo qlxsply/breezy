@@ -4,6 +4,8 @@ import com.corwin.framework.constant.UserType;
 import com.corwin.framework.error.BizException;
 import com.corwin.framework.web.auth.AuthPrincipal;
 import com.corwin.system.auth.application.error.AuthError;
+import com.corwin.system.user.domain.model.User;
+import com.corwin.system.user.domain.repo.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -18,17 +20,21 @@ import java.util.Set;
 public class RequestAuthorizationService {
 
     private final DefaultSecurityContextService securityContextService;
+    private final UserRepository userRepository;
 
-    public RequestAuthorizationService(DefaultSecurityContextService securityContextService) {
+    public RequestAuthorizationService(DefaultSecurityContextService securityContextService,
+            UserRepository userRepository) {
         this.securityContextService = securityContextService;
+        this.userRepository = userRepository;
     }
 
     /**
      * Checks that the current user is authenticated and optionally matches the given user type.
      */
-    public void checkAuthenticated(UserType userType) {
+    public void checkAuthenticated(UserType userType, boolean allowExpiredCredentials) {
         AuthPrincipal principal = securityContextService.current();
         checkUserType(principal, userType);
+        checkCredentials(principal, allowExpiredCredentials);
     }
 
     /**
@@ -38,6 +44,7 @@ public class RequestAuthorizationService {
     public void checkAuthorized(UserType userType, String[] permissions, boolean anyPermission) {
         AuthPrincipal principal = securityContextService.current();
         checkUserType(principal, userType);
+        checkCredentials(principal, false);
         if (principal.admin() && principal.userType() == UserType.ADMIN) {
             return;
         }
@@ -64,6 +71,21 @@ public class RequestAuthorizationService {
             return;
         }
         if (userType != principal.userType()) {
+            throw new BizException(AuthError.FORBIDDEN);
+        }
+    }
+
+    private void checkCredentials(AuthPrincipal principal, boolean allowExpiredCredentials) {
+        if (allowExpiredCredentials) {
+            return;
+        }
+        boolean credentialsExpired = principal.credentialsExpired();
+        if (principal.userType() == UserType.ADMIN && principal.userId() != null) {
+            credentialsExpired = userRepository.findById(principal.userId())
+                    .map(User::isMustChangePassword)
+                    .orElse(true);
+        }
+        if (credentialsExpired) {
             throw new BizException(AuthError.FORBIDDEN);
         }
     }

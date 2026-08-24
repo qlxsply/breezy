@@ -9,6 +9,14 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = path.join(rootDir, "dist");
 const port = Number(process.env.PREVIEW_PORT || 9001);
 const apiUpstream = new URL(process.env.ADMIN_API_UPSTREAM || "http://localhost:8910");
+const apiBasePath = normalizeApiBasePath(
+  process.env.ADMIN_API_BASE_PATH || "/api",
+  "ADMIN_API_BASE_PATH",
+);
+const bootstrapPath = normalizeRuntimePath(
+  process.env.ADMIN_BOOTSTRAP_PATH || "/admin/menu-resources",
+  "ADMIN_BOOTSTRAP_PATH",
+);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
   [".html", "text/html; charset=utf-8"],
@@ -32,6 +40,30 @@ if (
   throw new Error("ADMIN_API_UPSTREAM 必须是只包含 Origin 的 HTTP/HTTPS 地址");
 }
 
+function normalizeRuntimePath(value, name) {
+  const normalized = value.trim();
+  if (
+    !/^\/[A-Za-z0-9._~/-]*$/.test(normalized) ||
+    normalized === "/" ||
+    normalized.startsWith("//") ||
+    normalized.endsWith("/")
+  ) {
+    throw new Error(`${name} 必须是非根路径、无尾部斜杠的同源路径`);
+  }
+  return normalized;
+}
+
+function normalizeApiBasePath(value, name) {
+  const normalized = value.trim();
+  if (!/^\/[A-Za-z][A-Za-z0-9_-]*$/.test(normalized)) {
+    throw new Error(`${name} 必须是单个安全路径段`);
+  }
+  if (normalized === "/admin" || normalized === "/healthz") {
+    throw new Error(`${name} 与前端保留路径冲突`);
+  }
+  return normalized;
+}
+
 function applySecurityHeaders(response) {
   response.setHeader(
     "Content-Security-Policy",
@@ -46,8 +78,10 @@ function applySecurityHeaders(response) {
   response.setHeader("X-Frame-Options", "DENY");
 }
 
-function proxyApi(request, response) {
-  const target = new URL(request.url || "/api", apiUpstream);
+function proxyApi(request, response, requestUrl) {
+  const target = new URL(apiUpstream);
+  target.pathname = `/api${requestUrl.pathname.slice(apiBasePath.length)}`;
+  target.search = requestUrl.search;
   const transport = target.protocol === "https:" ? https : http;
   const proxyRequest = transport.request(
     target,
@@ -93,8 +127,8 @@ async function resolveStaticFile(pathname) {
 
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
-  if (requestUrl.pathname.startsWith("/api/")) {
-    proxyApi(request, response);
+  if (requestUrl.pathname.startsWith(`${apiBasePath}/`)) {
+    proxyApi(request, response, requestUrl);
     return;
   }
 
@@ -107,6 +141,14 @@ const server = http.createServer(async (request, response) => {
   if (requestUrl.pathname === "/") {
     response.writeHead(302, { Location: "/admin/" });
     response.end();
+    return;
+  }
+  if (requestUrl.pathname === "/runtime-config.json") {
+    response.writeHead(200, {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Content-Type": "application/json; charset=utf-8",
+    });
+    response.end(JSON.stringify({ apiBaseUrl: apiBasePath, bootstrapPath }));
     return;
   }
 
@@ -138,4 +180,5 @@ const server = http.createServer(async (request, response) => {
 server.listen(port, "0.0.0.0", () => {
   process.stdout.write(`Breezy Admin preview: http://localhost:${port}\n`);
   process.stdout.write(`API upstream: ${apiUpstream.origin}\n`);
+  process.stdout.write(`API base path: ${apiBasePath}\n`);
 });

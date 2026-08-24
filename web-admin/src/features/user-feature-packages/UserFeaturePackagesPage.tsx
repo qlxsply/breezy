@@ -1,7 +1,7 @@
 "use client";
 
 import { batchListDictionaryOptions as batchListDictOptions } from "@admin/features/dicts/public/dictionary-client";
-import type { DictionaryItem as DictItem } from "@admin/features/dicts/public/types";
+import type { PublicDictionaryItem as DictItem } from "@admin/features/dicts/public/types";
 import { usePermission } from "@admin/features/resources/permissions";
 import {
   listUserFeatureApplications,

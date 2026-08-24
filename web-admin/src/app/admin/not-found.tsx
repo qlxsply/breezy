@@ -1,6 +1,5 @@
 import { AdminRouteFeedback } from "@admin/shared/ui/admin/AdminRouteFeedback";
-import buttonStyles from "@admin/shared/ui/bz/BzButton.module.css";
-import Link from "next/link";
+import { BzButtonLink } from "@admin/shared/ui/bz/BzButtonLink";
 
 export default function AdminNotFound() {
   return (
@@ -9,12 +8,12 @@ export default function AdminNotFound() {
       title="页面不存在"
       description="当前地址没有对应的后台页面。"
       action={
-        <Link
-          className={`${buttonStyles.button} ${buttonStyles.primary}`}
+        <BzButtonLink
+          buttonType="primary"
           href="/admin"
         >
-          <span className={buttonStyles.label}>返回工作台</span>
-        </Link>
+          返回工作台
+        </BzButtonLink>
       }
     />
   );

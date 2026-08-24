@@ -74,7 +74,7 @@ public class AdminAuthController {
      * Returns the currently authenticated admin user's information.
      */
     @GetMapping("/me")
-    @Authenticated(userType = UserType.ADMIN)
+    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
     public ApiResponse<AuthUserRes> me() {
         return ApiResponse.ok(toAuthDto(authService.currentUser()));
     }
@@ -97,7 +97,7 @@ public class AdminAuthController {
      * Changes the current admin user's password.
      */
     @PutMapping("/password")
-    @Authenticated(userType = UserType.ADMIN)
+    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
         return ApiResponse.ok(authService.changePassword(new ChangePasswordCommand(req.oldPassword(), req.newPassword())));
     }

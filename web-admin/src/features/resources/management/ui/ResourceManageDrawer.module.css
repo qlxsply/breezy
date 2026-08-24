@@ -28,6 +28,12 @@
   color: var(--color-text-subtle);
 }
 
+.formError {
+  margin-top: var(--space-3);
+  color: var(--color-danger-600);
+  font-size: var(--font-size-sm);
+}
+
 @media (max-width: 768px) {
   .root .permissionBox {
     grid-template-columns: 1fr;

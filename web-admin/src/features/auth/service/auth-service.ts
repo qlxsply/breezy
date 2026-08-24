@@ -14,9 +14,11 @@ import {
 } from "@admin/features/auth/model/auth-store";
 import type { AuthSession, AuthUser, AuthUserType } from "@admin/features/auth/model/types";
 import { clearFormatterConfigs, setFormatterConfigs } from "@admin/shared/lib/formatter";
+import { advanceSessionGeneration } from "@admin/shared/transport";
 import type { UserConfigItem } from "@admin/shared/types/user-config";
 
 export const INTERNAL_USER_LANDING_PATH = "/admin";
+export const PASSWORD_CHANGE_PATH = "/admin/profile/password";
 
 let loadPromise: Promise<AuthSession> | null = null;
 let authGeneration = 0;
@@ -60,6 +62,7 @@ export async function login(account: string, password: string): Promise<AuthUser
   const generation = ++authGeneration;
   const user = await loginAdmin(account, password);
   if (generation !== authGeneration) throw new DOMException("登录流程已取消", "AbortError");
+  advanceSessionGeneration();
   setFormatterConfigs(user.configs ?? []);
   setAuthenticated(user);
   return user;
@@ -89,6 +92,7 @@ export function applyPersonalizedConfigs(configs: UserConfigItem[]): void {
 export function resetAuthSession(): void {
   authGeneration += 1;
   loadPromise = null;
+  advanceSessionGeneration();
   clearFormatterConfigs();
   setAuthAnonymous();
 }

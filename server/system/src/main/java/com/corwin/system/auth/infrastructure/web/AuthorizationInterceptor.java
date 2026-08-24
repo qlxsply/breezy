@@ -53,7 +53,8 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         Authenticated methodAuthenticated = handlerMethod.getMethodAnnotation(Authenticated.class);
         if (methodAuthenticated != null) {
-            authorizationService.checkAuthenticated(methodAuthenticated.userType());
+            authorizationService.checkAuthenticated(methodAuthenticated.userType(),
+                    methodAuthenticated.allowExpiredCredentials());
             return true;
         }
 
@@ -71,7 +72,8 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         Authenticated typeAuthenticated = handlerMethod.getBeanType().getAnnotation(Authenticated.class);
         if (typeAuthenticated != null) {
-            authorizationService.checkAuthenticated(typeAuthenticated.userType());
+            authorizationService.checkAuthenticated(typeAuthenticated.userType(),
+                    typeAuthenticated.allowExpiredCredentials());
             return true;
         }
 

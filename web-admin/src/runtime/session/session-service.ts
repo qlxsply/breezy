@@ -2,21 +2,40 @@ import { resetAuthSession, revokeAuthSession } from "@admin/features/auth/servic
 import { resetNotifications } from "@admin/features/notifications/service/notification-service";
 import { resetResources } from "@admin/features/resources/service/resource-service";
 import { stopAdminRuntime } from "@admin/runtime/admin-runtime";
+import { isSessionGenerationCurrent } from "@admin/shared/transport";
 
 import { broadcastSessionEnded } from "./session-channel";
 
 interface EndSessionOptions {
   redirectToLogin?: boolean;
   broadcast?: boolean;
+  expectedSessionGeneration?: number;
 }
 
 let endingPromise: Promise<void> | null = null;
 
 export function endSession(options: EndSessionOptions = {}): Promise<void> {
-  if (endingPromise) return endingPromise;
+  const { expectedSessionGeneration } = options;
+  if (
+    expectedSessionGeneration !== undefined &&
+    !isSessionGenerationCurrent(expectedSessionGeneration)
+  ) {
+    return Promise.resolve();
+  }
+  if (endingPromise) {
+    return expectedSessionGeneration === undefined
+      ? endingPromise
+      : endingPromise.then(() => endSession(options));
+  }
   const { redirectToLogin = true, broadcast = true } = options;
   endingPromise = (async () => {
     await stopAdminRuntime({ unsubscribeLocalPush: true });
+    if (
+      expectedSessionGeneration !== undefined &&
+      !isSessionGenerationCurrent(expectedSessionGeneration)
+    ) {
+      return;
+    }
     resetNotifications();
     resetResources();
     resetAuthSession();

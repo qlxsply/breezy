@@ -1588,10 +1588,10 @@ function AuthWhitelistEditor({
         </colgroup>
         <thead>
           <tr>
-            <th className="config-whitelist-table__drag-column" />
+            <th />
             <th>匹配类型</th>
             <th>路径规则</th>
-            <th className="config-whitelist-table__action-column">
+            <th>
               {editable ? (
                 <BzIconActionButton
                   icon="plus"

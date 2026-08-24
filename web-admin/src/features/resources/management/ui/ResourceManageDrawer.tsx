@@ -751,14 +751,7 @@ export function ResourceManageDrawer({
           </section>
         ) : null}
 
-        {formError ? (
-          <div
-            className="form-error"
-            style={{ marginTop: 12 }}
-          >
-            {formError}
-          </div>
-        ) : null}
+        {formError ? <div className={styles.formError}>{formError}</div> : null}
       </div>
     </AdminEntityDrawer>
   );

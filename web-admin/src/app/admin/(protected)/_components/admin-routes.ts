@@ -1,5 +1,6 @@
 "use client";
 
+import { PASSWORD_CHANGE_PATH } from "@admin/features/auth/public/session";
 import { resolveResourceIconUrl } from "@admin/features/resources/model/resource-icon";
 import { useResources } from "@admin/features/resources/model/resource-store";
 import type { ResourceEntry, ResourceNodeType } from "@admin/features/resources/model/types";
@@ -19,14 +20,18 @@ export interface AdminMenuNode {
 interface AdminSelfServiceRoute {
   path: string;
   title: string;
+  icon: string;
 }
 
-const SELF_SERVICE_ROUTES: readonly AdminSelfServiceRoute[] = [
-  { path: "/admin/profile", title: "个人中心" },
-  { path: "/admin/profile/password", title: "修改密码" },
-  { path: "/admin/profile/preferences", title: "偏好设置" },
-  { path: "/admin/help", title: "问题与帮助" },
-];
+export const ADMIN_SELF_SERVICE_ROUTES = {
+  profile: { path: "/admin/profile", title: "个人中心", icon: "user" },
+  password: { path: PASSWORD_CHANGE_PATH, title: "修改密码", icon: "shield" },
+  preferences: { path: "/admin/profile/preferences", title: "偏好设置", icon: "settings" },
+  help: { path: "/admin/help", title: "问题与帮助", icon: "book" },
+} as const satisfies Record<string, AdminSelfServiceRoute>;
+
+const SELF_SERVICE_ROUTES: readonly AdminSelfServiceRoute[] =
+  Object.values(ADMIN_SELF_SERVICE_ROUTES);
 
 export function getAdminSelfServiceRoute(pathname: string): AdminSelfServiceRoute | undefined {
   const normalized = normalizePath(pathname);

@@ -2,6 +2,8 @@ import { BzAlert } from "@admin/shared/ui/bz/BzAlert";
 import { BzButton } from "@admin/shared/ui/bz/BzButton";
 import { BzDialog } from "@admin/shared/ui/bz/BzDialog";
 
+import styles from "./PasswordResetDialog.module.css";
+
 interface PasswordResetDialogProps {
   onClose: () => void;
   onSubmit: () => void;
@@ -31,7 +33,7 @@ export function PasswordResetDialog({ onClose, onSubmit }: PasswordResetDialogPr
         type="warning"
         showIcon
       />
-      <div className="hint">重置后用户下次登录需修改密码。</div>
+      <div className={styles.hint}>重置后用户下次登录需修改密码。</div>
     </BzDialog>
   );
 }

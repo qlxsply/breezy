@@ -371,7 +371,7 @@ export function UserFeaturePackageManageDrawer({
               </BzButton>
             ) : null}
           </div>
-          <div className={`${layoutStyles.gridTable} admin-permission-table`}>
+          <div className={layoutStyles.gridTable}>
             <div className={`${layoutStyles.gridViewport} ${styles.viewport}`}>
               <div className={`${layoutStyles.gridRow} ${layoutStyles.gridHead} ${styles.head}`}>
                 <div className={`${layoutStyles.gridCell} ${layoutStyles.gridCheck}`} />

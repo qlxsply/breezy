@@ -1,5 +1,3 @@
-// /src/types/notification.ts
-
 export type NotificationType = "TODO_REMINDER" | "SYSTEM_EVENT" | "BUSINESS_EVENT" | string;
 
 export interface RealtimeNotificationMessage {

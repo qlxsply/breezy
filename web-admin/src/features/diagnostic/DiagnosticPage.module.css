@@ -33,6 +33,10 @@
   width: 100%;
 }
 
+.textMuted {
+  color: var(--color-text-muted);
+}
+
 .selectionSection {
   display: grid;
   gap: var(--space-3);

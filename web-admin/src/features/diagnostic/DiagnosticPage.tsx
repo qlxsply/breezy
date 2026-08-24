@@ -585,7 +585,7 @@ export function DiagnosticPage() {
             </div>
           );
         }
-        return <span className="text-muted">无专属阈值配置</span>;
+        return <span className={styles.textMuted}>无专属阈值配置</span>;
       },
     },
   ];

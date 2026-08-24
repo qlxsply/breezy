@@ -13,6 +13,10 @@
   user-select: none;
 }
 
+.handle:global(.bz-drag-handle) {
+  touch-action: none;
+}
+
 .handle svg {
   display: block;
   pointer-events: none;

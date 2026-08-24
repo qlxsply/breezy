@@ -8,7 +8,9 @@ import { startSessionChannel } from "./session-channel";
 
 export function SessionLifecycleBridge() {
   useEffect(() => {
-    const unregisterUnauthorized = registerUnauthorizedHandler(() => endSession());
+    const unregisterUnauthorized = registerUnauthorizedHandler((sessionGeneration) =>
+      endSession({ expectedSessionGeneration: sessionGeneration }),
+    );
     const stopChannel = startSessionChannel(() => {
       void endSession({ redirectToLogin: true, broadcast: false });
     });

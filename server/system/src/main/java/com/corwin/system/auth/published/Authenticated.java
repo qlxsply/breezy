@@ -21,4 +21,9 @@ public @interface Authenticated {
      * The required user type for access.
      */
     UserType userType() default UserType.GUEST;
+
+    /**
+     * Whether the endpoint remains available while credentials must be updated.
+     */
+    boolean allowExpiredCredentials() default false;
 }
