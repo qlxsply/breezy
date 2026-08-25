@@ -1,9 +1,9 @@
 import type { PageRule } from "@admin/shared/types/pagination";
 
 import type {
-  WebUserStatus,
   UserFeatureAccessScope,
   UserFeatureOverrideType,
+  WebUserStatus,
 } from "../model/types";
 
 export interface WebUserPayload {

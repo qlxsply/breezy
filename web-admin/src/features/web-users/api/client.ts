@@ -2,20 +2,20 @@ import { get, post, put, type RequestOptions } from "@admin/shared/transport";
 import type { PageResult } from "@admin/shared/types/pagination";
 
 import type {
-  WebUserEntry,
   UserFeaturePackageOptionEntry,
   UserFeatureUserApplicationEntry,
   UserFeatureUserFeatureEntry,
   UserFeatureUserManagementEntry,
+  WebUserEntry,
 } from "../model/types";
 import type {
-  WebUserPageRequest,
-  WebUserPayload,
   SaveUserFeatureUserManagementRequest,
   UserFeaturePackageOptionPayload,
   UserFeatureUserApplicationPayload,
   UserFeatureUserFeaturePayload,
   UserFeatureUserManagementPayload,
+  WebUserPageRequest,
+  WebUserPayload,
 } from "./payload";
 
 const USER_BASE = "/web-users";
@@ -95,18 +95,14 @@ export async function pageWebUsers(
 }
 
 export async function getWebUser(id: string, options?: Options): Promise<WebUserEntry> {
-  return toWebUser(
-    await get<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, options),
-  );
+  return toWebUser(await get<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, options));
 }
 
 export async function updateWebUser(
   id: string,
   status: WebUserEntry["status"],
 ): Promise<WebUserEntry> {
-  return toWebUser(
-    await put<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, { status }),
-  );
+  return toWebUser(await put<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, { status }));
 }
 
 export async function getUserFeatureUserManagement(

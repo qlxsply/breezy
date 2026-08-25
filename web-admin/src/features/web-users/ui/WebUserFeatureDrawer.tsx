@@ -16,17 +16,17 @@ import { BzButton, BzEmpty, BzInput, BzTag } from "@admin/shared/ui/bz";
 import { useEffect, useRef, useState } from "react";
 
 import {
-  getWebUser,
   getUserFeatureUserManagement,
+  getWebUser,
   saveUserFeatureUserManagement,
 } from "../api/client";
 import type {
-  WebUserEntry,
-  WebUserStatus,
   UserFeatureAccessScope,
   UserFeatureOverrideType,
   UserFeatureUserApplicationEntry,
   UserFeatureUserManagementEntry,
+  WebUserEntry,
+  WebUserStatus,
 } from "../model/types";
 import styles from "./WebUserFeatureDrawer.module.css";
 
