@@ -1,24 +1,24 @@
 import type { PageRule } from "@admin/shared/types/pagination";
 
 import type {
-  ExternalUserStatus,
+  WebUserStatus,
   UserFeatureAccessScope,
   UserFeatureOverrideType,
 } from "../model/types";
 
-export interface ExternalUserPayload {
+export interface WebUserPayload {
   id?: string | number | null;
   account?: string | null;
   nickname?: string | null;
-  status?: ExternalUserStatus | null;
+  status?: WebUserStatus | null;
   lastLoginAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
 
-export interface ExternalUserPageRequest {
+export interface WebUserPageRequest {
   keyword?: string;
-  status?: ExternalUserStatus;
+  status?: WebUserStatus;
   page?: PageRule;
 }
 

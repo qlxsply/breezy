@@ -7,17 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.*;
+import java.util.*;
 
 /**
  * @author Corwin 2026/6/29
@@ -46,7 +37,7 @@ public class BootstrapResourceSyncService {
 
         ResourceStats stats = dryRun ? validateOnly(resources, userFeatures, expectedStats)
                 : BootstrapJdbcTransactionSupport.execute(dataSource,
-                        connection -> rebuild(connection, resources, userFeatures));
+                connection -> rebuild(connection, resources, userFeatures));
 
         String message = "resources=" + stats.resourceCount
                 + "; resourcePermissions=" + stats.resourcePermissionCount
@@ -93,10 +84,10 @@ public class BootstrapResourceSyncService {
         for (BootstrapResourceDefinitionLoader.ResourceSeed resource : resources) {
             collectInternalPermissionCodes(resource, internalPermissionCodes);
         }
-        LinkedHashSet<String> externalPermissionCodes = new LinkedHashSet<>();
+        LinkedHashSet<String> webUserPermissionCodes = new LinkedHashSet<>();
         for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : userFeatures.applications()) {
             for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
-                externalPermissionCodes.addAll(feature.permissionCodes());
+                webUserPermissionCodes.addAll(feature.permissionCodes());
             }
         }
 
@@ -109,7 +100,7 @@ public class BootstrapResourceSyncService {
                 throw new IllegalStateException("resource permission must be ADMIN-only: " + permissionCode);
             }
         }
-        for (String permissionCode : externalPermissionCodes) {
+        for (String permissionCode : webUserPermissionCodes) {
             PermissionRef permission = permissionByCode.get(permissionCode);
             if (permission == null) {
                 throw new IllegalStateException("user feature permission missing in sys_permission: " + permissionCode);

@@ -22,15 +22,15 @@ import {
 } from "@admin/shared/ui/bz";
 import { useMemo, useRef, useState } from "react";
 
-import { pageExternalUsers, updateExternalUser } from "./api/client";
-import type { ExternalUserEntry, ExternalUserStatus } from "./model/types";
+import { pageWebUsers, updateWebUser } from "./api/client";
+import type { WebUserEntry, WebUserStatus } from "./model/types";
 import { WEB_USER_PERMISSIONS } from "./permissions";
 import { WebUserFeatureDrawer, type WebUserFeatureDrawerMode } from "./ui/WebUserFeatureDrawer";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
 const INITIAL_FILTERS = {
   keyword: "",
-  status: "" as "" | ExternalUserStatus,
+  status: "" as "" | WebUserStatus,
 };
 
 export function WebUsersPage() {
@@ -57,13 +57,13 @@ export function WebUsersPage() {
     refresh,
     setPageNo,
     setPageSize,
-  } = useAdminPagedQuery<ExternalUserEntry, typeof INITIAL_FILTERS>({
+  } = useAdminPagedQuery<WebUserEntry, typeof INITIAL_FILTERS>({
     initialFilters: INITIAL_FILTERS,
     pageSizes: PAGE_SIZE_OPTIONS,
     enabled: canView,
     normalizeFilters: (filters) => ({ ...filters, keyword: filters.keyword.trim() }),
     query: ({ filters, pageNo: targetPage, pageSize: targetSize, signal }) =>
-      pageExternalUsers(
+      pageWebUsers(
         {
           keyword: filters.keyword || undefined,
           status: filters.status || undefined,
@@ -80,7 +80,7 @@ export function WebUsersPage() {
     setDrawerOpen(true);
   }
 
-  function getRowActions(row: ExternalUserEntry): AdminActionItem[] {
+  function getRowActions(row: WebUserEntry): AdminActionItem[] {
     const actions: AdminActionItem[] = [
       {
         key: `detail-${row.id}`,
@@ -109,9 +109,9 @@ export function WebUsersPage() {
     return actions;
   }
 
-  async function toggleStatus(row: ExternalUserEntry) {
+  async function toggleStatus(row: WebUserEntry) {
     if (!canEdit || row.status === "CANCELLED" || mutationLockRef.current) return;
-    const nextStatus: ExternalUserStatus = row.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const nextStatus: WebUserStatus = row.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
     const confirmed = await bzConfirm({
       title: nextStatus === "ACTIVE" ? "启用用户" : "停用用户",
       content: `确认${nextStatus === "ACTIVE" ? "启用" : "停用"}：${row.account}？`,
@@ -121,7 +121,7 @@ export function WebUsersPage() {
     if (!confirmed) return;
     mutationLockRef.current = true;
     try {
-      await updateExternalUser(row.id, nextStatus);
+      await updateWebUser(row.id, nextStatus);
       message.success(nextStatus === "ACTIVE" ? "已启用" : "已停用");
       await refresh();
     } catch (cause) {
@@ -131,8 +131,8 @@ export function WebUsersPage() {
     }
   }
 
-  const columns = useMemo<Array<BzTableColumn<ExternalUserEntry>>>(() => {
-    const baseColumns: Array<BzTableColumn<ExternalUserEntry>> = [
+  const columns = useMemo<Array<BzTableColumn<WebUserEntry>>>(() => {
+    const baseColumns: Array<BzTableColumn<WebUserEntry>> = [
       { key: "account", title: "账号", width: 200, render: (row) => <>{row.account}</> },
       {
         key: "nickname",
@@ -191,7 +191,7 @@ export function WebUsersPage() {
                 onValueChange={(status) =>
                   setDraftFilters((filters) => ({
                     ...filters,
-                    status: (status || "") as "" | ExternalUserStatus,
+                    status: (status || "") as "" | WebUserStatus,
                   }))
                 }
               >
@@ -261,12 +261,12 @@ export function WebUsersPage() {
   );
 }
 
-function resolveStatusLabel(status: ExternalUserStatus): string {
+function resolveStatusLabel(status: WebUserStatus): string {
   if (status === "ACTIVE") return "启用";
   if (status === "DISABLED") return "停用";
   return "已注销";
 }
 
-function resolveStatusType(status: ExternalUserStatus): "success" | "danger" {
+function resolveStatusType(status: WebUserStatus): "success" | "danger" {
   return status === "ACTIVE" ? "success" : "danger";
 }

@@ -71,7 +71,7 @@ public class UserFeatureAccessService {
      * Returns the set of permission codes granted to the user through accessible features.
      *
      * @param userId the user ID
-     * @return set of permission codes scoped to external users
+     * @return set of permission codes scoped to web users
      */
     public Set<String> permissionCodesForExternalUser(Long userId) {
         requireExternalUser(userId);

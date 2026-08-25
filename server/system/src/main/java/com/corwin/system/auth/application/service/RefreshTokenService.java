@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Service for issuing, rotating, and revoking refresh tokens for external users.
+ * Service for issuing, rotating, and revoking refresh tokens for web users.
  *
  * @author Corwin 2026/6/7
  */

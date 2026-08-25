@@ -10,6 +10,7 @@ import com.corwin.framework.web.ctx.CtxUtil;
 import com.corwin.system.auth.application.command.ChangePasswordCommand;
 import com.corwin.system.auth.application.command.LoginCommand;
 import com.corwin.system.auth.application.error.AuthError;
+import com.corwin.system.auth.application.service.AuthConfigService;
 import com.corwin.system.auth.application.service.PasswordPolicyService;
 import com.corwin.system.auth.application.service.RefreshTokenService;
 import com.corwin.system.auth.published.SecurityContextService;
@@ -53,18 +54,16 @@ public class WebUserAuthService {
     private final WebUserLifecycleService webUserLifecycleService;
     private final WebUserIdentitySupport webUserIdentitySupport;
     private final RefreshTokenService refreshTokenService;
-    private final com.corwin.system.auth.application.service.AuthConfigService authConfigService;
+    private final AuthConfigService authConfigService;
 
     public WebUserAuthService(WebUserRepository webUserRepository, WebUserIdentityRepository webUserIdentityRepository,
-                              WebUserCredentialRepository webUserCredentialRepository,
-                              WebUserCurrentIdentityRepository webUserCurrentIdentityRepository,
-                              WebUserRestrictionService webUserRestrictionService,
-                              WebUserJwtTokenService webUserJwtTokenService, PermissionService permissionService,
-                              PasswordPolicyService passwordPolicyService,
-                              SecurityContextService securityContextService,
-                              WebUserLifecycleService webUserLifecycleService,
-                              WebUserIdentitySupport webUserIdentitySupport, RefreshTokenService refreshTokenService,
-                              com.corwin.system.auth.application.service.AuthConfigService authConfigService) {
+            WebUserCredentialRepository webUserCredentialRepository,
+            WebUserCurrentIdentityRepository webUserCurrentIdentityRepository,
+            WebUserRestrictionService webUserRestrictionService, WebUserJwtTokenService webUserJwtTokenService,
+            PermissionService permissionService, PasswordPolicyService passwordPolicyService,
+            SecurityContextService securityContextService, WebUserLifecycleService webUserLifecycleService,
+            WebUserIdentitySupport webUserIdentitySupport, RefreshTokenService refreshTokenService,
+            AuthConfigService authConfigService) {
         this.webUserRepository = webUserRepository;
         this.webUserIdentityRepository = webUserIdentityRepository;
         this.webUserCredentialRepository = webUserCredentialRepository;
@@ -96,10 +95,10 @@ public class WebUserAuthService {
         String identityHash = webUserIdentitySupport.hash(identityType, cmd.account());
         WebUserCurrentIdentity currentIdentity = webUserCurrentIdentityRepository.findByIdentityTypeAndIdentityHash(
                 identityType, identityHash).orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
-        WebUserIdentity identity = webUserIdentityRepository.findById(currentIdentity.getIdentityId()).orElseThrow(
-                () -> new BizException(AuthError.BAD_CREDENTIALS));
+        WebUserIdentity identity = webUserIdentityRepository.findById(currentIdentity.getIdentityId())
+                .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
         WebUser user = webUserRepository.findById(currentIdentity.getUserId())
-                                        .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+                .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
 
         BizAssert.state(user.canLogin(), AuthError.USER_DISABLED);
         BizAssert.state(Boolean.TRUE.equals(identity.getLoginEnabled()), AuthError.FORBIDDEN);
@@ -107,8 +106,8 @@ public class WebUserAuthService {
         BizAssert.state(!webUserRestrictionService.hasLoginRestriction(user.getId()), AuthError.FORBIDDEN);
 
         WebUserCredential credential = webUserCredentialRepository.findFirstByUserIdAndCredentialTypeAndStatus(
-                user.getId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE).orElseThrow(
-                () -> new BizException(AuthError.BAD_CREDENTIALS));
+                        user.getId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
+                .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
         if (!BCrypt.checkpw(cmd.password(), credential.getSecretHash())) {
             throw new BizException(AuthError.BAD_CREDENTIALS);
         }
@@ -144,11 +143,9 @@ public class WebUserAuthService {
         BizAssert.state(!webUserRestrictionService.hasLoginRestriction(user.getId()), AuthError.FORBIDDEN);
 
         WebUserIdentity identity = webUserIdentityRepository.findByUserId(user.getId()).stream()
-                                                            .filter(item -> item.getBindStatus() ==
-                                                                    WebUserIdentityBindStatus.ACTIVE)
-                                                            .filter(item -> Boolean.TRUE.equals(item.getLoginEnabled()))
-                                                            .findFirst()
-                                                            .orElseThrow(() -> new BizException(AuthError.FORBIDDEN));
+                .filter(item -> item.getBindStatus() == WebUserIdentityBindStatus.ACTIVE)
+                .filter(item -> Boolean.TRUE.equals(item.getLoginEnabled())).findFirst()
+                .orElseThrow(() -> new BizException(AuthError.FORBIDDEN));
 
         Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
         AuthPrincipal principal = new AuthPrincipal(user.getId(), identity.getIdentityValue(), UserType.USER, false,
@@ -165,7 +162,7 @@ public class WebUserAuthService {
      * Retrieve the currently authenticated external user's info from the security context.
      */
     public WebUserAuthView currentUser() {
-        AuthPrincipal principal = requireExternalPrincipal();
+        AuthPrincipal principal = requireWebUserPrincipal();
         return new WebUserAuthView(principal.userId(), principal.username(), UserType.USER, false);
     }
 
@@ -181,10 +178,10 @@ public class WebUserAuthService {
         BizAssert.notBlank(cmd.newPassword(), AuthError.BAD_CREDENTIALS);
         passwordPolicyService.validate(cmd.newPassword());
 
-        AuthPrincipal principal = requireExternalPrincipal();
+        AuthPrincipal principal = requireWebUserPrincipal();
         WebUserCredential credential = webUserCredentialRepository.findFirstByUserIdAndCredentialTypeAndStatus(
-                principal.userId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE).orElseThrow(
-                () -> new BizException(AuthError.INVALID_TOKEN));
+                        principal.userId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
+                .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
         if (!BCrypt.checkpw(cmd.oldPassword(), credential.getSecretHash())) {
             throw new BizException(AuthError.BAD_CREDENTIALS);
         }
@@ -206,7 +203,7 @@ public class WebUserAuthService {
      */
     @Transactional
     public boolean logout() {
-        AuthPrincipal principal = requireExternalPrincipal();
+        AuthPrincipal principal = requireWebUserPrincipal();
         WebUser user = requireUser(principal.userId());
         user.revokeTokens(principal.username());
         webUserRepository.save(user);
@@ -223,13 +220,13 @@ public class WebUserAuthService {
      */
     @Transactional
     public boolean cancelCurrentUser(String reason) {
-        AuthPrincipal principal = requireExternalPrincipal();
+        AuthPrincipal principal = requireWebUserPrincipal();
         WebUser user = requireUser(principal.userId());
         user.cancel(reason, principal.username());
         webUserRepository.save(user);
         refreshTokenService.revokeActiveTokens(user.getId(), "cancelled");
         webUserIdentityRepository.findByUserId(user.getId())
-                                 .forEach(identity -> identity.release(principal.username()));
+                .forEach(identity -> identity.release(principal.username()));
         webUserIdentityRepository.saveAll(webUserIdentityRepository.findByUserId(user.getId()));
         webUserCredentialRepository.findFirstByUserIdAndCredentialTypeAndStatus(user.getId(),
                 WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE).ifPresent(credential -> {
@@ -249,9 +246,9 @@ public class WebUserAuthService {
     }
 
     /**
-     * Retrieve the current principal and verify it is an external user.
+     * Retrieve the current principal and verify it is an web user.
      */
-    private AuthPrincipal requireExternalPrincipal() {
+    private AuthPrincipal requireWebUserPrincipal() {
         AuthPrincipal principal = securityContextService.current();
         BizAssert.state(principal.userType() == UserType.USER, AuthError.FORBIDDEN);
         return principal;

@@ -2,15 +2,15 @@ import { get, post, put, type RequestOptions } from "@admin/shared/transport";
 import type { PageResult } from "@admin/shared/types/pagination";
 
 import type {
-  ExternalUserEntry,
+  WebUserEntry,
   UserFeaturePackageOptionEntry,
   UserFeatureUserApplicationEntry,
   UserFeatureUserFeatureEntry,
   UserFeatureUserManagementEntry,
 } from "../model/types";
 import type {
-  ExternalUserPageRequest,
-  ExternalUserPayload,
+  WebUserPageRequest,
+  WebUserPayload,
   SaveUserFeatureUserManagementRequest,
   UserFeaturePackageOptionPayload,
   UserFeatureUserApplicationPayload,
@@ -22,7 +22,7 @@ const USER_BASE = "/web-users";
 const FEATURE_BASE = "/user-features/users";
 type Options = Pick<RequestOptions, "signal">;
 
-function toExternalUser(payload: ExternalUserPayload): ExternalUserEntry {
+function toWebUser(payload: WebUserPayload): WebUserEntry {
   const account = payload.account || "";
   return {
     id: String(payload.id ?? ""),
@@ -86,26 +86,26 @@ function toUserApplication(
   };
 }
 
-export async function pageExternalUsers(
-  request: ExternalUserPageRequest,
+export async function pageWebUsers(
+  request: WebUserPageRequest,
   options?: Options,
-): Promise<PageResult<ExternalUserEntry>> {
-  const page = await post<PageResult<ExternalUserPayload>>(`${USER_BASE}/page`, request, options);
-  return { ...page, elements: page.elements.map(toExternalUser) };
+): Promise<PageResult<WebUserEntry>> {
+  const page = await post<PageResult<WebUserPayload>>(`${USER_BASE}/page`, request, options);
+  return { ...page, elements: page.elements.map(toWebUser) };
 }
 
-export async function getExternalUser(id: string, options?: Options): Promise<ExternalUserEntry> {
-  return toExternalUser(
-    await get<ExternalUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, options),
+export async function getWebUser(id: string, options?: Options): Promise<WebUserEntry> {
+  return toWebUser(
+    await get<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, options),
   );
 }
 
-export async function updateExternalUser(
+export async function updateWebUser(
   id: string,
-  status: ExternalUserEntry["status"],
-): Promise<ExternalUserEntry> {
-  return toExternalUser(
-    await put<ExternalUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, { status }),
+  status: WebUserEntry["status"],
+): Promise<WebUserEntry> {
+  return toWebUser(
+    await put<WebUserPayload>(`${USER_BASE}/${encodeURIComponent(id)}`, { status }),
   );
 }
 

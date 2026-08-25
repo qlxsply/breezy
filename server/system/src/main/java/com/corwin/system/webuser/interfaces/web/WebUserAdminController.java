@@ -37,7 +37,7 @@ public class WebUserAdminController {
     }
 
     /**
-     * Paginated listing of external users with optional keyword and status filter.
+     * Paginated listing of web users with optional keyword and status filter.
      */
     @PostMapping("/page")
     @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})

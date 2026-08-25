@@ -16,13 +16,13 @@ import { BzButton, BzEmpty, BzInput, BzTag } from "@admin/shared/ui/bz";
 import { useEffect, useRef, useState } from "react";
 
 import {
-  getExternalUser,
+  getWebUser,
   getUserFeatureUserManagement,
   saveUserFeatureUserManagement,
 } from "../api/client";
 import type {
-  ExternalUserEntry,
-  ExternalUserStatus,
+  WebUserEntry,
+  WebUserStatus,
   UserFeatureAccessScope,
   UserFeatureOverrideType,
   UserFeatureUserApplicationEntry,
@@ -63,7 +63,7 @@ export function WebUserFeatureDrawer({
   const editable = mode === "maintain" && canManageFeatures && canManagePackages;
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [user, setUser] = useState<ExternalUserEntry | null>(null);
+  const [user, setUser] = useState<WebUserEntry | null>(null);
   const [management, setManagement] = useState<UserFeatureUserManagementEntry | null>(null);
   const [packages, setPackages] = useState<UserFeaturePackageEntry[]>([]);
   const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([]);
@@ -89,7 +89,7 @@ export function WebUserFeatureDrawer({
       try {
         const [nextUser, nextManagement, packageCatalog, nextPackageTypeLabels] = await Promise.all(
           [
-            getExternalUser(userId, { signal: controller.signal }),
+            getWebUser(userId, { signal: controller.signal }),
             canViewFeatures
               ? getUserFeatureUserManagement(userId, { signal: controller.signal })
               : Promise.resolve(null),
@@ -715,12 +715,12 @@ function resolveScopeLabel(scope: UserFeatureUserApplicationEntry["packageAccess
   return "未授权";
 }
 
-function resolveStatusLabel(status: ExternalUserStatus): string {
+function resolveStatusLabel(status: WebUserStatus): string {
   if (status === "ACTIVE") return "启用";
   if (status === "DISABLED") return "停用";
   return "已注销";
 }
 
-function resolveStatusType(status: ExternalUserStatus): "success" | "danger" {
+function resolveStatusType(status: WebUserStatus): "success" | "danger" {
   return status === "ACTIVE" ? "success" : "danger";
 }

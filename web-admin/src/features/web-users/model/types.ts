@@ -1,12 +1,12 @@
-export type ExternalUserStatus = "ACTIVE" | "DISABLED" | "CANCELLED";
+export type WebUserStatus = "ACTIVE" | "DISABLED" | "CANCELLED";
 
-export interface ExternalUserEntry {
+export interface WebUserEntry {
   id: string;
   account: string;
   username: string;
   nickname: string;
   userType: "USER";
-  status: ExternalUserStatus;
+  status: WebUserStatus;
   lastLoginAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
