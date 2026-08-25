@@ -12,6 +12,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Global exception handler for REST controllers.
@@ -32,27 +34,29 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
 
+    private final List<ErrorHttpStatusResolver> errorHttpStatusResolvers;
+
+    public GlobalExceptionAdvice(List<ErrorHttpStatusResolver> errorHttpStatusResolvers) {
+        this.errorHttpStatusResolvers = errorHttpStatusResolvers;
+    }
+
     @ExceptionHandler(ConfigValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<List<ConfigViolation>> handleConfigValidationException(ConfigValidationException ex) {
         log.warn("ConfigValidationException msg={} violations={}", ex.getMessage(), ex.violations().size());
-        return ApiResponse.fail(
-                ex.violations(),
-                BaseError.INVALID_PARAMETER.getCode(),
-                ex.getMessage()
-        );
+        return ApiResponse.fail(ex.violations(), BaseError.INVALID_PARAMETER.getCode(), ex.getMessage());
     }
 
     @ExceptionHandler(BizException.class)
-    public ApiResponse<Object> handleBizException(BizException ex) {
+    public ResponseEntity<ApiResponse<Object>> handleBizException(BizException ex) {
         log.warn("BizException code={} msg={}", ex.getCode(), ex.getMessage());
-        return ApiResponse.fail(ex.getErrorCode());
+        HttpStatusCode status = errorHttpStatusResolvers.stream().map(resolver -> resolver.resolve(ex.getErrorCode()))
+                .flatMap(Optional::stream).findFirst().orElse(HttpStatus.OK);
+        return ResponseEntity.status(status).body(ApiResponse.fail(ex.getErrorCode()));
     }
 
     @ExceptionHandler(ConfigVersionConflictException.class)
-    public ResponseEntity<ApiResponse<Object>> handleConfigVersionConflictException(
-            ConfigVersionConflictException ex
-    ) {
+    public ResponseEntity<ApiResponse<Object>> handleConfigVersionConflictException(ConfigVersionConflictException ex) {
         log.warn("ConfigVersionConflictException code={} msg={}", ex.getCode(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.fail(ex.getErrorCode()));
     }
@@ -66,16 +70,14 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiResponse<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String msg = ex.getBindingResult().getAllErrors().stream().findFirst()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .orElse(BaseError.INVALID_PARAMETER.getMsg());
+                .map(DefaultMessageSourceResolvable::getDefaultMessage).orElse(BaseError.INVALID_PARAMETER.getMsg());
         log.warn("ParamInvalid msg={}", msg);
         return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);
     }
 
     @ExceptionHandler(BindException.class)
     public ApiResponse<Object> handleBindException(BindException ex) {
-        String msg = ex.getAllErrors().stream().findFirst()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+        String msg = ex.getAllErrors().stream().findFirst().map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .orElse(BaseError.INVALID_PARAMETER.getMsg());
         log.warn("ParamBindFail msg={}", msg);
         return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);
@@ -83,8 +85,7 @@ public class GlobalExceptionAdvice {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ApiResponse<Object> handleConstraintViolation(ConstraintViolationException ex) {
-        String msg = ex.getConstraintViolations().stream().findFirst()
-                .map(ConstraintViolation::getMessage)
+        String msg = ex.getConstraintViolations().stream().findFirst().map(ConstraintViolation::getMessage)
                 .orElse(BaseError.INVALID_PARAMETER.getMsg());
         log.warn("ConstraintViolation msg={}", msg);
         return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);

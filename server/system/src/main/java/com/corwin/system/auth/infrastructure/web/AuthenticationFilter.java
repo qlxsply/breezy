@@ -129,18 +129,14 @@ public class AuthenticationFilter extends OncePerRequestFilter implements Ordere
     }
 
     private AuthError resolveError(RuntimeException ex) {
-        if (ex instanceof com.corwin.framework.error.BizException bizException && bizException.getErrorCode() instanceof AuthError authError) {
+        if (ex instanceof BizException bizException && bizException.getErrorCode() instanceof AuthError authError) {
             return authError;
         }
         return AuthError.INVALID_TOKEN;
     }
 
     private void writeError(HttpServletResponse response, AuthError error) throws IOException {
-        int status = switch (error) {
-            case FORBIDDEN, USER_DISABLED -> HttpServletResponse.SC_FORBIDDEN;
-            default -> HttpServletResponse.SC_UNAUTHORIZED;
-        };
-        response.setStatus(status);
+        response.setStatus(AuthErrorHttpStatusResolver.resolve(error).value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(Json.toStr(ApiResponse.fail(error)));

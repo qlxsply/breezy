@@ -40,7 +40,8 @@ public class AdminAuthCookieService {
     }
 
     public void rotateCsrf(HttpServletResponse response) {
-        addCookie(response, CSRF_COOKIE, opaqueTokenService.generateToken(), authConfigService.adminSessionTtl(), false);
+        addCookie(response, CSRF_COOKIE, opaqueTokenService.generateToken(), authConfigService.adminSessionTtl(),
+                false);
     }
 
     public String readSession(HttpServletRequest request) {
@@ -52,13 +53,8 @@ public class AdminAuthCookieService {
     }
 
     private void addCookie(HttpServletResponse response, String name, String value, Duration maxAge, boolean httpOnly) {
-        ResponseCookie cookie = ResponseCookie.from(name, value)
-                .httpOnly(httpOnly)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(maxAge)
-                .build();
+        ResponseCookie cookie = ResponseCookie.from(name, value).httpOnly(httpOnly).secure(true).sameSite("Strict")
+                .path("/").maxAge(maxAge).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
@@ -67,11 +63,7 @@ public class AdminAuthCookieService {
         if (cookies == null) {
             return "";
         }
-        return Arrays.stream(cookies)
-                .filter(cookie -> name.equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse("")
-                .trim();
+        return Arrays.stream(cookies).filter(cookie -> name.equals(cookie.getName())).map(Cookie::getValue).findFirst()
+                .orElse("").trim();
     }
 }

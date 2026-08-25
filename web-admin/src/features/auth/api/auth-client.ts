@@ -1,4 +1,4 @@
-import { get, post, put, type RequestOptions } from "@admin/shared/transport";
+import { get, post, put, type RequestOptions, TransportError } from "@admin/shared/transport";
 
 import type { AuthUser } from "../model/types";
 import type { AdminLoginPayload, AuthUserPayload } from "./payload";
@@ -18,8 +18,15 @@ export async function loginAdmin(
 }
 
 export async function getCurrentAdmin(options?: RequestOptions): Promise<AuthUser | null> {
-  const payload = await get<AuthUserPayload | null>("/admin/auth/me", options);
-  return payload ? toAuthUser(payload) : null;
+  try {
+    const payload = await get<AuthUserPayload | null>("/admin/auth/me", options);
+    return payload ? toAuthUser(payload) : null;
+  } catch (error) {
+    if (error instanceof TransportError && error.status === 401) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export function logoutAdmin(options?: RequestOptions): Promise<boolean> {

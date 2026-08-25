@@ -8,8 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that requires the request to be authenticated on a controller
- * method or class, optionally restricting to a specific user type.
+ * Annotation that validates authentication on a controller method or class,
+ * optionally allowing anonymous access or restricting authenticated users to a specific type.
  *
  * @author Corwin 2026/4/19
  */
@@ -26,4 +26,9 @@ public @interface Authenticated {
      * Whether the endpoint remains available while credentials must be updated.
      */
     boolean allowExpiredCredentials() default false;
+
+    /**
+     * Whether an anonymous request may proceed while authenticated requests still enforce the user type.
+     */
+    boolean optional() default false;
 }

@@ -7,11 +7,11 @@ import com.corwin.system.auth.application.command.LoginCommand;
 import com.corwin.system.auth.application.service.AuthService;
 import com.corwin.system.auth.application.view.AuthUserView;
 import com.corwin.system.auth.application.view.LoginView;
+import com.corwin.system.auth.infrastructure.web.AdminAuthCookieService;
 import com.corwin.system.auth.interfaces.web.req.ChangePasswordReq;
 import com.corwin.system.auth.interfaces.web.req.LoginReq;
 import com.corwin.system.auth.interfaces.web.res.AdminLoginResponseRes;
 import com.corwin.system.auth.interfaces.web.res.AuthUserRes;
-import com.corwin.system.auth.infrastructure.web.AdminAuthCookieService;
 import com.corwin.system.auth.published.Authenticated;
 import com.corwin.system.auth.published.PermitAll;
 import com.corwin.system.resource.published.ApiMeta;
@@ -20,12 +20,7 @@ import com.corwin.system.user.application.service.UserConfigAppService;
 import com.corwin.system.user.application.view.UserConfigView;
 import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -71,12 +66,13 @@ public class AdminAuthController {
     }
 
     /**
-     * Returns the currently authenticated admin user's information.
+     * Returns the current admin session, or null when no session exists.
      */
     @GetMapping("/me")
-    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
+    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true, optional = true)
     public ApiResponse<AuthUserRes> me() {
-        return ApiResponse.ok(toAuthDto(authService.currentUser()));
+        AuthUserView user = authService.currentUser();
+        return ApiResponse.ok(user == null ? null : toAuthDto(user));
     }
 
     /**
@@ -99,15 +95,11 @@ public class AdminAuthController {
     @PutMapping("/password")
     @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
     public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
-        return ApiResponse.ok(authService.changePassword(new ChangePasswordCommand(req.oldPassword(), req.newPassword())));
+        ChangePasswordCommand cmd = new ChangePasswordCommand(req.oldPassword(), req.newPassword());
+        return ApiResponse.ok(authService.changePassword(cmd));
     }
 
     private AuthUserRes toAuthDto(AuthUserView view) {
-        if (view == null) {
-            List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(null).stream()
-                    .map(AdminAuthController::toUserConfigsRes).toList();
-            return new AuthUserRes(null, null, UserType.GUEST, false, configs);
-        }
         List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(view.id()).stream()
                 .map(AdminAuthController::toUserConfigsRes).toList();
         return new AuthUserRes(String.valueOf(view.id()), view.account(), view.userType(), view.mustChangePassword(),

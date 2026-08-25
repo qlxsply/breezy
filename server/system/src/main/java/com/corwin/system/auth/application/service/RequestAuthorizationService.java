@@ -31,8 +31,12 @@ public class RequestAuthorizationService {
     /**
      * Checks that the current user is authenticated and optionally matches the given user type.
      */
-    public void checkAuthenticated(UserType userType, boolean allowExpiredCredentials) {
-        AuthPrincipal principal = securityContextService.current();
+    public void checkAuthenticated(UserType userType, boolean allowExpiredCredentials, boolean optional) {
+        AuthPrincipal principal = optional ? securityContextService.currentOptional()
+                .orElse(null) : securityContextService.current();
+        if (principal == null) {
+            return;
+        }
         checkUserType(principal, userType);
         checkCredentials(principal, allowExpiredCredentials);
     }
@@ -52,15 +56,10 @@ public class RequestAuthorizationService {
             return;
         }
         Set<String> granted = principal.permissionCodes();
-        boolean matched = anyPermission
-                ? java.util.Arrays.stream(permissions)
-                .filter(code -> code != null && !code.isBlank())
-                .map(String::trim)
-                .anyMatch(granted::contains)
-                : java.util.Arrays.stream(permissions)
-                .filter(code -> code != null && !code.isBlank())
-                .map(String::trim)
-                .allMatch(granted::contains);
+        boolean matched = anyPermission ? java.util.Arrays.stream(permissions)
+                .filter(code -> code != null && !code.isBlank()).map(String::trim)
+                .anyMatch(granted::contains) : java.util.Arrays.stream(permissions)
+                .filter(code -> code != null && !code.isBlank()).map(String::trim).allMatch(granted::contains);
         if (!matched) {
             throw new BizException(AuthError.FORBIDDEN);
         }
@@ -81,8 +80,7 @@ public class RequestAuthorizationService {
         }
         boolean credentialsExpired = principal.credentialsExpired();
         if (principal.userType() == UserType.ADMIN && principal.userId() != null) {
-            credentialsExpired = userRepository.findById(principal.userId())
-                    .map(User::isMustChangePassword)
+            credentialsExpired = userRepository.findById(principal.userId()).map(User::isMustChangePassword)
                     .orElse(true);
         }
         if (credentialsExpired) {
