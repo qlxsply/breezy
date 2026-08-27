@@ -39,6 +39,8 @@
         <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>3.5.5</maven.failsafe.plugin.version>
         <exec.maven.plugin.version>3.6.1</exec.maven.plugin.version>
+        <spotless-maven-plugin.version>3.10.0</spotless-maven-plugin.version>
+        <google-java-format.version>1.35.0</google-java-format.version>
 
         <!-- default: dev 不构建前端 -->
         <frontend.build.skip>true</frontend.build.skip>
@@ -131,6 +133,40 @@
                     <configuration>
                         <useModulePath>true</useModulePath>
                     </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless-maven-plugin.version}</version>
+
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+
+                        <java>
+                            <includes>
+                                <include>src/main/java/**/*.java</include>
+                                <include>src/test/java/**/*.java</include>
+                            </includes>
+
+                            <googleJavaFormat>
+                                <version>${google-java-format.version}</version>
+                                <style>GOOGLE</style>
+                            </googleJavaFormat>
+
+                            <lineEndings>UNIX</lineEndings>
+                        </java>
+                    </configuration>
+
+                    <executions>
+                        <execution>
+                            <id>spotless-check</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
