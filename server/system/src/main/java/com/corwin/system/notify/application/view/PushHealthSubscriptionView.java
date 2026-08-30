@@ -8,11 +8,9 @@ import java.time.Instant;
  * @author Corwin 2026/3/21
  */
 public record PushHealthSubscriptionView(
-        String deviceId,
-        boolean active,
-        String endpointHost,
-        Instant updatedAt,
-        Instant lastPushAt,
-        String lastError
-) {
-}
+    String deviceId,
+    boolean active,
+    String endpointHost,
+    Instant updatedAt,
+    Instant lastPushAt,
+    String lastError) {}

@@ -8,9 +8,7 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/2/24
  */
 public record SchemaDdlPageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        @JsonLongString Long managedDatabaseId,
-        String nameLike
-) {
-}
+    PageRuleRequest page,
+    SortRuleRequest sort,
+    @JsonLongString Long managedDatabaseId,
+    String nameLike) {}

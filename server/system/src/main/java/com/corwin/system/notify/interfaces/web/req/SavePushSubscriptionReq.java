@@ -8,13 +8,7 @@ import jakarta.validation.constraints.NotBlank;
  * @author Corwin 2026/3/19
  */
 public record SavePushSubscriptionReq(
-        @NotBlank
-        String deviceId,
-        @NotBlank
-        String endpoint,
-        @NotBlank
-        String p256dh,
-        @NotBlank
-        String auth
-) {
-}
+    @NotBlank String deviceId,
+    @NotBlank String endpoint,
+    @NotBlank String p256dh,
+    @NotBlank String auth) {}

@@ -9,14 +9,12 @@ import java.util.List;
  * @author Corwin 2026/3/21
  */
 public record PushHealthRes(
-        boolean vapidReady,
-        String vapidSubject,
-        int activeSubscriptionCount,
-        int inactiveSubscriptionCount,
-        Instant latestSubscriptionUpdatedAt,
-        Instant latestSubscriptionPushAt,
-        String latestSubscriptionError,
-        List<PushHealthSubscriptionRes> subscriptions,
-        PushHealthDeliveryRes latestDelivery
-) {
-}
+    boolean vapidReady,
+    String vapidSubject,
+    int activeSubscriptionCount,
+    int inactiveSubscriptionCount,
+    Instant latestSubscriptionUpdatedAt,
+    Instant latestSubscriptionPushAt,
+    String latestSubscriptionError,
+    List<PushHealthSubscriptionRes> subscriptions,
+    PushHealthDeliveryRes latestDelivery) {}

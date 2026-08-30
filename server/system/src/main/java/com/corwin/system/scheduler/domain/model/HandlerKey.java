@@ -9,16 +9,16 @@ import java.util.Objects;
  */
 public record HandlerKey(String value) {
 
-    /**
-     * Constructs a HandlerKey after trimming and validating the value.
-     *
-     * @param value the handler key string
-     * @throws IllegalArgumentException if value is null or blank
-     */
-    public HandlerKey {
-        value = Objects.requireNonNull(value, "value required").trim();
-        if (value.isEmpty()) {
-            throw new IllegalArgumentException("value required");
-        }
+  /**
+   * Constructs a HandlerKey after trimming and validating the value.
+   *
+   * @param value the handler key string
+   * @throws IllegalArgumentException if value is null or blank
+   */
+  public HandlerKey {
+    value = Objects.requireNonNull(value, "value required").trim();
+    if (value.isEmpty()) {
+      throw new IllegalArgumentException("value required");
     }
+  }
 }

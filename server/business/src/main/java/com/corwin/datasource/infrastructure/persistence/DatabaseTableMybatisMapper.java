@@ -15,5 +15,6 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface DatabaseTableMybatisMapper {
 
-    PageData<DatabaseTable> pageByQuery(@Param("query") DatabaseTablePageQuery query, @Param("spec") PageSpec spec);
+  PageData<DatabaseTable> pageByQuery(
+      @Param("query") DatabaseTablePageQuery query, @Param("spec") PageSpec spec);
 }

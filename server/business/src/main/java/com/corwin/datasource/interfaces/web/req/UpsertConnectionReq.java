@@ -13,22 +13,21 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpsertConnectionReq {
-    @JsonLongString
-    private Long id;
-    private String name;
-    private DatabaseType dbType;
-    private AuthMode authMode;
-    private ConnectMode connectMode;
-    private String host;
-    private Integer port;
-    private String databaseName;
-    private String serviceName;
-    private String sid;
-    private String driverClassName;
-    private String jdbcUrl;
-    private String username;
-    private String passwordRaw;
-    private String defaultSchema;
-    private String remarkCustom;
-    private String extraParams;
+  @JsonLongString private Long id;
+  private String name;
+  private DatabaseType dbType;
+  private AuthMode authMode;
+  private ConnectMode connectMode;
+  private String host;
+  private Integer port;
+  private String databaseName;
+  private String serviceName;
+  private String sid;
+  private String driverClassName;
+  private String jdbcUrl;
+  private String username;
+  private String passwordRaw;
+  private String defaultSchema;
+  private String remarkCustom;
+  private String extraParams;
 }

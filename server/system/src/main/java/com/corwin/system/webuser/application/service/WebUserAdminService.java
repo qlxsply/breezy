@@ -14,117 +14,133 @@ import com.corwin.system.webuser.application.view.WebUserAdminView;
 import com.corwin.system.webuser.domain.model.*;
 import com.corwin.system.webuser.domain.repo.WebUserIdentityRepository;
 import com.corwin.system.webuser.domain.repo.WebUserRepository;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 /**
- * Application service for admin management of external web users.
- * Provides paginated listing, retrieval, and status update operations.
+ * Application service for admin management of external web users. Provides paginated listing,
+ * retrieval, and status update operations.
  *
  * @author Corwin 2026/5/11
  */
 @Service
 public class WebUserAdminService {
 
-    private final WebUserRepository webUserRepository;
-    private final WebUserIdentityRepository webUserIdentityRepository;
-    private final WebUserLifecycleService webUserLifecycleService;
+  private final WebUserRepository webUserRepository;
+  private final WebUserIdentityRepository webUserIdentityRepository;
+  private final WebUserLifecycleService webUserLifecycleService;
 
-    public WebUserAdminService(WebUserRepository webUserRepository, WebUserIdentityRepository webUserIdentityRepository,
-            WebUserLifecycleService webUserLifecycleService) {
-        this.webUserRepository = webUserRepository;
-        this.webUserIdentityRepository = webUserIdentityRepository;
-        this.webUserLifecycleService = webUserLifecycleService;
-    }
+  public WebUserAdminService(
+      WebUserRepository webUserRepository,
+      WebUserIdentityRepository webUserIdentityRepository,
+      WebUserLifecycleService webUserLifecycleService) {
+    this.webUserRepository = webUserRepository;
+    this.webUserIdentityRepository = webUserIdentityRepository;
+    this.webUserLifecycleService = webUserLifecycleService;
+  }
 
-    /**
-     * Paginated query of web users with optional keyword and status filtering.
-     *
-     * @param keyword search keyword for display name or nickname
-     * @param status  optional status filter string
-     * @param spec    pagination specification
-     * @return paginated admin view data
-     */
-    public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
-        WebUserStatus normalizedStatus = parseStatus(status);
-        PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
-        return new PageData<>(page.pageNo(), page.pageSize(), page.numberOfElements(), page.totalPages(),
-                page.totalElements(), page.elements().stream().map(this::toView).toList());
-    }
+  /**
+   * Paginated query of web users with optional keyword and status filtering.
+   *
+   * @param keyword search keyword for display name or nickname
+   * @param status optional status filter string
+   * @param spec pagination specification
+   * @return paginated admin view data
+   */
+  public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
+    WebUserStatus normalizedStatus = parseStatus(status);
+    PageData<WebUser> page =
+        webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
+    return new PageData<>(
+        page.pageNo(),
+        page.pageSize(),
+        page.numberOfElements(),
+        page.totalPages(),
+        page.totalElements(),
+        page.elements().stream().map(this::toView).toList());
+  }
 
-    /**
-     * Retrieve a single web user by ID.
-     *
-     * @param id the user ID
-     * @return the admin view
-     */
-    public WebUserAdminView get(Long id) {
-        return toView(requireUser(id));
-    }
+  /**
+   * Retrieve a single web user by ID.
+   *
+   * @param id the user ID
+   * @return the admin view
+   */
+  public WebUserAdminView get(Long id) {
+    return toView(requireUser(id));
+  }
 
-    /**
-     * Update a web user's status (enable/disable).
-     *
-     * @param id  the user ID
-     * @param cmd the update command containing the target status
-     * @return the updated admin view
-     */
-    @Transactional
-    public WebUserAdminView update(Long id, UpdateWebUserCommand cmd) {
-        BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
-        WebUser user = requireUser(id);
-        WebUserStatus targetStatus = parseStatus(cmd.status());
-        if (targetStatus == WebUserStatus.DISABLED && user.getStatus() != WebUserStatus.DISABLED) {
-            user.disable("admin disabled", operator());
-            webUserLifecycleService.record(user.getId(), WebUserLifecycleEventType.DISABLED, java.util.Map.of());
-        } else if (targetStatus == WebUserStatus.ACTIVE && user.getStatus() == WebUserStatus.DISABLED) {
-            user.enable(operator());
-            webUserLifecycleService.record(user.getId(), WebUserLifecycleEventType.ENABLED, java.util.Map.of());
-        }
-        return toView(webUserRepository.save(user));
+  /**
+   * Update a web user's status (enable/disable).
+   *
+   * @param id the user ID
+   * @param cmd the update command containing the target status
+   * @return the updated admin view
+   */
+  @Transactional
+  public WebUserAdminView update(Long id, UpdateWebUserCommand cmd) {
+    BizAssert.notNull(cmd, BaseError.INVALID_PARAMETER);
+    WebUser user = requireUser(id);
+    WebUserStatus targetStatus = parseStatus(cmd.status());
+    if (targetStatus == WebUserStatus.DISABLED && user.getStatus() != WebUserStatus.DISABLED) {
+      user.disable("admin disabled", operator());
+      webUserLifecycleService.record(
+          user.getId(), WebUserLifecycleEventType.DISABLED, java.util.Map.of());
+    } else if (targetStatus == WebUserStatus.ACTIVE && user.getStatus() == WebUserStatus.DISABLED) {
+      user.enable(operator());
+      webUserLifecycleService.record(
+          user.getId(), WebUserLifecycleEventType.ENABLED, java.util.Map.of());
     }
+    return toView(webUserRepository.save(user));
+  }
 
-    /**
-     * Find a user by ID or throw NOT_FOUND.
-     */
-    private WebUser requireUser(Long id) {
-        return webUserRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-    }
+  /** Find a user by ID or throw NOT_FOUND. */
+  private WebUser requireUser(Long id) {
+    return webUserRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+  }
 
-    private WebUserStatus parseStatus(String status) {
-        if (status == null || status.isBlank()) {
-            return null;
-        }
-        try {
-            return WebUserStatus.valueOf(status.trim());
-        } catch (IllegalArgumentException ex) {
-            throw new BizException(BaseError.INVALID_PARAMETER);
-        }
+  private WebUserStatus parseStatus(String status) {
+    if (status == null || status.isBlank()) {
+      return null;
     }
+    try {
+      return WebUserStatus.valueOf(status.trim());
+    } catch (IllegalArgumentException ex) {
+      throw new BizException(BaseError.INVALID_PARAMETER);
+    }
+  }
 
-    private WebUserAdminView toView(WebUser user) {
-        return new WebUserAdminView(user.getId(), resolveAccount(user), user.getNickname(), UserType.USER,
-                user.getStatus().name(), user.getLastLoginAt(), user.getCreatedAt(), user.getUpdatedAt());
-    }
+  private WebUserAdminView toView(WebUser user) {
+    return new WebUserAdminView(
+        user.getId(),
+        resolveAccount(user),
+        user.getNickname(),
+        UserType.USER,
+        user.getStatus().name(),
+        user.getLastLoginAt(),
+        user.getCreatedAt(),
+        user.getUpdatedAt());
+  }
 
-    private String resolveAccount(WebUser user) {
-        Long primaryIdentityId = user.getPrimaryIdentityId();
-        if (primaryIdentityId != null) {
-            Optional<WebUserIdentity> primary = webUserIdentityRepository.findById(primaryIdentityId);
-            if (primary.isPresent()) {
-                return primary.get().getIdentityValue();
-            }
-        }
-        return webUserIdentityRepository.findFirstByUserIdAndIdentityType(user.getId(), WebUserIdentityType.USERNAME)
-                .map(WebUserIdentity::getIdentityValue).orElse(String.valueOf(user.getId()));
+  private String resolveAccount(WebUser user) {
+    Long primaryIdentityId = user.getPrimaryIdentityId();
+    if (primaryIdentityId != null) {
+      Optional<WebUserIdentity> primary = webUserIdentityRepository.findById(primaryIdentityId);
+      if (primary.isPresent()) {
+        return primary.get().getIdentityValue();
+      }
     }
+    return webUserIdentityRepository
+        .findFirstByUserIdAndIdentityType(user.getId(), WebUserIdentityType.USERNAME)
+        .map(WebUserIdentity::getIdentityValue)
+        .orElse(String.valueOf(user.getId()));
+  }
 
-    private String operator() {
-        AuthPrincipal principal = CtxUtil.getPrincipal();
-        String operator = principal == null ? null : principal.username();
-        BizAssert.notBlank(operator, BaseError.FORBIDDEN);
-        return operator.trim();
-    }
+  private String operator() {
+    AuthPrincipal principal = CtxUtil.getPrincipal();
+    String operator = principal == null ? null : principal.username();
+    BizAssert.notBlank(operator, BaseError.FORBIDDEN);
+    return operator.trim();
+  }
 }

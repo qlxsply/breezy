@@ -9,56 +9,53 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class IpUtil {
 
-    public static String getClientIp(HttpServletRequest request) {
-        ClientIpMode mode = Configs.get(FrameworkConfigSpecs.CLIENT_IP).mode();
-        return resolveClientIp(
-                mode,
-                request.getRemoteAddr(),
-                request.getHeader("X-Real-IP"),
-                request.getHeader("X-Forwarded-For"),
-                request.getHeader("CF-Connecting-IP"),
-                request.getHeader("True-Client-IP")
-        );
-    }
+  public static String getClientIp(HttpServletRequest request) {
+    ClientIpMode mode = Configs.get(FrameworkConfigSpecs.CLIENT_IP).mode();
+    return resolveClientIp(
+        mode,
+        request.getRemoteAddr(),
+        request.getHeader("X-Real-IP"),
+        request.getHeader("X-Forwarded-For"),
+        request.getHeader("CF-Connecting-IP"),
+        request.getHeader("True-Client-IP"));
+  }
 
-    public static String resolveClientIp(
-            ClientIpMode mode,
-            String remoteAddr,
-            String xRealIp,
-            String xForwardedFor,
-            String cfConnectingIp,
-            String trueClientIp
-    ) {
-        return switch (mode) {
-            case X_REAL_IP -> getSingleHeaderIp(xRealIp);
-            case X_FORWARDED_FOR_FIRST -> getHeaderListIp(xForwardedFor, true);
-            case X_FORWARDED_FOR_LAST -> getHeaderListIp(xForwardedFor, false);
-            case CF_Connecting_IP -> getSingleHeaderIp(cfConnectingIp);
-            case True_Client_IP -> getSingleHeaderIp(trueClientIp);
-            default -> remoteAddr;
-        };
-    }
+  public static String resolveClientIp(
+      ClientIpMode mode,
+      String remoteAddr,
+      String xRealIp,
+      String xForwardedFor,
+      String cfConnectingIp,
+      String trueClientIp) {
+    return switch (mode) {
+      case X_REAL_IP -> getSingleHeaderIp(xRealIp);
+      case X_FORWARDED_FOR_FIRST -> getHeaderListIp(xForwardedFor, true);
+      case X_FORWARDED_FOR_LAST -> getHeaderListIp(xForwardedFor, false);
+      case CF_Connecting_IP -> getSingleHeaderIp(cfConnectingIp);
+      case True_Client_IP -> getSingleHeaderIp(trueClientIp);
+      default -> remoteAddr;
+    };
+  }
 
-    private static String getSingleHeaderIp(String value) {
-        return isValid(value) ? value.trim() : null;
-    }
+  private static String getSingleHeaderIp(String value) {
+    return isValid(value) ? value.trim() : null;
+  }
 
-    private static String getHeaderListIp(String value, boolean first) {
-        if (!isValid(value)) {
-            return null;
-        }
-        String[] parts = StrUtil.split(value);
-        if (parts.length == 0) {
-            return null;
-        }
-        String ip = first ? parts[0].trim() : parts[parts.length - 1].trim();
-        return isValid(ip) ? ip : null;
+  private static String getHeaderListIp(String value, boolean first) {
+    if (!isValid(value)) {
+      return null;
     }
+    String[] parts = StrUtil.split(value);
+    if (parts.length == 0) {
+      return null;
+    }
+    String ip = first ? parts[0].trim() : parts[parts.length - 1].trim();
+    return isValid(ip) ? ip : null;
+  }
 
-    private static boolean isValid(String ip) {
-        return ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip);
-    }
+  private static boolean isValid(String ip) {
+    return ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip);
+  }
 
-    private IpUtil() {
-    }
+  private IpUtil() {}
 }

@@ -8,5 +8,5 @@ import java.util.List;
 @FunctionalInterface
 public interface ConfigValidator<T> {
 
-    List<ConfigViolation> validate(T value);
+  List<ConfigViolation> validate(T value);
 }

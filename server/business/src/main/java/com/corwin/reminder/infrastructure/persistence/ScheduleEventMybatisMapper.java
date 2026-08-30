@@ -15,6 +15,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ScheduleEventMybatisMapper {
 
-    PageData<ScheduleEvent> page(@Param("status") ScheduleEventStatus status, @Param("titleLike") String titleLike,
-            @Param("spec") PageSpec spec);
+  PageData<ScheduleEvent> page(
+      @Param("status") ScheduleEventStatus status,
+      @Param("titleLike") String titleLike,
+      @Param("spec") PageSpec spec);
 }

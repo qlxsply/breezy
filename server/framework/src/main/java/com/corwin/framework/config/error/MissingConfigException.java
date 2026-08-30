@@ -5,7 +5,7 @@ package com.corwin.framework.config.error;
  */
 public class MissingConfigException extends RuntimeException {
 
-    public MissingConfigException(String key) {
-        super("Missing config snapshot: " + key);
-    }
+  public MissingConfigException(String key) {
+    super("Missing config snapshot: " + key);
+  }
 }

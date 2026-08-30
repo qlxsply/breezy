@@ -8,5 +8,5 @@ import com.corwin.system.webuser.domain.model.WebUserLifecycleEvent;
  *
  * @author Corwin 2026/5/11
  */
-public interface WebUserLifecycleEventRepository extends DomainRepository<WebUserLifecycleEvent, Long> {
-}
+public interface WebUserLifecycleEventRepository
+    extends DomainRepository<WebUserLifecycleEvent, Long> {}

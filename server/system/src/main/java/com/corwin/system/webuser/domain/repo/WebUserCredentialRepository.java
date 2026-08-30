@@ -4,7 +4,6 @@ import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.webuser.domain.model.WebUserCredential;
 import com.corwin.system.webuser.domain.model.WebUserCredentialStatus;
 import com.corwin.system.webuser.domain.model.WebUserCredentialType;
-
 import java.util.Optional;
 
 /**
@@ -14,9 +13,7 @@ import java.util.Optional;
  */
 public interface WebUserCredentialRepository extends DomainRepository<WebUserCredential, Long> {
 
-    /**
-     * Find the first credential matching user ID, type, and status.
-     */
-    Optional<WebUserCredential> findFirstByUserIdAndCredentialTypeAndStatus(Long userId,
-            WebUserCredentialType credentialType, WebUserCredentialStatus status);
+  /** Find the first credential matching user ID, type, and status. */
+  Optional<WebUserCredential> findFirstByUserIdAndCredentialTypeAndStatus(
+      Long userId, WebUserCredentialType credentialType, WebUserCredentialStatus status);
 }

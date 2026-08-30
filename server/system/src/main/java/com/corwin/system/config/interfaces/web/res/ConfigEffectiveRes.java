@@ -8,13 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author Corwin 2026/7/31
  */
 public record ConfigEffectiveRes(
-        String key,
-        String title,
-        String description,
-        JsonNode effectiveValue
-) {
+    String key, String title, String description, JsonNode effectiveValue) {
 
-    public ConfigEffectiveRes {
-        effectiveValue = effectiveValue.deepCopy();
-    }
+  public ConfigEffectiveRes {
+    effectiveValue = effectiveValue.deepCopy();
+  }
 }

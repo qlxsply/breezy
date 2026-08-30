@@ -7,11 +7,10 @@ package com.corwin.system.methodstat.application.service;
  */
 public interface MethodStatMetadataCollector {
 
-    /**
-     * Collect metadata for all pointcut-matched beans in the application context.
-     *
-     * @return number of methods registered
-     */
-    int collectAllPointcutMetadata();
-
+  /**
+   * Collect metadata for all pointcut-matched beans in the application context.
+   *
+   * @return number of methods registered
+   */
+  int collectAllPointcutMetadata();
 }

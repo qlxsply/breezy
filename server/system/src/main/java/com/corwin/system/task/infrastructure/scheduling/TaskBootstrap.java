@@ -1,17 +1,16 @@
 package com.corwin.system.task.infrastructure.scheduling;
 
 import com.corwin.system.task.application.service.TaskAppService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
- * Bootstrap listener that initializes the task system on application startup.
- * First synchronizes task definitions, then starts all published tasks.
+ * Bootstrap listener that initializes the task system on application startup. First synchronizes
+ * task definitions, then starts all published tasks.
  *
  * @author Corwin 2026/3/30
  */
@@ -20,35 +19,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 public class TaskBootstrap implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final TaskAppService taskAppService;
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+  private final TaskAppService taskAppService;
+  private final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    /**
-     * Handles the {@link ContextRefreshedEvent} to perform task system initialization.
-     * Only processes the root application context to avoid duplicate execution.
-     *
-     * @param event the context refreshed event
-     */
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        // 仅处理根容器的刷新事件，避免多级容器重复执行
-        if (event.getApplicationContext().getParent() == null) {
-            if (initialized.compareAndSet(false, true)) {
-                log.info("[task-bootstrap] initializing task system...");
+  /**
+   * Handles the {@link ContextRefreshedEvent} to perform task system initialization. Only processes
+   * the root application context to avoid duplicate execution.
+   *
+   * @param event the context refreshed event
+   */
+  @Override
+  public void onApplicationEvent(ContextRefreshedEvent event) {
+    // 仅处理根容器的刷新事件，避免多级容器重复执行
+    if (event.getApplicationContext().getParent() == null) {
+      if (initialized.compareAndSet(false, true)) {
+        log.info("[task-bootstrap] initializing task system...");
 
-                try {
-                    // 第一阶段：扫描并同步定义
-                    taskAppService.syncTaskDefinitions();
+        try {
+          // 第一阶段：扫描并同步定义
+          taskAppService.syncTaskDefinitions();
 
-                    // 第二阶段：装载并启动任务
-                    taskAppService.startupAllTasks();
+          // 第二阶段：装载并启动任务
+          taskAppService.startupAllTasks();
 
-                    log.info("[task-bootstrap] task system initialized successfully.");
-                } catch (Exception e) {
-                    log.error("[task-bootstrap] task system initialization failed!", e);
-                }
-            }
+          log.info("[task-bootstrap] task system initialized successfully.");
+        } catch (Exception e) {
+          log.error("[task-bootstrap] task system initialization failed!", e);
         }
+      }
     }
-
+  }
 }

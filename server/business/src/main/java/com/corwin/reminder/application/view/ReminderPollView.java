@@ -6,6 +6,4 @@ import java.util.List;
 /**
  * @author Corwin 2026/3/30
  */
-public record ReminderPollView(Instant cutoffTime,
-        List<ReminderView> items) {
-}
+public record ReminderPollView(Instant cutoffTime, List<ReminderView> items) {}

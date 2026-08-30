@@ -6,6 +6,6 @@ package com.corwin.system.scheduler.domain.model;
  * @author Corwin 2026/4/15
  */
 public enum SchedulerJobSource {
-    ANNOTATION,
-    EVENT
+  ANNOTATION,
+  EVENT
 }

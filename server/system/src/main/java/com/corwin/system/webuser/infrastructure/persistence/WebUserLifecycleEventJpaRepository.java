@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author Corwin 2026/5/11
  */
-public interface WebUserLifecycleEventJpaRepository extends JpaRepository<WebUserLifecycleEvent, Long> {
-}
+public interface WebUserLifecycleEventJpaRepository
+    extends JpaRepository<WebUserLifecycleEvent, Long> {}

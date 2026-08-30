@@ -15,14 +15,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMybatisMapper {
 
-    /**
-     * Paginates users with optional status and username filters using MyBatis.
-     *
-     * @param status   optional status filter
-     * @param username optional username pattern (LIKE pattern)
-     * @param spec     the pagination specification
-     * @return a page of users
-     */
-    PageData<User> page(@Param("status") UserStatus status, @Param("username") String username,
-            @Param("spec") PageSpec spec);
+  /**
+   * Paginates users with optional status and username filters using MyBatis.
+   *
+   * @param status optional status filter
+   * @param username optional username pattern (LIKE pattern)
+   * @param spec the pagination specification
+   * @return a page of users
+   */
+  PageData<User> page(
+      @Param("status") UserStatus status,
+      @Param("username") String username,
+      @Param("spec") PageSpec spec);
 }

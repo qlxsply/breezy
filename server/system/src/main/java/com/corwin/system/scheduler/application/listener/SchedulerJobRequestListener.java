@@ -19,35 +19,35 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SchedulerJobRequestListener {
 
-    private final SchedulerCommandAppService commandAppService;
+  private final SchedulerCommandAppService commandAppService;
 
-    /** Handles job upsert (create/update) requests. */
-    @EventListener
-    public void onUpsert(SchedulerJobUpsertRequestedEvent event) {
-        commandAppService.handleUpsert(event.spec());
-    }
+  /** Handles job upsert (create/update) requests. */
+  @EventListener
+  public void onUpsert(SchedulerJobUpsertRequestedEvent event) {
+    commandAppService.handleUpsert(event.spec());
+  }
 
-    /** Handles job pause requests. */
-    @EventListener
-    public void onPause(SchedulerJobPauseRequestedEvent event) {
-        commandAppService.pauseRequested(event.jobId());
-    }
+  /** Handles job pause requests. */
+  @EventListener
+  public void onPause(SchedulerJobPauseRequestedEvent event) {
+    commandAppService.pauseRequested(event.jobId());
+  }
 
-    /** Handles job resume requests. */
-    @EventListener
-    public void onResume(SchedulerJobResumeRequestedEvent event) {
-        commandAppService.resumeRequested(event.jobId());
-    }
+  /** Handles job resume requests. */
+  @EventListener
+  public void onResume(SchedulerJobResumeRequestedEvent event) {
+    commandAppService.resumeRequested(event.jobId());
+  }
 
-    /** Handles job cancel requests. */
-    @EventListener
-    public void onCancel(SchedulerJobCancelRequestedEvent event) {
-        commandAppService.cancelRequested(event.jobId());
-    }
+  /** Handles job cancel requests. */
+  @EventListener
+  public void onCancel(SchedulerJobCancelRequestedEvent event) {
+    commandAppService.cancelRequested(event.jobId());
+  }
 
-    /** Handles job delete requests. */
-    @EventListener
-    public void onDelete(SchedulerJobDeleteRequestedEvent event) {
-        commandAppService.deleteRequested(event.jobId());
-    }
+  /** Handles job delete requests. */
+  @EventListener
+  public void onDelete(SchedulerJobDeleteRequestedEvent event) {
+    commandAppService.deleteRequested(event.jobId());
+  }
 }

@@ -2,11 +2,10 @@ package com.corwin.system.userfeature.infrastructure.persistence;
 
 import com.corwin.system.userfeature.domain.model.UserApplicationPackageMember;
 import com.corwin.system.userfeature.domain.repo.UserApplicationPackageMemberRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 /**
  * JPA adapter implementation of {@link UserApplicationPackageMemberRepository}.
@@ -15,61 +14,62 @@ import java.util.Optional;
  */
 @Repository
 @RequiredArgsConstructor
-public class UserApplicationPackageMemberRepositoryJpaAdapter implements UserApplicationPackageMemberRepository {
+public class UserApplicationPackageMemberRepositoryJpaAdapter
+    implements UserApplicationPackageMemberRepository {
 
-    private final UserApplicationPackageMemberJpaRepository repo;
+  private final UserApplicationPackageMemberJpaRepository repo;
 
-    @Override
-    public <S extends UserApplicationPackageMember> S save(S entity) {
-        return repo.save(entity);
-    }
+  @Override
+  public <S extends UserApplicationPackageMember> S save(S entity) {
+    return repo.save(entity);
+  }
 
-    @Override
-    public <S extends UserApplicationPackageMember> List<S> saveAll(Iterable<S> entities) {
-        return repo.saveAll(entities);
-    }
+  @Override
+  public <S extends UserApplicationPackageMember> List<S> saveAll(Iterable<S> entities) {
+    return repo.saveAll(entities);
+  }
 
-    @Override
-    public Optional<UserApplicationPackageMember> findById(Long id) {
-        return repo.findById(id);
-    }
+  @Override
+  public Optional<UserApplicationPackageMember> findById(Long id) {
+    return repo.findById(id);
+  }
 
-    @Override
-    public boolean existsById(Long id) {
-        return repo.existsById(id);
-    }
+  @Override
+  public boolean existsById(Long id) {
+    return repo.existsById(id);
+  }
 
-    @Override
-    public void delete(UserApplicationPackageMember entity) {
-        repo.delete(entity);
-        repo.flush();
-    }
+  @Override
+  public void delete(UserApplicationPackageMember entity) {
+    repo.delete(entity);
+    repo.flush();
+  }
 
-    @Override
-    public void deleteById(Long id) {
-        repo.deleteById(id);
-        repo.flush();
-    }
+  @Override
+  public void deleteById(Long id) {
+    repo.deleteById(id);
+    repo.flush();
+  }
 
-    @Override
-    public List<UserApplicationPackageMember> findByUserId(Long userId) {
-        return repo.findByUserId(userId);
-    }
+  @Override
+  public List<UserApplicationPackageMember> findByUserId(Long userId) {
+    return repo.findByUserId(userId);
+  }
 
-    @Override
-    public List<UserApplicationPackageMember> findByPackageId(Long packageId) {
-        return repo.findByPackageId(packageId);
-    }
+  @Override
+  public List<UserApplicationPackageMember> findByPackageId(Long packageId) {
+    return repo.findByPackageId(packageId);
+  }
 
-    @Override
-    public void deleteByUserId(Long userId) {
-        repo.deleteByUserId(userId);
-        repo.flush();
-    }
+  @Override
+  public void deleteByUserId(Long userId) {
+    repo.deleteByUserId(userId);
+    repo.flush();
+  }
 
-    @Override
-    public void deleteByPackageId(Long packageId) {
-        repo.deleteByPackageId(packageId);
-        repo.flush();
-    }
+  @Override
+  public void deleteByPackageId(Long packageId) {
+    repo.deleteByPackageId(packageId);
+    repo.flush();
+  }
 }

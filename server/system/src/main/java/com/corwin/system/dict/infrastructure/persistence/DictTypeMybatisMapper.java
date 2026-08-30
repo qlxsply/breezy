@@ -14,8 +14,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface DictTypeMybatisMapper {
 
-    /**
-     * Paginates dictionary types with optional code and name like-pattern filtering.
-     */
-    PageData<DictType> page(@Param("code") String code, @Param("name") String name, @Param("spec") PageSpec spec);
+  /** Paginates dictionary types with optional code and name like-pattern filtering. */
+  PageData<DictType> page(
+      @Param("code") String code, @Param("name") String name, @Param("spec") PageSpec spec);
 }

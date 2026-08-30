@@ -2,7 +2,6 @@ package com.corwin.schemaforge.config;
 
 import com.corwin.framework.config.definition.ConfigSpec;
 import com.corwin.framework.config.definition.ConfigSpecProvider;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -11,8 +10,8 @@ import java.util.List;
  */
 public final class SchemaForgeConfigSpecProvider implements ConfigSpecProvider {
 
-    @Override
-    public Collection<ConfigSpec<?>> getConfigSpecs() {
-        return List.of(SchemaForgeConfigSpecs.DDL_POLICY);
-    }
+  @Override
+  public Collection<ConfigSpec<?>> getConfigSpecs() {
+    return List.of(SchemaForgeConfigSpecs.DDL_POLICY);
+  }
 }

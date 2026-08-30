@@ -9,12 +9,12 @@ import com.corwin.framework.constant.UserType;
  */
 public interface MessageDeliveryPort {
 
-    /**
-     * Acknowledges a message delivery as received/read by the user.
-     *
-     * @param userId     the user ID
-     * @param userType   the user type
-     * @param deliveryId the delivery record ID
-     */
-    void ackDelivery(Long userId, UserType userType, Long deliveryId);
+  /**
+   * Acknowledges a message delivery as received/read by the user.
+   *
+   * @param userId the user ID
+   * @param userType the user type
+   * @param deliveryId the delivery record ID
+   */
+  void ackDelivery(Long userId, UserType userType, Long deliveryId);
 }

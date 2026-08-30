@@ -4,7 +4,6 @@ import com.corwin.framework.domain.page.PageData;
 import com.corwin.framework.domain.page.PageSpec;
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.userfeature.domain.model.ProductApplication;
-
 import java.util.List;
 
 /**
@@ -14,9 +13,9 @@ import java.util.List;
  */
 public interface ProductApplicationRepository extends DomainRepository<ProductApplication, Long> {
 
-    PageData<ProductApplication> page(String keyword, Boolean enabled, PageSpec spec);
+  PageData<ProductApplication> page(String keyword, Boolean enabled, PageSpec spec);
 
-    List<ProductApplication> findAll();
+  List<ProductApplication> findAll();
 
-    List<ProductApplication> findByIdIn(Iterable<Long> ids);
+  List<ProductApplication> findByIdIn(Iterable<Long> ids);
 }

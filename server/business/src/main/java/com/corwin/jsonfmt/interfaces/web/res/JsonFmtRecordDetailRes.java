@@ -6,11 +6,9 @@ import java.time.Instant;
  * @author Corwin 2026/3/2
  */
 public record JsonFmtRecordDetailRes(
-        String id,
-        String name,
-        String content,
-        Integer orderNo,
-        Instant createdAt,
-        Instant updatedAt
-) {
-}
+    String id,
+    String name,
+    String content,
+    Integer orderNo,
+    Instant createdAt,
+    Instant updatedAt) {}

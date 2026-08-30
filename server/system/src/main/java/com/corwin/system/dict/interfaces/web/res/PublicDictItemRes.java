@@ -6,10 +6,4 @@ package com.corwin.system.dict.interfaces.web.res;
  * @author Corwin 2026/8/5
  */
 public record PublicDictItemRes(
-        String itemCode,
-        String itemLabel,
-        String itemValue,
-        String tagColor,
-        String tagType
-) {
-}
+    String itemCode, String itemLabel, String itemValue, String tagColor, String tagType) {}

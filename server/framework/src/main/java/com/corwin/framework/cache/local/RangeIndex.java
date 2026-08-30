@@ -5,8 +5,4 @@ package com.corwin.framework.cache.local;
  *
  * @author Corwin 2026/4/19
  */
-public record RangeIndex(
-        int start,
-        int end
-) {
-}
+public record RangeIndex(int start, int end) {}

@@ -5,9 +5,9 @@ import com.corwin.framework.domain.page.PageSpec;
 
 /**
  * Repository interface for dynamic paginated queries.
- * <p>
- * Implementations provide filtered, sorted, and paginated queries
- * based on a domain-specific query object.
+ *
+ * <p>Implementations provide filtered, sorted, and paginated queries based on a domain-specific
+ * query object.
  *
  * @param <T> the result entity type
  * @param <Q> the query condition type
@@ -15,5 +15,5 @@ import com.corwin.framework.domain.page.PageSpec;
  */
 public interface DynamicPageQueryRepository<T, Q> {
 
-    PageData<T> pageByQuery(Q query, PageSpec spec);
+  PageData<T> pageByQuery(Q query, PageSpec spec);
 }

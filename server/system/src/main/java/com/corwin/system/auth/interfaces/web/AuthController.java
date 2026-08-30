@@ -20,6 +20,7 @@ import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
 import com.corwin.system.webuser.application.service.WebUserAuthService;
 import com.corwin.system.webuser.application.view.WebUserAuthView;
 import com.corwin.system.webuser.application.view.WebUserLoginView;
+import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -27,11 +28,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
- * REST controller for external (web) user authentication: login, refresh,
- * current user info, logout, and password change.
+ * REST controller for external (web) user authentication: login, refresh, current user info,
+ * logout, and password change.
  *
  * @author Corwin 2026/1/22
  */
@@ -40,72 +39,80 @@ import java.util.List;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final WebUserAuthService webUserAuthService;
-    private final UserConfigAppService userConfigAppService;
+  private final WebUserAuthService webUserAuthService;
+  private final UserConfigAppService userConfigAppService;
 
-    public AuthController(WebUserAuthService webUserAuthService, UserConfigAppService userConfigAppService) {
-        this.webUserAuthService = webUserAuthService;
-        this.userConfigAppService = userConfigAppService;
-    }
+  public AuthController(
+      WebUserAuthService webUserAuthService, UserConfigAppService userConfigAppService) {
+    this.webUserAuthService = webUserAuthService;
+    this.userConfigAppService = userConfigAppService;
+  }
 
-    /**
-     * Authenticates a web user with account and password.
-     */
-    @PostMapping("/login")
-    @PermitAll
-    public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
-        WebUserLoginView result = webUserAuthService.login(new LoginCommand(req.account(), req.password()));
-        return ApiResponse.ok(new LoginResponseRes(result.token(), result.refreshToken(), result.accessTokenExpiresAt(),
-                result.refreshTokenExpiresAt(), toAuthDto(result.user())));
-    }
+  /** Authenticates a web user with account and password. */
+  @PostMapping("/login")
+  @PermitAll
+  public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
+    WebUserLoginView result =
+        webUserAuthService.login(new LoginCommand(req.account(), req.password()));
+    return ApiResponse.ok(
+        new LoginResponseRes(
+            result.token(),
+            result.refreshToken(),
+            result.accessTokenExpiresAt(),
+            result.refreshTokenExpiresAt(),
+            toAuthDto(result.user())));
+  }
 
-    /**
-     * Refreshes an expired access token using a refresh token.
-     */
-    @PostMapping("/refresh")
-    @PermitAll
-    public ApiResponse<RefreshTokenResponseRes> refresh(@RequestBody RefreshTokenReq req) {
-        WebUserLoginView result = webUserAuthService.refresh(req.refreshToken());
-        return ApiResponse.ok(new RefreshTokenResponseRes(result.token(), result.refreshToken(),
-                result.accessTokenExpiresAt(), result.refreshTokenExpiresAt()));
-    }
+  /** Refreshes an expired access token using a refresh token. */
+  @PostMapping("/refresh")
+  @PermitAll
+  public ApiResponse<RefreshTokenResponseRes> refresh(@RequestBody RefreshTokenReq req) {
+    WebUserLoginView result = webUserAuthService.refresh(req.refreshToken());
+    return ApiResponse.ok(
+        new RefreshTokenResponseRes(
+            result.token(),
+            result.refreshToken(),
+            result.accessTokenExpiresAt(),
+            result.refreshTokenExpiresAt()));
+  }
 
-    /**
-     * Returns the currently authenticated web user's information.
-     */
-    @GetMapping("/me")
-    @Authenticated(userType = UserType.USER)
-    public ApiResponse<AuthUserRes> me() {
-        return ApiResponse.ok(toAuthDto(webUserAuthService.currentUser()));
-    }
+  /** Returns the currently authenticated web user's information. */
+  @GetMapping("/me")
+  @Authenticated(userType = UserType.USER)
+  public ApiResponse<AuthUserRes> me() {
+    return ApiResponse.ok(toAuthDto(webUserAuthService.currentUser()));
+  }
 
-    /**
-     * Logs out the current web user by clearing the session.
-     */
-    @PostMapping("/logout")
-    @Authenticated(userType = UserType.USER)
-    public ApiResponse<Boolean> logout() {
-        return ApiResponse.ok(webUserAuthService.logout());
-    }
+  /** Logs out the current web user by clearing the session. */
+  @PostMapping("/logout")
+  @Authenticated(userType = UserType.USER)
+  public ApiResponse<Boolean> logout() {
+    return ApiResponse.ok(webUserAuthService.logout());
+  }
 
-    /**
-     * Changes the current web user's password.
-     */
-    @PutMapping("/password")
-    @Authenticated(userType = UserType.USER)
-    public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
-        return ApiResponse.ok(
-                webUserAuthService.changePassword(new ChangePasswordCommand(req.oldPassword(), req.newPassword())));
-    }
+  /** Changes the current web user's password. */
+  @PutMapping("/password")
+  @Authenticated(userType = UserType.USER)
+  public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
+    return ApiResponse.ok(
+        webUserAuthService.changePassword(
+            new ChangePasswordCommand(req.oldPassword(), req.newPassword())));
+  }
 
-    private AuthUserRes toAuthDto(WebUserAuthView view) {
-        List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(view.id()).stream()
-                .map(AuthController::toUserConfigsRes).toList();
-        return new AuthUserRes(String.valueOf(view.id()), view.account(), view.userType(), view.mustChangePassword(),
-                configs);
-    }
+  private AuthUserRes toAuthDto(WebUserAuthView view) {
+    List<UserConfigsRes> configs =
+        userConfigAppService.getMergedConfigs(view.id()).stream()
+            .map(AuthController::toUserConfigsRes)
+            .toList();
+    return new AuthUserRes(
+        String.valueOf(view.id()),
+        view.account(),
+        view.userType(),
+        view.mustChangePassword(),
+        configs);
+  }
 
-    private static UserConfigsRes toUserConfigsRes(UserConfigView view) {
-        return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
-    }
+  private static UserConfigsRes toUserConfigsRes(UserConfigView view) {
+    return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
+  }
 }

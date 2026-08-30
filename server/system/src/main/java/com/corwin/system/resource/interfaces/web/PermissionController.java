@@ -11,18 +11,17 @@ import com.corwin.system.resource.interfaces.web.res.MyPermissionsRes;
 import com.corwin.system.resource.interfaces.web.res.PermissionRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * REST controller for permission queries.
  *
- * <p>Provides endpoints for listing assignable permissions and retrieving
- * the current user's granted permissions and details.</p>
+ * <p>Provides endpoints for listing assignable permissions and retrieving the current user's
+ * granted permissions and details.
  *
  * @author Corwin 2026/1/22
  */
@@ -32,51 +31,59 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PermissionController {
 
-    private final PermissionService permissionService;
+  private final PermissionService permissionService;
 
-    /**
-     * Lists all permissions assignable to admin roles.
-     *
-     * @return the list of permissions
-     */
-    @GetMapping
-    @Authorize(userType = UserType.ADMIN, permissions = {"rol.perm.view", "rol.perm.edit"}, anyPermission = true)
-    public ApiResponse<List<PermissionRes>> list() {
-        return ApiResponse.ok(
-                permissionService.assignablePermissionsForInternal().stream().map(PermissionController::toRes)
-                        .toList());
-    }
+  /**
+   * Lists all permissions assignable to admin roles.
+   *
+   * @return the list of permissions
+   */
+  @GetMapping
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"rol.perm.view", "rol.perm.edit"},
+      anyPermission = true)
+  public ApiResponse<List<PermissionRes>> list() {
+    return ApiResponse.ok(
+        permissionService.assignablePermissionsForInternal().stream()
+            .map(PermissionController::toRes)
+            .toList());
+  }
 
-    /**
-     * Returns the permission codes granted to the current admin user.
-     *
-     * @return the current user's permission codes
-     */
-    @GetMapping("/me")
-    @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
-    public ApiResponse<MyPermissionsRes> myPermissions() {
-        return ApiResponse.ok(new MyPermissionsRes(permissionService.permissionCodesForCurrent().stream().toList()));
-    }
+  /**
+   * Returns the permission codes granted to the current admin user.
+   *
+   * @return the current user's permission codes
+   */
+  @GetMapping("/me")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"sys.use"})
+  public ApiResponse<MyPermissionsRes> myPermissions() {
+    return ApiResponse.ok(
+        new MyPermissionsRes(permissionService.permissionCodesForCurrent().stream().toList()));
+  }
 
-    /**
-     * Returns detailed permission info for the current admin user,
-     * including username, role names, and permission codes.
-     *
-     * @return the current user's permission details
-     */
-    @GetMapping("/me/details")
-    @Authorize(userType = UserType.ADMIN, permissions = {"sys.use"})
-    public ApiResponse<MyPermissionsDetailRes> myPermissionsDetails() {
-        return ApiResponse.ok(toRes(permissionService.getPermissionDetailForCurrent()));
-    }
+  /**
+   * Returns detailed permission info for the current admin user, including username, role names,
+   * and permission codes.
+   *
+   * @return the current user's permission details
+   */
+  @GetMapping("/me/details")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"sys.use"})
+  public ApiResponse<MyPermissionsDetailRes> myPermissionsDetails() {
+    return ApiResponse.ok(toRes(permissionService.getPermissionDetailForCurrent()));
+  }
 
-    private static MyPermissionsDetailRes toRes(MyPermissionsDetailView view) {
-        return new MyPermissionsDetailRes(view.username(), view.roles(), view.permissionCodes());
-    }
+  private static MyPermissionsDetailRes toRes(MyPermissionsDetailView view) {
+    return new MyPermissionsDetailRes(view.username(), view.roles(), view.permissionCodes());
+  }
 
-    private static PermissionRes toRes(Permission permission) {
-        return new PermissionRes(permission.getId(), permission.getCode(), permission.getName(),
-                permission.getUserScope());
-    }
-
+  private static PermissionRes toRes(Permission permission) {
+    return new PermissionRes(
+        permission.getId(), permission.getCode(), permission.getName(), permission.getUserScope());
+  }
 }

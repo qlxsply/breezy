@@ -11,13 +11,15 @@ import org.springframework.stereotype.Component;
  * @author Corwin 2026/3/23
  */
 @Component
-public class BreezySchedulerExecutionIdentityProvider implements SchedulerExecutionIdentityProvider {
+public class BreezySchedulerExecutionIdentityProvider
+    implements SchedulerExecutionIdentityProvider {
 
-    /** Returns the identity of the built-in scheduler user. */
-    @Override
-    public SchedulerExecutionIdentity identity() {
-        return new SchedulerExecutionIdentity(DefaultUser.SCHEDULER.id(), DefaultUser.SCHEDULER.account(),
-                DefaultUser.SCHEDULER.userType());
-    }
-
+  /** Returns the identity of the built-in scheduler user. */
+  @Override
+  public SchedulerExecutionIdentity identity() {
+    return new SchedulerExecutionIdentity(
+        DefaultUser.SCHEDULER.id(),
+        DefaultUser.SCHEDULER.account(),
+        DefaultUser.SCHEDULER.userType());
+  }
 }

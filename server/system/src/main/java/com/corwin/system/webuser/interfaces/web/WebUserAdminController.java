@@ -20,8 +20,8 @@ import com.corwin.system.webuser.interfaces.web.res.WebUserRes;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for external user administration.
- * Provides paginated listing, retrieval, and status update endpoints for admin users.
+ * REST controller for external user administration. Provides paginated listing, retrieval, and
+ * status update endpoints for admin users.
  *
  * @author Corwin 2026/5/11
  */
@@ -30,43 +30,56 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/web-users")
 public class WebUserAdminController {
 
-    private final WebUserAdminService webUserAdminService;
+  private final WebUserAdminService webUserAdminService;
 
-    public WebUserAdminController(WebUserAdminService webUserAdminService) {
-        this.webUserAdminService = webUserAdminService;
-    }
+  public WebUserAdminController(WebUserAdminService webUserAdminService) {
+    this.webUserAdminService = webUserAdminService;
+  }
 
-    /**
-     * Paginated listing of web users with optional keyword and status filter.
-     */
-    @PostMapping("/page")
-    @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
-    public ApiResponse<PageResult<WebUserRes>> page(@RequestBody WebUserPageReq req) {
-        var page = webUserAdminService.page(req.keyword(), req.status(), PageSpecFactory.of(req.page(), req.sort()));
-        return ApiResponse.ok(PageResult.of(page, WebUserAdminController::toRes));
-    }
+  /** Paginated listing of web users with optional keyword and status filter. */
+  @PostMapping("/page")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"usr.view"})
+  public ApiResponse<PageResult<WebUserRes>> page(@RequestBody WebUserPageReq req) {
+    var page =
+        webUserAdminService.page(
+            req.keyword(), req.status(), PageSpecFactory.of(req.page(), req.sort()));
+    return ApiResponse.ok(PageResult.of(page, WebUserAdminController::toRes));
+  }
 
-    /**
-     * Retrieve a single external user by ID.
-     */
-    @GetMapping("/{id}")
-    @Authorize(userType = UserType.ADMIN, permissions = {"usr.view"})
-    public ApiResponse<WebUserRes> get(@PathVariable Long id) {
-        return ApiResponse.ok(toRes(webUserAdminService.get(id)));
-    }
+  /** Retrieve a single external user by ID. */
+  @GetMapping("/{id}")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"usr.view"})
+  public ApiResponse<WebUserRes> get(@PathVariable Long id) {
+    return ApiResponse.ok(toRes(webUserAdminService.get(id)));
+  }
 
-    /**
-     * Update the status of an external user (e.g. enable/disable).
-     */
-    @PutMapping("/{id}")
-    @Authorize(userType = UserType.ADMIN, permissions = {"usr.edit"})
-    @Audit(resource = AuditResource.EXTERNAL_USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
-    public ApiResponse<WebUserRes> update(@PathVariable Long id, @RequestBody UpdateWebUserReq req) {
-        return ApiResponse.ok(toRes(webUserAdminService.update(id, new UpdateWebUserCommand(req.status()))));
-    }
+  /** Update the status of an external user (e.g. enable/disable). */
+  @PutMapping("/{id}")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"usr.edit"})
+  @Audit(
+      resource = AuditResource.EXTERNAL_USER,
+      action = AuditAction.UPDATE,
+      level = AuditLevel.HIGH)
+  public ApiResponse<WebUserRes> update(@PathVariable Long id, @RequestBody UpdateWebUserReq req) {
+    return ApiResponse.ok(
+        toRes(webUserAdminService.update(id, new UpdateWebUserCommand(req.status()))));
+  }
 
-    private static WebUserRes toRes(WebUserAdminView view) {
-        return new WebUserRes(String.valueOf(view.id()), view.account(), view.nickname(), view.userType(),
-                view.status(), view.lastLoginAt(), view.createdAt(), view.updatedAt());
-    }
+  private static WebUserRes toRes(WebUserAdminView view) {
+    return new WebUserRes(
+        String.valueOf(view.id()),
+        view.account(),
+        view.nickname(),
+        view.userType(),
+        view.status(),
+        view.lastLoginAt(),
+        view.createdAt(),
+        view.updatedAt());
+  }
 }

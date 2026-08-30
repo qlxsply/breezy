@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface DatabaseColumnMybatisMapper {
 
-    PageData<DatabaseColumn> page(@Param("tableId") Long tableId, @Param("nameLike") String nameLike,
-            @Param("spec") PageSpec spec);
+  PageData<DatabaseColumn> page(
+      @Param("tableId") Long tableId,
+      @Param("nameLike") String nameLike,
+      @Param("spec") PageSpec spec);
 }

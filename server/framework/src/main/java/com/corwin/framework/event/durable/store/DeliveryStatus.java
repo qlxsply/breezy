@@ -6,9 +6,8 @@ package com.corwin.framework.event.durable.store;
  * @author Corwin 2026/4/12
  */
 public enum DeliveryStatus {
-    PENDING,
-    CLAIMED,
-    SUCCEEDED,
-    CANCELLED
+  PENDING,
+  CLAIMED,
+  SUCCEEDED,
+  CANCELLED
 }
-

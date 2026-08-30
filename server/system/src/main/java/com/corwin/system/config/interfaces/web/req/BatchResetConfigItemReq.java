@@ -9,11 +9,4 @@ import jakarta.validation.constraints.Size;
  * @author Corwin 2026/8/3
  */
 public record BatchResetConfigItemReq(
-        @NotBlank
-        @Size(max = 160)
-        String configKey,
-        @NotNull
-        @PositiveOrZero
-        Long expectedRevision
-) {
-}
+    @NotBlank @Size(max = 160) String configKey, @NotNull @PositiveOrZero Long expectedRevision) {}

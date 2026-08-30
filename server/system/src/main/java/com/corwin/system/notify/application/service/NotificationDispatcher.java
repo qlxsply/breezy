@@ -30,203 +30,313 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @RequiredArgsConstructor
 public class NotificationDispatcher implements MessageDispatchPort {
 
-    private final SseSessionManager sessionManager;
-    private final NotificationRepository notificationRepository;
-    private final MessageDeliveryRepository messageDeliveryRepository;
-    private final WebPushDispatchService webPushDispatchService;
+  private final SseSessionManager sessionManager;
+  private final NotificationRepository notificationRepository;
+  private final MessageDeliveryRepository messageDeliveryRepository;
+  private final WebPushDispatchService webPushDispatchService;
 
-    @Override
-    @Transactional
-    public MessageDispatchResult dispatch(Long userId, UserType userType, MsgType type, String title, String content,
-            String fallbackRoute) {
-        return dispatch(userId, userType, type, title, content, fallbackRoute, null, null);
-    }
+  @Override
+  @Transactional
+  public MessageDispatchResult dispatch(
+      Long userId,
+      UserType userType,
+      MsgType type,
+      String title,
+      String content,
+      String fallbackRoute) {
+    return dispatch(userId, userType, type, title, content, fallbackRoute, null, null);
+  }
 
-    @Override
-    @Transactional
-    public MessageDispatchResult dispatch(Long userId, UserType userType, MsgType type, String title, String content,
-            String fallbackRoute, String bizType, String bizId) {
-        ResolvedMsgBehavior behavior = resolveBehavior(type, fallbackRoute);
-        DispatchOutcome outcome = dispatchWithBehavior(userId, userType, type, title, content, behavior, bizType,
-                bizId);
-        return toResult(outcome.delivery(), outcome.notificationId());
-    }
+  @Override
+  @Transactional
+  public MessageDispatchResult dispatch(
+      Long userId,
+      UserType userType,
+      MsgType type,
+      String title,
+      String content,
+      String fallbackRoute,
+      String bizType,
+      String bizId) {
+    ResolvedMsgBehavior behavior = resolveBehavior(type, fallbackRoute);
+    DispatchOutcome outcome =
+        dispatchWithBehavior(userId, userType, type, title, content, behavior, bizType, bizId);
+    return toResult(outcome.delivery(), outcome.notificationId());
+  }
 
-    @Transactional
-    public MessageDelivery dispatchPreview(Long userId, UserType userType, MsgType type, String title, String content,
-            String route, String priority, Boolean sseEnabled, Boolean webPushEnabled, Boolean panelAutoOpen,
-            Boolean osNotificationEnabled) {
-        ResolvedMsgBehavior behavior = resolvePreviewBehavior(type, route, priority, sseEnabled, webPushEnabled,
-                panelAutoOpen, osNotificationEnabled);
-        return dispatchWithBehavior(userId, userType, type, title, content, behavior, null, null).delivery();
-    }
+  @Transactional
+  public MessageDelivery dispatchPreview(
+      Long userId,
+      UserType userType,
+      MsgType type,
+      String title,
+      String content,
+      String route,
+      String priority,
+      Boolean sseEnabled,
+      Boolean webPushEnabled,
+      Boolean panelAutoOpen,
+      Boolean osNotificationEnabled) {
+    ResolvedMsgBehavior behavior =
+        resolvePreviewBehavior(
+            type,
+            route,
+            priority,
+            sseEnabled,
+            webPushEnabled,
+            panelAutoOpen,
+            osNotificationEnabled);
+    return dispatchWithBehavior(userId, userType, type, title, content, behavior, null, null)
+        .delivery();
+  }
 
-    private DispatchOutcome dispatchWithBehavior(Long userId, UserType userType, MsgType type, String title,
-            String content, ResolvedMsgBehavior behavior, String bizType, String bizId) {
-        Notification notification = new Notification(userId, userType, title, content, type.name(),
-                behavior.priority().name(), behavior.route());
-        notification = notificationRepository.save(notification);
+  private DispatchOutcome dispatchWithBehavior(
+      Long userId,
+      UserType userType,
+      MsgType type,
+      String title,
+      String content,
+      ResolvedMsgBehavior behavior,
+      String bizType,
+      String bizId) {
+    Notification notification =
+        new Notification(
+            userId,
+            userType,
+            title,
+            content,
+            type.name(),
+            behavior.priority().name(),
+            behavior.route());
+    notification = notificationRepository.save(notification);
 
-        MessageDelivery delivery = MessageDelivery.pending(userId, userType, notification.getId(), type.name(), title,
-                content, behavior.route(), behavior.priority().name(), behavior.panelAutoOpen(),
-                behavior.osNotificationEnabled(), bizType, bizId);
-        delivery = messageDeliveryRepository.save(delivery);
+    MessageDelivery delivery =
+        MessageDelivery.pending(
+            userId,
+            userType,
+            notification.getId(),
+            type.name(),
+            title,
+            content,
+            behavior.route(),
+            behavior.priority().name(),
+            behavior.panelAutoOpen(),
+            behavior.osNotificationEnabled(),
+            bizType,
+            bizId);
+    delivery = messageDeliveryRepository.save(delivery);
 
+    log.info(
+        "Dispatch message prepared: userType={}, userId={}, msgType={}, deliveryId={}, notificationId={}, priority={}, route={}, sseEnabled={}, webPushEnabled={}, panelAutoOpen={}, osNotificationEnabled={}",
+        userType,
+        userId,
+        type.name(),
+        delivery.getId(),
+        notification.getId(),
+        behavior.priority().name(),
+        behavior.route(),
+        behavior.sseEnabled(),
+        behavior.webPushEnabled(),
+        behavior.panelAutoOpen(),
+        behavior.osNotificationEnabled());
+
+    if (behavior.sseEnabled()) {
+      MsgPushPayloadView payload =
+          new MsgPushPayloadView(
+              String.valueOf(delivery.getId()),
+              String.valueOf(notification.getId()),
+              type.name(),
+              title,
+              content,
+              behavior.route(),
+              behavior.priority().name(),
+              behavior.panelAutoOpen(),
+              behavior.osNotificationEnabled());
+      boolean delivered =
+          sessionManager.send(userId, userType, type.name(), payload, payload.eventId());
+      if (delivered) {
+        delivery.markSent();
+        messageDeliveryRepository.save(delivery);
         log.info(
-                "Dispatch message prepared: userType={}, userId={}, msgType={}, deliveryId={}, notificationId={}, priority={}, route={}, sseEnabled={}, webPushEnabled={}, panelAutoOpen={}, osNotificationEnabled={}",
-                userType, userId, type.name(), delivery.getId(), notification.getId(), behavior.priority().name(),
-                behavior.route(), behavior.sseEnabled(), behavior.webPushEnabled(), behavior.panelAutoOpen(),
-                behavior.osNotificationEnabled());
-
-        if (behavior.sseEnabled()) {
-            MsgPushPayloadView payload = new MsgPushPayloadView(String.valueOf(delivery.getId()),
-                    String.valueOf(notification.getId()), type.name(), title, content, behavior.route(),
-                    behavior.priority().name(), behavior.panelAutoOpen(), behavior.osNotificationEnabled());
-            boolean delivered = sessionManager.send(userId, userType, type.name(), payload, payload.eventId());
-            if (delivered) {
-                delivery.markSent();
-                messageDeliveryRepository.save(delivery);
-                log.info("SSE dispatched successfully: userType={}, userId={}, deliveryId={}, eventId={}", userType,
-                        userId, delivery.getId(), payload.eventId());
-            } else {
-                log.info("SSE skipped because no active session: userType={}, userId={}, deliveryId={}", userType,
-                        userId, delivery.getId());
-            }
-        }
-
-        if (behavior.webPushEnabled()) {
-            log.info("Web Push dispatch queued: userType={}, userId={}, deliveryId={}", userType, userId,
-                    delivery.getId());
-            dispatchWebPushAfterCommit(userId, userType, delivery.getId());
-        }
-        return new DispatchOutcome(notification.getId(), delivery);
+            "SSE dispatched successfully: userType={}, userId={}, deliveryId={}, eventId={}",
+            userType,
+            userId,
+            delivery.getId(),
+            payload.eventId());
+      } else {
+        log.info(
+            "SSE skipped because no active session: userType={}, userId={}, deliveryId={}",
+            userType,
+            userId,
+            delivery.getId());
+      }
     }
 
-    private MessageDispatchResult toResult(MessageDelivery delivery, Long notificationId) {
-        boolean delivered = delivery.getStatus() == com.corwin.system.notify.domain.model.MessageDeliveryStatus.SENT;
-        return new MessageDispatchResult(delivery.getId(), notificationId, delivered);
+    if (behavior.webPushEnabled()) {
+      log.info(
+          "Web Push dispatch queued: userType={}, userId={}, deliveryId={}",
+          userType,
+          userId,
+          delivery.getId());
+      dispatchWebPushAfterCommit(userId, userType, delivery.getId());
     }
+    return new DispatchOutcome(notification.getId(), delivery);
+  }
 
-    private void dispatchWebPushAfterCommit(Long userId, UserType userType, Long deliveryId) {
-        if (deliveryId == null) {
-            return;
-        }
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            log.info("Web Push dispatch trigger immediately (no tx sync): userType={}, userId={}, deliveryId={}",
-                    userType, userId, deliveryId);
+  private MessageDispatchResult toResult(MessageDelivery delivery, Long notificationId) {
+    boolean delivered =
+        delivery.getStatus() == com.corwin.system.notify.domain.model.MessageDeliveryStatus.SENT;
+    return new MessageDispatchResult(delivery.getId(), notificationId, delivered);
+  }
+
+  private void dispatchWebPushAfterCommit(Long userId, UserType userType, Long deliveryId) {
+    if (deliveryId == null) {
+      return;
+    }
+    if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+      log.info(
+          "Web Push dispatch trigger immediately (no tx sync): userType={}, userId={}, deliveryId={}",
+          userType,
+          userId,
+          deliveryId);
+      webPushDispatchService.dispatchAsync(deliveryId);
+      return;
+    }
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            log.info(
+                "Web Push dispatch trigger after commit: userType={}, userId={}, deliveryId={}",
+                userType,
+                userId,
+                deliveryId);
             webPushDispatchService.dispatchAsync(deliveryId);
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                log.info("Web Push dispatch trigger after commit: userType={}, userId={}, deliveryId={}", userType,
-                        userId, deliveryId);
-                webPushDispatchService.dispatchAsync(deliveryId);
-            }
+          }
         });
+  }
+
+  private ResolvedMsgBehavior resolvePreviewBehavior(
+      MsgType type,
+      String route,
+      String priority,
+      Boolean sseEnabled,
+      Boolean webPushEnabled,
+      Boolean panelAutoOpen,
+      Boolean osNotificationEnabled) {
+    ResolvedMsgBehavior baseBehavior = resolveBehavior(type, route);
+    MsgPriority resolvedPriority = resolvePriorityOrDefault(priority, baseBehavior.priority());
+    String resolvedRoute = normalizeRoute(route, baseBehavior.route());
+    boolean hasPriorityOverride = priority != null && !priority.isBlank();
+    boolean resolvedSseEnabled = sseEnabled != null ? sseEnabled : baseBehavior.sseEnabled();
+    boolean resolvedWebPushEnabled =
+        webPushEnabled != null
+            ? webPushEnabled
+            : (hasPriorityOverride
+                ? resolvedPriority == MsgPriority.HIGH
+                : baseBehavior.webPushEnabled());
+    boolean resolvedPanelAutoOpen =
+        panelAutoOpen != null
+            ? panelAutoOpen
+            : (hasPriorityOverride
+                ? resolvedPriority != MsgPriority.LOW
+                : baseBehavior.panelAutoOpen());
+    boolean resolvedOsNotificationEnabled =
+        osNotificationEnabled != null
+            ? osNotificationEnabled
+            : (hasPriorityOverride
+                ? resolvedPriority == MsgPriority.HIGH
+                : baseBehavior.osNotificationEnabled());
+    if (resolvedPriority == MsgPriority.HIGH) {
+      resolvedWebPushEnabled = true;
+      resolvedPanelAutoOpen = true;
+      resolvedOsNotificationEnabled = true;
+    }
+    return new ResolvedMsgBehavior(
+        resolvedRoute,
+        resolvedPriority,
+        resolvedSseEnabled,
+        resolvedWebPushEnabled,
+        resolvedPanelAutoOpen,
+        resolvedOsNotificationEnabled);
+  }
+
+  private MsgPriority resolvePriorityOrDefault(String priority, MsgPriority fallback) {
+    if (priority == null || priority.isBlank()) {
+      return fallback;
+    }
+    try {
+      return MsgPriority.valueOf(priority.trim().toUpperCase());
+    } catch (IllegalArgumentException ex) {
+      return fallback;
+    }
+  }
+
+  private String normalizeRoute(String route, String fallback) {
+    String normalized = route == null ? "" : route.trim();
+    if (normalized.startsWith("/")) {
+      return normalized;
+    }
+    if (fallback != null && !fallback.isBlank() && fallback.startsWith("/")) {
+      return fallback;
+    }
+    return "/";
+  }
+
+  private ResolvedMsgBehavior resolveBehavior(MsgType type, String fallbackRoute) {
+    var messageTypes = Configs.snapshot(SystemNotifyConfigSpecs.MESSAGE_TYPES).value();
+    MessageTypeConfig config =
+        messageTypes.items().stream()
+            .filter(item -> item.msgType() == type)
+            .findFirst()
+            .orElseGet(() -> defaultConfig(type));
+    MsgPriority priority = config.priority();
+    String route = normalizeConfiguredRoute(config.route(), defaultRoute(type));
+    if ((route == null || route.isBlank()) && fallbackRoute != null && !fallbackRoute.isBlank()) {
+      route = fallbackRoute.trim();
+    }
+    if (route == null || route.isBlank() || !route.startsWith("/")) {
+      route = defaultRoute(type);
     }
 
-    private ResolvedMsgBehavior resolvePreviewBehavior(MsgType type, String route, String priority, Boolean sseEnabled,
-            Boolean webPushEnabled, Boolean panelAutoOpen, Boolean osNotificationEnabled) {
-        ResolvedMsgBehavior baseBehavior = resolveBehavior(type, route);
-        MsgPriority resolvedPriority = resolvePriorityOrDefault(priority, baseBehavior.priority());
-        String resolvedRoute = normalizeRoute(route, baseBehavior.route());
-        boolean hasPriorityOverride = priority != null && !priority.isBlank();
-        boolean resolvedSseEnabled = sseEnabled != null ? sseEnabled : baseBehavior.sseEnabled();
-        boolean resolvedWebPushEnabled = webPushEnabled != null ? webPushEnabled
-                : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.webPushEnabled());
-        boolean resolvedPanelAutoOpen = panelAutoOpen != null ? panelAutoOpen
-                : (hasPriorityOverride ? resolvedPriority != MsgPriority.LOW : baseBehavior.panelAutoOpen());
-        boolean resolvedOsNotificationEnabled = osNotificationEnabled != null ? osNotificationEnabled
-                : (hasPriorityOverride ? resolvedPriority == MsgPriority.HIGH : baseBehavior.osNotificationEnabled());
-        if (resolvedPriority == MsgPriority.HIGH) {
-            resolvedWebPushEnabled = true;
-            resolvedPanelAutoOpen = true;
-            resolvedOsNotificationEnabled = true;
-        }
-        return new ResolvedMsgBehavior(resolvedRoute, resolvedPriority, resolvedSseEnabled, resolvedWebPushEnabled,
-                resolvedPanelAutoOpen, resolvedOsNotificationEnabled);
+    boolean webPushEnabled = config.webPushEnabled();
+    boolean panelAutoOpen = config.panelAutoOpen();
+    boolean osNotificationEnabled = config.osNotificationEnabled();
+    if (priority == MsgPriority.HIGH) {
+      webPushEnabled = true;
+      panelAutoOpen = true;
+      osNotificationEnabled = true;
     }
+    return new ResolvedMsgBehavior(
+        route, priority, config.sseEnabled(), webPushEnabled, panelAutoOpen, osNotificationEnabled);
+  }
 
-    private MsgPriority resolvePriorityOrDefault(String priority, MsgPriority fallback) {
-        if (priority == null || priority.isBlank()) {
-            return fallback;
-        }
-        try {
-            return MsgPriority.valueOf(priority.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            return fallback;
-        }
+  private MessageTypeConfig defaultConfig(MsgType type) {
+    return SystemNotifyConfigSpecs.MESSAGE_TYPES.defaultValue().items().stream()
+        .filter(item -> item.msgType() == type)
+        .findFirst()
+        .orElseThrow();
+  }
+
+  private String normalizeConfiguredRoute(String route, String fallback) {
+    String normalized = route == null ? "" : route.trim();
+    if ("/todo-all".equals(normalized)) {
+      normalized = "/todo/all";
     }
+    return normalized.isBlank() || !normalized.startsWith("/") ? fallback : normalized;
+  }
 
-    private String normalizeRoute(String route, String fallback) {
-        String normalized = route == null ? "" : route.trim();
-        if (normalized.startsWith("/")) {
-            return normalized;
-        }
-        if (fallback != null && !fallback.isBlank() && fallback.startsWith("/")) {
-            return fallback;
-        }
-        return "/";
-    }
+  private String defaultRoute(MsgType type) {
+    return defaultConfig(type).route();
+  }
 
-    private ResolvedMsgBehavior resolveBehavior(MsgType type, String fallbackRoute) {
-        var messageTypes = Configs.snapshot(SystemNotifyConfigSpecs.MESSAGE_TYPES).value();
-        MessageTypeConfig config = messageTypes.items().stream()
-                .filter(item -> item.msgType() == type)
-                .findFirst()
-                .orElseGet(() -> defaultConfig(type));
-        MsgPriority priority = config.priority();
-        String route = normalizeConfiguredRoute(config.route(), defaultRoute(type));
-        if ((route == null || route.isBlank()) && fallbackRoute != null && !fallbackRoute.isBlank()) {
-            route = fallbackRoute.trim();
-        }
-        if (route == null || route.isBlank() || !route.startsWith("/")) {
-            route = defaultRoute(type);
-        }
+  private record DispatchOutcome(Long notificationId, MessageDelivery delivery) {}
 
-        boolean webPushEnabled = config.webPushEnabled();
-        boolean panelAutoOpen = config.panelAutoOpen();
-        boolean osNotificationEnabled = config.osNotificationEnabled();
-        if (priority == MsgPriority.HIGH) {
-            webPushEnabled = true;
-            panelAutoOpen = true;
-            osNotificationEnabled = true;
-        }
-        return new ResolvedMsgBehavior(route, priority, config.sseEnabled(), webPushEnabled, panelAutoOpen,
-                osNotificationEnabled);
-    }
-
-    private MessageTypeConfig defaultConfig(MsgType type) {
-        return SystemNotifyConfigSpecs.MESSAGE_TYPES.defaultValue().items().stream()
-                .filter(item -> item.msgType() == type)
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private String normalizeConfiguredRoute(String route, String fallback) {
-        String normalized = route == null ? "" : route.trim();
-        if ("/todo-all".equals(normalized)) {
-            normalized = "/todo/all";
-        }
-        return normalized.isBlank() || !normalized.startsWith("/") ? fallback : normalized;
-    }
-
-    private String defaultRoute(MsgType type) {
-        return defaultConfig(type).route();
-    }
-
-    private record DispatchOutcome(Long notificationId, MessageDelivery delivery) {
-    }
-
-    private record ResolvedMsgBehavior(
-            String route,
-            MsgPriority priority,
-            boolean sseEnabled,
-            boolean webPushEnabled,
-            boolean panelAutoOpen,
-            boolean osNotificationEnabled
-    ) {
-    }
+  private record ResolvedMsgBehavior(
+      String route,
+      MsgPriority priority,
+      boolean sseEnabled,
+      boolean webPushEnabled,
+      boolean panelAutoOpen,
+      boolean osNotificationEnabled) {}
 }

@@ -11,16 +11,17 @@ import org.springframework.web.servlet.HandlerInterceptor;
  */
 final class SensitiveRequestBodyInterceptor implements HandlerInterceptor {
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (handler instanceof HandlerMethod method && isSensitive(method)) {
-            request.setAttribute(SensitiveRequestBody.ATTRIBUTE, Boolean.TRUE);
-        }
-        return true;
+  @Override
+  public boolean preHandle(
+      HttpServletRequest request, HttpServletResponse response, Object handler) {
+    if (handler instanceof HandlerMethod method && isSensitive(method)) {
+      request.setAttribute(SensitiveRequestBody.ATTRIBUTE, Boolean.TRUE);
     }
+    return true;
+  }
 
-    private boolean isSensitive(HandlerMethod method) {
-        return method.hasMethodAnnotation(SensitiveRequestBody.class)
-                || AnnotatedElementUtils.hasAnnotation(method.getBeanType(), SensitiveRequestBody.class);
-    }
+  private boolean isSensitive(HandlerMethod method) {
+    return method.hasMethodAnnotation(SensitiveRequestBody.class)
+        || AnnotatedElementUtils.hasAnnotation(method.getBeanType(), SensitiveRequestBody.class);
+  }
 }

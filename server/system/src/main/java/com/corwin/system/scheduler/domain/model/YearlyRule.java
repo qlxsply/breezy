@@ -9,10 +9,5 @@ import java.time.ZoneId;
  *
  * @author Corwin 2026/4/15
  */
-public record YearlyRule(
-        Month month,
-        int dayOfMonth,
-        LocalTime time,
-        ZoneId zoneId
-) implements ScheduleRule {
-}
+public record YearlyRule(Month month, int dayOfMonth, LocalTime time, ZoneId zoneId)
+    implements ScheduleRule {}

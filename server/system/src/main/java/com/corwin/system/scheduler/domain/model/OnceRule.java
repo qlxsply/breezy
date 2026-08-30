@@ -7,5 +7,4 @@ import java.time.Instant;
  *
  * @author Corwin 2026/4/15
  */
-public record OnceRule(Instant executeAt) implements ScheduleRule {
-}
+public record OnceRule(Instant executeAt) implements ScheduleRule {}

@@ -1,9 +1,8 @@
 package com.corwin.system.user.interfaces.web.req;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Request object for creating a new admin user.
@@ -13,8 +12,8 @@ import java.util.List;
 @Getter
 @Setter
 public class CreateUserReq {
-    private String username;
-    private String nickname;
-    private String password;
-    private List<Long> roleIds;
+  private String username;
+  private String nickname;
+  private String password;
+  private List<Long> roleIds;
 }

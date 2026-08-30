@@ -17,23 +17,26 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MessageDeliveryAppService implements MessageDeliveryPort {
 
-    private final MessageDeliveryRepository messageDeliveryRepository;
+  private final MessageDeliveryRepository messageDeliveryRepository;
 
-    /**
-     * Acknowledges a delivery as received/read by the user, if not already acknowledged.
-     *
-     * @param userId     the user ID
-     * @param userType   the user type
-     * @param deliveryId the delivery record ID
-     */
-    @Override
-    @Transactional
-    public void ackDelivery(Long userId, UserType userType, Long deliveryId) {
-        messageDeliveryRepository.findByIdAndUserIdAndUserType(deliveryId, userId, userType).ifPresent(delivery -> {
-            if (delivery.getStatus() != MessageDeliveryStatus.ACKED) {
+  /**
+   * Acknowledges a delivery as received/read by the user, if not already acknowledged.
+   *
+   * @param userId the user ID
+   * @param userType the user type
+   * @param deliveryId the delivery record ID
+   */
+  @Override
+  @Transactional
+  public void ackDelivery(Long userId, UserType userType, Long deliveryId) {
+    messageDeliveryRepository
+        .findByIdAndUserIdAndUserType(deliveryId, userId, userType)
+        .ifPresent(
+            delivery -> {
+              if (delivery.getStatus() != MessageDeliveryStatus.ACKED) {
                 delivery.markAcked();
                 messageDeliveryRepository.save(delivery);
-            }
-        });
-    }
+              }
+            });
+  }
 }

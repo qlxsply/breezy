@@ -20,13 +20,12 @@ import com.corwin.system.user.application.service.UserConfigAppService;
 import com.corwin.system.user.application.view.UserConfigView;
 import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
- * REST controller for internal (admin) user authentication: login,
- * current user info, logout, and password change.
+ * REST controller for internal (admin) user authentication: login, current user info, logout, and
+ * password change.
  *
  * @author Corwin 2026/5/11
  */
@@ -35,78 +34,80 @@ import java.util.List;
 @RequestMapping("/api/admin/auth")
 public class AdminAuthController {
 
-    private final AuthService authService;
-    private final UserConfigAppService userConfigAppService;
-    private final AdminAuthCookieService cookieService;
+  private final AuthService authService;
+  private final UserConfigAppService userConfigAppService;
+  private final AdminAuthCookieService cookieService;
 
-    public AdminAuthController(AuthService authService, UserConfigAppService userConfigAppService,
-            AdminAuthCookieService cookieService) {
-        this.authService = authService;
-        this.userConfigAppService = userConfigAppService;
-        this.cookieService = cookieService;
-    }
+  public AdminAuthController(
+      AuthService authService,
+      UserConfigAppService userConfigAppService,
+      AdminAuthCookieService cookieService) {
+    this.authService = authService;
+    this.userConfigAppService = userConfigAppService;
+    this.cookieService = cookieService;
+  }
 
-    /**
-     * Authenticates an admin user with account and password.
-     */
-    @PostMapping("/login")
-    @PermitAll
-    public ApiResponse<AdminLoginResponseRes> login(@RequestBody LoginReq req, HttpServletResponse response) {
-        LoginView result = authService.login(new LoginCommand(req.account(), req.password()));
-        cookieService.writeSession(response, result.token(), result.accessTokenExpiresAt());
-        cookieService.rotateCsrf(response);
-        return ApiResponse.ok(new AdminLoginResponseRes(result.accessTokenExpiresAt(), toAuthDto(result.user())));
-    }
+  /** Authenticates an admin user with account and password. */
+  @PostMapping("/login")
+  @PermitAll
+  public ApiResponse<AdminLoginResponseRes> login(
+      @RequestBody LoginReq req, HttpServletResponse response) {
+    LoginView result = authService.login(new LoginCommand(req.account(), req.password()));
+    cookieService.writeSession(response, result.token(), result.accessTokenExpiresAt());
+    cookieService.rotateCsrf(response);
+    return ApiResponse.ok(
+        new AdminLoginResponseRes(result.accessTokenExpiresAt(), toAuthDto(result.user())));
+  }
 
-    @GetMapping("/csrf")
-    @PermitAll
-    public ApiResponse<Boolean> csrf(HttpServletResponse response) {
-        cookieService.rotateCsrf(response);
-        return ApiResponse.ok(true);
-    }
+  @GetMapping("/csrf")
+  @PermitAll
+  public ApiResponse<Boolean> csrf(HttpServletResponse response) {
+    cookieService.rotateCsrf(response);
+    return ApiResponse.ok(true);
+  }
 
-    /**
-     * Returns the current admin session, or null when no session exists.
-     */
-    @GetMapping("/me")
-    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true, optional = true)
-    public ApiResponse<AuthUserRes> me() {
-        AuthUserView user = authService.currentUser();
-        return ApiResponse.ok(user == null ? null : toAuthDto(user));
-    }
+  /** Returns the current admin session, or null when no session exists. */
+  @GetMapping("/me")
+  @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true, optional = true)
+  public ApiResponse<AuthUserRes> me() {
+    AuthUserView user = authService.currentUser();
+    return ApiResponse.ok(user == null ? null : toAuthDto(user));
+  }
 
-    /**
-     * Logs out the current admin user by revoking the session.
-     */
-    @PostMapping("/logout")
-    @PermitAll
-    public ApiResponse<Boolean> logout(HttpServletResponse response) {
-        try {
-            return ApiResponse.ok(authService.logout());
-        } finally {
-            cookieService.clearSession(response);
-            cookieService.rotateCsrf(response);
-        }
+  /** Logs out the current admin user by revoking the session. */
+  @PostMapping("/logout")
+  @PermitAll
+  public ApiResponse<Boolean> logout(HttpServletResponse response) {
+    try {
+      return ApiResponse.ok(authService.logout());
+    } finally {
+      cookieService.clearSession(response);
+      cookieService.rotateCsrf(response);
     }
+  }
 
-    /**
-     * Changes the current admin user's password.
-     */
-    @PutMapping("/password")
-    @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
-    public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
-        ChangePasswordCommand cmd = new ChangePasswordCommand(req.oldPassword(), req.newPassword());
-        return ApiResponse.ok(authService.changePassword(cmd));
-    }
+  /** Changes the current admin user's password. */
+  @PutMapping("/password")
+  @Authenticated(userType = UserType.ADMIN, allowExpiredCredentials = true)
+  public ApiResponse<Boolean> changePassword(@RequestBody ChangePasswordReq req) {
+    ChangePasswordCommand cmd = new ChangePasswordCommand(req.oldPassword(), req.newPassword());
+    return ApiResponse.ok(authService.changePassword(cmd));
+  }
 
-    private AuthUserRes toAuthDto(AuthUserView view) {
-        List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(view.id()).stream()
-                .map(AdminAuthController::toUserConfigsRes).toList();
-        return new AuthUserRes(String.valueOf(view.id()), view.account(), view.userType(), view.mustChangePassword(),
-                configs);
-    }
+  private AuthUserRes toAuthDto(AuthUserView view) {
+    List<UserConfigsRes> configs =
+        userConfigAppService.getMergedConfigs(view.id()).stream()
+            .map(AdminAuthController::toUserConfigsRes)
+            .toList();
+    return new AuthUserRes(
+        String.valueOf(view.id()),
+        view.account(),
+        view.userType(),
+        view.mustChangePassword(),
+        configs);
+  }
 
-    private static UserConfigsRes toUserConfigsRes(UserConfigView view) {
-        return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
-    }
+  private static UserConfigsRes toUserConfigsRes(UserConfigView view) {
+    return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
+  }
 }

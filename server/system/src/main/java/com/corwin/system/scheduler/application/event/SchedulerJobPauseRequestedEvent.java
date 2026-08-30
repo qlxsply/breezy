@@ -5,7 +5,4 @@ package com.corwin.system.scheduler.application.event;
  *
  * @author Corwin 2026/4/15
  */
-public record SchedulerJobPauseRequestedEvent(
-        String jobId
-) {
-}
+public record SchedulerJobPauseRequestedEvent(String jobId) {}

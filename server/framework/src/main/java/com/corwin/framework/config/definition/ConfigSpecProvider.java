@@ -7,5 +7,5 @@ import java.util.Collection;
  */
 public interface ConfigSpecProvider {
 
-    Collection<ConfigSpec<?>> getConfigSpecs();
+  Collection<ConfigSpec<?>> getConfigSpecs();
 }

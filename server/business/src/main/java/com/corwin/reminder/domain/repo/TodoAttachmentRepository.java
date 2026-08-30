@@ -1,8 +1,7 @@
 package com.corwin.reminder.domain.repo;
 
-import com.corwin.reminder.domain.model.TodoAttachment;
 import com.corwin.framework.domain.repo.DomainRepository;
-
+import com.corwin.reminder.domain.model.TodoAttachment;
 import java.util.List;
 
 /**
@@ -10,9 +9,9 @@ import java.util.List;
  */
 public interface TodoAttachmentRepository extends DomainRepository<TodoAttachment, Long> {
 
-    List<TodoAttachment> findByTodoIdOrderBySortNoAsc(Long todoId);
+  List<TodoAttachment> findByTodoIdOrderBySortNoAsc(Long todoId);
 
-    List<TodoAttachment> findByTodoIdInOrderByTodoIdAscSortNoAsc(List<Long> todoIds);
+  List<TodoAttachment> findByTodoIdInOrderByTodoIdAscSortNoAsc(List<Long> todoIds);
 
-    void deleteByTodoId(Long todoId);
+  void deleteByTodoId(Long todoId);
 }

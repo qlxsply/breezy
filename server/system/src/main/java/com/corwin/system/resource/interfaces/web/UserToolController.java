@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST controller for user-facing tool pages.
  *
- * <p>Provides endpoints that return the set of tools and permission codes
- * available to the currently authenticated user. All endpoints are publicly
- * accessible (permit-all).</p>
+ * <p>Provides endpoints that return the set of tools and permission codes available to the
+ * currently authenticated user. All endpoints are publicly accessible (permit-all).
  *
  * @author Corwin 2026/6/6
  */
@@ -29,25 +28,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserToolController {
 
-    private final UserToolPageService userToolPageService;
+  private final UserToolPageService userToolPageService;
 
-    /**
-     * Returns the tools and permission codes available to the current user.
-     *
-     * @return the response containing tool pages and permission codes
-     */
-    @GetMapping
-    @PermitAll
-    public ApiResponse<UserToolsRes> currentUserTools() {
-        return ApiResponse.ok(toRes(userToolPageService.currentUserTools()));
-    }
+  /**
+   * Returns the tools and permission codes available to the current user.
+   *
+   * @return the response containing tool pages and permission codes
+   */
+  @GetMapping
+  @PermitAll
+  public ApiResponse<UserToolsRes> currentUserTools() {
+    return ApiResponse.ok(toRes(userToolPageService.currentUserTools()));
+  }
 
-    private UserToolsRes toRes(UserToolsView view) {
-        return new UserToolsRes(view.tools().stream().map(this::toRes).toList(), view.permissionCodes());
-    }
+  private UserToolsRes toRes(UserToolsView view) {
+    return new UserToolsRes(
+        view.tools().stream().map(this::toRes).toList(), view.permissionCodes());
+  }
 
-    private UserToolPageRes toRes(UserToolPageView view) {
-        return new UserToolPageRes(view.id(), view.name(), view.icon(), view.description(), view.code(), view.path(),
-                view.component(), view.sortNo(), view.level(), view.enabled(), view.guestAccess());
-    }
+  private UserToolPageRes toRes(UserToolPageView view) {
+    return new UserToolPageRes(
+        view.id(),
+        view.name(),
+        view.icon(),
+        view.description(),
+        view.code(),
+        view.path(),
+        view.component(),
+        view.sortNo(),
+        view.level(),
+        view.enabled(),
+        view.guestAccess());
+  }
 }

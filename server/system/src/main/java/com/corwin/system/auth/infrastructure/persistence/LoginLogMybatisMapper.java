@@ -15,12 +15,13 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface LoginLogMybatisMapper {
 
-    /**
-     * Executes a paginated query for login events based on the given search criteria.
-     *
-     * @param query the page query criteria
-     * @param spec  the page and sort specification
-     * @return paginated result of {@link LoginEvent}
-     */
-    PageData<LoginEvent> pageByQuery(@Param("query") LoginLogPageQuery query, @Param("spec") PageSpec spec);
+  /**
+   * Executes a paginated query for login events based on the given search criteria.
+   *
+   * @param query the page query criteria
+   * @param spec the page and sort specification
+   * @return paginated result of {@link LoginEvent}
+   */
+  PageData<LoginEvent> pageByQuery(
+      @Param("query") LoginLogPageQuery query, @Param("spec") PageSpec spec);
 }

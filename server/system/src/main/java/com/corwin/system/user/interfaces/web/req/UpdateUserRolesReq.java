@@ -1,9 +1,8 @@
 package com.corwin.system.user.interfaces.web.req;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 /**
  * Request object for replacing all role assignments for a user.
@@ -13,5 +12,5 @@ import java.util.List;
 @Getter
 @Setter
 public class UpdateUserRolesReq {
-    private List<Long> roleIds;
+  private List<Long> roleIds;
 }

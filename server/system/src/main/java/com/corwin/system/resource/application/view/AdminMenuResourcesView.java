@@ -7,7 +7,4 @@ import java.util.List;
  *
  * @author Corwin 2026/5/31
  */
-public record AdminMenuResourcesView(
-        List<AdminMenuResourceView> resources
-) {
-}
+public record AdminMenuResourcesView(List<AdminMenuResourceView> resources) {}

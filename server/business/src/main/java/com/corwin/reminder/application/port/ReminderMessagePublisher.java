@@ -7,5 +7,6 @@ package com.corwin.reminder.application.port;
  */
 public interface ReminderMessagePublisher {
 
-    ReminderDispatchResult publishReminder(Long userId, String title, String content, String route, Long outboxId);
+  ReminderDispatchResult publishReminder(
+      Long userId, String title, String content, String route, Long outboxId);
 }

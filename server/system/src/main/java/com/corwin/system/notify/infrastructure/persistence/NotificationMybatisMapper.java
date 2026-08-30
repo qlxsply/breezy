@@ -15,12 +15,13 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface NotificationMybatisMapper {
 
-    /**
-     * Executes a paginated query for notifications based on the given filter criteria.
-     *
-     * @param query the notification page query filter
-     * @param spec  the page specification (page number, size, sort)
-     * @return the paginated notification data
-     */
-    PageData<Notification> pageByQuery(@Param("query") NotificationPageQuery query, @Param("spec") PageSpec spec);
+  /**
+   * Executes a paginated query for notifications based on the given filter criteria.
+   *
+   * @param query the notification page query filter
+   * @param spec the page specification (page number, size, sort)
+   * @return the paginated notification data
+   */
+  PageData<Notification> pageByQuery(
+      @Param("query") NotificationPageQuery query, @Param("spec") PageSpec spec);
 }

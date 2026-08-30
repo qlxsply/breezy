@@ -9,15 +9,15 @@ import com.corwin.framework.cache.*;
  */
 public interface CacheProvider {
 
-    CacheStringOps stringOps();
+  CacheStringOps stringOps();
 
-    <T> CacheObjectOps<T> objectOps(Class<T> valueType);
+  <T> CacheObjectOps<T> objectOps(Class<T> valueType);
 
-    <T> CacheHashOps<T> hashOps(Class<T> valueType);
+  <T> CacheHashOps<T> hashOps(Class<T> valueType);
 
-    <T> CacheListOps<T> listOps(Class<T> valueType);
+  <T> CacheListOps<T> listOps(Class<T> valueType);
 
-    <T> CacheSetOps<T> setOps(Class<T> valueType);
+  <T> CacheSetOps<T> setOps(Class<T> valueType);
 
-    <T> CacheSortedSetOps<T> sortedSetOps(Class<T> valueType);
+  <T> CacheSortedSetOps<T> sortedSetOps(Class<T> valueType);
 }

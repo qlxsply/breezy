@@ -8,18 +8,17 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * @author Corwin 2026/8/17
  */
 public enum TimeMockMode implements DictEnumDefinition {
+  DYNAMIC("动态偏移"),
+  FIXED("固定时间");
 
-    DYNAMIC("动态偏移"),
-    FIXED("固定时间");
+  private final String label;
 
-    private final String label;
+  TimeMockMode(String label) {
+    this.label = label;
+  }
 
-    TimeMockMode(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String label() {
-        return label;
-    }
+  @Override
+  public String label() {
+    return label;
+  }
 }

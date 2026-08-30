@@ -8,22 +8,20 @@ import java.util.Objects;
  *
  * @author Corwin 2026/4/9
  */
-public record SubscriptionOptions(
-        List<String> sources,
-        int order,
-        boolean allowSharedGroup
-) {
+public record SubscriptionOptions(List<String> sources, int order, boolean allowSharedGroup) {
 
-    /**
-     * 归一化来源过滤项，去除空白并去重。
-     */
-    public SubscriptionOptions {
-        if (sources == null || sources.isEmpty()) {
-            sources = List.of();
-        } else {
-            sources = sources.stream().filter(Objects::nonNull).map(String::trim).filter(item -> !item.isEmpty())
-                    .distinct().toList();
-        }
+  /** 归一化来源过滤项，去除空白并去重。 */
+  public SubscriptionOptions {
+    if (sources == null || sources.isEmpty()) {
+      sources = List.of();
+    } else {
+      sources =
+          sources.stream()
+              .filter(Objects::nonNull)
+              .map(String::trim)
+              .filter(item -> !item.isEmpty())
+              .distinct()
+              .toList();
     }
+  }
 }
-

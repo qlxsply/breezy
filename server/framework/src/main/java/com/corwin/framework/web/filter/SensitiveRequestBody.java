@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SensitiveRequestBody {
 
-    String ATTRIBUTE = SensitiveRequestBody.class.getName();
+  String ATTRIBUTE = SensitiveRequestBody.class.getName();
 }

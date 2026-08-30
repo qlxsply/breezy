@@ -5,11 +5,11 @@ package com.corwin.framework.config.error;
  */
 public class ConfigDefinitionException extends RuntimeException {
 
-    public ConfigDefinitionException(String message) {
-        super(message);
-    }
+  public ConfigDefinitionException(String message) {
+    super(message);
+  }
 
-    public ConfigDefinitionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public ConfigDefinitionException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

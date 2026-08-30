@@ -7,8 +7,4 @@ import com.corwin.datasource.domain.model.DatabaseType;
  *
  * @author Corwin 2026/4/15
  */
-public record DatabaseSourcePageQuery(
-        DatabaseType dbType,
-        String nameLike
-) {
-}
+public record DatabaseSourcePageQuery(DatabaseType dbType, String nameLike) {}

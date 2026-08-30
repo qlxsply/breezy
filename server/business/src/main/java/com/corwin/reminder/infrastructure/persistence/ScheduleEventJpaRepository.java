@@ -11,8 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ScheduleEventJpaRepository extends JpaRepository<ScheduleEvent, Long> {
 
-    Page<ScheduleEvent> findByStatus(ScheduleEventStatus status, Pageable pageable);
+  Page<ScheduleEvent> findByStatus(ScheduleEventStatus status, Pageable pageable);
 
-    Page<ScheduleEvent> findByStatusAndTitleContainingIgnoreCase(ScheduleEventStatus status, String titleLike,
-            Pageable pageable);
+  Page<ScheduleEvent> findByStatusAndTitleContainingIgnoreCase(
+      ScheduleEventStatus status, String titleLike, Pageable pageable);
 }

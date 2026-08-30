@@ -187,3 +187,5 @@ data/
 # Browser test artifacts
 web-admin/playwright-report/
 web-admin/test-results/
+# Added by code-review-graph
+.code-review-graph/

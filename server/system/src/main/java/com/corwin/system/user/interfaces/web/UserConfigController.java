@@ -9,15 +9,14 @@ import com.corwin.system.resource.published.ApiModuleCode;
 import com.corwin.system.user.application.service.UserConfigAppService;
 import com.corwin.system.user.application.view.UserConfigView;
 import com.corwin.system.user.interfaces.web.res.UserConfigsRes;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * REST controller for admin user personalized configuration management.
- * Provides endpoints to view and update user-specific configuration overrides.
+ * REST controller for admin user personalized configuration management. Provides endpoints to view
+ * and update user-specific configuration overrides.
  *
  * @author Corwin 2026/3/30
  */
@@ -27,38 +26,41 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserConfigController {
 
-    private final UserConfigAppService userConfigAppService;
+  private final UserConfigAppService userConfigAppService;
 
-    /**
-     * Returns the merged configuration for the current admin user.
-     *
-     * @return a list of user configuration entries
-     */
-    @GetMapping
-    @Authorize(userType = UserType.ADMIN)
-    public ApiResponse<List<UserConfigsRes>> getMyConfigs() {
-        Long userId = CtxUtil.getPrincipal().userId();
-        return ApiResponse.ok(
-                userConfigAppService.getMergedConfigs(userId).stream().map(UserConfigController::toRes).toList());
-    }
+  /**
+   * Returns the merged configuration for the current admin user.
+   *
+   * @return a list of user configuration entries
+   */
+  @GetMapping
+  @Authorize(userType = UserType.ADMIN)
+  public ApiResponse<List<UserConfigsRes>> getMyConfigs() {
+    Long userId = CtxUtil.getPrincipal().userId();
+    return ApiResponse.ok(
+        userConfigAppService.getMergedConfigs(userId).stream()
+            .map(UserConfigController::toRes)
+            .toList());
+  }
 
-    /**
-     * Updates a personalized configuration value for the current admin user.
-     *
-     * @param code the configuration code
-     * @param body the request body containing the new value
-     * @return true if successful
-     */
-    @PutMapping("/{code}")
-    @Authorize(userType = UserType.ADMIN)
-    public ApiResponse<Boolean> updateMyConfig(@PathVariable String code, @RequestBody Map<String, String> body) {
-        Long userId = CtxUtil.getPrincipal().userId();
-        String value = body.get("value");
-        userConfigAppService.updateMyConfig(userId, code, value);
-        return ApiResponse.ok(true);
-    }
+  /**
+   * Updates a personalized configuration value for the current admin user.
+   *
+   * @param code the configuration code
+   * @param body the request body containing the new value
+   * @return true if successful
+   */
+  @PutMapping("/{code}")
+  @Authorize(userType = UserType.ADMIN)
+  public ApiResponse<Boolean> updateMyConfig(
+      @PathVariable String code, @RequestBody Map<String, String> body) {
+    Long userId = CtxUtil.getPrincipal().userId();
+    String value = body.get("value");
+    userConfigAppService.updateMyConfig(userId, code, value);
+    return ApiResponse.ok(true);
+  }
 
-    private static UserConfigsRes toRes(UserConfigView view) {
-        return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
-    }
+  private static UserConfigsRes toRes(UserConfigView view) {
+    return new UserConfigsRes(view.code(), view.description(), view.valueType(), view.value());
+  }
 }

@@ -14,12 +14,11 @@ import com.corwin.system.audit.domain.model.AuditLevel;
 import com.corwin.system.audit.domain.model.AuditLog;
 import com.corwin.system.audit.domain.repo.AuditLogPageQuery;
 import com.corwin.system.audit.domain.repo.AuditLogRepository;
+import java.time.Instant;
+import java.util.concurrent.Executor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.concurrent.Executor;
 
 /**
  * Application service for audit log operations.
@@ -30,68 +29,105 @@ import java.util.concurrent.Executor;
 @Service
 public class AuditLogService {
 
-    private final AuditLogRepository auditLogRepository;
-    private final Executor taskExecutor;
+  private final AuditLogRepository auditLogRepository;
+  private final Executor taskExecutor;
 
-    public AuditLogService(AuditLogRepository auditLogRepository, @Qualifier("taskExecutor") Executor taskExecutor) {
-        this.auditLogRepository = auditLogRepository;
-        this.taskExecutor = taskExecutor;
+  public AuditLogService(
+      AuditLogRepository auditLogRepository, @Qualifier("taskExecutor") Executor taskExecutor) {
+    this.auditLogRepository = auditLogRepository;
+    this.taskExecutor = taskExecutor;
+  }
+
+  public void record(AuditRecordCommand command) {
+    if (command == null) {
+      return;
     }
 
-    public void record(AuditRecordCommand command) {
-        if (command == null) {
-            return;
-        }
+    var auditPolicy = Configs.snapshot(SystemAuditConfigSpecs.AUDIT_POLICY).value();
+    AuditLog auditLog =
+        new AuditLog(
+            command.traceId(),
+            command.requestId(),
+            command.operatorUserId(),
+            StrUtil.trimToNull(command.operatorUsername()),
+            StrUtil.trimToNull(command.operatorUserType()),
+            StrUtil.trimToNull(command.applicationCode()),
+            command.protocol(),
+            command.httpMethod(),
+            StrUtil.trimToNull(command.pathPattern()),
+            StrUtil.trimToNull(command.requestUri()),
+            StrUtil.trimToNull(command.permissionCodes()),
+            StrUtil.trimToNull(command.auditResource()),
+            StrUtil.trimToNull(command.auditAction()),
+            StrUtil.trimToNull(command.auditDescription()),
+            command.auditLevel(),
+            StrUtil.trimToNull(command.requestIp()),
+            StrUtil.trimToNull(command.userAgent()),
+            StrUtil.trimToNull(command.requestParamSummary()),
+            StrUtil.trimToNull(command.requestBodySummary()),
+            StrUtil.trimToNull(command.responseSummary()),
+            command.success(),
+            StrUtil.trimToNull(command.errorCode()),
+            StrUtil.trimToNull(command.errorMessage()),
+            command.startedAt(),
+            command.endedAt(),
+            command.durationMs(),
+            command.createdAt() == null ? HighDate.mockInstant() : command.createdAt());
 
-        var auditPolicy = Configs.snapshot(SystemAuditConfigSpecs.AUDIT_POLICY).value();
-        AuditLog auditLog = new AuditLog(command.traceId(), command.requestId(), command.operatorUserId(),
-                StrUtil.trimToNull(command.operatorUsername()), StrUtil.trimToNull(command.operatorUserType()),
-                StrUtil.trimToNull(command.applicationCode()), command.protocol(), command.httpMethod(),
-                StrUtil.trimToNull(command.pathPattern()), StrUtil.trimToNull(command.requestUri()),
-                StrUtil.trimToNull(command.permissionCodes()), StrUtil.trimToNull(command.auditResource()),
-                StrUtil.trimToNull(command.auditAction()), StrUtil.trimToNull(command.auditDescription()),
-                command.auditLevel(), StrUtil.trimToNull(command.requestIp()), StrUtil.trimToNull(command.userAgent()),
-                StrUtil.trimToNull(command.requestParamSummary()), StrUtil.trimToNull(command.requestBodySummary()),
-                StrUtil.trimToNull(command.responseSummary()), command.success(),
-                StrUtil.trimToNull(command.errorCode()), StrUtil.trimToNull(command.errorMessage()),
-                command.startedAt(), command.endedAt(), command.durationMs(),
-                command.createdAt() == null ? HighDate.mockInstant() : command.createdAt());
-
-        if (!auditPolicy.asyncEnabled()) {
-            saveSafely(auditLog);
-            return;
-        }
-
-        try {
-            taskExecutor.execute(() -> saveSafely(auditLog));
-        } catch (RuntimeException ex) {
-            log.warn("Submit audit log task failed, fallback to sync save: {}", ex.getMessage());
-            saveSafely(auditLog);
-        }
+    if (!auditPolicy.asyncEnabled()) {
+      saveSafely(auditLog);
+      return;
     }
 
-    public AuditLog get(Long id) {
-        BizAssert.notNull(id, BaseError.INVALID_PARAMETER);
-        AuditLog auditLog = auditLogRepository.findById(id).orElse(null);
-        BizAssert.notNull(auditLog, BaseError.NOT_FOUND);
-        return auditLog;
+    try {
+      taskExecutor.execute(() -> saveSafely(auditLog));
+    } catch (RuntimeException ex) {
+      log.warn("Submit audit log task failed, fallback to sync save: {}", ex.getMessage());
+      saveSafely(auditLog);
     }
+  }
 
-    public PageData<AuditLog> page(String traceId, Long operatorUserId, String operatorUsername, String applicationCode,
-            String requestUri, String auditResource, String auditAction, AuditLevel auditLevel, Boolean success,
-            Instant startAt, Instant endAt, PageSpec spec) {
-        AuditLogPageQuery query = new AuditLogPageQuery(StrUtil.trimToNull(traceId), operatorUserId,
-                StrUtil.trimToNull(operatorUsername), StrUtil.trimToNull(applicationCode),
-                StrUtil.trimToNull(requestUri), StrUtil.trimToNull(auditResource), StrUtil.trimToNull(auditAction),
-                auditLevel, success, startAt, endAt);
-        return auditLogRepository.pageByQuery(query, PageSpecSorts.apply(spec));
-    }
+  public AuditLog get(Long id) {
+    BizAssert.notNull(id, BaseError.INVALID_PARAMETER);
+    AuditLog auditLog = auditLogRepository.findById(id).orElse(null);
+    BizAssert.notNull(auditLog, BaseError.NOT_FOUND);
+    return auditLog;
+  }
 
-    private void saveSafely(AuditLog auditLog) {
-        try {
-            auditLogRepository.save(auditLog);
-        } catch (RuntimeException ex) {
-            log.warn("Failed to save audit log: {}", ex.getMessage(), ex);
-        }
+  public PageData<AuditLog> page(
+      String traceId,
+      Long operatorUserId,
+      String operatorUsername,
+      String applicationCode,
+      String requestUri,
+      String auditResource,
+      String auditAction,
+      AuditLevel auditLevel,
+      Boolean success,
+      Instant startAt,
+      Instant endAt,
+      PageSpec spec) {
+    AuditLogPageQuery query =
+        new AuditLogPageQuery(
+            StrUtil.trimToNull(traceId),
+            operatorUserId,
+            StrUtil.trimToNull(operatorUsername),
+            StrUtil.trimToNull(applicationCode),
+            StrUtil.trimToNull(requestUri),
+            StrUtil.trimToNull(auditResource),
+            StrUtil.trimToNull(auditAction),
+            auditLevel,
+            success,
+            startAt,
+            endAt);
+    return auditLogRepository.pageByQuery(query, PageSpecSorts.apply(spec));
+  }
+
+  private void saveSafely(AuditLog auditLog) {
+    try {
+      auditLogRepository.save(auditLog);
+    } catch (RuntimeException ex) {
+      log.warn("Failed to save audit log: {}", ex.getMessage(), ex);
     }
+  }
 }

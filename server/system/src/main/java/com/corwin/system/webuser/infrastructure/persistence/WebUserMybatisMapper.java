@@ -15,14 +15,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface WebUserMybatisMapper {
 
-    /**
-     * Paginated query for web users with optional keyword and status filtering.
-     *
-     * @param keyword optional LIKE pattern for display/nickname search
-     * @param status  optional status filter
-     * @param spec    pagination and sorting specification
-     * @return paginated result
-     */
-    PageData<WebUser> page(@Param("keyword") String keyword, @Param("status") WebUserStatus status,
-            @Param("spec") PageSpec spec);
+  /**
+   * Paginated query for web users with optional keyword and status filtering.
+   *
+   * @param keyword optional LIKE pattern for display/nickname search
+   * @param status optional status filter
+   * @param spec pagination and sorting specification
+   * @return paginated result
+   */
+  PageData<WebUser> page(
+      @Param("keyword") String keyword,
+      @Param("status") WebUserStatus status,
+      @Param("spec") PageSpec spec);
 }

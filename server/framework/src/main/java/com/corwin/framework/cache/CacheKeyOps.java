@@ -9,11 +9,11 @@ import java.time.Duration;
  */
 public interface CacheKeyOps {
 
-    boolean exists(String key);
+  boolean exists(String key);
 
-    boolean delete(String key);
+  boolean delete(String key);
 
-    boolean expire(String key, Duration ttl);
+  boolean expire(String key, Duration ttl);
 
-    CacheTtlResult ttl(String key);
+  CacheTtlResult ttl(String key);
 }

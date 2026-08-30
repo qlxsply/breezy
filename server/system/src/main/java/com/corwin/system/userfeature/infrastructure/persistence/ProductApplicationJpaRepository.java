@@ -1,9 +1,8 @@
 package com.corwin.system.userfeature.infrastructure.persistence;
 
 import com.corwin.system.userfeature.domain.model.ProductApplication;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * JPA repository for {@link ProductApplication} entity.
@@ -12,5 +11,5 @@ import java.util.List;
  */
 public interface ProductApplicationJpaRepository extends JpaRepository<ProductApplication, Long> {
 
-    List<ProductApplication> findByIdIn(Iterable<Long> ids);
+  List<ProductApplication> findByIdIn(Iterable<Long> ids);
 }

@@ -28,22 +28,35 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LoginLogController {
 
-    private final LoginLogService loginLogService;
+  private final LoginLogService loginLogService;
 
-    /**
-     * Paginated query of login audit logs with optional filters.
-     */
-    @PostMapping("/page")
-    @Authorize(userType = UserType.ADMIN, permissions = {"log.view"})
-    public ApiResponse<PageResult<LoginLogRes>> page(@RequestBody LoginLogPageReq req) {
-        var page = loginLogService.page(req.userAccount(), req.startAt(), req.endAt(),
-                PageSpecFactory.of(req.page(), req.sort()));
-        return ApiResponse.ok(PageResult.of(page, LoginLogController::toDto));
-    }
+  /** Paginated query of login audit logs with optional filters. */
+  @PostMapping("/page")
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"log.view"})
+  public ApiResponse<PageResult<LoginLogRes>> page(@RequestBody LoginLogPageReq req) {
+    var page =
+        loginLogService.page(
+            req.userAccount(),
+            req.startAt(),
+            req.endAt(),
+            PageSpecFactory.of(req.page(), req.sort()));
+    return ApiResponse.ok(PageResult.of(page, LoginLogController::toDto));
+  }
 
-    private static LoginLogRes toDto(LoginEvent log) {
-        return new LoginLogRes(log.getId(), log.getUserId(), log.getUsername(), log.getEventType(), log.isSuccess(),
-                log.getLoginIp(), log.getFailureReason(), log.getSessionId(), log.getOperatorId(), log.getOccurredAt(),
-                log.getRemark());
-    }
+  private static LoginLogRes toDto(LoginEvent log) {
+    return new LoginLogRes(
+        log.getId(),
+        log.getUserId(),
+        log.getUsername(),
+        log.getEventType(),
+        log.isSuccess(),
+        log.getLoginIp(),
+        log.getFailureReason(),
+        log.getSessionId(),
+        log.getOperatorId(),
+        log.getOccurredAt(),
+        log.getRemark());
+  }
 }

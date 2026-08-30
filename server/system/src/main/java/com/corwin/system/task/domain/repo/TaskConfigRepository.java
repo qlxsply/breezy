@@ -11,12 +11,12 @@ import java.util.List;
  * @author Corwin 2026/3/30
  */
 public interface TaskConfigRepository extends DomainRepository<TaskConfig, String> {
-    
-    /**
-     * Returns all task configurations matching the given status.
-     *
-     * @param taskStatus the status to filter by
-     * @return the list of matching task configurations
-     */
-    List<TaskConfig> findAllByTaskStatus(TaskStatus taskStatus);
+
+  /**
+   * Returns all task configurations matching the given status.
+   *
+   * @param taskStatus the status to filter by
+   * @return the list of matching task configurations
+   */
+  List<TaskConfig> findAllByTaskStatus(TaskStatus taskStatus);
 }

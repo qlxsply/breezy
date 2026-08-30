@@ -12,15 +12,15 @@ import java.util.Optional;
  */
 public interface CacheObjectOps<T> extends CacheKeyOps {
 
-    Optional<T> get(String key);
+  Optional<T> get(String key);
 
-    void set(String key, T value);
+  void set(String key, T value);
 
-    void set(String key, T value, Duration ttl);
+  void set(String key, T value, Duration ttl);
 
-    Map<String, T> multiGet(Collection<String> keys);
+  Map<String, T> multiGet(Collection<String> keys);
 
-    void multiSet(Map<String, T> values);
+  void multiSet(Map<String, T> values);
 
-    void multiSet(Map<String, T> values, Duration ttl);
+  void multiSet(Map<String, T> values, Duration ttl);
 }

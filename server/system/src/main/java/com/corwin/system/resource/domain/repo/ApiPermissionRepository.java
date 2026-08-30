@@ -10,11 +10,10 @@ import com.corwin.system.resource.domain.model.ApiPermission;
  */
 public interface ApiPermissionRepository extends DomainRepository<ApiPermission, Long> {
 
-    /**
-     * Deletes all API-permission bindings for the given API ID.
-     *
-     * @param apiId the API ID
-     */
-    void deleteByApiId(Long apiId);
-
+  /**
+   * Deletes all API-permission bindings for the given API ID.
+   *
+   * @param apiId the API ID
+   */
+  void deleteByApiId(Long apiId);
 }

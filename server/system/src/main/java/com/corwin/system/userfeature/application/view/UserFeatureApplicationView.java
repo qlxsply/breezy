@@ -8,16 +8,14 @@ import java.util.List;
  * @author Corwin 2026/6/14
  */
 public record UserFeatureApplicationView(
-        Long id,
-        String code,
-        String name,
-        String description,
-        String icon,
-        String routePath,
-        String componentPath,
-        boolean enabled,
-        int featureCount,
-        int permissionBindingCount,
-        List<UserFeatureItemView> features
-) {
-}
+    Long id,
+    String code,
+    String name,
+    String description,
+    String icon,
+    String routePath,
+    String componentPath,
+    boolean enabled,
+    int featureCount,
+    int permissionBindingCount,
+    List<UserFeatureItemView> features) {}

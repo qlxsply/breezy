@@ -7,10 +7,8 @@ import com.corwin.system.file.application.command.StorageSortOrder;
  * @author Corwin 2026/7/29
  */
 public record StorageListReq(
-        String parentId,
-        String keyword,
-        Boolean recursive,
-        StorageSortBy sortBy,
-        StorageSortOrder sortOrder
-) {
-}
+    String parentId,
+    String keyword,
+    Boolean recursive,
+    StorageSortBy sortBy,
+    StorageSortOrder sortOrder) {}

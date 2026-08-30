@@ -12,16 +12,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class PasswordPolicyService {
 
-    public void validate(String password) {
-        BizAssert.notBlank(password, BaseError.MISSING_PARAMETER);
-        var policy = Configs.get(SystemAuthConfigSpecs.PASSWORD_POLICY);
-        if (password.length() < policy.minLength()
-                || policy.requireDigit() && !password.matches(".*\\d.*")
-                || policy.requireLetter() && !password.matches(".*[A-Za-z].*")
-                || policy.requireUpper() && !password.matches(".*[A-Z].*")
-                || policy.requireLower() && !password.matches(".*[a-z].*")
-                || policy.requireSpecial() && !password.matches(".*[^A-Za-z0-9].*")) {
-            BizAssert.fail(BaseError.WEAK_PASSWORD);
-        }
+  public void validate(String password) {
+    BizAssert.notBlank(password, BaseError.MISSING_PARAMETER);
+    var policy = Configs.get(SystemAuthConfigSpecs.PASSWORD_POLICY);
+    if (password.length() < policy.minLength()
+        || policy.requireDigit() && !password.matches(".*\\d.*")
+        || policy.requireLetter() && !password.matches(".*[A-Za-z].*")
+        || policy.requireUpper() && !password.matches(".*[A-Z].*")
+        || policy.requireLower() && !password.matches(".*[a-z].*")
+        || policy.requireSpecial() && !password.matches(".*[^A-Za-z0-9].*")) {
+      BizAssert.fail(BaseError.WEAK_PASSWORD);
     }
+  }
 }

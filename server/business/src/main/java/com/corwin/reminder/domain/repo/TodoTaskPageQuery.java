@@ -1,7 +1,6 @@
 package com.corwin.reminder.domain.repo;
 
 import com.corwin.reminder.domain.model.TodoTaskStatus;
-
 import java.util.List;
 
 /**
@@ -9,8 +8,4 @@ import java.util.List;
  *
  * @author Corwin 2026/4/15
  */
-public record TodoTaskPageQuery(
-        List<TodoTaskStatus> statuses,
-        String contentLike
-) {
-}
+public record TodoTaskPageQuery(List<TodoTaskStatus> statuses, String contentLike) {}

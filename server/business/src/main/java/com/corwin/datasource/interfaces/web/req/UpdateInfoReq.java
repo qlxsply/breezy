@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateInfoReq {
-    private String alias;
-    private String remarkCustom;
+  private String alias;
+  private String remarkCustom;
 }

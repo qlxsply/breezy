@@ -14,6 +14,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface SchemaDdlMybatisMapper {
 
-    PageData<SchemaDdlRes> pageQuery(@Param("managedDatabaseId") Long managedDatabaseId,
-            @Param("nameLike") String nameLike, @Param("spec") PageSpec spec);
+  PageData<SchemaDdlRes> pageQuery(
+      @Param("managedDatabaseId") Long managedDatabaseId,
+      @Param("nameLike") String nameLike,
+      @Param("spec") PageSpec spec);
 }

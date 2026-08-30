@@ -12,27 +12,27 @@ import java.util.Optional;
  */
 public interface CacheSortedSetOps<T> extends CacheKeyOps {
 
-    boolean add(String key, T member, double score);
+  boolean add(String key, T member, double score);
 
-    long addAll(String key, Map<T, Double> members);
+  long addAll(String key, Map<T, Double> members);
 
-    boolean remove(String key, T member);
+  boolean remove(String key, T member);
 
-    long removeAll(String key, Collection<T> members);
+  long removeAll(String key, Collection<T> members);
 
-    Optional<Double> score(String key, T member);
+  Optional<Double> score(String key, T member);
 
-    Optional<Long> rank(String key, T member);
+  Optional<Long> rank(String key, T member);
 
-    Optional<Long> reverseRank(String key, T member);
+  Optional<Long> reverseRank(String key, T member);
 
-    List<T> range(String key, long start, long end);
+  List<T> range(String key, long start, long end);
 
-    List<T> reverseRange(String key, long start, long end);
+  List<T> reverseRange(String key, long start, long end);
 
-    List<T> rangeByScore(String key, double minScore, double maxScore);
+  List<T> rangeByScore(String key, double minScore, double maxScore);
 
-    long countByScore(String key, double minScore, double maxScore);
+  long countByScore(String key, double minScore, double maxScore);
 
-    long size(String key);
+  long size(String key);
 }

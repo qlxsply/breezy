@@ -9,9 +9,6 @@ import javax.sql.DataSource;
  */
 public interface DatabaseVendorResolver {
 
-    /**
-     * Resolves the database vendor from the given data source.
-     */
-    DatabaseVendor resolve(DataSource dataSource);
+  /** Resolves the database vendor from the given data source. */
+  DatabaseVendor resolve(DataSource dataSource);
 }
-

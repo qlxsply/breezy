@@ -1,7 +1,6 @@
 package com.corwin.system.config.domain.repo;
 
 import com.corwin.system.config.domain.model.ConfigValue;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -10,11 +9,11 @@ import java.util.Optional;
  */
 public interface ConfigValueRepository {
 
-    Optional<ConfigValue> findByConfigKey(String configKey);
+  Optional<ConfigValue> findByConfigKey(String configKey);
 
-    List<ConfigValue> findAll();
+  List<ConfigValue> findAll();
 
-    void insert(ConfigValue configValue);
+  void insert(ConfigValue configValue);
 
-    boolean update(ConfigValue configValue, long expectedRevision);
+  boolean update(ConfigValue configValue, long expectedRevision);
 }

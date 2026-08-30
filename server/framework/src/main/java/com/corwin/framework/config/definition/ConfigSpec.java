@@ -7,37 +7,37 @@ import java.util.List;
  */
 public interface ConfigSpec<T> {
 
-    ConfigKey key();
+  ConfigKey key();
 
-    String module();
+  String module();
 
-    String group();
+  String group();
 
-    String title();
+  String title();
 
-    String description();
+  String description();
 
-    Class<T> valueClass();
+  Class<T> valueClass();
 
-    T defaultValue();
+  T defaultValue();
 
-    int schemaVersion();
+  int schemaVersion();
 
-    int order();
+  int order();
 
-    ConfigActivationPolicy activationPolicy();
+  ConfigActivationPolicy activationPolicy();
 
-    ConfigEditPolicy editPolicy();
+  ConfigEditPolicy editPolicy();
 
-    ConfigInvalidValuePolicy invalidValuePolicy();
+  ConfigInvalidValuePolicy invalidValuePolicy();
 
-    List<ConfigFieldSpec> fields();
+  List<ConfigFieldSpec> fields();
 
-    default String editorId() {
-        return "default";
-    }
+  default String editorId() {
+    return "default";
+  }
 
-    List<ConfigViolation> validateRuntime(T value);
+  List<ConfigViolation> validateRuntime(T value);
 
-    List<ConfigViolation> validatePublish(T value);
+  List<ConfigViolation> validatePublish(T value);
 }

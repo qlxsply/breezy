@@ -10,17 +10,17 @@ import java.util.Set;
  */
 public interface CacheSetOps<T> extends CacheKeyOps {
 
-    long add(String key, T value);
+  long add(String key, T value);
 
-    long addAll(String key, Collection<T> values);
+  long addAll(String key, Collection<T> values);
 
-    boolean remove(String key, T value);
+  boolean remove(String key, T value);
 
-    long removeAll(String key, Collection<T> values);
+  long removeAll(String key, Collection<T> values);
 
-    boolean isMember(String key, T value);
+  boolean isMember(String key, T value);
 
-    Set<T> members(String key);
+  Set<T> members(String key);
 
-    long size(String key);
+  long size(String key);
 }

@@ -7,7 +7,4 @@ import com.corwin.system.scheduler.domain.model.DynamicJobSpec;
  *
  * @author Corwin 2026/4/15
  */
-public record SchedulerJobUpsertRequestedEvent(
-        DynamicJobSpec<?> spec
-) {
-}
+public record SchedulerJobUpsertRequestedEvent(DynamicJobSpec<?> spec) {}

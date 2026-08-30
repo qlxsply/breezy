@@ -12,27 +12,26 @@ import java.util.Objects;
  */
 public class JdbcDialectRegistry {
 
-    private final Map<DatabaseVendor, JdbcDialect> dialects = new EnumMap<>(DatabaseVendor.class);
+  private final Map<DatabaseVendor, JdbcDialect> dialects = new EnumMap<>(DatabaseVendor.class);
 
-    public JdbcDialectRegistry(List<JdbcDialect> dialectList) {
-        Objects.requireNonNull(dialectList, "dialectList required");
-        for (JdbcDialect dialect : dialectList) {
-            Objects.requireNonNull(dialect, "dialect required");
-            dialects.put(dialect.vendor(), dialect);
-        }
+  public JdbcDialectRegistry(List<JdbcDialect> dialectList) {
+    Objects.requireNonNull(dialectList, "dialectList required");
+    for (JdbcDialect dialect : dialectList) {
+      Objects.requireNonNull(dialect, "dialect required");
+      dialects.put(dialect.vendor(), dialect);
     }
+  }
 
-    /**
-     * 按 vendor 查找方言，不存在则抛出明确异常。
-     */
-    public JdbcDialect require(DatabaseVendor vendor) {
-        JdbcDialect dialect = dialects.get(vendor);
-        if (dialect != null) {
-            return dialect;
-        }
-        throw new IllegalStateException(
-                "Unsupported database vendor for async-event durable mode: " + vendor
-                        + ". Current implementation supports: " + dialects.keySet());
+  /** 按 vendor 查找方言，不存在则抛出明确异常。 */
+  public JdbcDialect require(DatabaseVendor vendor) {
+    JdbcDialect dialect = dialects.get(vendor);
+    if (dialect != null) {
+      return dialect;
     }
+    throw new IllegalStateException(
+        "Unsupported database vendor for async-event durable mode: "
+            + vendor
+            + ". Current implementation supports: "
+            + dialects.keySet());
+  }
 }
-

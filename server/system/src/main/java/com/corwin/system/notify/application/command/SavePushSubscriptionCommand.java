@@ -6,9 +6,4 @@ package com.corwin.system.notify.application.command;
  * @author Corwin 2026/3/19
  */
 public record SavePushSubscriptionCommand(
-        String deviceId,
-        String endpoint,
-        String p256dh,
-        String auth
-) {
-}
+    String deviceId, String endpoint, String p256dh, String auth) {}

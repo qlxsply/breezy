@@ -8,13 +8,11 @@ import java.time.Instant;
  * @author Corwin 2026/3/21
  */
 public record PushHealthDeliveryRes(
-        String id,
-        String msgType,
-        String priority,
-        String status,
-        String route,
-        Instant createdAt,
-        Instant sentAt,
-        Instant ackedAt
-) {
-}
+    String id,
+    String msgType,
+    String priority,
+    String status,
+    String route,
+    Instant createdAt,
+    Instant sentAt,
+    Instant ackedAt) {}

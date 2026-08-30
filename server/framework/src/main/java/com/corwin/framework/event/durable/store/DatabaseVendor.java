@@ -6,10 +6,9 @@ package com.corwin.framework.event.durable.store;
  * @author Corwin 2026/4/12
  */
 public enum DatabaseVendor {
-    MYSQL,
-    POSTGRESQL,
-    ORACLE,
-    SQLSERVER,
-    UNKNOWN
+  MYSQL,
+  POSTGRESQL,
+  ORACLE,
+  SQLSERVER,
+  UNKNOWN
 }
-

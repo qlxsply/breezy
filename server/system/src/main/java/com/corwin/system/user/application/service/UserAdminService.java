@@ -23,19 +23,18 @@ import com.corwin.system.user.domain.model.UserRole;
 import com.corwin.system.user.domain.model.UserStatus;
 import com.corwin.system.user.domain.repo.UserRepository;
 import com.corwin.system.user.domain.repo.UserRoleRepository;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
- * Application service for admin user management operations including
- * CRUD, pagination, password reset, and batch status updates.
+ * Application service for admin user management operations including CRUD, pagination, password
+ * reset, and batch status updates.
  *
  * @author Corwin 2026/1/22
  */
@@ -43,207 +42,218 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserAdminService {
 
-    private static final String DEFAULT_RESET_PASSWORD = "123456";
+  private static final String DEFAULT_RESET_PASSWORD = "123456";
 
-    private final UserRepository userRepository;
-    private final PasswordPolicyService passwordPolicyService;
-    private final InternalPermissionSessionService internalPermissionSessionService;
-    private final UserRoleRepository userRoleRepository;
-    private final RoleRepository roleRepository;
+  private final UserRepository userRepository;
+  private final PasswordPolicyService passwordPolicyService;
+  private final InternalPermissionSessionService internalPermissionSessionService;
+  private final UserRoleRepository userRoleRepository;
+  private final RoleRepository roleRepository;
 
-    /**
-     * Returns all users ordered by ID ascending.
-     *
-     * @return a list of all users
-     */
-    public List<User> list() {
-        return userRepository.findAllByOrderByIdAsc();
+  /**
+   * Returns all users ordered by ID ascending.
+   *
+   * @return a list of all users
+   */
+  public List<User> list() {
+    return userRepository.findAllByOrderByIdAsc();
+  }
+
+  /**
+   * Paginates users with optional status and username filters.
+   *
+   * @param status optional status filter
+   * @param usernameLike optional username fuzzy match
+   * @param spec the pagination specification
+   * @return a page of users
+   */
+  public PageData<User> page(UserStatus status, String usernameLike, PageSpec spec) {
+    return userRepository.page(status, usernameLike, PageSpecSorts.apply(spec));
+  }
+
+  /**
+   * Creates a new admin user with the given credentials and optional role assignments.
+   *
+   * @param cmd the create command containing username, nickname, password, and role IDs
+   * @return the created user entity
+   */
+  @Transactional
+  public User create(CreateUserCommand cmd) {
+    String username = normalizeUsername(cmd.username());
+    String nickname = normalizeNickname(cmd.nickname());
+
+    passwordPolicyService.validate(cmd.password());
+    BizAssert.state(!userRepository.existsByUsername(username), BaseError.CONFLICT);
+
+    UserStatus status = UserStatus.ENABLED;
+    String hash = BCrypt.hashpw(cmd.password(), BCrypt.gensalt());
+
+    User user =
+        new User(
+            UserType.ADMIN,
+            username,
+            nickname,
+            hash,
+            "bcrypt",
+            status,
+            false,
+            HighDate.mockInstant(),
+            operator());
+    User saved = userRepository.save(user);
+    createUserRoles(saved.getId(), cmd.roleIds());
+    return saved;
+  }
+
+  /**
+   * Updates the nickname and/or status of an existing user.
+   *
+   * @param id the user ID
+   * @param cmd the update command containing new nickname and status
+   * @return the updated user entity
+   */
+  @Transactional
+  public User update(Long id, UpdateUserCommand cmd) {
+    BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
+    User user =
+        userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    String nickname = normalizeNickname(cmd.nickname());
+    UserStatus nextStatus = cmd.status() == null ? user.getUserStatus() : cmd.status();
+    user.updateNickname(nickname, operator());
+    user.updateStatus(nextStatus, operator());
+    return userRepository.save(user);
+  }
+
+  /**
+   * Resets a user's password to the default value, forcing a password change on next login.
+   *
+   * @param id the user ID
+   */
+  @Transactional
+  public void resetPassword(Long id) {
+    BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
+    User user =
+        userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    String hash = BCrypt.hashpw(DEFAULT_RESET_PASSWORD, BCrypt.gensalt());
+    user.resetPassword(hash, "", operator());
+    userRepository.save(user);
+    internalPermissionSessionService.kickOutActiveSessions(List.of(id), operator());
+  }
+
+  /**
+   * Updates the status of multiple users in batch.
+   *
+   * @param cmd the batch update command containing user IDs and the target status
+   */
+  @Transactional
+  public void batchUpdateStatus(BatchUpdateUserStatusCommand cmd) {
+    BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+    BizAssert.notNull(cmd.status(), BaseError.MISSING_PARAMETER);
+    for (Long userId : normalizeUserIds(cmd.userIds())) {
+      BizAssert.state(!DefaultUser.isReserved(userId), BaseError.FORBIDDEN);
+      User user =
+          userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+      user.updateStatus(cmd.status(), operator());
+      userRepository.save(user);
     }
+  }
 
-    /**
-     * Paginates users with optional status and username filters.
-     *
-     * @param status       optional status filter
-     * @param usernameLike optional username fuzzy match
-     * @param spec         the pagination specification
-     * @return a page of users
-     */
-    public PageData<User> page(UserStatus status, String usernameLike, PageSpec spec) {
-        return userRepository.page(status, usernameLike, PageSpecSorts.apply(spec));
+  /**
+   * Resets passwords for multiple users in batch.
+   *
+   * @param cmd the batch command containing user IDs
+   */
+  @Transactional
+  public void batchResetPassword(BatchUserIdsCommand cmd) {
+    BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+    for (Long userId : normalizeUserIds(cmd.userIds())) {
+      resetPassword(userId);
     }
+  }
 
-    /**
-     * Creates a new admin user with the given credentials and optional role assignments.
-     *
-     * @param cmd the create command containing username, nickname, password, and role IDs
-     * @return the created user entity
-     */
-    @Transactional
-    public User create(CreateUserCommand cmd) {
-        String username = normalizeUsername(cmd.username());
-        String nickname = normalizeNickname(cmd.nickname());
+  /**
+   * Retrieves a user by ID.
+   *
+   * @param id the user ID
+   * @return the user entity
+   */
+  public User get(Long id) {
+    return userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+  }
 
-        passwordPolicyService.validate(cmd.password());
-        BizAssert.state(!userRepository.existsByUsername(username), BaseError.CONFLICT);
+  /**
+   * Deletes a user and their associated role assignments.
+   *
+   * @param id the user ID
+   */
+  @Transactional
+  public void delete(Long id) {
+    BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
+    User user = get(id);
+    userRoleRepository.deleteByUserId(user.getId());
+    userRepository.delete(user);
+  }
 
-        UserStatus status = UserStatus.ENABLED;
-        String hash = BCrypt.hashpw(cmd.password(), BCrypt.gensalt());
-
-        User user = new User(UserType.ADMIN, username, nickname, hash, "bcrypt", status, false, HighDate.mockInstant(),
-                operator());
-        User saved = userRepository.save(user);
-        createUserRoles(saved.getId(), cmd.roleIds());
-        return saved;
+  /**
+   * Deletes multiple users in batch.
+   *
+   * @param cmd the batch command containing user IDs
+   */
+  @Transactional
+  public void batchDelete(BatchUserIdsCommand cmd) {
+    BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
+    for (Long userId : normalizeUserIds(cmd.userIds())) {
+      delete(userId);
     }
+  }
 
-    /**
-     * Updates the nickname and/or status of an existing user.
-     *
-     * @param id  the user ID
-     * @param cmd the update command containing new nickname and status
-     * @return the updated user entity
-     */
-    @Transactional
-    public User update(Long id, UpdateUserCommand cmd) {
-        BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
-        User user = userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        String nickname = normalizeNickname(cmd.nickname());
-        UserStatus nextStatus = cmd.status() == null ? user.getUserStatus() : cmd.status();
-        user.updateNickname(nickname, operator());
-        user.updateStatus(nextStatus, operator());
-        return userRepository.save(user);
+  private String normalizeUsername(String username) {
+    BizAssert.notBlank(username, BaseError.MISSING_PARAMETER);
+    return username.trim();
+  }
+
+  private String normalizeNickname(String nickname) {
+    BizAssert.notBlank(nickname, BaseError.MISSING_PARAMETER);
+    return nickname.trim();
+  }
+
+  private void createUserRoles(Long userId, List<Long> roleIds) {
+    if (roleIds == null || roleIds.isEmpty()) {
+      return;
     }
-
-    /**
-     * Resets a user's password to the default value, forcing a password change on next login.
-     *
-     * @param id the user ID
-     */
-    @Transactional
-    public void resetPassword(Long id) {
-        BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
-        User user = userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        String hash = BCrypt.hashpw(DEFAULT_RESET_PASSWORD, BCrypt.gensalt());
-        user.resetPassword(hash, "", operator());
-        userRepository.save(user);
-        internalPermissionSessionService.kickOutActiveSessions(List.of(id), operator());
+    Long operatorId = operatorId();
+    List<UserRole> next = new ArrayList<>();
+    for (Long roleId : new LinkedHashSet<>(roleIds)) {
+      if (roleId == null || !roleRepository.existsById(roleId)) {
+        continue;
+      }
+      next.add(new UserRole(userId, roleId, operatorId));
     }
+    userRoleRepository.saveAll(next);
+  }
 
-    /**
-     * Updates the status of multiple users in batch.
-     *
-     * @param cmd the batch update command containing user IDs and the target status
-     */
-    @Transactional
-    public void batchUpdateStatus(BatchUpdateUserStatusCommand cmd) {
-        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
-        BizAssert.notNull(cmd.status(), BaseError.MISSING_PARAMETER);
-        for (Long userId : normalizeUserIds(cmd.userIds())) {
-            BizAssert.state(!DefaultUser.isReserved(userId), BaseError.FORBIDDEN);
-            User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-            user.updateStatus(cmd.status(), operator());
-            userRepository.save(user);
-        }
+  private List<Long> normalizeUserIds(List<Long> userIds) {
+    BizAssert.notEmpty(userIds, BaseError.MISSING_PARAMETER);
+    Set<Long> normalized = new LinkedHashSet<>();
+    for (Long userId : userIds) {
+      if (userId != null) {
+        normalized.add(userId);
+      }
     }
+    BizAssert.notEmpty(normalized, BaseError.MISSING_PARAMETER);
+    return List.copyOf(normalized);
+  }
 
-    /**
-     * Resets passwords for multiple users in batch.
-     *
-     * @param cmd the batch command containing user IDs
-     */
-    @Transactional
-    public void batchResetPassword(BatchUserIdsCommand cmd) {
-        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
-        for (Long userId : normalizeUserIds(cmd.userIds())) {
-            resetPassword(userId);
-        }
-    }
+  private String operator() {
+    AuthPrincipal principal = CtxUtil.getPrincipal();
+    String operator = principal == null ? null : principal.username();
+    BizAssert.notBlank(operator, BaseError.FORBIDDEN);
+    return operator.trim();
+  }
 
-    /**
-     * Retrieves a user by ID.
-     *
-     * @param id the user ID
-     * @return the user entity
-     */
-    public User get(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-    }
-
-    /**
-     * Deletes a user and their associated role assignments.
-     *
-     * @param id the user ID
-     */
-    @Transactional
-    public void delete(Long id) {
-        BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
-        User user = get(id);
-        userRoleRepository.deleteByUserId(user.getId());
-        userRepository.delete(user);
-    }
-
-    /**
-     * Deletes multiple users in batch.
-     *
-     * @param cmd the batch command containing user IDs
-     */
-    @Transactional
-    public void batchDelete(BatchUserIdsCommand cmd) {
-        BizAssert.notNull(cmd, BaseError.MISSING_PARAMETER);
-        for (Long userId : normalizeUserIds(cmd.userIds())) {
-            delete(userId);
-        }
-    }
-
-
-    private String normalizeUsername(String username) {
-        BizAssert.notBlank(username, BaseError.MISSING_PARAMETER);
-        return username.trim();
-    }
-
-    private String normalizeNickname(String nickname) {
-        BizAssert.notBlank(nickname, BaseError.MISSING_PARAMETER);
-        return nickname.trim();
-    }
-
-    private void createUserRoles(Long userId, List<Long> roleIds) {
-        if (roleIds == null || roleIds.isEmpty()) {
-            return;
-        }
-        Long operatorId = operatorId();
-        List<UserRole> next = new ArrayList<>();
-        for (Long roleId : new LinkedHashSet<>(roleIds)) {
-            if (roleId == null || !roleRepository.existsById(roleId)) {
-                continue;
-            }
-            next.add(new UserRole(userId, roleId, operatorId));
-        }
-        userRoleRepository.saveAll(next);
-    }
-
-    private List<Long> normalizeUserIds(List<Long> userIds) {
-        BizAssert.notEmpty(userIds, BaseError.MISSING_PARAMETER);
-        Set<Long> normalized = new LinkedHashSet<>();
-        for (Long userId : userIds) {
-            if (userId != null) {
-                normalized.add(userId);
-            }
-        }
-        BizAssert.notEmpty(normalized, BaseError.MISSING_PARAMETER);
-        return List.copyOf(normalized);
-    }
-
-    private String operator() {
-        AuthPrincipal principal = CtxUtil.getPrincipal();
-        String operator = principal == null ? null : principal.username();
-        BizAssert.notBlank(operator, BaseError.FORBIDDEN);
-        return operator.trim();
-    }
-
-    private Long operatorId() {
-        AuthPrincipal principal = CtxUtil.getPrincipal();
-        Long operatorId = principal == null ? null : principal.userId();
-        BizAssert.notNull(operatorId, BaseError.FORBIDDEN);
-        return operatorId;
-    }
+  private Long operatorId() {
+    AuthPrincipal principal = CtxUtil.getPrincipal();
+    Long operatorId = principal == null ? null : principal.userId();
+    BizAssert.notNull(operatorId, BaseError.FORBIDDEN);
+    return operatorId;
+  }
 }

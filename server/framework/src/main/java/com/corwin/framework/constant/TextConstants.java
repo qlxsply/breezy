@@ -7,10 +7,9 @@ package com.corwin.framework.constant;
  */
 public final class TextConstants {
 
-    public static final String COMMA = ",";
+  public static final String COMMA = ",";
 
-    public static final String EMPTY = "";
+  public static final String EMPTY = "";
 
-    private TextConstants() {
-    }
+  private TextConstants() {}
 }

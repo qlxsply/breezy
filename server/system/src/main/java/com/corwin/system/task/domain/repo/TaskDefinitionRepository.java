@@ -10,11 +10,11 @@ import java.util.List;
  * @author Corwin 2026/3/30
  */
 public interface TaskDefinitionRepository extends DomainRepository<TaskDefinition, String> {
-    
-    /**
-     * Returns all task definitions that have not been marked as removed.
-     *
-     * @return the list of active task definitions
-     */
-    List<TaskDefinition> findAllByRemovedFalse();
+
+  /**
+   * Returns all task definitions that have not been marked as removed.
+   *
+   * @return the list of active task definitions
+   */
+  List<TaskDefinition> findAllByRemovedFalse();
 }

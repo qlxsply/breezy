@@ -6,8 +6,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web MVC configuration that registers the {@link AuthorizationInterceptor}
- * to intercept all {@code /api/**} requests.
+ * Web MVC configuration that registers the {@link AuthorizationInterceptor} to intercept all {@code
+ * /api/**} requests.
  *
  * @author Corwin 2026/4/19
  */
@@ -15,11 +15,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class AuthorizationWebConfiguration implements WebMvcConfigurer {
 
-    private final AuthorizationInterceptor authorizationInterceptor;
+  private final AuthorizationInterceptor authorizationInterceptor;
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // Register the authorization interceptor for all API paths
-        registry.addInterceptor(authorizationInterceptor).addPathPatterns("/api/**");
-    }
+  @Override
+  public void addInterceptors(InterceptorRegistry registry) {
+    // Register the authorization interceptor for all API paths
+    registry.addInterceptor(authorizationInterceptor).addPathPatterns("/api/**");
+  }
 }

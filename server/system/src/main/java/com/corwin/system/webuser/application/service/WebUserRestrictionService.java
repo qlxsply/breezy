@@ -13,22 +13,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class WebUserRestrictionService {
 
-    private final WebUserRestrictionRepository repository;
+  private final WebUserRestrictionRepository repository;
 
-    public WebUserRestrictionService(WebUserRestrictionRepository repository) {
-        this.repository = repository;
-    }
+  public WebUserRestrictionService(WebUserRestrictionRepository repository) {
+    this.repository = repository;
+  }
 
-    /**
-     * Check if the given user has any active login-level restriction.
-     *
-     * @param userId the user ID
-     * @return true if a login restriction is currently active
-     */
-    public boolean hasLoginRestriction(Long userId) {
-        return repository.findByUserId(userId).stream()
-                         .filter(restriction -> restriction.getRestrictionScope() == WebUserRestrictionScope.LOGIN ||
-                                 restriction.getRestrictionScope() == WebUserRestrictionScope.ALL)
-                         .anyMatch(restriction -> restriction.activeAt(HighDate.realInstant()));
-    }
+  /**
+   * Check if the given user has any active login-level restriction.
+   *
+   * @param userId the user ID
+   * @return true if a login restriction is currently active
+   */
+  public boolean hasLoginRestriction(Long userId) {
+    return repository.findByUserId(userId).stream()
+        .filter(
+            restriction ->
+                restriction.getRestrictionScope() == WebUserRestrictionScope.LOGIN
+                    || restriction.getRestrictionScope() == WebUserRestrictionScope.ALL)
+        .anyMatch(restriction -> restriction.activeAt(HighDate.realInstant()));
+  }
 }

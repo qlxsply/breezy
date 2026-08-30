@@ -12,23 +12,23 @@ import java.util.Optional;
  */
 public interface CacheStringOps extends CacheKeyOps {
 
-    Optional<String> get(String key);
+  Optional<String> get(String key);
 
-    void set(String key, String value);
+  void set(String key, String value);
 
-    void set(String key, String value, Duration ttl);
+  void set(String key, String value, Duration ttl);
 
-    Map<String, String> multiGet(Collection<String> keys);
+  Map<String, String> multiGet(Collection<String> keys);
 
-    void multiSet(Map<String, String> values);
+  void multiSet(Map<String, String> values);
 
-    void multiSet(Map<String, String> values, Duration ttl);
+  void multiSet(Map<String, String> values, Duration ttl);
 
-    long increment(String key);
+  long increment(String key);
 
-    long increment(String key, long delta);
+  long increment(String key, long delta);
 
-    long decrement(String key);
+  long decrement(String key);
 
-    long decrement(String key, long delta);
+  long decrement(String key, long delta);
 }

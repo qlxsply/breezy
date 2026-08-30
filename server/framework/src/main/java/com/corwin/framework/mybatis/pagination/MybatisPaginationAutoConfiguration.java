@@ -3,6 +3,11 @@ package com.corwin.framework.mybatis.pagination;
 import com.corwin.framework.mybatis.pagination.count.JSqlParserCountSqlOptimizer;
 import com.corwin.framework.mybatis.pagination.dialect.MySqlPaginationDialect;
 import com.corwin.framework.mybatis.pagination.dialect.PaginationDialect;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.Locale;
+import javax.sql.DataSource;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -15,68 +20,69 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Locale;
-
 /**
  * Auto-configuration for the MyBatis {@link PageData} pagination plugin.
- * <p>
- * Registers the {@link PageDataPaginationInterceptor}, resolves the
- * database-specific {@link com.corwin.framework.mybatis.pagination.dialect.PaginationDialect},
- * and provides the {@link JSqlParserCountSqlOptimizer}.
+ *
+ * <p>Registers the {@link PageDataPaginationInterceptor}, resolves the database-specific {@link
+ * com.corwin.framework.mybatis.pagination.dialect.PaginationDialect}, and provides the {@link
+ * JSqlParserCountSqlOptimizer}.
  *
  * @author Corwin 2026/7/28
  */
-@AutoConfiguration(after = DataSourceAutoConfiguration.class,
-        beforeName = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
+@AutoConfiguration(
+    after = DataSourceAutoConfiguration.class,
+    beforeName = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
 @ConditionalOnClass({SqlSessionFactory.class, Interceptor.class, CCJSqlParserUtil.class})
 @ConditionalOnSingleCandidate(DataSource.class)
-@ConditionalOnProperty(prefix = "corwin.mybatis.pagination", name = "enabled", havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(
+    prefix = "corwin.mybatis.pagination",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 @EnableConfigurationProperties(MybatisPaginationProperties.class)
 public class MybatisPaginationAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    public PageMethodResolver pageMethodResolver() {
-        return new PageMethodResolver();
+  @Bean
+  @ConditionalOnMissingBean
+  public PageMethodResolver pageMethodResolver() {
+    return new PageMethodResolver();
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public PaginationDialect paginationDialect(DataSource dataSource) {
+    String productName = resolveDatabaseProductName(dataSource);
+    String normalized = productName == null ? "" : productName.toLowerCase(Locale.ROOT);
+
+    if (normalized.contains("mysql") || normalized.contains("mariadb")) {
+      return new MySqlPaginationDialect();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public PaginationDialect paginationDialect(DataSource dataSource) {
-        String productName = resolveDatabaseProductName(dataSource);
-        String normalized = productName == null ? "" : productName.toLowerCase(Locale.ROOT);
+    throw new PaginationException("Unsupported pagination database product: " + productName);
+  }
 
-        if (normalized.contains("mysql") || normalized.contains("mariadb")) {
-            return new MySqlPaginationDialect();
-        }
+  @Bean
+  @ConditionalOnMissingBean
+  public JSqlParserCountSqlOptimizer countSqlOptimizer(MybatisPaginationProperties properties) {
+    return new JSqlParserCountSqlOptimizer(properties.getCountSqlCacheSize());
+  }
 
-        throw new PaginationException("Unsupported pagination database product: " + productName);
+  @Bean
+  @ConditionalOnMissingBean(PageDataPaginationInterceptor.class)
+  public PageDataPaginationInterceptor pageDataPaginationInterceptor(
+      PageMethodResolver methodResolver,
+      PaginationDialect dialect,
+      JSqlParserCountSqlOptimizer optimizer,
+      MybatisPaginationProperties properties) {
+    return new PageDataPaginationInterceptor(methodResolver, dialect, optimizer, properties);
+  }
+
+  private String resolveDatabaseProductName(DataSource dataSource) {
+    try (Connection connection = dataSource.getConnection()) {
+      DatabaseMetaData metaData = connection.getMetaData();
+      return metaData.getDatabaseProductName();
+    } catch (SQLException exception) {
+      throw new PaginationException("Resolve pagination database product failed", exception);
     }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public JSqlParserCountSqlOptimizer countSqlOptimizer(MybatisPaginationProperties properties) {
-        return new JSqlParserCountSqlOptimizer(properties.getCountSqlCacheSize());
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(PageDataPaginationInterceptor.class)
-    public PageDataPaginationInterceptor pageDataPaginationInterceptor(PageMethodResolver methodResolver,
-            PaginationDialect dialect, JSqlParserCountSqlOptimizer optimizer, MybatisPaginationProperties properties) {
-        return new PageDataPaginationInterceptor(methodResolver, dialect, optimizer, properties);
-    }
-
-    private String resolveDatabaseProductName(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            DatabaseMetaData metaData = connection.getMetaData();
-            return metaData.getDatabaseProductName();
-        } catch (SQLException exception) {
-            throw new PaginationException("Resolve pagination database product failed", exception);
-        }
-    }
+  }
 }

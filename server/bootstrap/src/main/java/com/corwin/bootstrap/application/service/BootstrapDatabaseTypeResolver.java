@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BootstrapDatabaseTypeResolver {
 
-    private final Environment environment;
+  private final Environment environment;
 
-    public DatabaseType resolveCurrentDatabaseType() {
-        String jdbcUrl = environment.getProperty("spring.datasource.url");
-        DatabaseType databaseType = DatabaseType.fromJdbcUrl(jdbcUrl);
-        if (databaseType == null) {
-            throw new IllegalStateException("Cannot resolve database type from JDBC URL: " + jdbcUrl);
-        }
-        return databaseType;
+  public DatabaseType resolveCurrentDatabaseType() {
+    String jdbcUrl = environment.getProperty("spring.datasource.url");
+    DatabaseType databaseType = DatabaseType.fromJdbcUrl(jdbcUrl);
+    if (databaseType == null) {
+      throw new IllegalStateException("Cannot resolve database type from JDBC URL: " + jdbcUrl);
     }
+    return databaseType;
+  }
 }

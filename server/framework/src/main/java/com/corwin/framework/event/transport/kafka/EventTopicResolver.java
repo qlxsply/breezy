@@ -7,12 +7,11 @@ package com.corwin.framework.event.transport.kafka;
  */
 public interface EventTopicResolver {
 
-    /**
-     * 解析事件类型对应的 topic。
-     *
-     * @param eventType 事件类型全限定名
-     * @return topic 名称
-     */
-    String resolveTopic(String eventType);
+  /**
+   * 解析事件类型对应的 topic。
+   *
+   * @param eventType 事件类型全限定名
+   * @return topic 名称
+   */
+  String resolveTopic(String eventType);
 }
-

@@ -7,7 +7,6 @@ import com.corwin.system.auth.config.SystemAuthConfigSpecs;
 import com.corwin.system.file.config.SystemFileConfigSpecs;
 import com.corwin.system.notify.config.SystemNotifyConfigSpecs;
 import com.corwin.system.user.config.SystemUserConfigSpecs;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -16,11 +15,17 @@ import java.util.List;
  */
 public final class SystemConfigSpecProvider implements ConfigSpecProvider {
 
-    @Override
-    public Collection<ConfigSpec<?>> getConfigSpecs() {
-        return List.of(SystemAuthConfigSpecs.AUTHENTICATION, SystemAuthConfigSpecs.PASSWORD_POLICY,
-                SystemAuditConfigSpecs.AUDIT_POLICY, SystemFileConfigSpecs.STORAGE, SystemFileConfigSpecs.PREVIEW,
-                SystemNotifyConfigSpecs.SSE, SystemNotifyConfigSpecs.WEB_PUSH, SystemNotifyConfigSpecs.MESSAGE_TYPES,
-                SystemUserConfigSpecs.USER_PREFERENCE_DEFAULTS);
-    }
+  @Override
+  public Collection<ConfigSpec<?>> getConfigSpecs() {
+    return List.of(
+        SystemAuthConfigSpecs.AUTHENTICATION,
+        SystemAuthConfigSpecs.PASSWORD_POLICY,
+        SystemAuditConfigSpecs.AUDIT_POLICY,
+        SystemFileConfigSpecs.STORAGE,
+        SystemFileConfigSpecs.PREVIEW,
+        SystemNotifyConfigSpecs.SSE,
+        SystemNotifyConfigSpecs.WEB_PUSH,
+        SystemNotifyConfigSpecs.MESSAGE_TYPES,
+        SystemUserConfigSpecs.USER_PREFERENCE_DEFAULTS);
+  }
 }

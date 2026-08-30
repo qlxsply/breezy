@@ -7,14 +7,13 @@ import com.corwin.framework.config.definition.ConfigSpec;
  */
 public final class Configs {
 
-    public static <T> T get(ConfigSpec<T> spec) {
-        return ConfigRegistry.get(spec);
-    }
+  public static <T> T get(ConfigSpec<T> spec) {
+    return ConfigRegistry.get(spec);
+  }
 
-    public static <T> ConfigSnapshot<T> snapshot(ConfigSpec<T> spec) {
-        return ConfigRegistry.snapshot(spec);
-    }
+  public static <T> ConfigSnapshot<T> snapshot(ConfigSpec<T> spec) {
+    return ConfigRegistry.snapshot(spec);
+  }
 
-    private Configs() {
-    }
+  private Configs() {}
 }

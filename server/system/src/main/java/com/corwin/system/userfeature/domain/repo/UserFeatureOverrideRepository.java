@@ -2,7 +2,6 @@ package com.corwin.system.userfeature.domain.repo;
 
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.userfeature.domain.model.UserFeatureOverride;
-
 import java.util.List;
 
 /**
@@ -12,7 +11,7 @@ import java.util.List;
  */
 public interface UserFeatureOverrideRepository extends DomainRepository<UserFeatureOverride, Long> {
 
-    List<UserFeatureOverride> findByUserId(Long userId);
+  List<UserFeatureOverride> findByUserId(Long userId);
 
-    void deleteByUserId(Long userId);
+  void deleteByUserId(Long userId);
 }

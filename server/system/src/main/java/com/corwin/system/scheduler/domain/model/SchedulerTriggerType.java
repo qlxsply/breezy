@@ -6,7 +6,7 @@ package com.corwin.system.scheduler.domain.model;
  * @author Corwin 2026/4/15
  */
 public enum SchedulerTriggerType {
-    SCHEDULED,
-    MANUAL,
-    RECOVERY
+  SCHEDULED,
+  MANUAL,
+  RECOVERY
 }

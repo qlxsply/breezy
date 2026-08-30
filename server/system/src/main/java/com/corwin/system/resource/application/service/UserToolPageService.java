@@ -7,16 +7,15 @@ import com.corwin.system.resource.application.view.UserToolPageView;
 import com.corwin.system.resource.application.view.UserToolsView;
 import com.corwin.system.userfeature.application.service.UserFeatureAccessService;
 import com.corwin.system.userfeature.domain.model.ProductApplication;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 /**
  * Application service for user-facing tool pages.
  *
- * <p>Builds the list of accessible tool pages and granted permission codes for
- * the currently authenticated end-user based on their feature access configuration.</p>
+ * <p>Builds the list of accessible tool pages and granted permission codes for the currently
+ * authenticated end-user based on their feature access configuration.
  *
  * @author Corwin 2026/6/6
  */
@@ -24,49 +23,68 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserToolPageService {
 
-    private final SecurityContextService securityContextService;
-    private final PermissionService permissionService;
-    private final UserFeatureAccessService userFeatureAccessService;
+  private final SecurityContextService securityContextService;
+  private final PermissionService permissionService;
+  private final UserFeatureAccessService userFeatureAccessService;
 
-    /**
-     * Builds the set of tools and permission codes available to the currently authenticated user.
-     *
-     * @return the user tools view containing tool pages and granted permission codes
-     */
-    public UserToolsView currentUserTools() {
-        Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
-        if (principalOptional.isEmpty()) {
-            return new UserToolsView(List.of(), List.of());
-        }
-        AuthPrincipal principal = principalOptional.get();
-        if (principal.userType() != UserType.USER || principal.userId() == null) {
-            return new UserToolsView(List.of(), List.of());
-        }
-        Set<String> permissionCodes = permissionService.permissionCodesForCurrent();
-        List<String> grantedPermissionCodes = permissionCodes.stream().filter(Objects::nonNull).map(String::trim)
-                .filter(code -> !code.isBlank()).sorted().toList();
-        return new UserToolsView(buildTools(principal), grantedPermissionCodes);
+  /**
+   * Builds the set of tools and permission codes available to the currently authenticated user.
+   *
+   * @return the user tools view containing tool pages and granted permission codes
+   */
+  public UserToolsView currentUserTools() {
+    Optional<AuthPrincipal> principalOptional = securityContextService.currentOptional();
+    if (principalOptional.isEmpty()) {
+      return new UserToolsView(List.of(), List.of());
     }
+    AuthPrincipal principal = principalOptional.get();
+    if (principal.userType() != UserType.USER || principal.userId() == null) {
+      return new UserToolsView(List.of(), List.of());
+    }
+    Set<String> permissionCodes = permissionService.permissionCodesForCurrent();
+    List<String> grantedPermissionCodes =
+        permissionCodes.stream()
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(code -> !code.isBlank())
+            .sorted()
+            .toList();
+    return new UserToolsView(buildTools(principal), grantedPermissionCodes);
+  }
 
-    private List<UserToolPageView> buildTools(AuthPrincipal principal) {
-        if (principal.userId() == null) {
-            return List.of();
-        }
-        return userFeatureAccessService.accessibleApplicationsForUser(principal.userId()).stream()
-                .filter(application -> application.getId() != null)
-                .filter(application -> application.getRoutePath() != null && !application.getRoutePath().isBlank())
-                .filter(application -> application.getComponentPath() != null && !application.getComponentPath()
-                        .isBlank()).map(this::toExternalToolPage).filter(Objects::nonNull)
-                .sorted(Comparator.comparing(UserToolPageView::sortNo)
-                        .thenComparing(UserToolPageView::code, Comparator.nullsLast(String::compareToIgnoreCase)))
-                .toList();
+  private List<UserToolPageView> buildTools(AuthPrincipal principal) {
+    if (principal.userId() == null) {
+      return List.of();
     }
+    return userFeatureAccessService.accessibleApplicationsForUser(principal.userId()).stream()
+        .filter(application -> application.getId() != null)
+        .filter(
+            application ->
+                application.getRoutePath() != null && !application.getRoutePath().isBlank())
+        .filter(
+            application ->
+                application.getComponentPath() != null && !application.getComponentPath().isBlank())
+        .map(this::toExternalToolPage)
+        .filter(Objects::nonNull)
+        .sorted(
+            Comparator.comparing(UserToolPageView::sortNo)
+                .thenComparing(
+                    UserToolPageView::code, Comparator.nullsLast(String::compareToIgnoreCase)))
+        .toList();
+  }
 
-    private UserToolPageView toExternalToolPage(ProductApplication application) {
-        return new UserToolPageView("app:" + application.getId(), application.getApplicationName(),
-                application.getIcon(), application.getDescription(), application.getApplicationCode(),
-                application.getRoutePath(), application.getComponentPath(),
-                application.getDisplayOrder() == null ? 0 : application.getDisplayOrder(),
-                Boolean.TRUE.equals(application.getSystemBuiltIn()) ? "SYSTEM" : "CUSTOM", true, false);
-    }
+  private UserToolPageView toExternalToolPage(ProductApplication application) {
+    return new UserToolPageView(
+        "app:" + application.getId(),
+        application.getApplicationName(),
+        application.getIcon(),
+        application.getDescription(),
+        application.getApplicationCode(),
+        application.getRoutePath(),
+        application.getComponentPath(),
+        application.getDisplayOrder() == null ? 0 : application.getDisplayOrder(),
+        Boolean.TRUE.equals(application.getSystemBuiltIn()) ? "SYSTEM" : "CUSTOM",
+        true,
+        false);
+  }
 }

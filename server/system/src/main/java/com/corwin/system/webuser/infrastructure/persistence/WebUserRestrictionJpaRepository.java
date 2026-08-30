@@ -1,9 +1,8 @@
 package com.corwin.system.webuser.infrastructure.persistence;
 
 import com.corwin.system.webuser.domain.model.WebUserRestriction;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * Spring Data JPA repository for {@link WebUserRestriction} entity.
@@ -12,11 +11,11 @@ import java.util.List;
  */
 public interface WebUserRestrictionJpaRepository extends JpaRepository<WebUserRestriction, Long> {
 
-    /**
-     * Find all restrictions associated with the given user ID.
-     *
-     * @param userId the user ID
-     * @return list of restrictions
-     */
-    List<WebUserRestriction> findByUserId(Long userId);
+  /**
+   * Find all restrictions associated with the given user ID.
+   *
+   * @param userId the user ID
+   * @return list of restrictions
+   */
+  List<WebUserRestriction> findByUserId(Long userId);
 }

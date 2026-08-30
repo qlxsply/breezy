@@ -2,7 +2,6 @@ package com.corwin.system.userfeature.domain.repo;
 
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.userfeature.domain.model.ProductFeature;
-
 import java.util.List;
 
 /**
@@ -12,11 +11,11 @@ import java.util.List;
  */
 public interface ProductFeatureRepository extends DomainRepository<ProductFeature, Long> {
 
-    List<ProductFeature> findAll();
+  List<ProductFeature> findAll();
 
-    List<ProductFeature> findByIdIn(Iterable<Long> ids);
+  List<ProductFeature> findByIdIn(Iterable<Long> ids);
 
-    List<ProductFeature> findByApplicationId(Long applicationId);
+  List<ProductFeature> findByApplicationId(Long applicationId);
 
-    List<ProductFeature> findByApplicationIdIn(Iterable<Long> applicationIds);
+  List<ProductFeature> findByApplicationIdIn(Iterable<Long> applicationIds);
 }

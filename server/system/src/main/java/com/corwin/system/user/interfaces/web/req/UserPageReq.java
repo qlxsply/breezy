@@ -10,9 +10,4 @@ import com.corwin.system.user.domain.model.UserStatus;
  * @author Corwin 2026/1/28
  */
 public record UserPageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        String usernameLike,
-        UserStatus status
-) {
-}
+    PageRuleRequest page, SortRuleRequest sort, String usernameLike, UserStatus status) {}

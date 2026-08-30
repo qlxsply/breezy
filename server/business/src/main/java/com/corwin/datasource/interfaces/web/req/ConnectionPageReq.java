@@ -8,9 +8,4 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/1/11
  */
 public record ConnectionPageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        String nameLike,
-        DatabaseType dbType
-) {
-}
+    PageRuleRequest page, SortRuleRequest sort, String nameLike, DatabaseType dbType) {}

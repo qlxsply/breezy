@@ -18,9 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST controller for retrieving the admin menu resource tree.
  *
- * <p>Provides the menu tree structure that is displayed in the admin panel
- * sidebar. The returned resources are filtered based on the current admin
- * user's role-based permissions.</p>
+ * <p>Provides the menu tree structure that is displayed in the admin panel sidebar. The returned
+ * resources are filtered based on the current admin user's role-based permissions.
  *
  * @author Corwin 2026/5/31
  */
@@ -30,25 +29,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminMenuResourceController {
 
-    private final AdminMenuResourceService adminMenuResourceService;
+  private final AdminMenuResourceService adminMenuResourceService;
 
-    /**
-     * Returns the menu resource tree for the current admin user.
-     *
-     * @return the admin menu resources
-     */
-    @GetMapping
-    @Authenticated(userType = UserType.ADMIN)
-    public ApiResponse<AdminMenuResourcesRes> currentAdminMenuResources() {
-        return ApiResponse.ok(toRes(adminMenuResourceService.currentAdminMenuResources()));
-    }
+  /**
+   * Returns the menu resource tree for the current admin user.
+   *
+   * @return the admin menu resources
+   */
+  @GetMapping
+  @Authenticated(userType = UserType.ADMIN)
+  public ApiResponse<AdminMenuResourcesRes> currentAdminMenuResources() {
+    return ApiResponse.ok(toRes(adminMenuResourceService.currentAdminMenuResources()));
+  }
 
-    private AdminMenuResourcesRes toRes(AdminMenuResourcesView view) {
-        return new AdminMenuResourcesRes(view.resources().stream().map(this::toRes).toList());
-    }
+  private AdminMenuResourcesRes toRes(AdminMenuResourcesView view) {
+    return new AdminMenuResourcesRes(view.resources().stream().map(this::toRes).toList());
+  }
 
-    private AdminMenuResourceRes toRes(AdminMenuResourceView view) {
-        return new AdminMenuResourceRes(view.id(), view.parentId(), view.name(), view.icon(), view.code(), view.type(),
-                view.url(), view.orderNo(), view.children().stream().map(this::toRes).toList());
-    }
+  private AdminMenuResourceRes toRes(AdminMenuResourceView view) {
+    return new AdminMenuResourceRes(
+        view.id(),
+        view.parentId(),
+        view.name(),
+        view.icon(),
+        view.code(),
+        view.type(),
+        view.url(),
+        view.orderNo(),
+        view.children().stream().map(this::toRes).toList());
+  }
 }

@@ -14,14 +14,16 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface RoleMybatisMapper {
 
-    /**
-     * Paginated query with keyword and enabled filter.
-     *
-     * @param keyword keyword pattern for code/name search
-     * @param enabled optional enabled filter
-     * @param spec    pagination specification
-     * @return paginated role data
-     */
-    PageData<Role> page(@Param("keyword") String keyword, @Param("enabled") Boolean enabled,
-            @Param("spec") PageSpec spec);
+  /**
+   * Paginated query with keyword and enabled filter.
+   *
+   * @param keyword keyword pattern for code/name search
+   * @param enabled optional enabled filter
+   * @param spec pagination specification
+   * @return paginated role data
+   */
+  PageData<Role> page(
+      @Param("keyword") String keyword,
+      @Param("enabled") Boolean enabled,
+      @Param("spec") PageSpec spec);
 }

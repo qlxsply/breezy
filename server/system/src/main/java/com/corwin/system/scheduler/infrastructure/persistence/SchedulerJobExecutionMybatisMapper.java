@@ -14,12 +14,13 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface SchedulerJobExecutionMybatisMapper {
 
-    /**
-     * Paginated query for execution records of a specific job.
-     *
-     * @param jobId the job ID
-     * @param spec  pagination specification
-     * @return paginated execution data
-     */
-    PageData<SchedulerJobExecution> pageByJobId(@Param("jobId") String jobId, @Param("spec") PageSpec spec);
+  /**
+   * Paginated query for execution records of a specific job.
+   *
+   * @param jobId the job ID
+   * @param spec pagination specification
+   * @return paginated execution data
+   */
+  PageData<SchedulerJobExecution> pageByJobId(
+      @Param("jobId") String jobId, @Param("spec") PageSpec spec);
 }

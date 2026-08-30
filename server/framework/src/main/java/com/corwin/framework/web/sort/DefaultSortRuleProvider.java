@@ -5,15 +5,15 @@ import org.springframework.web.method.HandlerMethod;
 
 /**
  * Default {@link SortRuleProvider} that disables sorting for all endpoints.
- * <p>
- * Serves as the fallback when no custom provider is registered.
+ *
+ * <p>Serves as the fallback when no custom provider is registered.
  *
  * @author Corwin 2026/7/29
  */
 public class DefaultSortRuleProvider implements SortRuleProvider {
 
-    @Override
-    public SortRule getRule(HttpServletRequest request, HandlerMethod handlerMethod) {
-        return SortRule.disabled();
-    }
+  @Override
+  public SortRule getRule(HttpServletRequest request, HandlerMethod handlerMethod) {
+    return SortRule.disabled();
+  }
 }

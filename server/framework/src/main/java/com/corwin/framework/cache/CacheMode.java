@@ -6,7 +6,7 @@ package com.corwin.framework.cache;
  * @author Corwin 2026/4/19
  */
 public enum CacheMode {
-    LOCAL,
-    REDIS,
-    LOCAL_REDIS
+  LOCAL,
+  REDIS,
+  LOCAL_REDIS
 }

@@ -8,12 +8,9 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/1/11
  */
 public record TablePageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        @JsonLongString
-        Long databaseId,
-        String schema,
-        String nameLike,
-        String tableType
-) {
-}
+    PageRuleRequest page,
+    SortRuleRequest sort,
+    @JsonLongString Long databaseId,
+    String schema,
+    String nameLike,
+    String tableType) {}

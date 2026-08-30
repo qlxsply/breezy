@@ -2,7 +2,6 @@ package com.corwin.system.userfeature.domain.repo;
 
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.userfeature.domain.model.UserApplicationPackageMember;
-
 import java.util.List;
 
 /**
@@ -10,13 +9,14 @@ import java.util.List;
  *
  * @author Corwin 2026/6/14
  */
-public interface UserApplicationPackageMemberRepository extends DomainRepository<UserApplicationPackageMember, Long> {
+public interface UserApplicationPackageMemberRepository
+    extends DomainRepository<UserApplicationPackageMember, Long> {
 
-    List<UserApplicationPackageMember> findByUserId(Long userId);
+  List<UserApplicationPackageMember> findByUserId(Long userId);
 
-    List<UserApplicationPackageMember> findByPackageId(Long packageId);
+  List<UserApplicationPackageMember> findByPackageId(Long packageId);
 
-    void deleteByUserId(Long userId);
+  void deleteByUserId(Long userId);
 
-    void deleteByPackageId(Long packageId);
+  void deleteByPackageId(Long packageId);
 }

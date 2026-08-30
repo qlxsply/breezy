@@ -10,9 +10,5 @@ import java.util.Set;
  *
  * @author Corwin 2026/4/15
  */
-public record WeeklyRule(
-        Set<DayOfWeek> daysOfWeek,
-        LocalTime time,
-        ZoneId zoneId
-) implements ScheduleRule {
-}
+public record WeeklyRule(Set<DayOfWeek> daysOfWeek, LocalTime time, ZoneId zoneId)
+    implements ScheduleRule {}

@@ -8,18 +8,17 @@ import com.corwin.system.resource.domain.model.Permission;
 import com.corwin.system.resource.interfaces.web.res.PermissionRes;
 import com.corwin.system.resource.published.ApiMeta;
 import com.corwin.system.resource.published.ApiModuleCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 /**
  * Admin REST controller for system-level permission lookups.
  *
- * <p>Provides endpoints for retrieving assignable permissions used during
- * resource permission binding. Requires ADMIN authentication.</p>
+ * <p>Provides endpoints for retrieving assignable permissions used during resource permission
+ * binding. Requires ADMIN authentication.
  *
  * @author Corwin 2026/6/29
  */
@@ -29,22 +28,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SystemPermissionAdminController {
 
-    private final PermissionService permissionService;
+  private final PermissionService permissionService;
 
-    /**
-     * Lists all permissions that can be assigned to resources.
-     *
-     * @return the list of assignable permissions
-     */
-    @GetMapping
-    @Authorize(userType = UserType.ADMIN, permissions = {"res.perm.view", "res.perm.edit"}, anyPermission = true)
-    public ApiResponse<List<PermissionRes>> list() {
-        return ApiResponse.ok(permissionService.assignablePermissionsForInternal().stream()
-                .map(SystemPermissionAdminController::toRes).toList());
-    }
+  /**
+   * Lists all permissions that can be assigned to resources.
+   *
+   * @return the list of assignable permissions
+   */
+  @GetMapping
+  @Authorize(
+      userType = UserType.ADMIN,
+      permissions = {"res.perm.view", "res.perm.edit"},
+      anyPermission = true)
+  public ApiResponse<List<PermissionRes>> list() {
+    return ApiResponse.ok(
+        permissionService.assignablePermissionsForInternal().stream()
+            .map(SystemPermissionAdminController::toRes)
+            .toList());
+  }
 
-    private static PermissionRes toRes(Permission permission) {
-        return new PermissionRes(permission.getId(), permission.getCode(), permission.getName(),
-                permission.getUserScope());
-    }
+  private static PermissionRes toRes(Permission permission) {
+    return new PermissionRes(
+        permission.getId(), permission.getCode(), permission.getName(), permission.getUserScope());
+  }
 }

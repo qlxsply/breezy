@@ -6,32 +6,33 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Per-request interceptor that resolves and injects sort rules into
- * {@link SortRuleContextHolder} before the handler executes.
+ * Per-request interceptor that resolves and injects sort rules into {@link SortRuleContextHolder}
+ * before the handler executes.
  *
  * @author Corwin 2026/7/29
  */
 public class SortRuleInterceptor implements HandlerInterceptor {
 
-    private final SortRuleProvider provider;
+  private final SortRuleProvider provider;
 
-    public SortRuleInterceptor(SortRuleProvider provider) {
-        this.provider = provider;
-    }
+  public SortRuleInterceptor(SortRuleProvider provider) {
+    this.provider = provider;
+  }
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (handler instanceof HandlerMethod handlerMethod) {
-            SortRuleContextHolder.set(provider.getRule(request, handlerMethod));
-        } else {
-            SortRuleContextHolder.set(SortRule.disabled());
-        }
-        return true;
+  @Override
+  public boolean preHandle(
+      HttpServletRequest request, HttpServletResponse response, Object handler) {
+    if (handler instanceof HandlerMethod handlerMethod) {
+      SortRuleContextHolder.set(provider.getRule(request, handlerMethod));
+    } else {
+      SortRuleContextHolder.set(SortRule.disabled());
     }
+    return true;
+  }
 
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-            Exception ex) {
-        SortRuleContextHolder.clear();
-    }
+  @Override
+  public void afterCompletion(
+      HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    SortRuleContextHolder.clear();
+  }
 }

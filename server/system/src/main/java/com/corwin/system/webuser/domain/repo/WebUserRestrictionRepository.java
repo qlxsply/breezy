@@ -2,7 +2,6 @@ package com.corwin.system.webuser.domain.repo;
 
 import com.corwin.framework.domain.repo.DomainRepository;
 import com.corwin.system.webuser.domain.model.WebUserRestriction;
-
 import java.util.List;
 
 /**
@@ -12,8 +11,6 @@ import java.util.List;
  */
 public interface WebUserRestrictionRepository extends DomainRepository<WebUserRestriction, Long> {
 
-    /**
-     * Find all restrictions for a given user.
-     */
-    List<WebUserRestriction> findByUserId(Long userId);
+  /** Find all restrictions for a given user. */
+  List<WebUserRestriction> findByUserId(Long userId);
 }

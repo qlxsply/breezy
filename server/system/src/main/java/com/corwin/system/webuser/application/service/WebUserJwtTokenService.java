@@ -7,12 +7,11 @@ import com.corwin.system.auth.application.service.AuthConfigService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.stereotype.Component;
 
 /**
  * Service for issuing and parsing JWT tokens for external web user authentication.
@@ -22,58 +21,72 @@ import java.util.Date;
 @Component
 public class WebUserJwtTokenService {
 
-    private final AuthConfigService authConfigService;
+  private final AuthConfigService authConfigService;
 
-    public WebUserJwtTokenService(AuthConfigService authConfigService) {
-        this.authConfigService = authConfigService;
-    }
+  public WebUserJwtTokenService(AuthConfigService authConfigService) {
+    this.authConfigService = authConfigService;
+  }
 
-    /**
-     * Issue a signed JWT access token for the given principal.
-     *
-     * @param principal    the authenticated principal
-     * @param tokenVersion the token version for revocation support
-     * @return the issued token and its expiration time
-     */
-    public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
-        Instant now = HighDate.realInstant();
-        Instant expiresAt = now.plus(authConfigService.userAccessTokenTtl());
-        String token = Jwts.builder().subject(String.valueOf(principal.userId()))
-                           .issuer(authConfigService.userJwtIssuer()).issuedAt(Date.from(now))
-                           .expiration(Date.from(expiresAt)).claim("uid", principal.userId())
-                           .claim("account", principal.username()).claim("type", principal.userType().name())
-                           .claim("ver", tokenVersion)
-                           .claim("perms", principal.permissionCodes().stream().sorted().toList()).signWith(secretKey())
-                           .compact();
-        return new IssuedAccessToken(token, expiresAt);
-    }
+  /**
+   * Issue a signed JWT access token for the given principal.
+   *
+   * @param principal the authenticated principal
+   * @param tokenVersion the token version for revocation support
+   * @return the issued token and its expiration time
+   */
+  public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
+    Instant now = HighDate.realInstant();
+    Instant expiresAt = now.plus(authConfigService.userAccessTokenTtl());
+    String token =
+        Jwts.builder()
+            .subject(String.valueOf(principal.userId()))
+            .issuer(authConfigService.userJwtIssuer())
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(expiresAt))
+            .claim("uid", principal.userId())
+            .claim("account", principal.username())
+            .claim("type", principal.userType().name())
+            .claim("ver", tokenVersion)
+            .claim("perms", principal.permissionCodes().stream().sorted().toList())
+            .signWith(secretKey())
+            .compact();
+    return new IssuedAccessToken(token, expiresAt);
+  }
 
-    /**
-     * Parse and verify a signed JWT access token.
-     *
-     * @param token the JWT string
-     * @return the parsed payload
-     */
-    public WebUserJwtPayload parse(String token) {
-        Claims claims = Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token).getPayload();
-        Long userId = claims.get("uid", Long.class);
-        String account = claims.get("account", String.class);
-        String type = claims.get("type", String.class);
-        Long version = claims.get("ver", Long.class);
-        return new WebUserJwtPayload(userId, account, UserType.valueOf(type), version,
-                claims.getIssuedAt() == null ? null : claims.getIssuedAt().toInstant(),
-                claims.getExpiration() == null ? null : claims.getExpiration().toInstant());
-    }
+  /**
+   * Parse and verify a signed JWT access token.
+   *
+   * @param token the JWT string
+   * @return the parsed payload
+   */
+  public WebUserJwtPayload parse(String token) {
+    Claims claims =
+        Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token).getPayload();
+    Long userId = claims.get("uid", Long.class);
+    String account = claims.get("account", String.class);
+    String type = claims.get("type", String.class);
+    Long version = claims.get("ver", Long.class);
+    return new WebUserJwtPayload(
+        userId,
+        account,
+        UserType.valueOf(type),
+        version,
+        claims.getIssuedAt() == null ? null : claims.getIssuedAt().toInstant(),
+        claims.getExpiration() == null ? null : claims.getExpiration().toInstant());
+  }
 
-    public record WebUserJwtPayload(Long userId, String account, UserType userType, Long tokenVersion, Instant issuedAt,
-                                    Instant expiresAt) {
-    }
+  public record WebUserJwtPayload(
+      Long userId,
+      String account,
+      UserType userType,
+      Long tokenVersion,
+      Instant issuedAt,
+      Instant expiresAt) {}
 
-    public record IssuedAccessToken(String token, Instant expiresAt) {
-    }
+  public record IssuedAccessToken(String token, Instant expiresAt) {}
 
-    private SecretKey secretKey() {
-        byte[] secret = authConfigService.userJwtSecret().getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(secret);
-    }
+  private SecretKey secretKey() {
+    byte[] secret = authConfigService.userJwtSecret().getBytes(StandardCharsets.UTF_8);
+    return Keys.hmacShaKeyFor(secret);
+  }
 }

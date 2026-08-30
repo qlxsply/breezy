@@ -7,16 +7,12 @@ import java.time.Instant;
  *
  * @author Corwin 2026/3/16
  */
-public record TodoTaskReminderChangedEvent(
-        Long todoId,
-        Instant remindAt,
-        boolean removed
-) {
-    public static TodoTaskReminderChangedEvent updated(Long todoId, Instant remindAt) {
-        return new TodoTaskReminderChangedEvent(todoId, remindAt, false);
-    }
+public record TodoTaskReminderChangedEvent(Long todoId, Instant remindAt, boolean removed) {
+  public static TodoTaskReminderChangedEvent updated(Long todoId, Instant remindAt) {
+    return new TodoTaskReminderChangedEvent(todoId, remindAt, false);
+  }
 
-    public static TodoTaskReminderChangedEvent removed(Long todoId) {
-        return new TodoTaskReminderChangedEvent(todoId, null, true);
-    }
+  public static TodoTaskReminderChangedEvent removed(Long todoId) {
+    return new TodoTaskReminderChangedEvent(todoId, null, true);
+  }
 }

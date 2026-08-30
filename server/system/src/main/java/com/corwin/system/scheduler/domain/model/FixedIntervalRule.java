@@ -8,9 +8,5 @@ import java.time.Instant;
  *
  * @author Corwin 2026/4/15
  */
-public record FixedIntervalRule(
-        Duration interval,
-        Instant startAt,
-        IntervalMode mode
-) implements ScheduleRule {
-}
+public record FixedIntervalRule(Duration interval, Instant startAt, IntervalMode mode)
+    implements ScheduleRule {}

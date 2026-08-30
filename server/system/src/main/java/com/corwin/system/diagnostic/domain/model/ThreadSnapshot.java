@@ -8,21 +8,22 @@ import java.util.List;
  * @author Corwin 2026/4/16
  */
 public record ThreadSnapshot(
-        int threadCount,
-        int daemonThreadCount,
-        int peakThreadCount,
-        long totalStartedThreadCount,
-        int runnableCount,
-        int blockedCount,
-        int waitingCount,
-        int timedWaitingCount,
-        List<Long> deadlockedThreadIds
-) {
+    int threadCount,
+    int daemonThreadCount,
+    int peakThreadCount,
+    long totalStartedThreadCount,
+    int runnableCount,
+    int blockedCount,
+    int waitingCount,
+    int timedWaitingCount,
+    List<Long> deadlockedThreadIds) {
 
-    /**
-     * Compact constructor that normalises a null deadlocked thread ID list to an immutable empty list.
-     */
-    public ThreadSnapshot {
-        deadlockedThreadIds = deadlockedThreadIds == null ? List.of() : List.copyOf(deadlockedThreadIds);
-    }
+  /**
+   * Compact constructor that normalises a null deadlocked thread ID list to an immutable empty
+   * list.
+   */
+  public ThreadSnapshot {
+    deadlockedThreadIds =
+        deadlockedThreadIds == null ? List.of() : List.copyOf(deadlockedThreadIds);
+  }
 }

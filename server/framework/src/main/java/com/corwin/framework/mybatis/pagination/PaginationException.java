@@ -7,11 +7,11 @@ package com.corwin.framework.mybatis.pagination;
  */
 public class PaginationException extends RuntimeException {
 
-    public PaginationException(String message) {
-        super(message);
-    }
+  public PaginationException(String message) {
+    super(message);
+  }
 
-    public PaginationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public PaginationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

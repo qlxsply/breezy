@@ -9,9 +9,4 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/5/11
  */
 public record WebUserPageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        String keyword,
-        String status
-) {
-}
+    PageRuleRequest page, SortRuleRequest sort, String keyword, String status) {}

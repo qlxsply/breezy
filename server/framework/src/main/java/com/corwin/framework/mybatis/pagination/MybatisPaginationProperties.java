@@ -14,17 +14,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "corwin.mybatis.pagination")
 public class MybatisPaginationProperties {
 
-    private boolean enabled = true;
+  private boolean enabled = true;
 
-    /**
-     * Maximum allowed page size. Exceeding this value triggers a {@link PaginationException}.
-     */
-    private int maxPageSize = 500;
+  /** Maximum allowed page size. Exceeding this value triggers a {@link PaginationException}. */
+  private int maxPageSize = 500;
 
-    /**
-     * LRU cache size for parsed count-SQL results. Dynamic SQL may generate different
-     * final SQL strings, so caching avoids repeated parsing.
-     */
-    private int countSqlCacheSize = 1024;
-
+  /**
+   * LRU cache size for parsed count-SQL results. Dynamic SQL may generate different final SQL
+   * strings, so caching avoids repeated parsing.
+   */
+  private int countSqlCacheSize = 1024;
 }

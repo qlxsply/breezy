@@ -1,9 +1,8 @@
 package com.corwin.framework.web.advice;
 
 import com.corwin.framework.error.ErrorCode;
-import org.springframework.http.HttpStatusCode;
-
 import java.util.Optional;
+import org.springframework.http.HttpStatusCode;
 
 /**
  * Resolves an HTTP status for business error codes owned by downstream modules.
@@ -12,6 +11,5 @@ import java.util.Optional;
  */
 public interface ErrorHttpStatusResolver {
 
-    Optional<HttpStatusCode> resolve(ErrorCode errorCode);
-
+  Optional<HttpStatusCode> resolve(ErrorCode errorCode);
 }

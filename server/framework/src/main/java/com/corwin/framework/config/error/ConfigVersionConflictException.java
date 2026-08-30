@@ -8,7 +8,7 @@ import com.corwin.framework.error.BizException;
  */
 public class ConfigVersionConflictException extends BizException {
 
-    public ConfigVersionConflictException(String configKey) {
-        super("Config version conflict: " + configKey, BaseError.CONFLICT);
-    }
+  public ConfigVersionConflictException(String configKey) {
+    super("Config version conflict: " + configKey, BaseError.CONFLICT);
+  }
 }

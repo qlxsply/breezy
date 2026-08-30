@@ -8,11 +8,9 @@ import java.util.Set;
  * @author Corwin 2026/4/15
  */
 public record SnapshotObjectSelection(
-        Set<String> selectedTableNames,
-        Set<String> selectedViewNames
-) {
+    Set<String> selectedTableNames, Set<String> selectedViewNames) {
 
-    public static SnapshotObjectSelection empty() {
-        return new SnapshotObjectSelection(Set.of(), Set.of());
-    }
+  public static SnapshotObjectSelection empty() {
+    return new SnapshotObjectSelection(Set.of(), Set.of());
+  }
 }

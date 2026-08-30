@@ -6,7 +6,4 @@ import java.util.List;
  * @author Corwin 2026/3/12
  */
 public record TodoCompleteCommand(
-        String completionNote,
-        List<String> completionAttachmentFileIds
-) {
-}
+    String completionNote, List<String> completionAttachmentFileIds) {}

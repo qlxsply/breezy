@@ -16,39 +16,42 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReminderMessageDeliveredEventHandler {
 
-    private static final String BIZ_TYPE_REMINDER_OUTBOX = "REMINDER_OUTBOX";
+  private static final String BIZ_TYPE_REMINDER_OUTBOX = "REMINDER_OUTBOX";
 
-    private final ReminderOutboxRepository outboxRepo;
+  private final ReminderOutboxRepository outboxRepo;
 
-    @EventListener
-    public void onMessageDelivered(MessageDeliveredEvent event) {
-        if (!BIZ_TYPE_REMINDER_OUTBOX.equals(event.bizType())) {
-            return;
-        }
-        if (event.bizId() == null || event.bizId().isBlank()) {
-            return;
-        }
+  @EventListener
+  public void onMessageDelivered(MessageDeliveredEvent event) {
+    if (!BIZ_TYPE_REMINDER_OUTBOX.equals(event.bizType())) {
+      return;
+    }
+    if (event.bizId() == null || event.bizId().isBlank()) {
+      return;
+    }
 
-        long outboxId;
-        try {
-            outboxId = Long.parseLong(event.bizId());
-        } catch (NumberFormatException ex) {
-            return;
-        }
+    long outboxId;
+    try {
+      outboxId = Long.parseLong(event.bizId());
+    } catch (NumberFormatException ex) {
+      return;
+    }
 
-        outboxRepo.findById(outboxId).ifPresent(outbox -> {
-            boolean changed = false;
-            if (outbox.getDeliveryId() == null && event.deliveryId() != null) {
+    outboxRepo
+        .findById(outboxId)
+        .ifPresent(
+            outbox -> {
+              boolean changed = false;
+              if (outbox.getDeliveryId() == null && event.deliveryId() != null) {
                 outbox.bindDelivery(event.deliveryId());
                 changed = true;
-            }
-            if (outbox.getStatus() == ReminderOutboxStatus.PENDING) {
+              }
+              if (outbox.getStatus() == ReminderOutboxStatus.PENDING) {
                 outbox.markSent();
                 changed = true;
-            }
-            if (changed) {
+              }
+              if (changed) {
                 outboxRepo.save(outbox);
-            }
-        });
-    }
+              }
+            });
+  }
 }

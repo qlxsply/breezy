@@ -1,26 +1,23 @@
 package com.corwin.system.userfeature.application.view;
 
 import com.corwin.system.userfeature.domain.model.UserAccessOverrideType;
-
 import java.util.List;
 
 /**
- * View object representing a feature in the user feature management context,
- * including its inherited and effective enabled state.
+ * View object representing a feature in the user feature management context, including its
+ * inherited and effective enabled state.
  *
  * @author Corwin 2026/6/14
  */
 public record UserFeatureUserFeatureView(
-        String id,
-        String applicationId,
-        String applicationCode,
-        String code,
-        String name,
-        String description,
-        boolean enabled,
-        List<String> permissionCodes,
-        boolean inheritedEnabled,
-        boolean effectiveEnabled,
-        UserAccessOverrideType overrideType
-) {
-}
+    String id,
+    String applicationId,
+    String applicationCode,
+    String code,
+    String name,
+    String description,
+    boolean enabled,
+    List<String> permissionCodes,
+    boolean inheritedEnabled,
+    boolean effectiveEnabled,
+    UserAccessOverrideType overrideType) {}

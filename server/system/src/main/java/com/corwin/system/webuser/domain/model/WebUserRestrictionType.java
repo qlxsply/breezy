@@ -6,6 +6,6 @@ package com.corwin.system.webuser.domain.model;
  * @author Corwin 2026/5/11
  */
 public enum WebUserRestrictionType {
-    DISABLE_LOGIN,
-    DISABLE_ALL
+  DISABLE_LOGIN,
+  DISABLE_ALL
 }

@@ -17,12 +17,6 @@ import com.corwin.system.file.published.FilePurpose;
 import com.corwin.system.file.published.InternalFileType;
 import com.corwin.system.file.published.OwnerType;
 import com.corwin.system.user.domain.model.DefaultUser;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,11 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Application service for file and folder command operations.
- * Implements {@link FileCommandPort} and provides transactional operations
- * for uploading, creating, deleting, renaming, and moving files and folders.
+ * Application service for file and folder command operations. Implements {@link FileCommandPort}
+ * and provides transactional operations for uploading, creating, deleting, renaming, and moving
+ * files and folders.
  *
  * @author Corwin 2026/2/23
  */
@@ -46,535 +45,626 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class FileService implements FileCommandPort {
 
-    private final LogicalFileRepository logicalFileRepository;
-    private final PhysicalFileRepository physicalFileRepository;
-    private final LocalStorageProvider storageProvider;
+  private final LogicalFileRepository logicalFileRepository;
+  private final PhysicalFileRepository physicalFileRepository;
+  private final LocalStorageProvider storageProvider;
 
-    /**
-     * Uploads a file from an input stream. Computes the SHA-256 hash for
-     * de-duplication, stores the physical file, and creates a logical file record.
-     *
-     * @param cmd         the upload command with metadata
-     * @param inputStream the file content stream
-     * @param purpose     the business purpose category
-     * @return the logical file ID of the uploaded file
-     */
-    @Override
-    @Transactional
-    public String uploadFile(UploadFileCommand cmd, InputStream inputStream, FilePurpose purpose) {
-        Path tempFile = null;
-        String hash;
-        long size;
-        try {
-            tempFile = Files.createTempFile(storageProvider.getTempPath(), "breezy-upload-", ".tmp");
-            try (OutputStream os = Files.newOutputStream(tempFile)) {
-                byte[] buffer = new byte[8192];
-                int read;
-                while ((read = inputStream.read(buffer)) != -1) {
-                    os.write(buffer, 0, read);
-                }
-            }
-            try (InputStream is = Files.newInputStream(tempFile)) {
-                hash = SignUtil.sha256(is);
-            }
-            size = Files.size(tempFile);
-        } catch (Exception e) {
-            throw new BizException("文件处理失败", BaseError.SERVICE_ERROR);
+  /**
+   * Uploads a file from an input stream. Computes the SHA-256 hash for de-duplication, stores the
+   * physical file, and creates a logical file record.
+   *
+   * @param cmd the upload command with metadata
+   * @param inputStream the file content stream
+   * @param purpose the business purpose category
+   * @return the logical file ID of the uploaded file
+   */
+  @Override
+  @Transactional
+  public String uploadFile(UploadFileCommand cmd, InputStream inputStream, FilePurpose purpose) {
+    Path tempFile = null;
+    String hash;
+    long size;
+    try {
+      tempFile = Files.createTempFile(storageProvider.getTempPath(), "breezy-upload-", ".tmp");
+      try (OutputStream os = Files.newOutputStream(tempFile)) {
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = inputStream.read(buffer)) != -1) {
+          os.write(buffer, 0, read);
         }
-
-        try {
-            OwnerType domainOwnerType = toDomainOwnerType(cmd.ownerType());
-            String finalFileName = cmd.fileName();
-            if (cmd.ownerType() == OwnerType.USER) {
-                finalFileName = resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(), cmd.fileName());
-            }
-
-            PhysicalFile physicalFile = handlePhysicalFile(hash, tempFile, size, cmd.contentType());
-            LogicalFile logicalFile = LogicalFile.file(domainOwnerType, cmd.ownerId(), cmd.parentId(), finalFileName,
-                    physicalFile.getId(), purpose.name());
-            logicalFileRepository.save(logicalFile);
-            return logicalFile.getId();
-        } finally {
-            if (tempFile != null) {
-                try {
-                    Files.deleteIfExists(tempFile);
-                } catch (IOException e) {
-                    log.warn("无法删除临时文件: {}", tempFile);
-                }
-            }
-        }
+      }
+      try (InputStream is = Files.newInputStream(tempFile)) {
+        hash = SignUtil.sha256(is);
+      }
+      size = Files.size(tempFile);
+    } catch (Exception e) {
+      throw new BizException("文件处理失败", BaseError.SERVICE_ERROR);
     }
 
-    /**
-     * Creates an internal system file with the given content and file type.
-     * The file is stored under an application-owned purpose folder.
-     *
-     * @param fileName the desired file name
-     * @param fileType the predefined file type (defines content type and extension)
-     * @param content  the file content as bytes
-     * @param purpose  the business purpose
-     * @return the logical file ID
-     */
-    @Override
-    @Transactional
-    public String createInternalFile(String fileName, InternalFileType fileType, byte[] content, FilePurpose purpose) {
-        BizAssert.notBlank(fileName, BaseError.MISSING_PARAMETER);
-        BizAssert.notNull(fileType, BaseError.MISSING_PARAMETER);
-        BizAssert.notNull(content, BaseError.MISSING_PARAMETER);
-        BizAssert.notNull(purpose, BaseError.MISSING_PARAMETER);
+    try {
+      OwnerType domainOwnerType = toDomainOwnerType(cmd.ownerType());
+      String finalFileName = cmd.fileName();
+      if (cmd.ownerType() == OwnerType.USER) {
+        finalFileName =
+            resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(), cmd.fileName());
+      }
 
-        String systemOwnerId = DefaultUser.SYSTEM.account();
-        String parentId = resolveApplicationPurposeFolderId(purpose, systemOwnerId);
-        String finalFileName = resolveFileNameConflict(OwnerType.APPLICATION, systemOwnerId, parentId,
-                normalizeInternalFileName(fileName, fileType));
-
-        String hash;
-        try (InputStream hashStream = new ByteArrayInputStream(content)) {
-            hash = SignUtil.sha256(hashStream);
+      PhysicalFile physicalFile = handlePhysicalFile(hash, tempFile, size, cmd.contentType());
+      LogicalFile logicalFile =
+          LogicalFile.file(
+              domainOwnerType,
+              cmd.ownerId(),
+              cmd.parentId(),
+              finalFileName,
+              physicalFile.getId(),
+              purpose.name());
+      logicalFileRepository.save(logicalFile);
+      return logicalFile.getId();
+    } finally {
+      if (tempFile != null) {
+        try {
+          Files.deleteIfExists(tempFile);
         } catch (IOException e) {
-            throw new BizException("内部文件摘要计算失败", BaseError.SERVICE_ERROR);
+          log.warn("无法删除临时文件: {}", tempFile);
         }
+      }
+    }
+  }
 
-        PhysicalFile physicalFile = handlePhysicalFile(hash, content.length, fileType.contentType(),
-                (relativePath, physicalFileName) -> {
-                    try (InputStream writeStream = new ByteArrayInputStream(content)) {
-                        storageProvider.write(relativePath, physicalFileName, writeStream);
-                    }
-                });
+  /**
+   * Creates an internal system file with the given content and file type. The file is stored under
+   * an application-owned purpose folder.
+   *
+   * @param fileName the desired file name
+   * @param fileType the predefined file type (defines content type and extension)
+   * @param content the file content as bytes
+   * @param purpose the business purpose
+   * @return the logical file ID
+   */
+  @Override
+  @Transactional
+  public String createInternalFile(
+      String fileName, InternalFileType fileType, byte[] content, FilePurpose purpose) {
+    BizAssert.notBlank(fileName, BaseError.MISSING_PARAMETER);
+    BizAssert.notNull(fileType, BaseError.MISSING_PARAMETER);
+    BizAssert.notNull(content, BaseError.MISSING_PARAMETER);
+    BizAssert.notNull(purpose, BaseError.MISSING_PARAMETER);
 
-        LogicalFile logicalFile = LogicalFile.file(OwnerType.APPLICATION, systemOwnerId, parentId, finalFileName,
-                physicalFile.getId(), purpose.name());
-        logicalFileRepository.save(logicalFile);
-        return logicalFile.getId();
+    String systemOwnerId = DefaultUser.SYSTEM.account();
+    String parentId = resolveApplicationPurposeFolderId(purpose, systemOwnerId);
+    String finalFileName =
+        resolveFileNameConflict(
+            OwnerType.APPLICATION,
+            systemOwnerId,
+            parentId,
+            normalizeInternalFileName(fileName, fileType));
+
+    String hash;
+    try (InputStream hashStream = new ByteArrayInputStream(content)) {
+      hash = SignUtil.sha256(hashStream);
+    } catch (IOException e) {
+      throw new BizException("内部文件摘要计算失败", BaseError.SERVICE_ERROR);
     }
 
-    /**
-     * Reads the full binary content of a file by its logical file ID.
-     *
-     * @param fileId the logical file ID
-     * @return the file content as a byte array
-     */
-    @Override
-    public byte[] readFileContent(String fileId) {
-        BizAssert.notBlank(fileId, BaseError.MISSING_PARAMETER);
+    PhysicalFile physicalFile =
+        handlePhysicalFile(
+            hash,
+            content.length,
+            fileType.contentType(),
+            (relativePath, physicalFileName) -> {
+              try (InputStream writeStream = new ByteArrayInputStream(content)) {
+                storageProvider.write(relativePath, physicalFileName, writeStream);
+              }
+            });
 
-        LogicalFile logicalFile = logicalFileRepository.findById(fileId)
-                .orElseThrow(() -> new BizException("File not found: " + fileId, BaseError.NOT_FOUND));
-        assertFileNode(logicalFile);
-        PhysicalFile physicalFile = physicalFileRepository.findById(logicalFile.getPhysicalFileId())
-                .orElseThrow(() -> new BizException("Physical file not found", BaseError.NOT_FOUND));
+    LogicalFile logicalFile =
+        LogicalFile.file(
+            OwnerType.APPLICATION,
+            systemOwnerId,
+            parentId,
+            finalFileName,
+            physicalFile.getId(),
+            purpose.name());
+    logicalFileRepository.save(logicalFile);
+    return logicalFile.getId();
+  }
 
-        try (InputStream inputStream = storageProvider.read(physicalFile.getRelativePath(),
-                physicalFile.getFileName())) {
-            return inputStream.readAllBytes();
-        } catch (IOException e) {
-            throw new BizException("Read file content failed", BaseError.SERVICE_ERROR);
-        }
+  /**
+   * Reads the full binary content of a file by its logical file ID.
+   *
+   * @param fileId the logical file ID
+   * @return the file content as a byte array
+   */
+  @Override
+  public byte[] readFileContent(String fileId) {
+    BizAssert.notBlank(fileId, BaseError.MISSING_PARAMETER);
+
+    LogicalFile logicalFile =
+        logicalFileRepository
+            .findById(fileId)
+            .orElseThrow(() -> new BizException("File not found: " + fileId, BaseError.NOT_FOUND));
+    assertFileNode(logicalFile);
+    PhysicalFile physicalFile =
+        physicalFileRepository
+            .findById(logicalFile.getPhysicalFileId())
+            .orElseThrow(() -> new BizException("Physical file not found", BaseError.NOT_FOUND));
+
+    try (InputStream inputStream =
+        storageProvider.read(physicalFile.getRelativePath(), physicalFile.getFileName())) {
+      return inputStream.readAllBytes();
+    } catch (IOException e) {
+      throw new BizException("Read file content failed", BaseError.SERVICE_ERROR);
+    }
+  }
+
+  private String resolveFileNameConflict(
+      OwnerType ownerType, String ownerId, String parentId, String originalName) {
+    Optional<LogicalFile> existing =
+        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+            ownerType, ownerId, parentId, LogicalNodeType.FILE, originalName);
+    if (existing.isEmpty()) {
+      return originalName;
     }
 
-    private String resolveFileNameConflict(OwnerType ownerType, String ownerId, String parentId, String originalName) {
-        Optional<LogicalFile> existing = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-                ownerType, ownerId, parentId, LogicalNodeType.FILE, originalName);
-        if (existing.isEmpty()) {
-            return originalName;
-        }
-
-        String baseName = originalName;
-        String extension = "";
-        int lastDotIndex = originalName.lastIndexOf('.');
-        if (lastDotIndex != -1) {
-            baseName = originalName.substring(0, lastDotIndex);
-            extension = originalName.substring(lastDotIndex);
-        }
-
-        int count = 1;
-        while (true) {
-            String newName = String.format("%s (%d)%s", baseName, count, extension);
-            if (logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(ownerType, ownerId,
-                    parentId, LogicalNodeType.FILE, newName).isEmpty()) {
-                return newName;
-            }
-            count++;
-        }
+    String baseName = originalName;
+    String extension = "";
+    int lastDotIndex = originalName.lastIndexOf('.');
+    if (lastDotIndex != -1) {
+      baseName = originalName.substring(0, lastDotIndex);
+      extension = originalName.substring(lastDotIndex);
     }
 
-    private String normalizeInternalFileName(String fileName, InternalFileType fileType) {
-        String normalized = StrUtil.trimToNull(fileName);
-        BizAssert.notBlank(normalized, BaseError.MISSING_PARAMETER);
-        String extension = fileType.defaultExtension();
-        if (!normalized.toLowerCase().endsWith(extension.toLowerCase())) {
-            normalized = normalized + extension;
-        }
-        return normalized;
+    int count = 1;
+    while (true) {
+      String newName = String.format("%s (%d)%s", baseName, count, extension);
+      if (logicalFileRepository
+          .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+              ownerType, ownerId, parentId, LogicalNodeType.FILE, newName)
+          .isEmpty()) {
+        return newName;
+      }
+      count++;
+    }
+  }
+
+  private String normalizeInternalFileName(String fileName, InternalFileType fileType) {
+    String normalized = StrUtil.trimToNull(fileName);
+    BizAssert.notBlank(normalized, BaseError.MISSING_PARAMETER);
+    String extension = fileType.defaultExtension();
+    if (!normalized.toLowerCase().endsWith(extension.toLowerCase())) {
+      normalized = normalized + extension;
+    }
+    return normalized;
+  }
+
+  private String resolveApplicationPurposeFolderId(FilePurpose purpose, String systemOwnerId) {
+    Optional<LogicalFile> existingFolder =
+        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+            OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name());
+    if (existingFolder.isPresent()) {
+      return existingFolder.get().getId();
     }
 
-    private String resolveApplicationPurposeFolderId(FilePurpose purpose, String systemOwnerId) {
-        Optional<LogicalFile> existingFolder = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-                OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name());
-        if (existingFolder.isPresent()) {
-            return existingFolder.get().getId();
-        }
-
-        try {
-            return createFolder(OwnerType.APPLICATION, systemOwnerId, null, purpose.name());
-        } catch (BizException | DataIntegrityViolationException e) {
-            return logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-                            OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name())
-                    .map(LogicalFile::getId)
-                    .orElseThrow(() -> new BizException("系统用途目录创建失败", BaseError.SERVICE_ERROR));
-        }
+    try {
+      return createFolder(OwnerType.APPLICATION, systemOwnerId, null, purpose.name());
+    } catch (BizException | DataIntegrityViolationException e) {
+      return logicalFileRepository
+          .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+              OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name())
+          .map(LogicalFile::getId)
+          .orElseThrow(() -> new BizException("系统用途目录创建失败", BaseError.SERVICE_ERROR));
     }
+  }
 
-    private PhysicalFile handlePhysicalFile(String hash, Path tempFile, long size, String contentType) {
-        return handlePhysicalFile(hash, size, contentType, (relativePath, physicalFileName) -> {
-            try (InputStream is = Files.newInputStream(tempFile)) {
-                storageProvider.write(relativePath, physicalFileName, is);
-            }
+  private PhysicalFile handlePhysicalFile(
+      String hash, Path tempFile, long size, String contentType) {
+    return handlePhysicalFile(
+        hash,
+        size,
+        contentType,
+        (relativePath, physicalFileName) -> {
+          try (InputStream is = Files.newInputStream(tempFile)) {
+            storageProvider.write(relativePath, physicalFileName, is);
+          }
         });
-    }
+  }
 
-    private PhysicalFile handlePhysicalFile(String hash, long size, String contentType,
-            PhysicalFileContentWriter contentWriter) {
-        return physicalFileRepository.findByHash(hash).map(existing -> {
-            physicalFileRepository.incrementRefCount(existing.getId());
-            return existing;
-        }).orElseGet(() -> {
-            String relativePath = storageProvider.generateRelativePath(hash);
-            try {
+  private PhysicalFile handlePhysicalFile(
+      String hash, long size, String contentType, PhysicalFileContentWriter contentWriter) {
+    return physicalFileRepository
+        .findByHash(hash)
+        .map(
+            existing -> {
+              physicalFileRepository.incrementRefCount(existing.getId());
+              return existing;
+            })
+        .orElseGet(
+            () -> {
+              String relativePath = storageProvider.generateRelativePath(hash);
+              try {
                 contentWriter.write(relativePath, hash);
-            } catch (IOException e) {
+              } catch (IOException e) {
                 throw new BizException("物理文件写入失败", BaseError.SERVICE_ERROR);
-            }
+              }
 
-            PhysicalFile pf = new PhysicalFile(hash, relativePath, hash, size, contentType);
-            try {
+              PhysicalFile pf = new PhysicalFile(hash, relativePath, hash, size, contentType);
+              try {
                 return physicalFileRepository.save(pf);
-            } catch (DataIntegrityViolationException e) {
+              } catch (DataIntegrityViolationException e) {
                 log.info("检测到并发上传冲突，回退到增加引用计数模式: {}", hash);
-                PhysicalFile existing = physicalFileRepository.findByHash(hash)
+                PhysicalFile existing =
+                    physicalFileRepository
+                        .findByHash(hash)
                         .orElseThrow(() -> new IllegalStateException("并发一致性异常"));
                 physicalFileRepository.incrementRefCount(existing.getId());
                 return existing;
-            }
-        });
-    }
+              }
+            });
+  }
 
-    @FunctionalInterface
-    private interface PhysicalFileContentWriter {
-        void write(String relativePath, String physicalFileName) throws IOException;
-    }
+  @FunctionalInterface
+  private interface PhysicalFileContentWriter {
+    void write(String relativePath, String physicalFileName) throws IOException;
+  }
 
-    /**
-     * Deletes a logical file without owner validation.
-     */
-    @Override
-    @Transactional
-    public void deleteFile(String fileId) {
-        deleteFile(fileId, null, null);
-    }
+  /** Deletes a logical file without owner validation. */
+  @Override
+  @Transactional
+  public void deleteFile(String fileId) {
+    deleteFile(fileId, null, null);
+  }
 
-    /**
-     * Deletes a logical file with optional owner validation.
-     */
-    @Override
-    @Transactional
-    public void deleteFile(String fileId, OwnerType expectedOwnerType, String expectedOwnerId) {
-        logicalFileRepository.findById(fileId).ifPresent(file -> {
-            assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
-            deleteLogicalFile(file);
-        });
-    }
+  /** Deletes a logical file with optional owner validation. */
+  @Override
+  @Transactional
+  public void deleteFile(String fileId, OwnerType expectedOwnerType, String expectedOwnerId) {
+    logicalFileRepository
+        .findById(fileId)
+        .ifPresent(
+            file -> {
+              assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+              deleteLogicalFile(file);
+            });
+  }
 
-    private void handlePhysicalDecrement(String physicalId) {
-        physicalFileRepository.decrementRefCount(physicalId);
-        physicalFileRepository.findById(physicalId).ifPresent(pf -> {
-            if (pf.canDelete()) {
+  private void handlePhysicalDecrement(String physicalId) {
+    physicalFileRepository.decrementRefCount(physicalId);
+    physicalFileRepository
+        .findById(physicalId)
+        .ifPresent(
+            pf -> {
+              if (pf.canDelete()) {
                 try {
-                    storageProvider.delete(pf.getRelativePath(), pf.getFileName());
-                    physicalFileRepository.delete(pf);
-                    log.info("物理文件已由于引用计数归零而被删除: {}", pf.getHash());
+                  storageProvider.delete(pf.getRelativePath(), pf.getFileName());
+                  physicalFileRepository.delete(pf);
+                  log.info("物理文件已由于引用计数归零而被删除: {}", pf.getHash());
                 } catch (IOException e) {
-                    log.error("物理文件清理失败: {}", pf.getHash(), e);
+                  log.error("物理文件清理失败: {}", pf.getHash(), e);
                 }
-            }
-        });
+              }
+            });
+  }
+
+  /** Creates a new folder node under the given parent, preventing duplicate names. */
+  @Override
+  @Transactional
+  public String createFolder(OwnerType ownerType, String ownerId, String parentId, String name) {
+    String normalizedParentId = StrUtil.trimToNull(parentId);
+    String normalizedName = StrUtil.trimToNull(name);
+    BizAssert.notBlank(normalizedName, BaseError.MISSING_PARAMETER);
+
+    OwnerType domainOwnerType = toDomainOwnerType(ownerType);
+    validateTargetFolder(domainOwnerType, ownerId, normalizedParentId);
+
+    logicalFileRepository
+        .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+            domainOwnerType, ownerId, normalizedParentId, LogicalNodeType.FOLDER, normalizedName)
+        .ifPresent(
+            existing -> {
+              throw new BizException("同名目录已存在", BaseError.CONFLICT);
+            });
+
+    LogicalFile folder =
+        LogicalFile.folder(domainOwnerType, ownerId, normalizedParentId, normalizedName);
+    return logicalFileRepository.save(folder).getId();
+  }
+
+  /** Renames a folder with duplicate-name validation. */
+  @Override
+  @Transactional
+  public void renameFolder(
+      String folderId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
+    String normalizedNewName = StrUtil.trimToNull(newName);
+    BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
+
+    LogicalFile folder =
+        logicalFileRepository
+            .findById(folderId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+
+    if (folder.getFileName().equals(normalizedNewName)) {
+      return;
     }
 
-    /**
-     * Creates a new folder node under the given parent, preventing duplicate names.
-     */
-    @Override
-    @Transactional
-    public String createFolder(OwnerType ownerType, String ownerId, String parentId, String name) {
-        String normalizedParentId = StrUtil.trimToNull(parentId);
-        String normalizedName = StrUtil.trimToNull(name);
-        BizAssert.notBlank(normalizedName, BaseError.MISSING_PARAMETER);
+    logicalFileRepository
+        .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+            folder.getOwnerType(),
+            folder.getOwnerId(),
+            folder.getParentId(),
+            LogicalNodeType.FOLDER,
+            normalizedNewName)
+        .ifPresent(
+            existing -> {
+              throw new BizException("同名目录已存在", BaseError.CONFLICT);
+            });
 
-        OwnerType domainOwnerType = toDomainOwnerType(ownerType);
-        validateTargetFolder(domainOwnerType, ownerId, normalizedParentId);
+    folder.rename(normalizedNewName);
+    logicalFileRepository.save(folder);
+  }
 
-        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(domainOwnerType, ownerId,
-                normalizedParentId, LogicalNodeType.FOLDER, normalizedName).ifPresent(existing -> {
-            throw new BizException("同名目录已存在", BaseError.CONFLICT);
-        });
+  /** Renames a file with duplicate-name resolution for user-owned files. */
+  @Override
+  @Transactional
+  public void renameFile(
+      String fileId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
+    String normalizedNewName = StrUtil.trimToNull(newName);
+    BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
 
-        LogicalFile folder = LogicalFile.folder(domainOwnerType, ownerId, normalizedParentId, normalizedName);
-        return logicalFileRepository.save(folder).getId();
+    LogicalFile file =
+        logicalFileRepository
+            .findById(fileId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+
+    if (file.getFileName().equals(normalizedNewName)) {
+      return;
     }
 
-    /**
-     * Renames a folder with duplicate-name validation.
-     */
-    @Override
-    @Transactional
-    public void renameFolder(String folderId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
-        String normalizedNewName = StrUtil.trimToNull(newName);
-        BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
-
-        LogicalFile folder = logicalFileRepository.findById(folderId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
-
-        if (folder.getFileName().equals(normalizedNewName)) {
-            return;
-        }
-
-        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(folder.getOwnerType(),
-                        folder.getOwnerId(), folder.getParentId(), LogicalNodeType.FOLDER, normalizedNewName)
-                .ifPresent(existing -> {
-                    throw new BizException("同名目录已存在", BaseError.CONFLICT);
-                });
-
-        folder.rename(normalizedNewName);
-        logicalFileRepository.save(folder);
+    String finalName = normalizedNewName;
+    if (file.getOwnerType() == OwnerType.USER) {
+      finalName =
+          resolveFileNameConflict(
+              file.getOwnerType(), file.getOwnerId(), file.getParentId(), normalizedNewName);
     }
 
-    /**
-     * Renames a file with duplicate-name resolution for user-owned files.
-     */
-    @Override
-    @Transactional
-    public void renameFile(String fileId, String newName, OwnerType expectedOwnerType, String expectedOwnerId) {
-        String normalizedNewName = StrUtil.trimToNull(newName);
-        BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
+    file.rename(finalName);
+    logicalFileRepository.save(file);
+  }
 
-        LogicalFile file = logicalFileRepository.findById(fileId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+  /**
+   * Deletes a folder. If {@code recursive} is true, all descendant files and sub-folders are also
+   * deleted; otherwise an error is thrown if the folder is not empty.
+   */
+  @Override
+  @Transactional
+  public void deleteFolder(
+      String folderId, boolean recursive, OwnerType expectedOwnerType, String expectedOwnerId) {
+    LogicalFile folder =
+        logicalFileRepository
+            .findById(folderId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
-        if (file.getFileName().equals(normalizedNewName)) {
-            return;
-        }
-
-        String finalName = normalizedNewName;
-        if (file.getOwnerType() == OwnerType.USER) {
-            finalName = resolveFileNameConflict(file.getOwnerType(), file.getOwnerId(), file.getParentId(),
-                    normalizedNewName);
-        }
-
-        file.rename(finalName);
-        logicalFileRepository.save(file);
+    if (!recursive) {
+      BizAssert.state(
+          logicalFileRepository
+              .findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+                  folder.getOwnerType(), folder.getOwnerId(), folderId, LogicalNodeType.FOLDER)
+              .isEmpty(),
+          BaseError.SERVICE_ERROR);
+      BizAssert.state(
+          logicalFileRepository
+              .findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+                  folder.getOwnerType(), folder.getOwnerId(), folderId, LogicalNodeType.FILE)
+              .isEmpty(),
+          BaseError.SERVICE_ERROR);
+      logicalFileRepository.deleteById(folderId);
+      return;
     }
 
-    /**
-     * Deletes a folder. If {@code recursive} is true, all descendant files and
-     * sub-folders are also deleted; otherwise an error is thrown if the folder
-     * is not empty.
-     */
-    @Override
-    @Transactional
-    public void deleteFolder(String folderId, boolean recursive, OwnerType expectedOwnerType, String expectedOwnerId) {
-        LogicalFile folder = logicalFileRepository.findById(folderId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
-
-        if (!recursive) {
-            BizAssert.state(logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(folder.getOwnerType(),
-                    folder.getOwnerId(), folderId, LogicalNodeType.FOLDER).isEmpty(), BaseError.SERVICE_ERROR);
-            BizAssert.state(logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(folder.getOwnerType(),
-                    folder.getOwnerId(), folderId, LogicalNodeType.FILE).isEmpty(), BaseError.SERVICE_ERROR);
-            logicalFileRepository.deleteById(folderId);
-            return;
-        }
-
-        List<String> subtreeFolderIds = collectSubtreeFolderIds(folder);
-        for (String currentFolderId : subtreeFolderIds) {
-            List<LogicalFile> filesInFolder = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
-                    folder.getOwnerType(), folder.getOwnerId(), currentFolderId, LogicalNodeType.FILE);
-            for (LogicalFile logicalFile : filesInFolder) {
-                deleteLogicalFile(logicalFile);
-            }
-        }
-
-        for (int i = subtreeFolderIds.size() - 1; i >= 0; i--) {
-            logicalFileRepository.deleteById(subtreeFolderIds.get(i));
-        }
+    List<String> subtreeFolderIds = collectSubtreeFolderIds(folder);
+    for (String currentFolderId : subtreeFolderIds) {
+      List<LogicalFile> filesInFolder =
+          logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+              folder.getOwnerType(), folder.getOwnerId(), currentFolderId, LogicalNodeType.FILE);
+      for (LogicalFile logicalFile : filesInFolder) {
+        deleteLogicalFile(logicalFile);
+      }
     }
 
-    /**
-     * Moves a file to a target parent folder with duplicate-name resolution.
-     */
-    @Override
-    @Transactional
-    public void moveFile(String fileId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
-        LogicalFile file = logicalFileRepository.findById(fileId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+    for (int i = subtreeFolderIds.size() - 1; i >= 0; i--) {
+      logicalFileRepository.deleteById(subtreeFolderIds.get(i));
+    }
+  }
 
-        String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
-        if (Objects.equals(file.getParentId(), normalizedTargetParentId)) {
-            return;
-        }
+  /** Moves a file to a target parent folder with duplicate-name resolution. */
+  @Override
+  @Transactional
+  public void moveFile(
+      String fileId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
+    LogicalFile file =
+        logicalFileRepository
+            .findById(fileId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
-        validateTargetFolder(file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId);
-
-        String finalName = file.getFileName();
-        if (file.getOwnerType() == OwnerType.USER) {
-            finalName = resolveFileNameConflict(file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId,
-                    file.getFileName());
-        }
-
-        if (!finalName.equals(file.getFileName())) {
-            file.rename(finalName);
-        }
-        file.move(normalizedTargetParentId);
-        logicalFileRepository.save(file);
+    String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
+    if (Objects.equals(file.getParentId(), normalizedTargetParentId)) {
+      return;
     }
 
-    /**
-     * Moves a folder to a target parent folder.
-     * Prevents moving a folder into itself or one of its own descendants.
-     */
-    @Override
-    @Transactional
-    public void moveFolder(String folderId, String targetParentId, OwnerType expectedOwnerType,
-            String expectedOwnerId) {
-        LogicalFile folder = logicalFileRepository.findById(folderId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+    validateTargetFolder(file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId);
 
-        String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
-        if (Objects.equals(folder.getParentId(), normalizedTargetParentId)) {
-            return;
-        }
-        if (Objects.equals(folderId, normalizedTargetParentId)) {
-            throw new BizException("目录不能移动到自身", BaseError.ILLEGAL_ARGUMENT);
-        }
-
-        if (normalizedTargetParentId != null) {
-            LogicalFile targetFolder = validateTargetFolder(folder.getOwnerType(), folder.getOwnerId(),
-                    normalizedTargetParentId);
-            BizAssert.notNull(targetFolder, BaseError.NOT_FOUND);
-            if (isAncestor(folder.getId(), targetFolder.getId())) {
-                throw new BizException("目录不能移动到自己的子目录", BaseError.ILLEGAL_ARGUMENT);
-            }
-        }
-
-        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(folder.getOwnerType(),
-                        folder.getOwnerId(), normalizedTargetParentId, LogicalNodeType.FOLDER, folder.getFileName())
-                .ifPresent(existing -> {
-                    if (!existing.getId().equals(folderId)) {
-                        throw new BizException("目标目录存在同名文件夹", BaseError.CONFLICT);
-                    }
-                });
-
-        folder.move(normalizedTargetParentId);
-        logicalFileRepository.save(folder);
+    String finalName = file.getFileName();
+    if (file.getOwnerType() == OwnerType.USER) {
+      finalName =
+          resolveFileNameConflict(
+              file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId, file.getFileName());
     }
 
-    private void deleteLogicalFile(LogicalFile file) {
-        String physicalId = file.getPhysicalFileId();
-        logicalFileRepository.delete(file);
-        handlePhysicalDecrement(physicalId);
+    if (!finalName.equals(file.getFileName())) {
+      file.rename(finalName);
+    }
+    file.move(normalizedTargetParentId);
+    logicalFileRepository.save(file);
+  }
+
+  /**
+   * Moves a folder to a target parent folder. Prevents moving a folder into itself or one of its
+   * own descendants.
+   */
+  @Override
+  @Transactional
+  public void moveFolder(
+      String folderId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
+    LogicalFile folder =
+        logicalFileRepository
+            .findById(folderId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
+
+    String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
+    if (Objects.equals(folder.getParentId(), normalizedTargetParentId)) {
+      return;
+    }
+    if (Objects.equals(folderId, normalizedTargetParentId)) {
+      throw new BizException("目录不能移动到自身", BaseError.ILLEGAL_ARGUMENT);
     }
 
-    private List<String> collectSubtreeFolderIds(LogicalFile rootFolder) {
-        List<String> folderIds = new ArrayList<>();
-        List<String> pendingFolderIds = new ArrayList<>();
-        pendingFolderIds.add(rootFolder.getId());
-        int cursor = 0;
-        while (cursor < pendingFolderIds.size()) {
-            String currentFolderId = pendingFolderIds.get(cursor);
-            cursor++;
-            folderIds.add(currentFolderId);
-
-            List<LogicalFile> children = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
-                    rootFolder.getOwnerType(), rootFolder.getOwnerId(), currentFolderId, LogicalNodeType.FOLDER);
-            pendingFolderIds.addAll(children.stream().map(LogicalFile::getId).toList());
-        }
-        return folderIds;
+    if (normalizedTargetParentId != null) {
+      LogicalFile targetFolder =
+          validateTargetFolder(
+              folder.getOwnerType(), folder.getOwnerId(), normalizedTargetParentId);
+      BizAssert.notNull(targetFolder, BaseError.NOT_FOUND);
+      if (isAncestor(folder.getId(), targetFolder.getId())) {
+        throw new BizException("目录不能移动到自己的子目录", BaseError.ILLEGAL_ARGUMENT);
+      }
     }
 
-    private boolean isAncestor(String ancestorFolderId, String childFolderId) {
-        String currentId = childFolderId;
-        while (currentId != null) {
-            if (ancestorFolderId.equals(currentId)) {
-                return true;
-            }
-            LogicalFile current = logicalFileRepository.findById(currentId).orElse(null);
-            if (current == null) {
-                return false;
-            }
-            currentId = current.getParentId();
-        }
+    logicalFileRepository
+        .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+            folder.getOwnerType(),
+            folder.getOwnerId(),
+            normalizedTargetParentId,
+            LogicalNodeType.FOLDER,
+            folder.getFileName())
+        .ifPresent(
+            existing -> {
+              if (!existing.getId().equals(folderId)) {
+                throw new BizException("目标目录存在同名文件夹", BaseError.CONFLICT);
+              }
+            });
+
+    folder.move(normalizedTargetParentId);
+    logicalFileRepository.save(folder);
+  }
+
+  private void deleteLogicalFile(LogicalFile file) {
+    String physicalId = file.getPhysicalFileId();
+    logicalFileRepository.delete(file);
+    handlePhysicalDecrement(physicalId);
+  }
+
+  private List<String> collectSubtreeFolderIds(LogicalFile rootFolder) {
+    List<String> folderIds = new ArrayList<>();
+    List<String> pendingFolderIds = new ArrayList<>();
+    pendingFolderIds.add(rootFolder.getId());
+    int cursor = 0;
+    while (cursor < pendingFolderIds.size()) {
+      String currentFolderId = pendingFolderIds.get(cursor);
+      cursor++;
+      folderIds.add(currentFolderId);
+
+      List<LogicalFile> children =
+          logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+              rootFolder.getOwnerType(),
+              rootFolder.getOwnerId(),
+              currentFolderId,
+              LogicalNodeType.FOLDER);
+      pendingFolderIds.addAll(children.stream().map(LogicalFile::getId).toList());
+    }
+    return folderIds;
+  }
+
+  private boolean isAncestor(String ancestorFolderId, String childFolderId) {
+    String currentId = childFolderId;
+    while (currentId != null) {
+      if (ancestorFolderId.equals(currentId)) {
+        return true;
+      }
+      LogicalFile current = logicalFileRepository.findById(currentId).orElse(null);
+      if (current == null) {
         return false;
+      }
+      currentId = current.getParentId();
     }
+    return false;
+  }
 
-    private LogicalFile validateTargetFolder(OwnerType ownerType, String ownerId, String targetParentId) {
-        if (targetParentId == null) {
-            return null;
-        }
-        LogicalFile targetFolder = logicalFileRepository.findById(targetParentId)
-                .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-        assertFolderNode(targetFolder);
-        boolean sameOwner = targetFolder.getOwnerType() == ownerType && Objects.equals(targetFolder.getOwnerId(),
-                ownerId);
-        if (!sameOwner) {
-            throw new BizException("目标目录不属于当前所有者", BaseError.FORBIDDEN);
-        }
-        return targetFolder;
+  private LogicalFile validateTargetFolder(
+      OwnerType ownerType, String ownerId, String targetParentId) {
+    if (targetParentId == null) {
+      return null;
     }
+    LogicalFile targetFolder =
+        logicalFileRepository
+            .findById(targetParentId)
+            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    assertFolderNode(targetFolder);
+    boolean sameOwner =
+        targetFolder.getOwnerType() == ownerType
+            && Objects.equals(targetFolder.getOwnerId(), ownerId);
+    if (!sameOwner) {
+      throw new BizException("目标目录不属于当前所有者", BaseError.FORBIDDEN);
+    }
+    return targetFolder;
+  }
 
-    private void assertFileOwner(LogicalFile file, OwnerType expectedOwnerType, String expectedOwnerId) {
-        assertFileNode(file);
-        if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
-            return;
-        }
-        boolean sameOwner = file.getOwnerType() == expectedOwnerType && Objects.equals(file.getOwnerId(),
-                expectedOwnerId);
-        if (!sameOwner) {
-            throw new BizException("无权操作该文件", BaseError.FORBIDDEN);
-        }
+  private void assertFileOwner(
+      LogicalFile file, OwnerType expectedOwnerType, String expectedOwnerId) {
+    assertFileNode(file);
+    if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
+      return;
     }
+    boolean sameOwner =
+        file.getOwnerType() == expectedOwnerType
+            && Objects.equals(file.getOwnerId(), expectedOwnerId);
+    if (!sameOwner) {
+      throw new BizException("无权操作该文件", BaseError.FORBIDDEN);
+    }
+  }
 
-    private void assertFolderOwner(LogicalFile folder, OwnerType expectedOwnerType, String expectedOwnerId) {
-        assertFolderNode(folder);
-        if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
-            return;
-        }
-        boolean sameOwner = folder.getOwnerType() == expectedOwnerType && Objects.equals(folder.getOwnerId(),
-                expectedOwnerId);
-        if (!sameOwner) {
-            throw new BizException("无权操作该目录", BaseError.FORBIDDEN);
-        }
+  private void assertFolderOwner(
+      LogicalFile folder, OwnerType expectedOwnerType, String expectedOwnerId) {
+    assertFolderNode(folder);
+    if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
+      return;
     }
+    boolean sameOwner =
+        folder.getOwnerType() == expectedOwnerType
+            && Objects.equals(folder.getOwnerId(), expectedOwnerId);
+    if (!sameOwner) {
+      throw new BizException("无权操作该目录", BaseError.FORBIDDEN);
+    }
+  }
 
-    private void assertFileNode(LogicalFile file) {
-        if (file == null || !file.isFile()) {
-            throw new BizException(BaseError.NOT_FOUND);
-        }
+  private void assertFileNode(LogicalFile file) {
+    if (file == null || !file.isFile()) {
+      throw new BizException(BaseError.NOT_FOUND);
     }
+  }
 
-    private void assertFolderNode(LogicalFile folder) {
-        if (folder == null || !folder.isFolder()) {
-            throw new BizException(BaseError.NOT_FOUND);
-        }
+  private void assertFolderNode(LogicalFile folder) {
+    if (folder == null || !folder.isFolder()) {
+      throw new BizException(BaseError.NOT_FOUND);
     }
+  }
 
-    private OwnerType toDomainOwnerType(OwnerType ownerType) {
-        if (ownerType == null) {
-            return null;
-        }
-        return OwnerType.valueOf(ownerType.name());
+  private OwnerType toDomainOwnerType(OwnerType ownerType) {
+    if (ownerType == null) {
+      return null;
     }
+    return OwnerType.valueOf(ownerType.name());
+  }
 }

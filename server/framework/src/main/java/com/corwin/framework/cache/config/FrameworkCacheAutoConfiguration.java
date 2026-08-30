@@ -21,43 +21,50 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @EnableConfigurationProperties(FrameworkCacheProperties.class)
-@ConditionalOnProperty(prefix = "framework.cache", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+    prefix = "framework.cache",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 public class FrameworkCacheAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
-    public CacheKeyValidator cacheKeyValidator(FrameworkCacheProperties properties) {
-        return new CacheKeyValidator(properties);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public CacheKeyValidator cacheKeyValidator(FrameworkCacheProperties properties) {
+    return new CacheKeyValidator(properties);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LocalCacheStore localCacheStore(FrameworkCacheProperties properties) {
-        return new CaffeineLocalCacheStore(properties.getLocal());
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public LocalCacheStore localCacheStore(FrameworkCacheProperties properties) {
+    return new CaffeineLocalCacheStore(properties.getLocal());
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public LocalCacheProvider localCacheProvider(LocalCacheStore localCacheStore, CacheKeyValidator validator) {
-        return new LocalCacheProvider(localCacheStore, validator);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public LocalCacheProvider localCacheProvider(
+      LocalCacheStore localCacheStore, CacheKeyValidator validator) {
+    return new LocalCacheProvider(localCacheStore, validator);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public UnsupportedRedisCacheProvider redisCacheProvider() {
-        return new UnsupportedRedisCacheProvider();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public UnsupportedRedisCacheProvider redisCacheProvider() {
+    return new UnsupportedRedisCacheProvider();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public UnsupportedTieredCacheProvider tieredCacheProvider() {
-        return new UnsupportedTieredCacheProvider();
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public UnsupportedTieredCacheProvider tieredCacheProvider() {
+    return new UnsupportedTieredCacheProvider();
+  }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public CacheTemplate cacheTemplate(LocalCacheProvider localCacheProvider,
-            UnsupportedRedisCacheProvider redisCacheProvider, UnsupportedTieredCacheProvider tieredCacheProvider) {
-        return new DefaultCacheTemplate(localCacheProvider, redisCacheProvider, tieredCacheProvider);
-    }
+  @Bean
+  @ConditionalOnMissingBean
+  public CacheTemplate cacheTemplate(
+      LocalCacheProvider localCacheProvider,
+      UnsupportedRedisCacheProvider redisCacheProvider,
+      UnsupportedTieredCacheProvider tieredCacheProvider) {
+    return new DefaultCacheTemplate(localCacheProvider, redisCacheProvider, tieredCacheProvider);
+  }
 }

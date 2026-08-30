@@ -9,9 +9,4 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/7/7
  */
 public record RolePageReq(
-        PageRuleRequest page,
-        SortRuleRequest sort,
-        String keyword,
-        Boolean enabled
-) {
-}
+    PageRuleRequest page, SortRuleRequest sort, String keyword, Boolean enabled) {}

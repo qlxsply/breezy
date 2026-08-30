@@ -5,8 +5,4 @@ package com.corwin.reminder.application.port;
  *
  * @author Corwin 2026/4/15
  */
-public record ReminderDispatchResult(
-        Long deliveryId,
-        boolean delivered
-) {
-}
+public record ReminderDispatchResult(Long deliveryId, boolean delivered) {}

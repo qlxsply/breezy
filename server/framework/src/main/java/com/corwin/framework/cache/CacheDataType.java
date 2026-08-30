@@ -6,10 +6,10 @@ package com.corwin.framework.cache;
  * @author Corwin 2026/4/19
  */
 public enum CacheDataType {
-    STRING,
-    OBJECT,
-    HASH,
-    LIST,
-    SET,
-    SORTED_SET
+  STRING,
+  OBJECT,
+  HASH,
+  LIST,
+  SET,
+  SORTED_SET
 }

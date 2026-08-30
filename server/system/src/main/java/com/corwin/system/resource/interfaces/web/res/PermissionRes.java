@@ -9,10 +9,4 @@ import com.corwin.framework.json.JsonLongString;
  * @author Corwin 2026/4/20
  */
 public record PermissionRes(
-        @JsonLongString
-        Long id,
-        String code,
-        String name,
-        UserType userScope
-) {
-}
+    @JsonLongString Long id, String code, String name, UserType userScope) {}

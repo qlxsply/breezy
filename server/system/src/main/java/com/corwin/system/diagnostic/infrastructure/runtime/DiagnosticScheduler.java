@@ -1,11 +1,10 @@
 package com.corwin.system.diagnostic.infrastructure.runtime;
 
+import java.time.Duration;
+import java.util.concurrent.ScheduledFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * Wrapper around Spring's ThreadPoolTaskScheduler for scheduling diagnostic snapshot tasks.
@@ -16,27 +15,27 @@ import java.util.concurrent.ScheduledFuture;
 @RequiredArgsConstructor
 public class DiagnosticScheduler {
 
-    private final ThreadPoolTaskScheduler taskScheduler;
+  private final ThreadPoolTaskScheduler taskScheduler;
 
-    /**
-     * Schedules the given task to run at a fixed rate with the specified interval.
-     *
-     * @param task       the task to execute
-     * @param intervalMs the interval in milliseconds
-     * @return a ScheduledFuture for the scheduled task
-     */
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, long intervalMs) {
-        return taskScheduler.scheduleAtFixedRate(task, Duration.ofMillis(intervalMs));
-    }
+  /**
+   * Schedules the given task to run at a fixed rate with the specified interval.
+   *
+   * @param task the task to execute
+   * @param intervalMs the interval in milliseconds
+   * @return a ScheduledFuture for the scheduled task
+   */
+  public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, long intervalMs) {
+    return taskScheduler.scheduleAtFixedRate(task, Duration.ofMillis(intervalMs));
+  }
 
-    /**
-     * Cancels a previously scheduled future task.
-     *
-     * @param future the future to cancel, may be null
-     */
-    public void cancel(ScheduledFuture<?> future) {
-        if (future != null) {
-            future.cancel(false);
-        }
+  /**
+   * Cancels a previously scheduled future task.
+   *
+   * @param future the future to cancel, may be null
+   */
+  public void cancel(ScheduledFuture<?> future) {
+    if (future != null) {
+      future.cancel(false);
     }
+  }
 }

@@ -11,12 +11,9 @@ import com.corwin.framework.json.JsonLongString;
  * @author Corwin 2026/2/6
  */
 public record DatabaseSourceSimpleRes(
-        @JsonLongString
-        Long id,
-        String name,
-        DatabaseType dbType,
-        String username,
-        DatabaseSourceStatus status,
-        DatabaseSourceSourceType sourceType
-) {
-}
+    @JsonLongString Long id,
+    String name,
+    DatabaseType dbType,
+    String username,
+    DatabaseSourceStatus status,
+    DatabaseSourceSourceType sourceType) {}

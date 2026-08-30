@@ -8,17 +8,10 @@ import java.util.List;
  * @author Corwin 2026/4/16
  */
 public record NetworkInterfaceSnapshot(
-        String name,
-        String displayName,
-        boolean up,
-        boolean loopback,
-        List<String> addresses
-) {
+    String name, String displayName, boolean up, boolean loopback, List<String> addresses) {
 
-    /**
-     * Compact constructor that normalises a null addresses list to an immutable empty list.
-     */
-    public NetworkInterfaceSnapshot {
-        addresses = addresses == null ? List.of() : List.copyOf(addresses);
-    }
+  /** Compact constructor that normalises a null addresses list to an immutable empty list. */
+  public NetworkInterfaceSnapshot {
+    addresses = addresses == null ? List.of() : List.copyOf(addresses);
+  }
 }

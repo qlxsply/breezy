@@ -12,25 +12,25 @@ import java.util.Optional;
  */
 public interface CacheHashOps<T> extends CacheKeyOps {
 
-    Optional<T> get(String key, String field);
+  Optional<T> get(String key, String field);
 
-    void put(String key, String field, T value);
+  void put(String key, String field, T value);
 
-    void put(String key, String field, T value, Duration ttl);
+  void put(String key, String field, T value, Duration ttl);
 
-    Map<String, T> multiGet(String key, Collection<String> fields);
+  Map<String, T> multiGet(String key, Collection<String> fields);
 
-    void putAll(String key, Map<String, T> values);
+  void putAll(String key, Map<String, T> values);
 
-    void putAll(String key, Map<String, T> values, Duration ttl);
+  void putAll(String key, Map<String, T> values, Duration ttl);
 
-    boolean hasField(String key, String field);
+  boolean hasField(String key, String field);
 
-    boolean delete(String key, String field);
+  boolean delete(String key, String field);
 
-    long delete(String key, Collection<String> fields);
+  long delete(String key, Collection<String> fields);
 
-    Map<String, T> entries(String key);
+  Map<String, T> entries(String key);
 
-    long size(String key);
+  long size(String key);
 }

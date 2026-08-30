@@ -10,19 +10,18 @@ import com.corwin.framework.error.CacheError;
  */
 public abstract class TypeSafeValueCaster {
 
-    private TypeSafeValueCaster() {
-    }
+  private TypeSafeValueCaster() {}
 
-    public static <T> T cast(Object value, Class<T> valueType) {
-        if (value == null) {
-            return null;
-        }
-        if (!valueType.isInstance(value)) {
-            String name = valueType.getName();
-            String className = value.getClass().getName();
-            String msg = String.format("Expected value type %s but got %s", name, className);
-            throw new BizException(msg, CacheError.CACHE_VALUE_TYPE_MISMATCH);
-        }
-        return valueType.cast(value);
+  public static <T> T cast(Object value, Class<T> valueType) {
+    if (value == null) {
+      return null;
     }
+    if (!valueType.isInstance(value)) {
+      String name = valueType.getName();
+      String className = value.getClass().getName();
+      String msg = String.format("Expected value type %s but got %s", name, className);
+      throw new BizException(msg, CacheError.CACHE_VALUE_TYPE_MISMATCH);
+    }
+    return valueType.cast(value);
+  }
 }

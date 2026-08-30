@@ -1,7 +1,6 @@
 package com.corwin.system.user.interfaces.web.res;
 
 import com.corwin.framework.constant.UserType;
-
 import java.time.Instant;
 
 /**
@@ -10,13 +9,11 @@ import java.time.Instant;
  * @author Corwin 2026/4/19
  */
 public record UserProfileRes(
-        String id,
-        String username,
-        String nickname,
-        UserType userType,
-        String status,
-        boolean mustChangePassword,
-        Instant createdAt,
-        Instant updatedAt
-) {
-}
+    String id,
+    String username,
+    String nickname,
+    UserType userType,
+    String status,
+    boolean mustChangePassword,
+    Instant createdAt,
+    Instant updatedAt) {}

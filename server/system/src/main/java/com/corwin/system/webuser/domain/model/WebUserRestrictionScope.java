@@ -6,6 +6,6 @@ package com.corwin.system.webuser.domain.model;
  * @author Corwin 2026/5/11
  */
 public enum WebUserRestrictionScope {
-    LOGIN,
-    ALL
+  LOGIN,
+  ALL
 }
