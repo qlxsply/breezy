@@ -58,9 +58,8 @@ public class TaskSchedulerManager {
       Object bean = applicationContext.getBean(beanName);
       Method method = bean.getClass().getMethod(methodName);
 
-      ScheduledFuture<?> future =
-          taskScheduler.schedule(
-              () -> wrapAndExecute(code, bean, method), new CronTrigger(cronExpr));
+      ScheduledFuture<?> future = taskScheduler.schedule(
+          () -> wrapAndExecute(code, bean, method), new CronTrigger(cronExpr));
 
       scheduledTasks.put(code, future);
       log.info("[task-manager] scheduled task: {} with cron: {}", code, cronExpr);

@@ -146,6 +146,7 @@ public class DictionaryDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class DictionaryRoot {
+
     @JacksonXmlProperty(localName = "dictionary")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<DictionaryNode> dictionaries;
@@ -155,6 +156,7 @@ public class DictionaryDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class DictionaryNode {
+
     private String id;
     private String code;
     private String name;

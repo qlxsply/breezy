@@ -22,13 +22,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BootstrapSchemaSyncService {
 
-  private static final Pattern CREATE_TABLE_PATTERN =
-      Pattern.compile(
-          "(?is)create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s*\\(");
-  private static final Pattern CREATE_INDEX_PATTERN =
-      Pattern.compile(
-          "(?is)create\\s+(unique\\s+)?index\\s+([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s+on\\s+"
-              + "([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s*\\(([^;]+?)\\)\\s*;");
+  private static final Pattern CREATE_TABLE_PATTERN = Pattern.compile(
+      "(?is)create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s*\\(");
+  private static final Pattern CREATE_INDEX_PATTERN = Pattern.compile(
+      "(?is)create\\s+(unique\\s+)?index\\s+([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s+on\\s+"
+          + "([`\"\\[]?[A-Za-z0-9_.$]+[`\"\\]]?)\\s*\\(([^;]+?)\\)\\s*;");
 
   private final DataSource dataSource;
   private final BootstrapSqlTemplateService sqlTemplateService;
@@ -37,8 +35,7 @@ public class BootstrapSchemaSyncService {
 
   public BootstrapTaskReport run(boolean dryRun) {
     long startedAt = System.currentTimeMillis();
-    List<BootstrapSqlTemplateService.ScriptResource> scripts =
-        sqlTemplateService.listSchemaScripts();
+    List<BootstrapSqlTemplateService.ScriptResource> scripts = sqlTemplateService.listSchemaScripts();
 
     StringBuilder digestSource = new StringBuilder("schema\n");
     LinkedHashMap<String, TableDefinition> expectedTables = new LinkedHashMap<>();
@@ -61,9 +58,8 @@ public class BootstrapSchemaSyncService {
     DatabaseType databaseType = databaseTypeResolver.resolveCurrentDatabaseType();
 
     try {
-      SchemaInspectionResult inspectionResult =
-          BootstrapJdbcTransactionSupport.execute(
-              dataSource, connection -> inspectSchema(connection, expectedTables));
+      SchemaInspectionResult inspectionResult = BootstrapJdbcTransactionSupport.execute(
+          dataSource, connection -> inspectSchema(connection, expectedTables));
       SchemaDiffSummary summary = inspectionResult.summary();
 
       for (SchemaAction action : inspectionResult.actions()) {
@@ -83,8 +79,7 @@ public class BootstrapSchemaSyncService {
           continue;
         }
 
-        boolean recreate =
-            consolePrompt.confirm("表 " + action.tableName() + " 结构不一致，是否删除旧表并重新创建？", false);
+        boolean recreate = consolePrompt.confirm("表 " + action.tableName() + " 结构不一致，是否删除旧表并重新创建？", false);
         if (!recreate) {
           summary.skippedRecreateTables.add(action.tableName());
           continue;
@@ -282,8 +277,7 @@ public class BootstrapSchemaSyncService {
       TableDefinition expected,
       String actualTableName)
       throws Exception {
-    Map<String, ActualColumn> actualColumns =
-        loadActualColumns(connection, metaData, actualTableName);
+    Map<String, ActualColumn> actualColumns = loadActualColumns(connection, metaData, actualTableName);
     List<String> mismatches = new ArrayList<>();
     LinkedHashMap<String, ColumnDefinition> expectedByName = new LinkedHashMap<>();
     for (ColumnDefinition column : expected.columns()) {
@@ -357,8 +351,7 @@ public class BootstrapSchemaSyncService {
       TableDefinition expected,
       String actualTableName)
       throws Exception {
-    Map<String, ActualIndex> actualIndexes =
-        loadActualIndexes(connection, metaData, actualTableName);
+    Map<String, ActualIndex> actualIndexes = loadActualIndexes(connection, metaData, actualTableName);
     List<String> mismatches = new ArrayList<>();
     for (IndexDefinition expectedIndex : expected.indexes()) {
       ActualIndex actualIndex = actualIndexes.get(expectedIndex.lookupName());
@@ -393,7 +386,7 @@ public class BootstrapSchemaSyncService {
     String catalog = connection.getCatalog();
     String schema = connection.getSchema();
     LinkedHashMap<String, String> tables = new LinkedHashMap<>();
-    try (ResultSet rs = metaData.getTables(catalog, schema, "%", new String[] {"TABLE"})) {
+    try (ResultSet rs = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"})) {
       while (rs.next()) {
         String name = rs.getString("TABLE_NAME");
         tables.put(normalizeTableLookup(name), name);
@@ -402,7 +395,7 @@ public class BootstrapSchemaSyncService {
     if (!tables.isEmpty()) {
       return tables;
     }
-    try (ResultSet rs = metaData.getTables(null, null, "%", new String[] {"TABLE"})) {
+    try (ResultSet rs = metaData.getTables(null, null, "%", new String[]{"TABLE"})) {
       while (rs.next()) {
         String name = rs.getString("TABLE_NAME");
         tables.put(normalizeTableLookup(name), name);
@@ -489,9 +482,8 @@ public class BootstrapSchemaSyncService {
           continue;
         }
         boolean unique = !rs.getBoolean("NON_UNIQUE");
-        ActualIndexBuilder builder =
-            builders.computeIfAbsent(
-                normalizeLookup(indexName), key -> new ActualIndexBuilder(indexName, unique));
+        ActualIndexBuilder builder = builders.computeIfAbsent(
+            normalizeLookup(indexName), key -> new ActualIndexBuilder(indexName, unique));
         builder.addColumn(rs.getShort("ORDINAL_POSITION"), columnName);
       }
     }
@@ -499,8 +491,7 @@ public class BootstrapSchemaSyncService {
 
   private void dropTable(Connection connection, DatabaseType databaseType, String tableName)
       throws SQLException {
-    String sql =
-        "drop table if exists " + BootstrapJdbcUrlSupport.quoteIdentifier(databaseType, tableName);
+    String sql = "drop table if exists " + BootstrapJdbcUrlSupport.quoteIdentifier(databaseType, tableName);
     try (var statement = connection.createStatement()) {
       statement.execute(sql);
     }
@@ -589,8 +580,7 @@ public class BootstrapSchemaSyncService {
   }
 
   private String normalizeExpectedType(String typeExpression) {
-    String normalized =
-        Objects.requireNonNull(normalizeLookup(typeExpression)).replaceAll("\\s+", "");
+    String normalized = Objects.requireNonNull(normalizeLookup(typeExpression)).replaceAll("\\s+", "");
     return normalized.replace("unsigned", "");
   }
 
@@ -602,9 +592,9 @@ public class BootstrapSchemaSyncService {
           Types.NCHAR,
           Types.LONGVARCHAR,
           Types.LONGNVARCHAR ->
-          normalizeLookup(typeName) + "(" + size + ")";
+        normalizeLookup(typeName) + "(" + size + ")";
       case Types.DECIMAL, Types.NUMERIC ->
-          normalizeLookup(typeName) + "(" + size + "," + scale + ")";
+        normalizeLookup(typeName) + "(" + size + "," + scale + ")";
       case Types.TIMESTAMP,
           Types.TIMESTAMP_WITH_TIMEZONE,
           Types.DATE,
@@ -624,7 +614,7 @@ public class BootstrapSchemaSyncService {
           Types.DOUBLE,
           Types.FLOAT,
           Types.REAL ->
-          normalizeLookup(typeName);
+        normalizeLookup(typeName);
       default -> normalizeLookup(typeName);
     };
   }
@@ -650,25 +640,29 @@ public class BootstrapSchemaSyncService {
     return tableName.toLowerCase(Locale.ROOT);
   }
 
-  private record MatchIndex(int startIndex, String rawTableName, int openParenIndex) {}
+  private record MatchIndex(int startIndex, String rawTableName, int openParenIndex) {
+  }
 
   private record TableDefinition(
       String name,
       List<ColumnDefinition> columns,
       List<IndexDefinition> indexes,
       String createStatement) {
+
     private String lookupName() {
       return normalizeTableLookup(name);
     }
   }
 
   private record ColumnDefinition(String name, String normalizedType, boolean nullable, int order) {
+
     private String lookupName() {
       return normalizeLookup(name);
     }
   }
 
   private record IndexDefinition(String name, boolean unique, List<String> columns) {
+
     private String lookupName() {
       return normalizeLookup(name);
     }
@@ -679,18 +673,21 @@ public class BootstrapSchemaSyncService {
   }
 
   private record ActualColumn(String name, String normalizedType, boolean nullable, int order) {
+
     private String lookupName() {
       return normalizeLookup(name);
     }
   }
 
   private record ActualIndex(String name, boolean unique, List<String> columns) {
+
     private List<String> lookupColumns() {
       return columns.stream().map(BootstrapSchemaSyncService::normalizeLookup).toList();
     }
   }
 
   private static final class ActualIndexBuilder {
+
     private final String name;
     private final boolean unique;
     private final Map<Short, String> orderedColumns = new LinkedHashMap<>();
@@ -709,16 +706,16 @@ public class BootstrapSchemaSyncService {
     }
 
     private ActualIndex build() {
-      List<String> columns =
-          orderedColumns.entrySet().stream()
-              .sorted(Map.Entry.comparingByKey())
-              .map(Map.Entry::getValue)
-              .toList();
+      List<String> columns = orderedColumns.entrySet().stream()
+          .sorted(Map.Entry.comparingByKey())
+          .map(Map.Entry::getValue)
+          .toList();
       return new ActualIndex(name, unique, columns);
     }
   }
 
   private static final class SchemaDiffSummary {
+
     private final List<String> missingTables = new ArrayList<>();
     private final List<String> mismatchTables = new ArrayList<>();
     private final List<String> mismatchMessages = new ArrayList<>();
@@ -751,14 +748,16 @@ public class BootstrapSchemaSyncService {
     }
   }
 
-  private record SchemaInspectionResult(SchemaDiffSummary summary, List<SchemaAction> actions) {}
+  private record SchemaInspectionResult(SchemaDiffSummary summary, List<SchemaAction> actions) {
+  }
 
   private record SchemaAction(
       SchemaActionType type,
       String tableName,
       String actualTableName,
       String createStatement,
-      List<String> mismatches) {}
+      List<String> mismatches) {
+  }
 
   private enum SchemaActionType {
     CREATE,

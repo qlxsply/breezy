@@ -8,4 +8,5 @@ import com.corwin.reminder.domain.model.TodoTaskStatus;
  * @author Corwin 2026/1/12
  */
 public record TodoPageReq(
-    PageRuleRequest page, SortRuleRequest sort, TodoTaskStatus status, String contentLike) {}
+    PageRuleRequest page, SortRuleRequest sort, TodoTaskStatus status, String contentLike) {
+}

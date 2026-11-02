@@ -11,14 +11,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 /**
  * Configuration for the application-wide asynchronous thread pool.
  *
- * <p>Provides a unified {@link java.util.concurrent.Executor} for {@code @Async} methods and manual
+ * <p>
+ * Provides a unified {@link java.util.concurrent.Executor} for {@code @Async} methods and manual
  * async task submission with the following features:
  *
  * <ul>
- *   <li>Automatic Ctx + MDC context propagation via {@link ContextCopyingTaskDecorator}
- *   <li>Graceful shutdown waiting for in-flight tasks to complete
- *   <li>{@link java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy CallerRunsPolicy} when the
- *       queue is full
+ * <li>Automatic Ctx + MDC context propagation via {@link ContextCopyingTaskDecorator}
+ * <li>Graceful shutdown waiting for in-flight tasks to complete
+ * <li>{@link java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy CallerRunsPolicy} when the
+ * queue is full
  * </ul>
  *
  * @author Corwin 2026/3/30
@@ -37,7 +38,8 @@ public class AsyncThreadPoolConfig {
   /**
    * The default async thread pool bean named {@code "taskExecutor"}.
    *
-   * <p>Core pool size = 4, max pool size = 16, queue capacity = 2000, with {@link
+   * <p>
+   * Core pool size = 4, max pool size = 16, queue capacity = 2000, with {@link
    * java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy} rejection policy.
    *
    * @param contextCopyingTaskDecorator the context-copying decorator

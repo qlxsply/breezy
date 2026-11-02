@@ -8,4 +8,5 @@ import com.corwin.system.file.domain.model.PhysicalFile;
  *
  * @author Corwin 2026/4/15
  */
-public record LogicalPhysicalFileView(LogicalFile logicalFile, PhysicalFile physicalFile) {}
+public record LogicalPhysicalFileView(LogicalFile logicalFile, PhysicalFile physicalFile) {
+}

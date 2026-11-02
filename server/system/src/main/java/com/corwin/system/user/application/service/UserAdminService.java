@@ -88,17 +88,16 @@ public class UserAdminService {
     UserStatus status = UserStatus.ENABLED;
     String hash = BCrypt.hashpw(cmd.password(), BCrypt.gensalt());
 
-    User user =
-        new User(
-            UserType.ADMIN,
-            username,
-            nickname,
-            hash,
-            "bcrypt",
-            status,
-            false,
-            HighDate.mockInstant(),
-            operator());
+    User user = new User(
+        UserType.ADMIN,
+        username,
+        nickname,
+        hash,
+        "bcrypt",
+        status,
+        false,
+        HighDate.mockInstant(),
+        operator());
     User saved = userRepository.save(user);
     createUserRoles(saved.getId(), cmd.roleIds());
     return saved;
@@ -114,8 +113,7 @@ public class UserAdminService {
   @Transactional
   public User update(Long id, UpdateUserCommand cmd) {
     BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
-    User user =
-        userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    User user = userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     String nickname = normalizeNickname(cmd.nickname());
     UserStatus nextStatus = cmd.status() == null ? user.getUserStatus() : cmd.status();
     user.updateNickname(nickname, operator());
@@ -131,8 +129,7 @@ public class UserAdminService {
   @Transactional
   public void resetPassword(Long id) {
     BizAssert.state(!DefaultUser.isReserved(id), BaseError.FORBIDDEN);
-    User user =
-        userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    User user = userRepository.findById(id).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     String hash = BCrypt.hashpw(DEFAULT_RESET_PASSWORD, BCrypt.gensalt());
     user.resetPassword(hash, "", operator());
     userRepository.save(user);
@@ -150,8 +147,7 @@ public class UserAdminService {
     BizAssert.notNull(cmd.status(), BaseError.MISSING_PARAMETER);
     for (Long userId : normalizeUserIds(cmd.userIds())) {
       BizAssert.state(!DefaultUser.isReserved(userId), BaseError.FORBIDDEN);
-      User user =
-          userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+      User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
       user.updateStatus(cmd.status(), operator());
       userRepository.save(user);
     }

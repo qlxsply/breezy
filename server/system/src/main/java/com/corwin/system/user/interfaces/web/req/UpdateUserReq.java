@@ -12,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateUserReq {
+
   private String nickname;
   private UserStatus status;
 }

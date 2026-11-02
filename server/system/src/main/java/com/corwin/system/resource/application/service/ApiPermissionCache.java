@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 /**
  * In-memory cache for API permission sets keyed by role ID.
  *
- * <p>Uses a {@link ConcurrentHashMap} to store and retrieve permission code sets, with support for
+ * <p>
+ * Uses a {@link ConcurrentHashMap} to store and retrieve permission code sets, with support for
  * lazy loading via a {@link Supplier} and selective invalidation.
  *
  * @author Corwin 2026/1/23

@@ -10,4 +10,5 @@ public record SnapshotSelectableObjectRes(
     String tableName,
     String tableSchema,
     String tableType,
-    String alias) {}
+    String alias) {
+}

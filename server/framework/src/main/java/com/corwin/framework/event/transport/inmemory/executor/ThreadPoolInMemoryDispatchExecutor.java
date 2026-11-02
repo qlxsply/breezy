@@ -9,12 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Thread-pool-based in-memory dispatch executor.
  *
- * <p>Features:
+ * <p>
+ * Features:
  *
  * <ul>
- *   <li>Configurable core/max threads, queue capacity, and thread name prefix.
- *   <li>CallerRunsPolicy rejection for backpressure under burst traffic.
- *   <li>Graceful shutdown with timeout, then forceful interrupt.
+ * <li>Configurable core/max threads, queue capacity, and thread name prefix.
+ * <li>CallerRunsPolicy rejection for backpressure under burst traffic.
+ * <li>Graceful shutdown with timeout, then forceful interrupt.
  * </ul>
  *
  * @author Corwin 2026/4/9
@@ -27,9 +28,8 @@ public class ThreadPoolInMemoryDispatchExecutor implements InMemoryDispatchExecu
 
   public ThreadPoolInMemoryDispatchExecutor(AsyncEventProperties properties) {
     Objects.requireNonNull(properties, "properties required");
-    this.config =
-        Objects.requireNonNull(
-            properties.getInMemory().getThreadPool(), "threadPool config required");
+    this.config = Objects.requireNonNull(
+        properties.getInMemory().getThreadPool(), "threadPool config required");
   }
 
   /** 按配置创建并启动线程池。 */
@@ -44,15 +44,14 @@ public class ThreadPoolInMemoryDispatchExecutor implements InMemoryDispatchExecu
     BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(queueCapacity);
     ThreadFactory threadFactory = new NamedThreadFactory(resolveThreadPrefix());
     RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-    executor =
-        new ThreadPoolExecutor(
-            coreSize,
-            maxSize,
-            Math.max(0L, config.getKeepAliveSeconds()),
-            TimeUnit.SECONDS,
-            queue,
-            threadFactory,
-            rejectedExecutionHandler);
+    executor = new ThreadPoolExecutor(
+        coreSize,
+        maxSize,
+        Math.max(0L, config.getKeepAliveSeconds()),
+        TimeUnit.SECONDS,
+        queue,
+        threadFactory,
+        rejectedExecutionHandler);
     executor.allowCoreThreadTimeOut(false);
     log.info(
         "Async event thread-pool executor started. coreSize={}, maxSize={}, queueCapacity={}",

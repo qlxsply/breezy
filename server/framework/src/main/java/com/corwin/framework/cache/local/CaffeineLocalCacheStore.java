@@ -162,12 +162,11 @@ public class CaffeineLocalCacheStore implements LocalCacheStore, InitializingBea
     if (!properties.getCleanup().isEnabled()) {
       return;
     }
-    ThreadFactory threadFactory =
-        runnable -> {
-          Thread thread = new Thread(runnable, "framework-cache-cleanup");
-          thread.setDaemon(true);
-          return thread;
-        };
+    ThreadFactory threadFactory = runnable -> {
+      Thread thread = new Thread(runnable, "framework-cache-cleanup");
+      thread.setDaemon(true);
+      return thread;
+    };
     cleanupExecutor = Executors.newSingleThreadScheduledExecutor(threadFactory);
     long intervalMillis = properties.getCleanup().getInterval().toMillis();
     cleanupExecutor.scheduleWithFixedDelay(
@@ -185,9 +184,8 @@ public class CaffeineLocalCacheStore implements LocalCacheStore, InitializingBea
   private void validateDataType(String key, CacheDataType expectedType, CacheEntry entry) {
     if (entry.getDataType() != expectedType) {
       CacheDataType dataType = entry.getDataType();
-      String msg =
-          String.format(
-              "Cache key '%s' already exists as %s, expected %s", key, dataType, expectedType);
+      String msg = String.format(
+          "Cache key '%s' already exists as %s, expected %s", key, dataType, expectedType);
       throw new BizException(msg, CacheError.CACHE_DATA_TYPE_MISMATCH);
     }
   }

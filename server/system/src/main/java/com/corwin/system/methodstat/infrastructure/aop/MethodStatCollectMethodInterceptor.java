@@ -64,14 +64,13 @@ public class MethodStatCollectMethodInterceptor implements MethodInterceptor {
     } finally {
       long finishedAt = HighDate.realTimestampMillis();
       long durationMillis = Math.max(0L, finishedAt - startedAt);
-      MethodStatInvocationEvent event =
-          new MethodStatInvocationEvent(
-              metadata.key(),
-              startedAt,
-              finishedAt,
-              durationMillis,
-              success,
-              throwable == null ? null : throwable.getClass().getName());
+      MethodStatInvocationEvent event = new MethodStatInvocationEvent(
+          metadata.key(),
+          startedAt,
+          finishedAt,
+          durationMillis,
+          success,
+          throwable == null ? null : throwable.getClass().getName());
       publishSafely(event);
     }
   }

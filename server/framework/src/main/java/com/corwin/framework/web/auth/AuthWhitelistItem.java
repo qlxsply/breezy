@@ -7,4 +7,5 @@ package com.corwin.framework.web.auth;
  * @param pattern the path pattern to match against
  * @author Corwin 2026/3/23
  */
-public record AuthWhitelistItem(String type, String pattern) {}
+public record AuthWhitelistItem(String type, String pattern) {
+}

@@ -10,7 +10,8 @@ import java.util.Optional;
 /**
  * Repository interface for {@link MessageDelivery} persistence operations.
  *
- * <p>Provides methods for querying message deliveries by user, notification, status, and ID range.
+ * <p>
+ * Provides methods for querying message deliveries by user, notification, status, and ID range.
  *
  * @author Corwin 2026/3/19
  */

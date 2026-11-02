@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 /**
  * Marker annotation for internal scheduled task methods.
  *
- * <p>When combined with {@link org.springframework.scheduling.annotation.Scheduled @Scheduled},
+ * <p>
+ * When combined with {@link org.springframework.scheduling.annotation.Scheduled @Scheduled},
  * provides metadata (code, name, description) for monitoring and management.
  *
  * @author Corwin 2026/3/30

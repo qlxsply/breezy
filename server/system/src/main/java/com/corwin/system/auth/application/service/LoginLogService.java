@@ -63,8 +63,7 @@ public class LoginLogService {
     PageSpec resolved = PageSpecSorts.apply(spec);
     boolean hasStart = startAt != null;
     boolean hasEnd = endAt != null;
-    LoginLogPageQuery query =
-        new LoginLogPageQuery(account, startAt, hasStart && hasEnd, endAt, List.of());
+    LoginLogPageQuery query = new LoginLogPageQuery(account, startAt, hasStart && hasEnd, endAt, List.of());
     return loginLogRepository.pageByQuery(query, resolved);
   }
 
@@ -72,13 +71,12 @@ public class LoginLogService {
   public PageData<LoginEvent> pageOwnLoginActivities(String userAccount, PageSpec spec) {
     String account = StrUtil.trimToNull(userAccount);
     PageSpec resolved = withDefaultSort(spec);
-    LoginLogPageQuery query =
-        new LoginLogPageQuery(
-            account,
-            null,
-            false,
-            null,
-            List.of(LoginEventType.LOGIN_SUCCESS, LoginEventType.LOGOUT));
+    LoginLogPageQuery query = new LoginLogPageQuery(
+        account,
+        null,
+        false,
+        null,
+        List.of(LoginEventType.LOGIN_SUCCESS, LoginEventType.LOGOUT));
     return loginLogRepository.pageByQuery(query, resolved);
   }
 
@@ -89,24 +87,22 @@ public class LoginLogService {
       return List.of();
     }
     int safeLimit = Math.clamp(limit, 1, 50);
-    PageSpec spec =
-        new PageSpec(
-            1, Math.max(safeLimit, 50), List.of(new SortSpec("occurred_at", SortDirection.DESC)));
+    PageSpec spec = new PageSpec(
+        1, Math.max(safeLimit, 50), List.of(new SortSpec("occurred_at", SortDirection.DESC)));
     return pageOwnLoginActivities(account, spec).elements().stream().limit(safeLimit).toList();
   }
 
   private void save(
       LoginEventType event, boolean success, Long userId, String account, String message) {
     try {
-      LoginEvent logEntry =
-          new LoginEvent(
-              userId,
-              StrUtil.trimToNull(account),
-              event,
-              success,
-              CtxUtil.getClientIp(),
-              StrUtil.trimToNull(message),
-              buildRemark());
+      LoginEvent logEntry = new LoginEvent(
+          userId,
+          StrUtil.trimToNull(account),
+          event,
+          success,
+          CtxUtil.getClientIp(),
+          StrUtil.trimToNull(message),
+          buildRemark());
       loginLogRepository.save(logEntry);
     } catch (RuntimeException ex) {
       log.warn("Failed to save login log: {}", ex.getMessage());

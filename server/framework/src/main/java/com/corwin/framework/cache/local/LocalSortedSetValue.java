@@ -185,8 +185,8 @@ public final class LocalSortedSetValue {
     lock.readLock().lock();
     try {
       List<Object> result = new ArrayList<>();
-      for (Map.Entry<Double, LinkedHashSet<Object>> entry :
-          scoreMembers.subMap(minScore, true, maxScore, true).entrySet()) {
+      for (Map.Entry<Double, LinkedHashSet<Object>> entry : scoreMembers.subMap(minScore, true, maxScore, true)
+          .entrySet()) {
         result.addAll(entry.getValue());
       }
       return result;
@@ -199,8 +199,7 @@ public final class LocalSortedSetValue {
     lock.readLock().lock();
     try {
       long count = 0L;
-      for (LinkedHashSet<Object> members :
-          scoreMembers.subMap(minScore, true, maxScore, true).values()) {
+      for (LinkedHashSet<Object> members : scoreMembers.subMap(minScore, true, maxScore, true).values()) {
         count += members.size();
       }
       return count;

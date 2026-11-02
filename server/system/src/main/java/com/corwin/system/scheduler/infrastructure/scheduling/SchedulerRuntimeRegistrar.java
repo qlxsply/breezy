@@ -61,16 +61,14 @@ public class SchedulerRuntimeRegistrar {
   public void register(String jobId) {
     cancel(jobId);
 
-    SchedulerJobDefinition definition =
-        definitionRepository
-            .findById(jobId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    SchedulerJobDefinition definition = definitionRepository
+        .findById(jobId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     if (definition.isDeleted() || !definition.isEnabled()) {
       return;
     }
 
-    SchedulerJobHandler<?> handler =
-        handlerRegistry.get(new HandlerKey(definition.getHandlerKey())).orElse(null);
+    SchedulerJobHandler<?> handler = handlerRegistry.get(new HandlerKey(definition.getHandlerKey())).orElse(null);
     if (handler == null) {
       markInvalid(jobId, "scheduler handler not found: " + definition.getHandlerKey());
       return;
@@ -79,40 +77,34 @@ public class SchedulerRuntimeRegistrar {
     ScheduleRule scheduleRule;
     JobPayload payload;
     try {
-      scheduleRule =
-          serializer.deserializeScheduleRule(
-              definition.getScheduleRuleBody(), definition.getScheduleRuleType());
-      payload =
-          serializer.deserializePayload(definition.getPayloadBody(), definition.getPayloadType());
+      scheduleRule = serializer.deserializeScheduleRule(
+          definition.getScheduleRuleBody(), definition.getScheduleRuleType());
+      payload = serializer.deserializePayload(definition.getPayloadBody(), definition.getPayloadType());
     } catch (Exception ex) {
       markInvalid(jobId, ex.getMessage());
       return;
     }
 
     Instant nextFireTime = ScheduleRuleTrigger.firstExecution(scheduleRule);
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
     runtime.markScheduled(nextFireTime);
     runtimeRepository.save(runtime);
 
-    ReentrantLock lock =
-        definition.isAllowConcurrent()
-            ? null
-            : locks.computeIfAbsent(jobId, key -> new ReentrantLock());
-    SchedulerJobExecutionRunner runner =
-        new SchedulerJobExecutionRunner(
-            jobId,
-            handler,
-            payload,
-            scheduleRule,
-            SchedulerTriggerType.SCHEDULED,
-            runtimeRepository,
-            executionRepository,
-            lock);
-    ScheduledFuture<?> future =
-        schedulerJobTaskScheduler.schedule(runner, new ScheduleRuleTrigger(scheduleRule));
+    ReentrantLock lock = definition.isAllowConcurrent()
+        ? null
+        : locks.computeIfAbsent(jobId, key -> new ReentrantLock());
+    SchedulerJobExecutionRunner runner = new SchedulerJobExecutionRunner(
+        jobId,
+        handler,
+        payload,
+        scheduleRule,
+        SchedulerTriggerType.SCHEDULED,
+        runtimeRepository,
+        executionRepository,
+        lock);
+    ScheduledFuture<?> future = schedulerJobTaskScheduler.schedule(runner, new ScheduleRuleTrigger(scheduleRule));
     if (future != null) {
       futures.put(jobId, future);
     }
@@ -128,25 +120,20 @@ public class SchedulerRuntimeRegistrar {
 
   /** Triggers a job execution immediately (manual trigger). */
   public void triggerNow(String jobId) {
-    SchedulerJobDefinition definition =
-        definitionRepository
-            .findById(jobId)
-            .filter(item -> !item.isDeleted())
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    SchedulerJobDefinition definition = definitionRepository
+        .findById(jobId)
+        .filter(item -> !item.isDeleted())
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
 
-    SchedulerJobHandler<?> handler =
-        handlerRegistry
-            .get(new HandlerKey(definition.getHandlerKey()))
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
-    ScheduleRule scheduleRule =
-        serializer.deserializeScheduleRule(
-            definition.getScheduleRuleBody(), definition.getScheduleRuleType());
-    JobPayload payload =
-        serializer.deserializePayload(definition.getPayloadBody(), definition.getPayloadType());
-    ReentrantLock lock =
-        definition.isAllowConcurrent()
-            ? null
-            : locks.computeIfAbsent(jobId, key -> new ReentrantLock());
+    SchedulerJobHandler<?> handler = handlerRegistry
+        .get(new HandlerKey(definition.getHandlerKey()))
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    ScheduleRule scheduleRule = serializer.deserializeScheduleRule(
+        definition.getScheduleRuleBody(), definition.getScheduleRuleType());
+    JobPayload payload = serializer.deserializePayload(definition.getPayloadBody(), definition.getPayloadType());
+    ReentrantLock lock = definition.isAllowConcurrent()
+        ? null
+        : locks.computeIfAbsent(jobId, key -> new ReentrantLock());
     schedulerJobTaskScheduler.execute(
         new SchedulerJobExecutionRunner(
             jobId,
@@ -161,17 +148,15 @@ public class SchedulerRuntimeRegistrar {
 
   /** Recovers and registers all enabled, non-deleted jobs (called at startup). */
   public void recoverAll() {
-    for (SchedulerJobDefinition definition :
-        definitionRepository.findAllByEnabledTrueAndDeletedFalse()) {
+    for (SchedulerJobDefinition definition : definitionRepository.findAllByEnabledTrueAndDeletedFalse()) {
       register(definition.getJobId());
     }
   }
 
   private void markInvalid(String jobId, String message) {
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
     runtime.markInvalid(message);
     runtimeRepository.save(runtime);
   }

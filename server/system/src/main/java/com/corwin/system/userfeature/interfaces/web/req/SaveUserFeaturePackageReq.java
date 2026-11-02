@@ -22,4 +22,5 @@ public record SaveUserFeaturePackageReq(
     String description,
     boolean enabled,
     boolean defaultPackage,
-    List<ApplicationAccessReq> applicationAccesses) {}
+    List<ApplicationAccessReq> applicationAccesses) {
+}

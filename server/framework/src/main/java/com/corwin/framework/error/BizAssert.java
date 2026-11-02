@@ -9,7 +9,8 @@ import java.util.Collection;
  */
 public abstract class BizAssert {
 
-  private BizAssert() {}
+  private BizAssert() {
+  }
 
   /** Asserts that the expression is {@code true}. */
   public static void state(boolean expression, ErrorCode errorCode) {

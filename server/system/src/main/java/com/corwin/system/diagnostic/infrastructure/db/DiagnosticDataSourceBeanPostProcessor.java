@@ -43,9 +43,8 @@ public class DiagnosticDataSourceBeanPostProcessor implements BeanPostProcessor 
       dbPoolStateCollector.register(beanName, dataSource);
       return bean;
     }
-    DiagnosticMonitoringDataSource wrapped =
-        new DiagnosticMonitoringDataSource(
-            beanName, dataSource, runtimeManager, sqlExecutionObserver);
+    DiagnosticMonitoringDataSource wrapped = new DiagnosticMonitoringDataSource(
+        beanName, dataSource, runtimeManager, sqlExecutionObserver);
     dbPoolStateCollector.register(beanName, wrapped);
     return wrapped;
   }

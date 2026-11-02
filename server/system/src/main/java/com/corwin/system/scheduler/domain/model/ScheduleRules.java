@@ -17,7 +17,8 @@ import java.util.Set;
  */
 public final class ScheduleRules {
 
-  private ScheduleRules() {}
+  private ScheduleRules() {
+  }
 
   /** Creates a one-time execution rule. */
   public static OnceRule once(Instant executeAt) {

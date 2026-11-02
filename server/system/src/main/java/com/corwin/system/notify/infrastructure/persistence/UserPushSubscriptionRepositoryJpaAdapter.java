@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link UserPushSubscriptionRepository}.
  *
- * <p>Delegates persistence operations to {@link UserPushSubscriptionJpaRepository}.
+ * <p>
+ * Delegates persistence operations to {@link UserPushSubscriptionJpaRepository}.
  *
  * @author Corwin 2026/3/19
  */

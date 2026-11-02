@@ -17,7 +17,8 @@ import lombok.Getter;
 /**
  * API metadata entity.
  *
- * <p>Stores runtime information about registered API endpoints, including their module, protocol,
+ * <p>
+ * Stores runtime information about registered API endpoints, including their module, protocol,
  * HTTP method, path pattern, access control attributes, audit configuration, and sort options.
  *
  * @author Corwin 2026/1/23
@@ -27,13 +28,13 @@ import lombok.Getter;
 @Table(
     name = "sys_api",
     indexes = {
-      @Index(
-          name = "idx_sys_api_unique",
-          columnList = "module,protocol,http_method,path_pattern",
-          unique = true),
-      @Index(name = "idx_sys_api_module", columnList = "module"),
-      @Index(name = "idx_sys_api_path", columnList = "module,http_method,path_pattern"),
-      @Index(name = "idx_sys_api_access_type", columnList = "access_type")
+        @Index(
+            name = "idx_sys_api_unique",
+            columnList = "module,protocol,http_method,path_pattern",
+            unique = true),
+        @Index(name = "idx_sys_api_module", columnList = "module"),
+        @Index(name = "idx_sys_api_path", columnList = "module,http_method,path_pattern"),
+        @Index(name = "idx_sys_api_access_type", columnList = "access_type")
     })
 public class Api {
 
@@ -118,7 +119,8 @@ public class Api {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected Api() {}
+  protected Api() {
+  }
 
   /**
    * Creates a new API metadata record.

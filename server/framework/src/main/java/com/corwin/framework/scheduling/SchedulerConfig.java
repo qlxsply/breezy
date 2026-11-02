@@ -9,11 +9,13 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 /**
  * Binds the custom {@link ThreadPoolTaskScheduler} to Spring's {@code @Scheduled} infrastructure.
  *
- * <p>Spring defaults to a single-threaded scheduler; this configuration replaces it with a
+ * <p>
+ * Spring defaults to a single-threaded scheduler; this configuration replaces it with a
  * multi-threaded pool defined in {@link SchedulerThreadPoolConfig}. This class only establishes the
  * binding — the pool lifecycle is managed externally.
  *
- * <p>Scheduled-task threads do <b>not</b> inherit HTTP request context; {@link
+ * <p>
+ * Scheduled-task threads do <b>not</b> inherit HTTP request context; {@link
  * SchedulerTaskDecorator} initializes a fresh system context per execution.
  *
  * @author Corwin 2026/3/30

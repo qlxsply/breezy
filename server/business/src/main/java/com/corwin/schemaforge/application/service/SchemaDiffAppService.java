@@ -41,18 +41,15 @@ public class SchemaDiffAppService {
     DatabaseSource referenceDataSource = resolveDatabaseSource(referenceManagedDatabase);
     DatabaseSource targetDataSource = resolveDatabaseSource(targetManagedDatabase);
 
-    try (Connection referenceConnection =
-            jdbcConnectionFactory.openConnection(referenceDataSource);
+    try (Connection referenceConnection = jdbcConnectionFactory.openConnection(referenceDataSource);
         Connection targetConnection = jdbcConnectionFactory.openConnection(targetDataSource)) {
-      DatabaseScopeState referenceScope =
-          applyManagedDatabaseScope(
-              referenceConnection, referenceManagedDatabase, referenceDataSource);
-      DatabaseScopeState targetScope =
-          applyManagedDatabaseScope(targetConnection, targetManagedDatabase, targetDataSource);
+      DatabaseScopeState referenceScope = applyManagedDatabaseScope(
+          referenceConnection, referenceManagedDatabase, referenceDataSource);
+      DatabaseScopeState targetScope = applyManagedDatabaseScope(targetConnection, targetManagedDatabase,
+          targetDataSource);
 
       try {
-        LiquibaseEngine.CompareResult compareResult =
-            liquibaseEngine.compare(referenceConnection, targetConnection);
+        LiquibaseEngine.CompareResult compareResult = liquibaseEngine.compare(referenceConnection, targetConnection);
         return new DiffResultView(
             compareResult.addedCount(),
             compareResult.removedCount(),
@@ -72,9 +69,8 @@ public class SchemaDiffAppService {
     return databaseSchemaRepository
         .findById(managedDatabaseId)
         .orElseThrow(
-            () ->
-                new BizException(
-                    "Managed database not found: " + managedDatabaseId, BaseError.NOT_FOUND));
+            () -> new BizException(
+                "Managed database not found: " + managedDatabaseId, BaseError.NOT_FOUND));
   }
 
   private DatabaseSource resolveDatabaseSource(DatabaseSchema managedDatabase) {
@@ -151,6 +147,7 @@ public class SchemaDiffAppService {
       boolean usesCatalog,
       String originalCatalog,
       String originalSchema) {
+
     private static DatabaseScopeState none() {
       return new DatabaseScopeState(false, false, false, null, null);
     }

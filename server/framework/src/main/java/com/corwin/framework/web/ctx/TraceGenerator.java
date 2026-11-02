@@ -5,12 +5,13 @@ import java.security.SecureRandom;
 /**
  * Trace / Span ID generator using Base32 (no separators, URL-safe).
  *
- * <p>Characteristics:
+ * <p>
+ * Characteristics:
  *
  * <ul>
- *   <li>Fixed length
- *   <li>High randomness ({@link SecureRandom})
- *   <li>Lowercase letters + digits only (ambiguous characters excluded)
+ * <li>Fixed length
+ * <li>High randomness ({@link SecureRandom})
+ * <li>Lowercase letters + digits only (ambiguous characters excluded)
  * </ul>
  *
  * @author Corwin
@@ -22,7 +23,8 @@ public final class TraceGenerator {
 
   private static final SecureRandom RANDOM = new SecureRandom();
 
-  private TraceGenerator() {}
+  private TraceGenerator() {
+  }
 
   /** Generates a new trace ID (default length: 16 characters). */
   public static String newTraceId() {
@@ -37,16 +39,18 @@ public final class TraceGenerator {
   /**
    * Generates a fixed-length random string using Base32 (5 bits per character).
    *
-   * <p>Characteristics:
+   * <p>
+   * Characteristics:
    *
    * <ul>
-   *   <li>Each character encodes 5 bits (32-character alphabet)
-   *   <li>Uses the DIGITS array (must have length 32)
-   *   <li>Backed by {@link SecureRandom}, suitable for traceId / spanId
-   *   <li>Fixed output length, no padding characters
+   * <li>Each character encodes 5 bits (32-character alphabet)
+   * <li>Uses the DIGITS array (must have length 32)
+   * <li>Backed by {@link SecureRandom}, suitable for traceId / spanId
+   * <li>Fixed output length, no padding characters
    * </ul>
    *
-   * <p>Algorithm outline:
+   * <p>
+   * Algorithm outline:
    *
    * <pre>
    * 1. Compute required bits: outLen * 5
@@ -54,7 +58,8 @@ public final class TraceGenerator {
    * 3. Slice the random byte stream into 5-bit chunks, map to DIGITS
    * </pre>
    *
-   * <p>Example:
+   * <p>
+   * Example:
    *
    * <pre>
    * outLen = 16
@@ -74,9 +79,9 @@ public final class TraceGenerator {
     // ===== 1. calculate the number of random bytes needed =====
     // Each character encodes 5 bits → total bits = outLen * 5
     // Round up to the nearest byte (8 bits):
-    //   bytesNeeded = ceil(outLen * 5 / 8)
+    // bytesNeeded = ceil(outLen * 5 / 8)
     // Bit-level optimisation to avoid floating-point:
-    //   (x + 7) >> 3 is equivalent to ceil(x / 8)
+    // (x + 7) >> 3 is equivalent to ceil(x / 8)
     int bytesNeeded = (outLen * 5 + 7) >> 3;
 
     byte[] randomBytes = new byte[bytesNeeded];

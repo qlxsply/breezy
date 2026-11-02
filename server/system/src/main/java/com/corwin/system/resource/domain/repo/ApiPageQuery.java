@@ -17,4 +17,5 @@ public record ApiPageQuery(
     ApiAccessType accessType,
     UserType userType,
     Boolean auditDeclared,
-    Boolean enabled) {}
+    Boolean enabled) {
+}

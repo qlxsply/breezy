@@ -19,9 +19,8 @@ public record DiagnosticEvent(
 
   /** Compact constructor that normalises an empty or null details map to an immutable empty map. */
   public DiagnosticEvent {
-    details =
-        (details == null || details.isEmpty())
-            ? Map.of()
-            : Map.copyOf(new LinkedHashMap<>(details));
+    details = (details == null || details.isEmpty())
+        ? Map.of()
+        : Map.copyOf(new LinkedHashMap<>(details));
   }
 }

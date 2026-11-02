@@ -27,123 +27,123 @@ import java.util.Set;
  */
 public final class FrameworkConfigSpecs {
 
-  public static final ConfigSpec<TimeMockConfig> TIME_MOCK =
-      new SimpleConfigSpec<>(
-          new ConfigKey("framework.time.mock"),
-          "framework",
-          "time",
-          "业务时间模拟",
-          "按动态偏移或固定时刻模拟业务时间，不影响调度、安全过期与运行耗时",
-          TimeMockConfig.class,
-          new TimeMockConfig(TimeMockMode.DYNAMIC, 0, 0),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.USE_DEFAULT,
+  public static final ConfigSpec<TimeMockConfig> TIME_MOCK = new SimpleConfigSpec<>(
+      new ConfigKey("framework.time.mock"),
+      "framework",
+      "time",
+      "业务时间模拟",
+      "按动态偏移或固定时刻模拟业务时间，不影响调度、安全过期与运行耗时",
+      TimeMockConfig.class,
+      new TimeMockConfig(TimeMockMode.DYNAMIC, 0, 0),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.USE_DEFAULT,
+      List.of(
+          requiredEnum("mode", "模拟模式", TimeMockMode.values(), 10),
+          required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 20),
+          required("fixedEpochMillis", "固定时间", ConfigFieldType.LONG, 30)),
+      "time-offset",
+      FrameworkConfigSpecs::validateTimeMock,
+      FrameworkConfigSpecs::validateTimeMock);
+
+  public static final ConfigSpec<ClientIpConfig> CLIENT_IP = new SimpleConfigSpec<>(
+      new ConfigKey("framework.web.client-ip"),
+      "framework",
+      "web",
+      "客户端 IP",
+      "客户端 IP 请求头解析方式",
+      ClientIpConfig.class,
+      new ClientIpConfig(ClientIpMode.REMOTE_ADDR),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.FAIL_STARTUP,
+      List.of(
+          new ConfigFieldSpec(
+              "mode",
+              "解析模式",
+              "客户端 IP 解析模式",
+              ConfigFieldType.ENUM,
+              true,
+              false,
+              false,
+              10,
+              "",
+              null,
+              null,
+              null,
+              null,
+              List.of(ClientIpMode.values()).stream()
+                  .map(value -> new ConfigOptionItem(value.name(), value.name()))
+                  .toList())),
+      "default",
+      FrameworkConfigSpecs::validateClientIp,
+      FrameworkConfigSpecs::validateClientIp);
+
+  public static final ConfigSpec<AuthWhitelistConfig> AUTH_WHITELIST = new SimpleConfigSpec<>(
+      new ConfigKey("framework.web.auth-whitelist"),
+      "framework",
+      "web",
+      "鉴权白名单",
+      "无需登录即可访问的路径规则",
+      AuthWhitelistConfig.class,
+      new AuthWhitelistConfig(
           List.of(
-              requiredEnum("mode", "模拟模式", TimeMockMode.values(), 10),
-              required("offsetSeconds", "时间偏移秒数", ConfigFieldType.LONG, 20),
-              required("fixedEpochMillis", "固定时间", ConfigFieldType.LONG, 30)),
-          "time-offset",
-          FrameworkConfigSpecs::validateTimeMock,
-          FrameworkConfigSpecs::validateTimeMock);
+              new AuthWhitelistItem("EXACT", "/api/auth/login"),
+              new AuthWhitelistItem("EXACT", "/api/auth/logout"),
+              new AuthWhitelistItem("EXACT", "/api/auth/me"),
+              new AuthWhitelistItem("ANT", "/api/public/frontend-resources/**"),
+              new AuthWhitelistItem("EXACT", "/h2-console"),
+              new AuthWhitelistItem("ANT", "/h2-console/**"))),
+      1,
+      20,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.FAIL_STARTUP,
+      List.of(required("rules", "白名单规则", ConfigFieldType.OBJECT, 10)),
+      "auth-whitelist",
+      FrameworkConfigSpecs::validateWhitelist,
+      FrameworkConfigSpecs::validateWhitelist);
 
-  public static final ConfigSpec<ClientIpConfig> CLIENT_IP =
-      new SimpleConfigSpec<>(
-          new ConfigKey("framework.web.client-ip"),
-          "framework",
-          "web",
-          "客户端 IP",
-          "客户端 IP 请求头解析方式",
-          ClientIpConfig.class,
-          new ClientIpConfig(ClientIpMode.REMOTE_ADDR),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.FAIL_STARTUP,
-          List.of(
-              new ConfigFieldSpec(
-                  "mode",
-                  "解析模式",
-                  "客户端 IP 解析模式",
-                  ConfigFieldType.ENUM,
-                  true,
-                  false,
-                  false,
-                  10,
-                  "",
-                  null,
-                  null,
-                  null,
-                  null,
-                  List.of(ClientIpMode.values()).stream()
-                      .map(value -> new ConfigOptionItem(value.name(), value.name()))
-                      .toList())),
-          "default",
-          FrameworkConfigSpecs::validateClientIp,
-          FrameworkConfigSpecs::validateClientIp);
+  public static final ConfigSpec<LoggingFilterConfig> LOGGING_FILTER = new SimpleConfigSpec<>(
+      new ConfigKey("framework.web.logging-filter"),
+      "framework",
+      "web",
+      "请求日志过滤",
+      "请求日志排除路径和流式响应路径",
+      LoggingFilterConfig.class,
+      new LoggingFilterConfig(
+          List.of("/static/", "/actuator", "/favicon.ico"), List.of("/api/sse/")),
+      1,
+      30,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.USE_DEFAULT,
+      List.of(
+          required("excludePrefixes", "日志排除路径", ConfigFieldType.STRING_LIST, 10),
+          required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)),
+      "logging-filter",
+      FrameworkConfigSpecs::validateLogging,
+      FrameworkConfigSpecs::validateLogging);
 
-  public static final ConfigSpec<AuthWhitelistConfig> AUTH_WHITELIST =
-      new SimpleConfigSpec<>(
-          new ConfigKey("framework.web.auth-whitelist"),
-          "framework",
-          "web",
-          "鉴权白名单",
-          "无需登录即可访问的路径规则",
-          AuthWhitelistConfig.class,
-          new AuthWhitelistConfig(
-              List.of(
-                  new AuthWhitelistItem("EXACT", "/api/auth/login"),
-                  new AuthWhitelistItem("EXACT", "/api/auth/logout"),
-                  new AuthWhitelistItem("EXACT", "/api/auth/me"),
-                  new AuthWhitelistItem("ANT", "/api/public/frontend-resources/**"),
-                  new AuthWhitelistItem("EXACT", "/h2-console"),
-                  new AuthWhitelistItem("ANT", "/h2-console/**"))),
-          1,
-          20,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.FAIL_STARTUP,
-          List.of(required("rules", "白名单规则", ConfigFieldType.OBJECT, 10)),
-          "auth-whitelist",
-          FrameworkConfigSpecs::validateWhitelist,
-          FrameworkConfigSpecs::validateWhitelist);
+  public record TimeMockConfig(TimeMockMode mode, long offsetSeconds, long fixedEpochMillis) {
+  }
 
-  public static final ConfigSpec<LoggingFilterConfig> LOGGING_FILTER =
-      new SimpleConfigSpec<>(
-          new ConfigKey("framework.web.logging-filter"),
-          "framework",
-          "web",
-          "请求日志过滤",
-          "请求日志排除路径和流式响应路径",
-          LoggingFilterConfig.class,
-          new LoggingFilterConfig(
-              List.of("/static/", "/actuator", "/favicon.ico"), List.of("/api/sse/")),
-          1,
-          30,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.USE_DEFAULT,
-          List.of(
-              required("excludePrefixes", "日志排除路径", ConfigFieldType.STRING_LIST, 10),
-              required("streamPrefixes", "流式响应路径", ConfigFieldType.STRING_LIST, 20)),
-          "logging-filter",
-          FrameworkConfigSpecs::validateLogging,
-          FrameworkConfigSpecs::validateLogging);
-
-  public record TimeMockConfig(TimeMockMode mode, long offsetSeconds, long fixedEpochMillis) {}
-
-  public record ClientIpConfig(ClientIpMode mode) {}
+  public record ClientIpConfig(ClientIpMode mode) {
+  }
 
   public record AuthWhitelistConfig(List<AuthWhitelistItem> rules) {
+
     public AuthWhitelistConfig {
       rules = rules == null ? List.of() : List.copyOf(rules);
     }
   }
 
   public record LoggingFilterConfig(List<String> excludePrefixes, List<String> streamPrefixes) {
+
     public LoggingFilterConfig {
       excludePrefixes = excludePrefixes == null ? List.of() : List.copyOf(excludePrefixes);
       streamPrefixes = streamPrefixes == null ? List.of() : List.copyOf(streamPrefixes);
@@ -221,5 +221,6 @@ public final class FrameworkConfigSpecs {
     return new ConfigViolation(path, code, message);
   }
 
-  private FrameworkConfigSpecs() {}
+  private FrameworkConfigSpecs() {
+  }
 }

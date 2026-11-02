@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NoopSecretCodec implements SecretCodec {
+
   @Override
   public String encode(String raw) {
     return raw;

@@ -10,7 +10,8 @@ import org.springframework.web.util.pattern.PathPatternParser;
 /**
  * A compiled whitelist rule that can efficiently match request paths.
  *
- * <p>Supports three matching strategies: exact string match, Ant-style path matching, and Spring
+ * <p>
+ * Supports three matching strategies: exact string match, Ant-style path matching, and Spring
  * {@link org.springframework.web.util.pattern.PathPattern}. Patterns are normalized via {@link
  * com.corwin.framework.util.PathUtil#normalize}.
  *

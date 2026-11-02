@@ -8,7 +8,8 @@ import java.util.Optional;
 /**
  * Repository interface for {@link DictItem} domain aggregate.
  *
- * <p>Provides domain-level data access operations for dictionary items.
+ * <p>
+ * Provides domain-level data access operations for dictionary items.
  *
  * @author Corwin 2026/3/15
  */

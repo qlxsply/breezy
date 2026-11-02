@@ -11,34 +11,35 @@ import org.slf4j.MDC;
 /**
  * Request-scoped context object holding per-request state.
  *
- * <p>Stores tracing, authentication, client, and custom extension data associated with a single
+ * <p>
+ * Stores tracing, authentication, client, and custom extension data associated with a single
  * HTTP request, carried across layers via {@link java.lang.ThreadLocal} (typically managed by
  * {@link CtxUtil}).
  *
  * <h2>Design goals</h2>
  *
  * <ul>
- *   <li>Centralise request-level data (tracing, user, client, custom attributes)
- *   <li>Avoid passing parameters through multiple method layers
- *   <li>Support log correlation via MDC injection
- *   <li>Support cross-thread propagation via {@link #copy()}
+ * <li>Centralise request-level data (tracing, user, client, custom attributes)
+ * <li>Avoid passing parameters through multiple method layers
+ * <li>Support log correlation via MDC injection
+ * <li>Support cross-thread propagation via {@link #copy()}
  * </ul>
  *
  * <h2>Thread model</h2>
  *
  * <ul>
- *   <li>Typically bound to a ThreadLocal — one instance per request thread
- *   <li>Not thread-safe; must not be shared across threads
- *   <li>Use {@link #copy()} before passing to another thread
+ * <li>Typically bound to a ThreadLocal — one instance per request thread
+ * <li>Not thread-safe; must not be shared across threads
+ * <li>Use {@link #copy()} before passing to another thread
  * </ul>
  *
  * <h2>Typical usage</h2>
  *
  * <ul>
- *   <li>Gateway / Filter initialises context at request entry
- *   <li>Authentication module writes user information
- *   <li>Logging system reads traceId / userId
- *   <li>Business code stores temporary contextual data
+ * <li>Gateway / Filter initialises context at request entry
+ * <li>Authentication module writes user information
+ * <li>Logging system reads traceId / userId
+ * <li>Business code stores temporary contextual data
  * </ul>
  *
  * @author Corwin
@@ -78,11 +79,12 @@ public class Ctx {
   /**
    * Extension attribute map for custom contextual data.
    *
-   * <p>Characteristics:
+   * <p>
+   * Characteristics:
    *
    * <ul>
-   *   <li>Lazy-initialized to avoid unnecessary memory overhead
-   *   <li>Key-value structure with no type constraints (caller is responsible for type safety)
+   * <li>Lazy-initialized to avoid unnecessary memory overhead
+   * <li>Key-value structure with no type constraints (caller is responsible for type safety)
    * </ul>
    */
   private Map<String, Object> attributes;
@@ -90,19 +92,21 @@ public class Ctx {
   /**
    * Creates a shallow copy of the current context.
    *
-   * <p>Used for propagating context across threads, e.g.:
+   * <p>
+   * Used for propagating context across threads, e.g.:
    *
    * <ul>
-   *   <li>Thread pool tasks
-   *   <li>Async execution
-   *   <li>CompletableFuture
+   * <li>Thread pool tasks
+   * <li>Async execution
+   * <li>CompletableFuture
    * </ul>
    *
-   * <p>Notes:
+   * <p>
+   * Notes:
    *
    * <ul>
-   *   <li>attributes is shallow-copied (Map copied, values remain references)
-   *   <li>AuthPrincipal is immutable (record) and can be safely shared
+   * <li>attributes is shallow-copied (Map copied, values remain references)
+   * <li>AuthPrincipal is immutable (record) and can be safely shared
    * </ul>
    *
    * @return a new Ctx instance with copied values
@@ -127,20 +131,23 @@ public class Ctx {
   /**
    * Binds context data to the SLF4J MDC (Mapped Diagnostic Context).
    *
-   * <p>Enables log patterns to automatically include fields such as traceId, userId, and clientIp.
+   * <p>
+   * Enables log patterns to automatically include fields such as traceId, userId, and clientIp.
    *
-   * <p>Calling convention:
+   * <p>
+   * Calling convention:
    *
    * <ul>
-   *   <li>At request entry (Filter / Interceptor)
-   *   <li>After thread switch, to re-bind in the new thread
+   * <li>At request entry (Filter / Interceptor)
+   * <li>After thread switch, to re-bind in the new thread
    * </ul>
    *
-   * <p>Notes:
+   * <p>
+   * Notes:
    *
    * <ul>
-   *   <li>MDC is ThreadLocal-based; re-binding is required after a thread switch
-   *   <li>{@link #clearMdc()} must be called at request completion
+   * <li>MDC is ThreadLocal-based; re-binding is required after a thread switch
+   * <li>{@link #clearMdc()} must be called at request completion
    * </ul>
    */
   public void bindToMdc() {
@@ -164,11 +171,12 @@ public class Ctx {
   /**
    * Clears MDC context data at request completion.
    *
-   * <p>Mandatory to prevent ThreadLocal leakage:
+   * <p>
+   * Mandatory to prevent ThreadLocal leakage:
    *
    * <ul>
-   *   <li>Log data cross-contamination on thread reuse
-   *   <li>Unintended user information exposure
+   * <li>Log data cross-contamination on thread reuse
+   * <li>Unintended user information exposure
    * </ul>
    */
   public static void clearMdc() {
@@ -195,7 +203,8 @@ public class Ctx {
   /**
    * Removes an extension attribute.
    *
-   * <p>Sets the internal map to null when empty to reduce memory footprint.
+   * <p>
+   * Sets the internal map to null when empty to reduce memory footprint.
    */
   public void removeAttr(String key) {
     if (attributes == null) {
@@ -232,8 +241,7 @@ public class Ctx {
     if (!type.isInstance(value)) {
       String name = type.getName();
       String vname = value.getClass().getName();
-      String msg =
-          String.format("Attribute [%s] is not of type %s, actual type: %s", key, name, vname);
+      String msg = String.format("Attribute [%s] is not of type %s, actual type: %s", key, name, vname);
       throw new ClassCastException(msg);
     }
     return (T) value;

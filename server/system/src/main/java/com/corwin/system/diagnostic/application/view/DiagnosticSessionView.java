@@ -14,4 +14,5 @@ public record DiagnosticSessionView(
     DiagnosticConfig config,
     Instant startedAt,
     Instant expireAt,
-    long remainingTtlSeconds) {}
+    long remainingTtlSeconds) {
+}

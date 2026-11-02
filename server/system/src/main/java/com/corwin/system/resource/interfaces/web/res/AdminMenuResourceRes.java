@@ -16,4 +16,5 @@ public record AdminMenuResourceRes(
     String type,
     String url,
     int orderNo,
-    List<AdminMenuResourceRes> children) {}
+    List<AdminMenuResourceRes> children) {
+}

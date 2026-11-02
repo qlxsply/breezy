@@ -15,4 +15,5 @@ public record AuditOperation(
     AuditLevel level,
     boolean recordRequest,
     boolean recordResponse,
-    String applicationCode) {}
+    String applicationCode) {
+}

@@ -48,9 +48,8 @@ public class PushController {
   public ApiResponse<Boolean> saveSubscription(@Valid @RequestBody SavePushSubscriptionReq req) {
     Long userId = CtxUtil.getPrincipal().userId();
     UserType userType = CtxUtil.getPrincipal().userType();
-    SavePushSubscriptionCommand command =
-        new SavePushSubscriptionCommand(
-            req.deviceId().trim(), req.endpoint().trim(), req.p256dh().trim(), req.auth().trim());
+    SavePushSubscriptionCommand command = new SavePushSubscriptionCommand(
+        req.deviceId().trim(), req.endpoint().trim(), req.p256dh().trim(), req.auth().trim());
     pushSubscriptionAppService.saveSubscription(userId, userType, command);
     return ApiResponse.ok(true);
   }
@@ -81,15 +80,13 @@ public class PushController {
   public ApiResponse<PushHealthTestRes> sendHealthTest() {
     Long userId = CtxUtil.getPrincipal().userId();
     UserType userType = CtxUtil.getPrincipal().userType();
-    PushHealthDeliveryView delivery =
-        pushHealthAppService.sendHighPriorityHealthCheck(userId, userType);
+    PushHealthDeliveryView delivery = pushHealthAppService.sendHighPriorityHealthCheck(userId, userType);
     PushHealthTestRes res = new PushHealthTestRes("健康检查推送已发送", toDeliveryRes(delivery));
     return ApiResponse.ok(res);
   }
 
   private PushHealthRes toHealthRes(PushHealthView view) {
-    List<PushHealthSubscriptionRes> subscriptions =
-        view.subscriptions().stream().map(this::toSubscriptionRes).toList();
+    List<PushHealthSubscriptionRes> subscriptions = view.subscriptions().stream().map(this::toSubscriptionRes).toList();
     return new PushHealthRes(
         view.vapidReady(),
         view.vapidSubject(),

@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 产品应用。
  *
- * <p>表示系统中可对用户开放的完整应用入口，负责前端入口控制和应用级全局开关，不直接绑定后端权限码。
+ * <p>
+ * 表示系统中可对用户开放的完整应用入口，负责前端入口控制和应用级全局开关，不直接绑定后端权限码。
  *
  * @author Corwin 2026/6/14
  */
@@ -17,11 +18,11 @@ import lombok.Getter;
 @Table(
     name = "sys_product_application",
     indexes = {
-      @Index(
-          name = "idx_sys_product_application_code",
-          columnList = "application_code",
-          unique = true),
-      @Index(name = "idx_sys_product_application_enabled", columnList = "enabled")
+        @Index(
+            name = "idx_sys_product_application_code",
+            columnList = "application_code",
+            unique = true),
+        @Index(name = "idx_sys_product_application_enabled", columnList = "enabled")
     })
 public class ProductApplication {
 
@@ -33,7 +34,8 @@ public class ProductApplication {
   /**
    * 应用编码。
    *
-   * <p>用于业务代码稳定识别应用，例如 DATA_ANALYSIS、AI_WRITING。
+   * <p>
+   * 用于业务代码稳定识别应用，例如 DATA_ANALYSIS、AI_WRITING。
    */
   @Column(name = "application_code", nullable = false, length = 128)
   private String applicationCode;
@@ -41,7 +43,8 @@ public class ProductApplication {
   /**
    * 应用名称。
    *
-   * <p>用于管理后台、用户权益页、前端菜单等展示场景。
+   * <p>
+   * 用于管理后台、用户权益页、前端菜单等展示场景。
    */
   @Column(name = "application_name", nullable = false, length = 128)
   private String applicationName;
@@ -53,7 +56,8 @@ public class ProductApplication {
   /**
    * 应用图标。
    *
-   * <p>用于前端入口展示，可直接存储图标编码、静态资源 code 或其他前端约定值。
+   * <p>
+   * 用于前端入口展示，可直接存储图标编码、静态资源 code 或其他前端约定值。
    */
   @Column(name = "icon", length = 256)
   private String icon;
@@ -61,7 +65,8 @@ public class ProductApplication {
   /**
    * 应用前端路径。
    *
-   * <p>用于前端路由跳转，例如 /jsonfmt、/storage。
+   * <p>
+   * 用于前端路由跳转，例如 /jsonfmt、/storage。
    */
   @Column(name = "route_path", length = 512)
   private String routePath;
@@ -69,7 +74,8 @@ public class ProductApplication {
   /**
    * 应用前端组件标识。
    *
-   * <p>用于前端按约定加载页面组件，例如 pages/JsonFormatterPage.vue。
+   * <p>
+   * 用于前端按约定加载页面组件，例如 pages/JsonFormatterPage.vue。
    */
   @Column(name = "component_path", length = 512)
   private String componentPath;
@@ -77,7 +83,8 @@ public class ProductApplication {
   /**
    * 是否全局启用。
    *
-   * <p>应用关闭后，用户包授权、用户特例和应用内功能授权均不生效。
+   * <p>
+   * 应用关闭后，用户包授权、用户特例和应用内功能授权均不生效。
    */
   @Column(name = "enabled", nullable = false)
   private Boolean enabled;
@@ -85,7 +92,8 @@ public class ProductApplication {
   /**
    * 是否系统内置。
    *
-   * <p>系统内置应用通常由程序初始化，不建议后台删除。
+   * <p>
+   * 系统内置应用通常由程序初始化，不建议后台删除。
    */
   @Column(name = "system_built_in", nullable = false)
   private Boolean systemBuiltIn;
@@ -93,7 +101,8 @@ public class ProductApplication {
   /**
    * 展示排序值。
    *
-   * <p>数值越小，排序越靠前。
+   * <p>
+   * 数值越小，排序越靠前。
    */
   @Column(name = "display_order", nullable = false)
   private Integer displayOrder;
@@ -115,7 +124,8 @@ public class ProductApplication {
   private Instant updatedAt;
 
   /** JPA 构造方法。 */
-  protected ProductApplication() {}
+  protected ProductApplication() {
+  }
 
   /**
    * 创建产品应用。

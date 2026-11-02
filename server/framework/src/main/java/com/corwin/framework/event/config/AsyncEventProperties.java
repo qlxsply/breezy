@@ -8,7 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Configuration model for the async event component ({@code framework.async-event.*}).
  *
- * <p>Organized by capability groups: startup strategy, publishing metadata, context propagation,
+ * <p>
+ * Organized by capability groups: startup strategy, publishing metadata, context propagation,
  * in-memory dispatch engine, Kafka and RabbitMQ transport parameters.
  *
  * @author Corwin 2026/3/31
@@ -61,6 +62,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class Startup {
+
     /** 是否在发现同事件类型 group 冲突时启动失败。 */
     private boolean failOnGroupConflict = true;
   }
@@ -69,6 +71,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class Publish {
+
     /** 生产者服务名，未配置时回退 spring.application.name。 */
     private String producerService;
 
@@ -80,6 +83,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class Context {
+
     /** 消费阶段 span 处理策略。 */
     private ConsumeSpanMode spanMode = ConsumeSpanMode.NEW_CHILD;
   }
@@ -88,6 +92,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class InMemory {
+
     /** 内存执行引擎类型。 */
     private Engine engine = Engine.THREAD_POOL;
 
@@ -109,6 +114,7 @@ public class AsyncEventProperties {
     @Getter
     @Setter
     public static class ThreadPool {
+
       /** 核心线程数。 */
       private int corePoolSize = 2;
 
@@ -132,6 +138,7 @@ public class AsyncEventProperties {
     @Getter
     @Setter
     public static class Disruptor {
+
       /** RingBuffer 大小（必须是 2 的幂）。 */
       private int ringBufferSize = 8192;
 
@@ -153,6 +160,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class Kafka {
+
     /** Kafka bootstrap servers。 */
     private String bootstrapServers;
 
@@ -170,6 +178,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class Durable {
+
     /** 建表策略。 */
     private SchemaInitialize schemaInitialize = SchemaInitialize.CREATE_IF_NOT_EXISTS;
 
@@ -205,6 +214,7 @@ public class AsyncEventProperties {
     @Getter
     @Setter
     public static class Cleanup {
+
       /** 是否启用清理器。 */
       private boolean enabled = true;
 
@@ -226,6 +236,7 @@ public class AsyncEventProperties {
   @Getter
   @Setter
   public static class RabbitMq {
+
     /** RabbitMQ 地址列表。 */
     private String addresses;
 

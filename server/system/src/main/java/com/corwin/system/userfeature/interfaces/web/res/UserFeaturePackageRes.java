@@ -24,4 +24,5 @@ public record UserFeaturePackageRes(
     String description,
     boolean enabled,
     boolean defaultPackage,
-    List<UserFeaturePackageApplicationAccessRes> applicationAccesses) {}
+    List<UserFeaturePackageApplicationAccessRes> applicationAccesses) {
+}

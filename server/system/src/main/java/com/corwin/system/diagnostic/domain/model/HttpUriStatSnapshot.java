@@ -12,4 +12,5 @@ public record HttpUriStatSnapshot(
     long totalDurationMs,
     long averageDurationMs,
     long slowRequestCount,
-    long errorRequestCount) {}
+    long errorRequestCount) {
+}

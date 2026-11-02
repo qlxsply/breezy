@@ -20,4 +20,5 @@ public record SaveSystemResourceReq(
     Boolean enabled,
     Boolean defaultEntry,
     Boolean systemBuiltin,
-    String remark) {}
+    String remark) {
+}

@@ -23,4 +23,5 @@ public record NotificationRes(
     String priority,
     String route,
     Instant createdAt,
-    boolean read) {}
+    boolean read) {
+}

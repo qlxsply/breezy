@@ -31,7 +31,8 @@ import org.springframework.stereotype.Service;
 /**
  * Application service for permission code queries and resolution.
  *
- * <p>Provides methods to retrieve permission codes for the current user or a specific user, compute
+ * <p>
+ * Provides methods to retrieve permission codes for the current user or a specific user, compute
  * role-derived permission IDs, and list assignable permissions for internal (ADMIN) users.
  *
  * @author Corwin 2026/6/29
@@ -61,19 +62,17 @@ public class PermissionService {
       return new MyPermissionsDetailView(
           username == null ? "GUEST" : username, List.of(), List.of());
     }
-    List<String> roleNames =
-        userType == UserType.ADMIN
-            ? roleRepository
-                .findByIdIn(
-                    userRoleRepository.findByUserId(userId).stream()
-                        .map(UserRole::getRoleId)
-                        .toList())
-                .stream()
-                .map(Role::getName)
-                .toList()
-            : List.of();
-    List<String> permissionCodes =
-        permissionCodesForUser(userId, userType).stream().sorted().toList();
+    List<String> roleNames = userType == UserType.ADMIN
+        ? roleRepository
+            .findByIdIn(
+                userRoleRepository.findByUserId(userId).stream()
+                    .map(UserRole::getRoleId)
+                    .toList())
+            .stream()
+            .map(Role::getName)
+            .toList()
+        : List.of();
+    List<String> permissionCodes = permissionCodesForUser(userId, userType).stream().sorted().toList();
     return new MyPermissionsDetailView(
         username == null ? String.valueOf(userId) : username, roleNames, permissionCodes);
   }
@@ -138,7 +137,7 @@ public class PermissionService {
         .filter(permission -> permission.getUserScope() == UserType.ADMIN)
         .sorted(
             Comparator.comparing(
-                    Permission::getCode, Comparator.nullsLast(String::compareToIgnoreCase))
+                Permission::getCode, Comparator.nullsLast(String::compareToIgnoreCase))
                 .thenComparing(Permission::getId, Comparator.nullsLast(Long::compareTo)))
         .toList();
   }
@@ -154,42 +153,37 @@ public class PermissionService {
     if (merged.isEmpty()) {
       return List.of();
     }
-    Set<Long> allowedIds =
-        permissionRepository.findAllById(merged).stream()
-            .filter(permission -> permission.getUserScope() == UserType.ADMIN)
-            .map(Permission::getId)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<Long> allowedIds = permissionRepository.findAllById(merged).stream()
+        .filter(permission -> permission.getUserScope() == UserType.ADMIN)
+        .map(Permission::getId)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     return allowedIds.stream().toList();
   }
 
   private List<Long> roleDerivedPermissionIdsForUser(Long userId) {
-    List<Long> roleIds =
-        userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList();
+    List<Long> roleIds = userRoleRepository.findByUserId(userId).stream().map(UserRole::getRoleId).toList();
     if (roleIds.isEmpty()) {
       return List.of();
     }
-    LinkedHashSet<Long> roleResourceIds =
-        roleResourceRepository.findByRoleIdIn(roleIds).stream()
-            .map(RoleResource::getResourceId)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    LinkedHashSet<Long> roleResourceIds = roleResourceRepository.findByRoleIdIn(roleIds).stream()
+        .map(RoleResource::getResourceId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     if (roleResourceIds.isEmpty()) {
       return List.of();
     }
 
-    Map<Long, Resource> resourceById =
-        resourceRepository.findAllById(roleResourceIds).stream()
-            .filter(resource -> resource.getId() != null)
-            .filter(resource -> Boolean.TRUE.equals(resource.getEnabled()))
-            .collect(
-                Collectors.toMap(
-                    Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
-    LinkedHashSet<Long> buttonResourceIds =
-        resourceById.values().stream()
-            .filter(Resource::canBindPermission)
-            .map(Resource::getId)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    Map<Long, Resource> resourceById = resourceRepository.findAllById(roleResourceIds).stream()
+        .filter(resource -> resource.getId() != null)
+        .filter(resource -> Boolean.TRUE.equals(resource.getEnabled()))
+        .collect(
+            Collectors.toMap(
+                Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
+    LinkedHashSet<Long> buttonResourceIds = resourceById.values().stream()
+        .filter(Resource::canBindPermission)
+        .map(Resource::getId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     if (buttonResourceIds.isEmpty()) {
       return List.of();
     }

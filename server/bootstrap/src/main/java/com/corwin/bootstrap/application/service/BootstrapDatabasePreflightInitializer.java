@@ -65,20 +65,17 @@ public class BootstrapDatabasePreflightInitializer
   }
 
   private void ensureDatabaseExists(DataSourceSettings settings) {
-    String databaseName =
-        BootstrapJdbcUrlSupport.extractDatabaseName(settings.databaseType(), settings.url());
+    String databaseName = BootstrapJdbcUrlSupport.extractDatabaseName(settings.databaseType(), settings.url());
     if (databaseName == null || databaseName.isBlank()) {
       return;
     }
 
     try {
       Class.forName(settings.driverClassName());
-      String adminUrl =
-          BootstrapJdbcUrlSupport.buildAdminUrl(settings.databaseType(), settings.url());
-      boolean exists =
-          BootstrapJdbcTransactionSupport.execute(
-              () -> DriverManager.getConnection(adminUrl, settings.username(), settings.password()),
-              connection -> databaseExists(connection.getMetaData(), databaseName));
+      String adminUrl = BootstrapJdbcUrlSupport.buildAdminUrl(settings.databaseType(), settings.url());
+      boolean exists = BootstrapJdbcTransactionSupport.execute(
+          () -> DriverManager.getConnection(adminUrl, settings.username(), settings.password()),
+          connection -> databaseExists(connection.getMetaData(), databaseName));
       if (exists) {
         System.out.println("数据库已存在: " + databaseName);
         return;
@@ -113,10 +110,8 @@ public class BootstrapDatabasePreflightInitializer
 
   private String loadCreateDatabaseSql(DatabaseType databaseType, String databaseName)
       throws Exception {
-    String path =
-        "bootstarp/sql/" + BootstrapJdbcUrlSupport.toFolder(databaseType) + "/create_database.sql";
-    try (var inputStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
+    String path = "bootstarp/sql/" + BootstrapJdbcUrlSupport.toFolder(databaseType) + "/create_database.sql";
+    try (var inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
       if (inputStream == null) {
         throw new IllegalStateException("Create database SQL template not found: " + path);
       }
@@ -176,13 +171,13 @@ public class BootstrapDatabasePreflightInitializer
       DatabaseType databaseType, String host, int port, String databaseName) {
     return switch (databaseType) {
       case MYSQL ->
-          "jdbc:mysql://"
-              + host
-              + ":"
-              + port
-              + "/"
-              + databaseName
-              + "?serverTimezone=UTC&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true";
+        "jdbc:mysql://"
+            + host
+            + ":"
+            + port
+            + "/"
+            + databaseName
+            + "?serverTimezone=UTC&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true";
       case POSTGRESQL -> "jdbc:postgresql://" + host + ":" + port + "/" + databaseName;
     };
   }
@@ -237,5 +232,6 @@ public class BootstrapDatabasePreflightInitializer
       String url,
       String username,
       String password,
-      String driverClassName) {}
+      String driverClassName) {
+  }
 }

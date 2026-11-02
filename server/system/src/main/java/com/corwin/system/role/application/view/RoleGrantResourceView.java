@@ -15,4 +15,5 @@ public record RoleGrantResourceView(
     String description,
     boolean enabled,
     boolean selectable,
-    int orderNo) {}
+    int orderNo) {
+}

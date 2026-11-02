@@ -18,4 +18,5 @@ public record DictItemRes(
     String tagColor,
     String tagType,
     String extraJson,
-    String description) {}
+    String description) {
+}

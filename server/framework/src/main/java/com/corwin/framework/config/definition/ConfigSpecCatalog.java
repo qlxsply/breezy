@@ -148,5 +148,6 @@ public final class ConfigSpecCatalog {
         "Invalid config definition " + spec.key() + ": " + message);
   }
 
-  private ConfigSpecCatalog() {}
+  private ConfigSpecCatalog() {
+  }
 }

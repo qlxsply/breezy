@@ -7,12 +7,14 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * API audit declaration status enumeration.
  *
- * <p>Indicates whether audit logging is enabled (ENABLED) or disabled (DISABLED) for an API
+ * <p>
+ * Indicates whether audit logging is enabled (ENABLED) or disabled (DISABLED) for an API
  * endpoint.
  *
  * @author Corwin 2026/6/21
  */
 public enum ApiAuditDeclaredStatus implements DictEnumDefinition {
+
   ENABLED("已开启", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   DISABLED("未开启", DictTagColor.SLATE, DictTagType.INFO);
 

@@ -18,4 +18,5 @@ public record DictTypeView(
     DictValueType valueType,
     DictStructureType structureType,
     DictSourceType sourceType,
-    boolean enabled) {}
+    boolean enabled) {
+}

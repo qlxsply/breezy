@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/2/4
  */
 public enum TodoTaskStatus implements DictEnumDefinition {
+
   TODO("待办", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   PAUSED("暂停", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
   DONE("完成", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS);

@@ -15,13 +15,14 @@ import org.springframework.util.StringUtils;
 /**
  * Default {@link AsyncEventEnvelopeFactory} implementation following the V2 unified model.
  *
- * <p>When building an envelope, this implementation:
+ * <p>
+ * When building an envelope, this implementation:
  *
  * <ul>
- *   <li>Captures the current thread context snapshot for traceability.
- *   <li>Uses mock time for the event timestamp (consistent with project conventions).
- *   <li>Resolves source via "explicit source → default source → null".
- *   <li>Resolves producer via "configured producerService → spring.application.name".
+ * <li>Captures the current thread context snapshot for traceability.
+ * <li>Uses mock time for the event timestamp (consistent with project conventions).
+ * <li>Resolves source via "explicit source → default source → null".
+ * <li>Resolves producer via "configured producerService → spring.application.name".
  * </ul>
  *
  * @author Corwin 2026/4/9
@@ -68,8 +69,7 @@ public class DefaultAsyncEventEnvelopeFactory implements AsyncEventEnvelopeFacto
     EventCtxSnapshot ctxSnapshot = EventCtxSnapshot.from(CtxUtil.snapshot());
     String finalSource = resolveSource(source);
     long occurredAtMillis = HighDate.mockTimestampMillis();
-    long finalDeliverAtMillis =
-        deliverAtMillis <= 0L ? HighDate.realTimestampMillis() : deliverAtMillis;
+    long finalDeliverAtMillis = deliverAtMillis <= 0L ? HighDate.realTimestampMillis() : deliverAtMillis;
     return new AsyncEventEnvelope<>(
         UUID.randomUUID().toString(),
         event.getClass().getName(),

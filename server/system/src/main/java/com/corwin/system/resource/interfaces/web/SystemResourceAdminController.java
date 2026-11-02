@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Admin REST controller for managing system resources (menu/function/button tree).
  *
- * <p>Provides CRUD operations for the system resource tree, including permission binding
+ * <p>
+ * Provides CRUD operations for the system resource tree, including permission binding
  * management. All endpoints require ADMIN authentication.
  *
  * @author Corwin 2026/6/29

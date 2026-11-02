@@ -49,8 +49,7 @@ public class PublicFrontendResourceController {
 
   private void write(FrontendResourceFileView fileView, HttpServletResponse response)
       throws Exception {
-    String contentType =
-        Defaults.or(fileView.contentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    String contentType = Defaults.or(fileView.contentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE);
     response.setContentType(contentType);
     response.setHeader(HttpHeaders.CACHE_CONTROL, "public, max-age=86400");
     response.setContentLengthLong(fileView.fileSize());

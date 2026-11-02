@@ -15,4 +15,5 @@ public record UserFeaturePackageApplicationAccessView(
     String applicationName,
     ApplicationFeatureAccessScope featureAccessScope,
     List<String> featureIds,
-    List<UserFeatureItemView> features) {}
+    List<UserFeatureItemView> features) {
+}

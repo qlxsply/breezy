@@ -14,4 +14,5 @@ public record AdminProfileLoginActivityRes(
     boolean success,
     String loginIp,
     String remark,
-    Instant occurredAt) {}
+    Instant occurredAt) {
+}

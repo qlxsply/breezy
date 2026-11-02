@@ -57,8 +57,7 @@ public class AdminProfileController {
   public ApiResponse<PageResult<AdminProfileLoginActivityRes>> pageLoginActivities(
       @RequestBody AdminProfileLoginActivityPageReq req) {
     String username = adminProfileAppService.currentUsername();
-    var page =
-        loginLogService.pageOwnLoginActivities(username, PageSpecFactory.of(req.page(), null));
+    var page = loginLogService.pageOwnLoginActivities(username, PageSpecFactory.of(req.page(), null));
     return ApiResponse.ok(PageResult.of(page, AdminProfileController::toActivityRes));
   }
 

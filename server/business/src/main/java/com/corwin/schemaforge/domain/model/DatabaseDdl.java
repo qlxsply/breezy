@@ -57,7 +57,8 @@ public class DatabaseDdl {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected DatabaseDdl() {}
+  protected DatabaseDdl() {
+  }
 
   public DatabaseDdl(
       Long managedDatabaseId,
@@ -71,8 +72,7 @@ public class DatabaseDdl {
       String logicalFileId,
       String contentHash) {
     this.id = UUID.randomUUID().toString();
-    this.managedDatabaseId =
-        Objects.requireNonNull(managedDatabaseId, "managedDatabaseId required");
+    this.managedDatabaseId = Objects.requireNonNull(managedDatabaseId, "managedDatabaseId required");
     this.sourceSnapshotId = sourceSnapshotId;
     this.targetSnapshotId = Objects.requireNonNull(targetSnapshotId, "targetSnapshotId required");
     this.name = Objects.requireNonNull(name, "name required");

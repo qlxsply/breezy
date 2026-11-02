@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link ProductApplicationRepository}.
  *
- * <p>Uses MyBatis for paginated queries and JPA for standard CRUD.
+ * <p>
+ * Uses MyBatis for paginated queries and JPA for standard CRUD.
  *
  * @author Corwin 2026/6/14
  */

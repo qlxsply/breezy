@@ -11,4 +11,5 @@ public record JfrSnapshot(
     long gcPauseTimeMs,
     long exceptionEventCount,
     long threadParkEventCount,
-    long monitorBlockedEventCount) {}
+    long monitorBlockedEventCount) {
+}

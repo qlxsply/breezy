@@ -20,4 +20,5 @@ public record LoginLogRes(
     @JsonLongString Long sessionId,
     @JsonLongString Long operatorId,
     Instant occurredAt,
-    String remark) {}
+    String remark) {
+}

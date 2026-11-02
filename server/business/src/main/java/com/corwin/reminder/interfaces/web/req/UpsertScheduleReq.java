@@ -14,6 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpsertScheduleReq {
+
   private Long id;
   private String title;
   private Instant startTime;
@@ -26,6 +27,7 @@ public class UpsertScheduleReq {
   @Getter
   @Setter
   public static class RuleReq {
+
     private RecurrenceRuleFrequency frequency;
     private Integer interval;
     private Set<DayOfWeek> daysOfWeek;

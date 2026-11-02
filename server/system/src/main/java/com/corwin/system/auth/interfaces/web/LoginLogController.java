@@ -36,12 +36,11 @@ public class LoginLogController {
       userType = UserType.ADMIN,
       permissions = {"log.view"})
   public ApiResponse<PageResult<LoginLogRes>> page(@RequestBody LoginLogPageReq req) {
-    var page =
-        loginLogService.page(
-            req.userAccount(),
-            req.startAt(),
-            req.endAt(),
-            PageSpecFactory.of(req.page(), req.sort()));
+    var page = loginLogService.page(
+        req.userAccount(),
+        req.startAt(),
+        req.endAt(),
+        PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, LoginLogController::toDto));
   }
 

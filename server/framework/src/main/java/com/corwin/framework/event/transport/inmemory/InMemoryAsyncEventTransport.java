@@ -21,7 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * In-memory async event transport using a per-subscriber dispatch model.
  *
- * <p>On publish, queries all subscriptions by event type and dispatches to each subscriber
+ * <p>
+ * On publish, queries all subscriptions by event type and dispatches to each subscriber
  * independently. Used for intra-process async decoupling while keeping subscription semantics
  * consistent with MQ-based transports.
  *
@@ -30,9 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class InMemoryAsyncEventTransport implements AsyncEventTransport {
 
-  private static final Comparator<DelayedDispatchTask> DELAY_TASK_COMPARATOR =
-      Comparator.comparingLong(DelayedDispatchTask::deliverAtMillis)
-          .thenComparingLong(DelayedDispatchTask::sequence);
+  private static final Comparator<DelayedDispatchTask> DELAY_TASK_COMPARATOR = Comparator
+      .comparingLong(DelayedDispatchTask::deliverAtMillis)
+      .thenComparingLong(DelayedDispatchTask::sequence);
 
   private final InMemoryDispatchExecutor executor;
   private final ConsumeContextBinder contextBinder;
@@ -185,7 +186,8 @@ public class InMemoryAsyncEventTransport implements AsyncEventTransport {
       AsyncEventEnvelope<?> envelope,
       long deliverAtMillis,
       long sequence)
-      implements Delayed {
+      implements
+        Delayed {
 
     /** 返回距离可执行时间点的剩余延迟。 */
     @Override

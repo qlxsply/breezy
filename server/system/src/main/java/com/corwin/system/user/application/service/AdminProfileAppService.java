@@ -69,10 +69,10 @@ public class AdminProfileAppService {
   }
 
   private AdminProfileView toView(User user) {
-    List<AdminProfileLoginActivityView> recentActivities =
-        loginLogService.listRecentLoginActivities(user.getUsername(), 20).stream()
-            .map(AdminProfileAppService::toActivityView)
-            .toList();
+    List<AdminProfileLoginActivityView> recentActivities = loginLogService
+        .listRecentLoginActivities(user.getUsername(), 20).stream()
+        .map(AdminProfileAppService::toActivityView)
+        .toList();
     return new AdminProfileView(
         user.getId(),
         user.getUsername(),
@@ -100,8 +100,7 @@ public class AdminProfileAppService {
     var principal = CtxUtil.getPrincipal();
     Long userId = principal == null ? null : principal.userId();
     BizAssert.notNull(userId, BaseError.FORBIDDEN);
-    User user =
-        userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    User user = userRepository.findById(userId).orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     BizAssert.state(
         user.getUserType() == UserType.ADMIN || DefaultUser.isSystemUser(user.getId()),
         BaseError.FORBIDDEN);

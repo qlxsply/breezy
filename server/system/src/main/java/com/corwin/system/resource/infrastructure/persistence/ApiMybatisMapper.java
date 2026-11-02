@@ -10,7 +10,8 @@ import org.apache.ibatis.annotations.Param;
 /**
  * MyBatis mapper for paginated API metadata queries.
  *
- * <p>Provides dynamic SQL-based pagination and filtering for the API admin page.
+ * <p>
+ * Provides dynamic SQL-based pagination and filtering for the API admin page.
  *
  * @author Corwin 2026/7/28
  */

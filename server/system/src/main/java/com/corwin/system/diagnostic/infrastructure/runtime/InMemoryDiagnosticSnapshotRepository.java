@@ -14,9 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InMemoryDiagnosticSnapshotRepository implements DiagnosticSnapshotRepository {
 
-  private final DiagnosticRingBuffer<DiagnosticSnapshot> buffer =
-      new DiagnosticRingBuffer<>(
-          com.corwin.system.diagnostic.domain.model.DiagnosticConfig.DEFAULT_HISTORY_CAPACITY);
+  private final DiagnosticRingBuffer<DiagnosticSnapshot> buffer = new DiagnosticRingBuffer<>(
+      com.corwin.system.diagnostic.domain.model.DiagnosticConfig.DEFAULT_HISTORY_CAPACITY);
 
   @Override
   public void configureCapacity(int capacity) {

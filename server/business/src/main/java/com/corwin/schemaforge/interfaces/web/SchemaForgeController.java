@@ -43,10 +43,9 @@ public class SchemaForgeController {
 
   @PostMapping("/snapshots")
   public ApiResponse<String> createSnapshot(@RequestBody CreateSchemaSnapshotReq req) {
-    String id =
-        schemaSnapshotAppService.createSnapshot(
-            new CreateSchemaSnapshotCommand(
-                req.managedDatabaseId(), req.name(), req.remark(), req.selectedObjectIds()));
+    String id = schemaSnapshotAppService.createSnapshot(
+        new CreateSchemaSnapshotCommand(
+            req.managedDatabaseId(), req.name(), req.remark(), req.selectedObjectIds()));
     return ApiResponse.ok(id);
   }
 
@@ -88,10 +87,9 @@ public class SchemaForgeController {
 
   @PostMapping("/ddls")
   public ApiResponse<String> createDdl(@RequestBody CreateSchemaDdlReq req) {
-    String id =
-        schemaDdlAppService.createDdl(
-            new CreateSchemaDdlCommand(
-                req.sourceSnapshotId(), req.targetSnapshotId(), req.name(), req.remark()));
+    String id = schemaDdlAppService.createDdl(
+        new CreateSchemaDdlCommand(
+            req.sourceSnapshotId(), req.targetSnapshotId(), req.name(), req.remark()));
     return ApiResponse.ok(id);
   }
 

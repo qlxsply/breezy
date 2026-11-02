@@ -35,8 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class DatabaseSourceAdminService {
 
-  private static final Set<DatabaseType> USER_SUPPORTED_DB_TYPES =
-      EnumSet.of(DatabaseType.MYSQL, DatabaseType.POSTGRESQL, DatabaseType.ORACLE);
+  private static final Set<DatabaseType> USER_SUPPORTED_DB_TYPES = EnumSet.of(DatabaseType.MYSQL,
+      DatabaseType.POSTGRESQL, DatabaseType.ORACLE);
 
   private final DatabaseSourceRepository databaseSourceRepo;
   private final DatabaseSchemaRepository databaseSchemaRepo;
@@ -54,32 +54,29 @@ public class DatabaseSourceAdminService {
     DatabaseSource databaseSource;
     if (normalized.id() == null) {
       validateUserConnectionCommand(normalized);
-      String passwordEnc =
-          secretCodec.encode(
-              Objects.requireNonNull(normalized.passwordRaw(), "passwordRaw required"));
-      databaseSource =
-          DatabaseSource.createUser(
-              normalized.name(),
-              normalized.dbType(),
-              normalized.jdbcUrl(),
-              normalized.username(),
-              passwordEnc,
-              normalized.remarkCustom(),
-              normalized.authMode(),
-              normalized.connectMode(),
-              normalized.host(),
-              normalized.port(),
-              normalized.databaseName(),
-              normalized.serviceName(),
-              normalized.sid(),
-              normalized.driverClassName(),
-              normalized.extraParams());
+      String passwordEnc = secretCodec.encode(
+          Objects.requireNonNull(normalized.passwordRaw(), "passwordRaw required"));
+      databaseSource = DatabaseSource.createUser(
+          normalized.name(),
+          normalized.dbType(),
+          normalized.jdbcUrl(),
+          normalized.username(),
+          passwordEnc,
+          normalized.remarkCustom(),
+          normalized.authMode(),
+          normalized.connectMode(),
+          normalized.host(),
+          normalized.port(),
+          normalized.databaseName(),
+          normalized.serviceName(),
+          normalized.sid(),
+          normalized.driverClassName(),
+          normalized.extraParams());
     } else {
-      databaseSource =
-          databaseSourceRepo
-              .findById(normalized.id())
-              .orElseThrow(
-                  () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
+      databaseSource = databaseSourceRepo
+          .findById(normalized.id())
+          .orElseThrow(
+              () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
       if (databaseSource.isAppSource()) {
         databaseSource.updateName(normalized.name());
       } else {
@@ -110,10 +107,9 @@ public class DatabaseSourceAdminService {
 
   @Transactional
   public void testDatabaseSource(Long id) {
-    DatabaseSource databaseSource =
-        databaseSourceRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
+    DatabaseSource databaseSource = databaseSourceRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
     testDatabaseSourceInternal(databaseSource);
   }
 
@@ -144,11 +140,10 @@ public class DatabaseSourceAdminService {
   public TestConnectionView testDatabaseSourceConfig(UpsertConnectionCommand cmd) {
     UpsertConnectionCommand normalized = normalizeCommand(cmd);
     if (normalized.id() != null) {
-      DatabaseSource existing =
-          databaseSourceRepo
-              .findById(normalized.id())
-              .orElseThrow(
-                  () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
+      DatabaseSource existing = databaseSourceRepo
+          .findById(normalized.id())
+          .orElseThrow(
+              () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
       if (existing.isAppSource()) {
         return TestConnectionView.ok();
       }
@@ -159,33 +154,31 @@ public class DatabaseSourceAdminService {
     if (normalized.passwordRaw() != null && !normalized.passwordRaw().isBlank()) {
       passwordEnc = secretCodec.encode(normalized.passwordRaw());
     } else if (normalized.id() != null) {
-      DatabaseSource existing =
-          databaseSourceRepo
-              .findById(normalized.id())
-              .orElseThrow(
-                  () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
+      DatabaseSource existing = databaseSourceRepo
+          .findById(normalized.id())
+          .orElseThrow(
+              () -> new IllegalArgumentException("DataSource not found: " + normalized.id()));
       passwordEnc = existing.getPasswordEnc();
     } else {
       throw new IllegalArgumentException("passwordRaw required");
     }
 
-    DatabaseSource databaseSource =
-        DatabaseSource.createUser(
-            normalized.name(),
-            normalized.dbType(),
-            normalized.jdbcUrl(),
-            normalized.username(),
-            passwordEnc,
-            normalized.remarkCustom(),
-            normalized.authMode(),
-            normalized.connectMode(),
-            normalized.host(),
-            normalized.port(),
-            normalized.databaseName(),
-            normalized.serviceName(),
-            normalized.sid(),
-            normalized.driverClassName(),
-            normalized.extraParams());
+    DatabaseSource databaseSource = DatabaseSource.createUser(
+        normalized.name(),
+        normalized.dbType(),
+        normalized.jdbcUrl(),
+        normalized.username(),
+        passwordEnc,
+        normalized.remarkCustom(),
+        normalized.authMode(),
+        normalized.connectMode(),
+        normalized.host(),
+        normalized.port(),
+        normalized.databaseName(),
+        normalized.serviceName(),
+        normalized.sid(),
+        normalized.driverClassName(),
+        normalized.extraParams());
     try {
       metadataExtractor.testConnection(databaseSource);
       return TestConnectionView.ok();
@@ -196,10 +189,9 @@ public class DatabaseSourceAdminService {
 
   @Transactional
   public void deleteDatabaseSource(Long id) {
-    DatabaseSource databaseSource =
-        databaseSourceRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
+    DatabaseSource databaseSource = databaseSourceRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
 
     BizAssert.state(!databaseSource.isAppSource(), BaseError.FORBIDDEN);
     databaseSchemaRepo.clearDataSourceIdByDataSourceId(id);
@@ -208,8 +200,7 @@ public class DatabaseSourceAdminService {
 
   public PageData<DatabaseSource> pageDatabaseSources(
       DatabaseType dbType, String nameLike, PageSpec spec) {
-    DatabaseSourcePageQuery query =
-        new DatabaseSourcePageQuery(dbType, StrUtil.trimToNull(nameLike));
+    DatabaseSourcePageQuery query = new DatabaseSourcePageQuery(dbType, StrUtil.trimToNull(nameLike));
     return databaseSourceRepo.pageByQuery(query, PageSpecSorts.apply(spec));
   }
 
@@ -220,10 +211,9 @@ public class DatabaseSourceAdminService {
   }
 
   public DatabaseSourceConnectionInfoView getDatabaseSourceConnectionInfo(Long id) {
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
+    DatabaseSource source = databaseSourceRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("DataSource not found: " + id));
     String passwordRaw = resolveDatabaseSourcePasswordRaw(source);
     return new DatabaseSourceConnectionInfoView(
         source.getId(),
@@ -247,25 +237,23 @@ public class DatabaseSourceAdminService {
   public List<DatabaseSourceSimpleView> listDatabaseSourcesSimple() {
     return databaseSourceRepo.findAll().stream()
         .map(
-            source ->
-                new DatabaseSourceSimpleView(
-                    source.getId(),
-                    source.getName(),
-                    source.getDbType(),
-                    source.getUsername(),
-                    source.getStatus(),
-                    source.getSourceType()))
+            source -> new DatabaseSourceSimpleView(
+                source.getId(),
+                source.getName(),
+                source.getDbType(),
+                source.getUsername(),
+                source.getStatus(),
+                source.getSourceType()))
         .toList();
   }
 
   // --- 数据库管理 ---
 
   public List<String> listAvailableDatabases(Long dataSourceId) {
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(dataSourceId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
+    DatabaseSource source = databaseSourceRepo
+        .findById(dataSourceId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
     return metadataExtractor.listDatabases(source);
   }
 
@@ -282,20 +270,18 @@ public class DatabaseSourceAdminService {
     String normalizedAlias = StrUtil.trimToNull(alias);
     String normalizedRemark = StrUtil.trimToNull(remark);
 
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(dataSourceId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
+    DatabaseSource source = databaseSourceRepo
+        .findById(dataSourceId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
 
     assertDatabaseSchemaNotDuplicated(dataSourceId, normalizedDatabaseName, null);
 
     // 获取基础元数据
     MetadataExtractResult.BaseInfo baseInfo = metadataExtractor.getBaseInfo(source);
 
-    DatabaseSchema schema =
-        DatabaseSchema.create(
-            dataSourceId, normalizedDatabaseName, normalizedAlias, normalizedRemark);
+    DatabaseSchema schema = DatabaseSchema.create(
+        dataSourceId, normalizedDatabaseName, normalizedAlias, normalizedRemark);
     schema.updateMetadata(
         baseInfo.productName(),
         baseInfo.productVersion(),
@@ -316,21 +302,18 @@ public class DatabaseSourceAdminService {
 
   @Transactional
   public void refreshDatabaseSchemaMetadata(Long managedDbId) {
-    DatabaseSchema schema =
-        databaseSchemaRepo
-            .findById(managedDbId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("Managed database not found: " + managedDbId));
+    DatabaseSchema schema = databaseSchemaRepo
+        .findById(managedDbId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("Managed database not found: " + managedDbId));
     if (schema.getDataSourceId() == null) {
       throw new IllegalStateException("DataSource not configured");
     }
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(schema.getDataSourceId())
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "DataSource not found: " + schema.getDataSourceId()));
+    DatabaseSource source = databaseSourceRepo
+        .findById(schema.getDataSourceId())
+        .orElseThrow(
+            () -> new IllegalArgumentException(
+                "DataSource not found: " + schema.getDataSourceId()));
 
     MetadataExtractResult r = metadataExtractor.extract(source, schema.getDatabaseName());
 
@@ -373,15 +356,14 @@ public class DatabaseSourceAdminService {
     // 写入新表
     List<DatabaseTable> newTables = new ArrayList<>();
     for (MetadataExtractResult.TableInfo t : r.tables()) {
-      DatabaseTable nt =
-          DatabaseTable.create(
-              source.getId(),
-              schema.getId(),
-              t.catalog(),
-              t.schema(),
-              t.name(),
-              t.type(),
-              t.remarkDb());
+      DatabaseTable nt = DatabaseTable.create(
+          source.getId(),
+          schema.getId(),
+          t.catalog(),
+          t.schema(),
+          t.name(),
+          t.type(),
+          t.remarkDb());
 
       nt.updateBasicInfo(tableAliasMap.get(t.name()), tableRemarkMap.get(t.name()));
       newTables.add(nt);
@@ -401,20 +383,19 @@ public class DatabaseSourceAdminService {
         continue;
       }
 
-      DatabaseColumn nc =
-          DatabaseColumn.create(
-              source.getId(),
-              schema.getId(),
-              tableId,
-              col.columnName(),
-              col.typeName(),
-              col.jdbcType(),
-              col.columnSize(),
-              col.decimalDigits(),
-              col.nullable(),
-              col.ordinalPosition(),
-              col.defaultValue(),
-              col.remarkDb());
+      DatabaseColumn nc = DatabaseColumn.create(
+          source.getId(),
+          schema.getId(),
+          tableId,
+          col.columnName(),
+          col.typeName(),
+          col.jdbcType(),
+          col.columnSize(),
+          col.decimalDigits(),
+          col.nullable(),
+          col.ordinalPosition(),
+          col.defaultValue(),
+          col.remarkDb());
 
       Map<String, String> oldCAlias = colAliasMap.getOrDefault(col.tableName(), Map.of());
       Map<String, String> oldCRemark = colRemarkMap.getOrDefault(col.tableName(), Map.of());
@@ -455,37 +436,32 @@ public class DatabaseSourceAdminService {
 
   @Transactional
   public void updateDatabaseSchemaInfo(Long id, String alias, String remark) {
-    DatabaseSchema schema =
-        databaseSchemaRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
+    DatabaseSchema schema = databaseSchemaRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
     schema.updateBasicInfo(alias, remark);
     databaseSchemaRepo.save(schema);
   }
 
   private Comparator<DatabaseSchema> buildDatabaseSchemaComparator(
       String sortBy, String sortDirection) {
-    String normalizedSortBy =
-        sortBy == null ? "DATA_SOURCE" : sortBy.trim().toUpperCase(Locale.ROOT);
-    String normalizedSortDirection =
-        sortDirection == null ? "ASC" : sortDirection.trim().toUpperCase(Locale.ROOT);
+    String normalizedSortBy = sortBy == null ? "DATA_SOURCE" : sortBy.trim().toUpperCase(Locale.ROOT);
+    String normalizedSortDirection = sortDirection == null ? "ASC" : sortDirection.trim().toUpperCase(Locale.ROOT);
 
     Comparator<DatabaseSchema> comparator;
     if ("CREATED_AT".equals(normalizedSortBy)) {
-      comparator =
-          Comparator.comparing(
-                  this::resolveCreatedTime, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(
-                  DatabaseSchema::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+      comparator = Comparator.comparing(
+          this::resolveCreatedTime, Comparator.nullsLast(Comparator.naturalOrder()))
+          .thenComparing(
+              DatabaseSchema::getId, Comparator.nullsLast(Comparator.naturalOrder()));
     } else {
-      comparator =
-          Comparator.comparing(
-                  DatabaseSchema::getDataSourceId, Comparator.nullsFirst(Comparator.naturalOrder()))
-              .thenComparing(
-                  DatabaseSchema::getDatabaseName,
-                  Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
-              .thenComparing(
-                  DatabaseSchema::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+      comparator = Comparator.comparing(
+          DatabaseSchema::getDataSourceId, Comparator.nullsFirst(Comparator.naturalOrder()))
+          .thenComparing(
+              DatabaseSchema::getDatabaseName,
+              Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+          .thenComparing(
+              DatabaseSchema::getId, Comparator.nullsLast(Comparator.naturalOrder()));
     }
 
     if ("DESC".equals(normalizedSortDirection)) {
@@ -508,20 +484,17 @@ public class DatabaseSourceAdminService {
   }
 
   public DatabaseSchemaBasicInfoView getDatabaseSchemaBasicInfo(Long id) {
-    DatabaseSchema schema =
-        databaseSchemaRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
+    DatabaseSchema schema = databaseSchemaRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
     if (schema.getDataSourceId() == null) {
       throw new IllegalStateException("DataSource not configured");
     }
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(schema.getDataSourceId())
-            .orElseThrow(
-                () ->
-                    new IllegalArgumentException(
-                        "DataSource not found: " + schema.getDataSourceId()));
+    DatabaseSource source = databaseSourceRepo
+        .findById(schema.getDataSourceId())
+        .orElseThrow(
+            () -> new IllegalArgumentException(
+                "DataSource not found: " + schema.getDataSourceId()));
 
     String passwordRaw = resolveDatabaseSourcePasswordRaw(source);
     return new DatabaseSchemaBasicInfoView(
@@ -535,8 +508,7 @@ public class DatabaseSourceAdminService {
   private String resolveDatabaseSourcePasswordRaw(DatabaseSource source) {
     if (source.isAppSource()) {
       if (StrUtil.isNotBlank(source.getAppDsKey())) {
-        String appPassword =
-            appDataSourceProvider.findPasswordByKey(source.getAppDsKey()).orElse(null);
+        String appPassword = appDataSourceProvider.findPasswordByKey(source.getAppDsKey()).orElse(null);
         if (StrUtil.isNotBlank(appPassword)) {
           return appPassword;
         }
@@ -555,8 +527,7 @@ public class DatabaseSourceAdminService {
     AuthMode authMode = cmd.authMode() == null ? AuthMode.PASSWORD : cmd.authMode();
     ConnectMode connectMode = cmd.connectMode();
     if (connectMode == null) {
-      connectMode =
-          cmd.dbType() == DatabaseType.ORACLE ? ConnectMode.SERVICE_NAME : ConnectMode.HOST_PORT;
+      connectMode = cmd.dbType() == DatabaseType.ORACLE ? ConnectMode.SERVICE_NAME : ConnectMode.HOST_PORT;
     }
 
     Integer port = cmd.port();
@@ -686,15 +657,13 @@ public class DatabaseSourceAdminService {
     if (dataSourceId == null) {
       throw new IllegalArgumentException("dataSourceId required");
     }
-    DatabaseSource source =
-        databaseSourceRepo
-            .findById(dataSourceId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
-    DatabaseSchema schema =
-        databaseSchemaRepo
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
+    DatabaseSource source = databaseSourceRepo
+        .findById(dataSourceId)
+        .orElseThrow(
+            () -> new IllegalArgumentException("DataSource not found: " + dataSourceId));
+    DatabaseSchema schema = databaseSchemaRepo
+        .findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Managed database not found: " + id));
 
     String normalizedDatabaseName = StrUtil.trimToNull(schema.getDatabaseName());
     if (normalizedDatabaseName == null) {
@@ -753,20 +722,18 @@ public class DatabaseSourceAdminService {
 
   @Transactional
   public void updateTableInfo(Long tableId, String alias, String remark) {
-    DatabaseTable t =
-        tableRepo
-            .findById(tableId)
-            .orElseThrow(() -> new IllegalArgumentException("Table not found: " + tableId));
+    DatabaseTable t = tableRepo
+        .findById(tableId)
+        .orElseThrow(() -> new IllegalArgumentException("Table not found: " + tableId));
     t.updateBasicInfo(alias, remark);
     tableRepo.save(t);
   }
 
   @Transactional
   public void updateColumnInfo(Long columnId, String alias, String remark) {
-    DatabaseColumn c =
-        columnRepo
-            .findById(columnId)
-            .orElseThrow(() -> new IllegalArgumentException("Column not found: " + columnId));
+    DatabaseColumn c = columnRepo
+        .findById(columnId)
+        .orElseThrow(() -> new IllegalArgumentException("Column not found: " + columnId));
     c.updateBasicInfo(alias, remark);
     columnRepo.save(c);
   }
@@ -776,12 +743,11 @@ public class DatabaseSourceAdminService {
     if (managedDbId == null) {
       throw new IllegalArgumentException("managedDbId required");
     }
-    DatabaseTablePageQuery query =
-        new DatabaseTablePageQuery(
-            managedDbId,
-            StrUtil.trimToNull(schema),
-            StrUtil.trimToNull(nameLike),
-            StrUtil.trimToNull(tableType));
+    DatabaseTablePageQuery query = new DatabaseTablePageQuery(
+        managedDbId,
+        StrUtil.trimToNull(schema),
+        StrUtil.trimToNull(nameLike),
+        StrUtil.trimToNull(tableType));
     return tableRepo.pageByQuery(query, PageSpecSorts.apply(spec));
   }
 

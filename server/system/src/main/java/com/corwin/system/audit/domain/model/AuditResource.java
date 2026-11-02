@@ -9,6 +9,7 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * @author Corwin 2026/5/21
  */
 public enum AuditResource implements DictEnumDefinition {
+
   USER("用户"),
   EXTERNAL_USER("用户"),
   USER_ROLE("用户角色"),

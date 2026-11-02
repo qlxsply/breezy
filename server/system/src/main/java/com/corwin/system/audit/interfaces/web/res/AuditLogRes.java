@@ -41,4 +41,5 @@ public record AuditLogRes(
     Instant startedAt,
     Instant endedAt,
     Long durationMs,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

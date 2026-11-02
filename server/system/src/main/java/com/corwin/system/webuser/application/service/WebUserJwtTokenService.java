@@ -37,19 +37,18 @@ public class WebUserJwtTokenService {
   public IssuedAccessToken issue(AuthPrincipal principal, long tokenVersion) {
     Instant now = HighDate.realInstant();
     Instant expiresAt = now.plus(authConfigService.userAccessTokenTtl());
-    String token =
-        Jwts.builder()
-            .subject(String.valueOf(principal.userId()))
-            .issuer(authConfigService.userJwtIssuer())
-            .issuedAt(Date.from(now))
-            .expiration(Date.from(expiresAt))
-            .claim("uid", principal.userId())
-            .claim("account", principal.username())
-            .claim("type", principal.userType().name())
-            .claim("ver", tokenVersion)
-            .claim("perms", principal.permissionCodes().stream().sorted().toList())
-            .signWith(secretKey())
-            .compact();
+    String token = Jwts.builder()
+        .subject(String.valueOf(principal.userId()))
+        .issuer(authConfigService.userJwtIssuer())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(expiresAt))
+        .claim("uid", principal.userId())
+        .claim("account", principal.username())
+        .claim("type", principal.userType().name())
+        .claim("ver", tokenVersion)
+        .claim("perms", principal.permissionCodes().stream().sorted().toList())
+        .signWith(secretKey())
+        .compact();
     return new IssuedAccessToken(token, expiresAt);
   }
 
@@ -60,8 +59,7 @@ public class WebUserJwtTokenService {
    * @return the parsed payload
    */
   public WebUserJwtPayload parse(String token) {
-    Claims claims =
-        Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token).getPayload();
+    Claims claims = Jwts.parser().verifyWith(secretKey()).build().parseSignedClaims(token).getPayload();
     Long userId = claims.get("uid", Long.class);
     String account = claims.get("account", String.class);
     String type = claims.get("type", String.class);
@@ -81,9 +79,11 @@ public class WebUserJwtTokenService {
       UserType userType,
       Long tokenVersion,
       Instant issuedAt,
-      Instant expiresAt) {}
+      Instant expiresAt) {
+  }
 
-  public record IssuedAccessToken(String token, Instant expiresAt) {}
+  public record IssuedAccessToken(String token, Instant expiresAt) {
+  }
 
   private SecretKey secretKey() {
     byte[] secret = authConfigService.userJwtSecret().getBytes(StandardCharsets.UTF_8);

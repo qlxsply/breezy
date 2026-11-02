@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Admin REST controller for system-level permission lookups.
  *
- * <p>Provides endpoints for retrieving assignable permissions used during resource permission
+ * <p>
+ * Provides endpoints for retrieving assignable permissions used during resource permission
  * binding. Requires ADMIN authentication.
  *
  * @author Corwin 2026/6/29

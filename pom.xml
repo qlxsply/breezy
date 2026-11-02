@@ -40,7 +40,7 @@
         <maven.failsafe.plugin.version>3.5.5</maven.failsafe.plugin.version>
         <exec.maven.plugin.version>3.6.1</exec.maven.plugin.version>
         <spotless-maven-plugin.version>3.10.0</spotless-maven-plugin.version>
-        <google-java-format.version>1.36.1</google-java-format.version>
+        <eclipse-jdt.version>4.41</eclipse-jdt.version>
 
         <!-- default: dev 不构建前端 -->
         <frontend.build.skip>true</frontend.build.skip>
@@ -149,27 +149,21 @@
                                 <include>src/test/java/**/*.java</include>
                             </includes>
 
-                            <googleJavaFormat>
-                                <version>${google-java-format.version}</version>
-                                <style>GOOGLE</style>
-                            </googleJavaFormat>
+                            <eclipse>
+                                <version>${eclipse-jdt.version}</version>
+                                <file>${maven.multiModuleProjectDirectory}/formatter.xml</file>
+                            </eclipse>
 
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
                             <lineEndings>UNIX</lineEndings>
                         </java>
                     </configuration>
 
                     <executions>
                         <execution>
-                            <id>spotless-apply</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>apply</goal>
-                            </goals>
-                        </execution>
-
-                        <execution>
                             <id>spotless-check</id>
-                            <phase>compile</phase>
+                            <phase>validate</phase>
                             <goals>
                                 <goal>check</goal>
                             </goals>

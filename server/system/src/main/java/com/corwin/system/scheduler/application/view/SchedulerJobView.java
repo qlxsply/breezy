@@ -25,4 +25,5 @@ public record SchedulerJobView(
     Instant lastSuccessTime,
     Instant lastFailureTime,
     String lastErrorMessage,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

@@ -18,7 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Local-dispatch RabbitMQ transport (simulation mode).
  *
- * <p>Parses exchange/routingKey/queue naming and performs serialisation round-trips, then simulates
+ * <p>
+ * Parses exchange/routingKey/queue naming and performs serialisation round-trips, then simulates
  * the consumption path via a local executor — all without an external broker. This validates
  * subscription semantics and context restoration.
  *
@@ -67,8 +68,7 @@ public class RabbitMqAsyncEventTransport implements AsyncEventTransport {
     String routingKey = resolveRoutingKey(envelope.eventType());
     byte[] bytes = serializer.serialize(envelope);
     AsyncEventEnvelope<?> consumedEnvelope = serializer.deserialize(bytes);
-    List<SubscriptionDescriptor> subscriptions =
-        registry.getByEventType(consumedEnvelope.eventType());
+    List<SubscriptionDescriptor> subscriptions = registry.getByEventType(consumedEnvelope.eventType());
     for (SubscriptionDescriptor subscription : subscriptions) {
       if (!matchesSource(subscription, consumedEnvelope.source())) {
         continue;

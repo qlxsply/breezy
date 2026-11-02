@@ -13,4 +13,5 @@ public record JobExecutionContext<P extends JobPayload>(
     Instant scheduledTime,
     Instant startTime,
     SchedulerTriggerType triggerType,
-    P payload) {}
+    P payload) {
+}

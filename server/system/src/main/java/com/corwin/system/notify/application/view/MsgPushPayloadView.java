@@ -23,4 +23,5 @@ public record MsgPushPayloadView(
     String route,
     String priority,
     boolean panelAutoOpen,
-    boolean osNotificationEnabled) {}
+    boolean osNotificationEnabled) {
+}

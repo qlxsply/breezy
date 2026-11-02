@@ -9,7 +9,8 @@ import java.util.Objects;
 /**
  * Default {@link ConsumerGroupResolver} that produces a stable group name.
  *
- * <p>Strategy: normalizes the application name, appends a short hash of the raw group identifier,
+ * <p>
+ * Strategy: normalizes the application name, appends a short hash of the raw group identifier,
  * and clips the result to a maximum length. The format is {@code app.ae.shortHash}, prioritizing
  * stability and reproducibility over readability.
  *

@@ -12,11 +12,13 @@ import org.springframework.lang.NonNull;
 /**
  * {@link TaskDecorator} that propagates {@link Ctx} and MDC context across thread pool boundaries.
  *
- * <p>Captures a snapshot of the submitting thread's context (Ctx + MDC) and restores it in the
+ * <p>
+ * Captures a snapshot of the submitting thread's context (Ctx + MDC) and restores it in the
  * worker thread before execution. After execution, the worker thread's original context (or a
  * cleared state) is restored to avoid cross-request pollution.
  *
- * <p>This is required because thread-pool threads are reused and {@link InheritableThreadLocal}
+ * <p>
+ * This is required because thread-pool threads are reused and {@link InheritableThreadLocal}
  * only propagates context at thread creation time.
  *
  * @author Corwin 2026/3/30

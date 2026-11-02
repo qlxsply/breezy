@@ -16,9 +16,9 @@ import lombok.Getter;
     name = "db_schema",
     indexes = {@Index(name = "idx_db_schema_source", columnList = "data_source_id")},
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_db_schema_name",
-          columnNames = {"data_source_id", "database_name"})
+        @UniqueConstraint(
+            name = "uk_db_schema_name",
+            columnNames = {"data_source_id", "database_name"})
     })
 public class DatabaseSchema {
 
@@ -67,7 +67,8 @@ public class DatabaseSchema {
   @Column(name = "created_at", updatable = false)
   private Instant createdAt;
 
-  protected DatabaseSchema() {}
+  protected DatabaseSchema() {
+  }
 
   public static DatabaseSchema create(
       Long dataSourceId, String databaseName, String alias, String remarkCustom) {

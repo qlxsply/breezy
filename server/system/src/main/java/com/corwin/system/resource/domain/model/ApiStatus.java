@@ -7,11 +7,13 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * API lifecycle status enumeration.
  *
- * <p>Represents the states an API can be in: draft, active, disabled, or deleted.
+ * <p>
+ * Represents the states an API can be in: draft, active, disabled, or deleted.
  *
  * @author Corwin 2026/1/23
  */
 public enum ApiStatus implements DictEnumDefinition {
+
   DRAFT("草稿", DictTagColor.SLATE, DictTagType.INFO),
   ACTIVE("启用", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   DISABLED("停用", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),

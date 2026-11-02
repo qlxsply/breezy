@@ -17,4 +17,5 @@ public record PushHealthRes(
     Instant latestSubscriptionPushAt,
     String latestSubscriptionError,
     List<PushHealthSubscriptionRes> subscriptions,
-    PushHealthDeliveryRes latestDelivery) {}
+    PushHealthDeliveryRes latestDelivery) {
+}

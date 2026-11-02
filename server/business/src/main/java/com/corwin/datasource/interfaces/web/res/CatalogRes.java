@@ -17,4 +17,5 @@ public record CatalogRes(
     String driverName,
     String driverVersion,
     Instant fetchedAt,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

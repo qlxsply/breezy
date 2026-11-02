@@ -10,4 +10,5 @@ public record DatabaseSchemaBasicInfoView(
     DatabaseType dbType,
     String jdbcUrl,
     String username,
-    String passwordRaw) {}
+    String passwordRaw) {
+}

@@ -14,4 +14,5 @@ public record TableRes(
     String tableType,
     String remarkDb,
     String remarkCustom,
-    String alias) {}
+    String alias) {
+}

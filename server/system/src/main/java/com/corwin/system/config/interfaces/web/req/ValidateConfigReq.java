@@ -6,4 +6,5 @@ import jakarta.validation.constraints.NotNull;
 /**
  * @author Corwin 2026/7/31
  */
-public record ValidateConfigReq(@NotNull JsonNode value) {}
+public record ValidateConfigReq(@NotNull JsonNode value) {
+}

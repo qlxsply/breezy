@@ -20,4 +20,5 @@ public record SchedulerJobExecutionView(
     SchedulerTriggerType triggerType,
     String resultCode,
     String resultMessage,
-    String errorMessage) {}
+    String errorMessage) {
+}

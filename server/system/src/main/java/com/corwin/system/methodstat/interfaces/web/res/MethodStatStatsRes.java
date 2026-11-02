@@ -34,4 +34,5 @@ public record MethodStatStatsRes(
     long durationP50,
     long durationP90,
     long durationP95,
-    long durationP99) {}
+    long durationP99) {
+}

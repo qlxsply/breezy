@@ -10,7 +10,8 @@ import java.util.Optional;
 /**
  * Repository interface for {@link DictType} domain aggregate.
  *
- * <p>Provides domain-level data access operations for dictionary types.
+ * <p>
+ * Provides domain-level data access operations for dictionary types.
  *
  * @author Corwin 2026/3/15
  */

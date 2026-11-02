@@ -61,10 +61,9 @@ public record MethodStatMethodDescriptor(
    */
   public static String buildMethodSignature(
       Class<?> implementationClass, Method implementationMethod) {
-    String parameterTypes =
-        Arrays.stream(implementationMethod.getParameterTypes())
-            .map(Class::getTypeName)
-            .collect(Collectors.joining(","));
+    String parameterTypes = Arrays.stream(implementationMethod.getParameterTypes())
+        .map(Class::getTypeName)
+        .collect(Collectors.joining(","));
     return implementationClass.getName()
         + "#"
         + implementationMethod.getName()

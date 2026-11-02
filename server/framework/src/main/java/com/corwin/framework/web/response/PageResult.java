@@ -12,7 +12,8 @@ import lombok.Getter;
 /**
  * Generic paginated response wrapper.
  *
- * <p>Converts a {@link com.corwin.framework.domain.page.PageData} into a frontend-friendly
+ * <p>
+ * Converts a {@link com.corwin.framework.domain.page.PageData} into a frontend-friendly
  * structure with page metadata and element list.
  *
  * @param <T> the element type
@@ -21,6 +22,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PageResult<T> {
+
   /** Current page number (1-based) */
   private final int pageNo;
 
@@ -68,8 +70,7 @@ public class PageResult<T> {
     if (page == null) {
       return new PageResult<>(1, 20, 0, 0, 0, Collections.emptyList());
     }
-    List<R> elements =
-        page.elements().stream().map(mapper).collect(Collectors.toUnmodifiableList());
+    List<R> elements = page.elements().stream().map(mapper).collect(Collectors.toUnmodifiableList());
     return new PageResult<>(
         page.pageNo(),
         page.pageSize(),

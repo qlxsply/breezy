@@ -26,8 +26,8 @@ public class AuthWhitelistMatcher {
   }
 
   private List<CompiledWhitelistRule> currentRules() {
-    ConfigSnapshot<FrameworkConfigSpecs.AuthWhitelistConfig> snapshot =
-        Configs.snapshot(FrameworkConfigSpecs.AUTH_WHITELIST);
+    ConfigSnapshot<FrameworkConfigSpecs.AuthWhitelistConfig> snapshot = Configs
+        .snapshot(FrameworkConfigSpecs.AUTH_WHITELIST);
     CompiledRules current = compiledRules;
     if (current.revision() == snapshot.revision()) {
       return current.rules();
@@ -35,8 +35,8 @@ public class AuthWhitelistMatcher {
     synchronized (this) {
       current = compiledRules;
       if (current.revision() != snapshot.revision()) {
-        List<CompiledWhitelistRule> rules =
-            snapshot.value().rules().stream().map(CompiledWhitelistRule::compile).toList();
+        List<CompiledWhitelistRule> rules = snapshot.value().rules().stream().map(CompiledWhitelistRule::compile)
+            .toList();
         compiledRules = new CompiledRules(snapshot.revision(), rules);
       }
       return compiledRules.rules();
@@ -44,6 +44,7 @@ public class AuthWhitelistMatcher {
   }
 
   private record CompiledRules(long revision, List<CompiledWhitelistRule> rules) {
+
     private CompiledRules {
       rules = List.copyOf(rules);
     }

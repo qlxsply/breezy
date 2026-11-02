@@ -20,6 +20,7 @@ public record ScheduleRes(
     List<Integer> advanceSecondsList,
     ScheduleEventStatus status,
     String note) {
+
   public record RuleRes(
       RecurrenceRuleFrequency frequency,
       Integer interval,
@@ -27,5 +28,6 @@ public record ScheduleRes(
       Integer dayOfMonth,
       Integer monthOfYear,
       Instant until,
-      Integer countLimit) {}
+      Integer countLimit) {
+  }
 }

@@ -19,4 +19,5 @@ public record ColumnRes(
     String defaultValue,
     String remarkDb,
     String remarkCustom,
-    String alias) {}
+    String alias) {
+}

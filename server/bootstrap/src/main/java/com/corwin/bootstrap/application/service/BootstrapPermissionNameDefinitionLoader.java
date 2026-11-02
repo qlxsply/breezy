@@ -24,9 +24,8 @@ public class BootstrapPermissionNameDefinitionLoader {
   public Map<String, String> load() {
     Resource resource = definitionResources.permissionsProperties();
     LinkedHashMap<String, String> result = new LinkedHashMap<>();
-    try (BufferedReader reader =
-        new BufferedReader(
-            new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
         String trimmed = line.trim();

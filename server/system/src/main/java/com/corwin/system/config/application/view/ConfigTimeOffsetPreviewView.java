@@ -11,4 +11,5 @@ public record ConfigTimeOffsetPreviewView(
     long targetEpochMillis,
     Long calculatedOffsetSeconds,
     long offsetSeconds,
-    long mockedEpochMillis) {}
+    long mockedEpochMillis) {
+}

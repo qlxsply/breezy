@@ -48,39 +48,34 @@ public class PushHealthAppService {
       return new PushHealthView(false, "", 0, 0, null, null, "", List.of(), null);
     }
 
-    List<UserPushSubscription> subscriptions =
-        userPushSubscriptionRepository.findByUserIdAndUserTypeOrderByUpdatedAtDesc(
+    List<UserPushSubscription> subscriptions = userPushSubscriptionRepository
+        .findByUserIdAndUserTypeOrderByUpdatedAtDesc(
             userId, userType);
     int activeCount = (int) subscriptions.stream().filter(UserPushSubscription::isActive).count();
     int inactiveCount = Math.max(0, subscriptions.size() - activeCount);
 
-    Instant latestUpdatedAt =
-        subscriptions.stream()
-            .map(UserPushSubscription::getUpdatedAt)
-            .filter(it -> it != null)
-            .max(Comparator.naturalOrder())
-            .orElse(null);
-    Instant latestPushAt =
-        subscriptions.stream()
-            .map(UserPushSubscription::getLastPushAt)
-            .filter(it -> it != null)
-            .max(Comparator.naturalOrder())
-            .orElse(null);
-    String latestError =
-        subscriptions.stream()
-            .map(UserPushSubscription::getLastError)
-            .filter(it -> it != null && !it.isBlank())
-            .findFirst()
-            .orElse("");
+    Instant latestUpdatedAt = subscriptions.stream()
+        .map(UserPushSubscription::getUpdatedAt)
+        .filter(it -> it != null)
+        .max(Comparator.naturalOrder())
+        .orElse(null);
+    Instant latestPushAt = subscriptions.stream()
+        .map(UserPushSubscription::getLastPushAt)
+        .filter(it -> it != null)
+        .max(Comparator.naturalOrder())
+        .orElse(null);
+    String latestError = subscriptions.stream()
+        .map(UserPushSubscription::getLastError)
+        .filter(it -> it != null && !it.isBlank())
+        .findFirst()
+        .orElse("");
 
-    List<PushHealthSubscriptionView> subscriptionViews =
-        subscriptions.stream().map(this::toSubscriptionView).toList();
+    List<PushHealthSubscriptionView> subscriptionViews = subscriptions.stream().map(this::toSubscriptionView).toList();
 
-    PushHealthDeliveryView latestDelivery =
-        messageDeliveryRepository
-            .findFirstByUserIdAndUserTypeOrderByIdDesc(userId, userType)
-            .map(this::toDeliveryView)
-            .orElse(null);
+    PushHealthDeliveryView latestDelivery = messageDeliveryRepository
+        .findFirstByUserIdAndUserTypeOrderByIdDesc(userId, userType)
+        .map(this::toDeliveryView)
+        .orElse(null);
 
     var webPush = Configs.get(SystemNotifyConfigSpecs.WEB_PUSH);
     boolean vapidReady = !isBlank(webPush.publicKey()) && !isBlank(webPush.privateKey());
@@ -110,19 +105,18 @@ public class PushHealthAppService {
       return null;
     }
 
-    MessageDelivery delivery =
-        notificationDispatcher.dispatchPreview(
-            userId,
-            userType,
-            MsgType.SYSTEM_EVENT,
-            "[健康检查] 高优先级系统通知测试",
-            "如果你收到了这条系统通知，说明 Web Push 投递链路正常。",
-            "/todo/all",
-            "HIGH",
-            false,
-            true,
-            true,
-            true);
+    MessageDelivery delivery = notificationDispatcher.dispatchPreview(
+        userId,
+        userType,
+        MsgType.SYSTEM_EVENT,
+        "[健康检查] 高优先级系统通知测试",
+        "如果你收到了这条系统通知，说明 Web Push 投递链路正常。",
+        "/todo/all",
+        "HIGH",
+        false,
+        true,
+        true,
+        true);
     log.info(
         "Push health test message dispatched: userType={}, userId={}, deliveryId={}",
         userType,

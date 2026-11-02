@@ -48,8 +48,8 @@ public class WebPushDispatchService {
   @Scheduled(fixedDelayString = "${breezy.msg.push.retry-delay-ms:20000}")
   @Transactional
   public void retryPendingDeliveries() {
-    List<MessageDelivery> pendings =
-        messageDeliveryRepository.findTop50ByStatusOrderByIdAsc(MessageDeliveryStatus.PENDING);
+    List<MessageDelivery> pendings = messageDeliveryRepository
+        .findTop50ByStatusOrderByIdAsc(MessageDeliveryStatus.PENDING);
     if (pendings.isEmpty()) {
       return;
     }
@@ -75,9 +75,8 @@ public class WebPushDispatchService {
         delivery.getPriority(),
         delivery.getStatus());
 
-    List<UserPushSubscription> subscriptions =
-        userPushSubscriptionRepository.findByUserIdAndUserTypeAndActiveTrue(
-            delivery.getUserId(), delivery.getUserType());
+    List<UserPushSubscription> subscriptions = userPushSubscriptionRepository.findByUserIdAndUserTypeAndActiveTrue(
+        delivery.getUserId(), delivery.getUserType());
     if (subscriptions.isEmpty()) {
       log.info(
           "WebPush dispatch skipped: no active subscriptions, userType={}, userId={}, deliveryId={}",
@@ -105,12 +104,11 @@ public class WebPushDispatchService {
     int failureCount = 0;
     for (UserPushSubscription subscription : subscriptions) {
       try {
-        Notification notification =
-            new Notification(
-                subscription.getEndpoint(),
-                subscription.getP256dh(),
-                subscription.getAuthSecret(),
-                payload);
+        Notification notification = new Notification(
+            subscription.getEndpoint(),
+            subscription.getP256dh(),
+            subscription.getAuthSecret(),
+            payload);
         HttpResponse response = pushService.send(notification);
         int statusCode = response.getStatusLine().getStatusCode();
         if (statusCode >= 200 && statusCode < 300) {

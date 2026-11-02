@@ -25,6 +25,7 @@ Breezy 是一个全栈工具箱式应用，后端采用 Spring Boot 3.5.x + Java
     - `domain.model` / `domain.repo`：领域模型与仓储接口
     - `infrastructure.*`：持久化、调度、安全等基础设施实现
     - ORM 约定：基础单表增删改查使用 JPA；分页查询、动态条件查询统一使用 MyBatis Mapper XML 实现
+    - 结合后端代码介绍 DDD 核心概念、聚合边界及现实工程取舍：[`server/领域驱动设计实践指南.md`](server/领域驱动设计实践指南.md)
 - 前端资源驱动的菜单与权限
     - `/api/admin/menu-resources` 返回资源树，驱动菜单可见性和权限；后台页面由编译期存在的 Next.js 物理路由提供
     - 资源类型/范围/打开方式统一约定（MENU/BUTTON，SETTING/TOOL 等）

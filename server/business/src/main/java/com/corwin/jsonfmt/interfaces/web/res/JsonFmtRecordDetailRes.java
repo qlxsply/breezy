@@ -11,4 +11,5 @@ public record JsonFmtRecordDetailRes(
     String content,
     Integer orderNo,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

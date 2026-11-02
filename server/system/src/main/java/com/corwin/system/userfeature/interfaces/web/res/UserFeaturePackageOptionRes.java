@@ -21,4 +21,5 @@ public record UserFeaturePackageOptionRes(
     UserApplicationPackageType packageType,
     String description,
     boolean enabled,
-    boolean defaultPackage) {}
+    boolean defaultPackage) {
+}

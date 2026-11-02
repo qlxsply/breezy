@@ -56,9 +56,8 @@ public class ReminderOutboxRepositoryJpaAdapter implements ReminderOutboxReposit
   }
 
   @Override
-  public List<ReminderOutbox>
-      findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
-          Long userId, ReminderOutboxStatus status, Instant startAt, Instant endAt) {
+  public List<ReminderOutbox> findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
+      Long userId, ReminderOutboxStatus status, Instant startAt, Instant endAt) {
     return repo
         .findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
             userId, status, startAt, endAt);

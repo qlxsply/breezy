@@ -14,9 +14,8 @@ public interface ReminderOutboxRepository extends DomainRepository<ReminderOutbo
 
   Optional<ReminderOutbox> findByDedupeKey(String dedupeKey);
 
-  List<ReminderOutbox>
-      findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
-          Long userId, ReminderOutboxStatus status, Instant startAt, Instant endAt);
+  List<ReminderOutbox> findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
+      Long userId, ReminderOutboxStatus status, Instant startAt, Instant endAt);
 
   Optional<ReminderOutbox> findByDeliveryId(Long deliveryId);
 

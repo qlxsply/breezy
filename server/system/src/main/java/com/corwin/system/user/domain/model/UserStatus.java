@@ -11,6 +11,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/1/22
  */
 public enum UserStatus implements DictEnumDefinition {
+
   ENABLED("启用", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   DISABLED("禁用", DictTagColor.DANGER_RED, DictTagType.DANGER);
 

@@ -19,4 +19,5 @@ public record PersistedDelivery(
     long createdAt,
     long updatedAt,
     Long completedAt,
-    long version) {}
+    long version) {
+}

@@ -122,12 +122,11 @@ public class RoleAdminService {
   @Transactional
   public void delete(Long id) {
     Role role = get(id);
-    List<Long> affectedUserIds =
-        userRoleRepository.findByRoleId(id).stream()
-            .map(UserRole::getUserId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
+    List<Long> affectedUserIds = userRoleRepository.findByRoleId(id).stream()
+        .map(UserRole::getUserId)
+        .filter(Objects::nonNull)
+        .distinct()
+        .toList();
     roleRepository.delete(role);
     roleResourceRepository.deleteByRoleId(id);
     userRoleRepository.deleteByRoleId(id);

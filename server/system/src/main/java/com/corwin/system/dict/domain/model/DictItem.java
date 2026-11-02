@@ -13,7 +13,8 @@ import lombok.Getter;
 /**
  * JPA entity representing a dictionary item.
  *
- * <p>A dictionary item belongs to a dictionary type and carries a code, label, value, sorting
+ * <p>
+ * A dictionary item belongs to a dictionary type and carries a code, label, value, sorting
  * order, and optional hierarchical relation via parentItemId.
  *
  * @author Corwin 2026/3/15
@@ -23,14 +24,14 @@ import lombok.Getter;
 @Table(
     name = "sys_dict_item",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_sys_dict_item_code",
-          columnNames = {"dict_type_id", "item_code"})
+        @UniqueConstraint(
+            name = "uk_sys_dict_item_code",
+            columnNames = {"dict_type_id", "item_code"})
     },
     indexes = {
-      @Index(name = "idx_sys_dict_item_type", columnList = "dict_type_id"),
-      @Index(name = "idx_sys_dict_item_parent", columnList = "parent_item_id"),
-      @Index(name = "idx_sys_dict_item_enabled", columnList = "enabled")
+        @Index(name = "idx_sys_dict_item_type", columnList = "dict_type_id"),
+        @Index(name = "idx_sys_dict_item_parent", columnList = "parent_item_id"),
+        @Index(name = "idx_sys_dict_item_enabled", columnList = "enabled")
     })
 public class DictItem {
 
@@ -86,7 +87,8 @@ public class DictItem {
   @Column(nullable = false, length = 64)
   private String updatedBy;
 
-  protected DictItem() {}
+  protected DictItem() {
+  }
 
   /** Constructs a new DictItem entity with the given attributes. */
   public DictItem(

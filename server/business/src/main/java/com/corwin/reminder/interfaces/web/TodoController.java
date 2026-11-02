@@ -39,14 +39,13 @@ public class TodoController {
 
   @PostMapping
   public ApiResponse<Long> create(@RequestBody TodoCreateReq req) {
-    Long id =
-        service.create(
-            new TodoSaveCommand(
-                req.content(),
-                req.dueTime(),
-                req.note(),
-                req.contentAttachmentFileIds(),
-                req.completionAttachmentFileIds()));
+    Long id = service.create(
+        new TodoSaveCommand(
+            req.content(),
+            req.dueTime(),
+            req.note(),
+            req.contentAttachmentFileIds(),
+            req.completionAttachmentFileIds()));
     return ApiResponse.ok(id);
   }
 
@@ -70,21 +69,18 @@ public class TodoController {
 
   @PostMapping("/page")
   public ApiResponse<PageResult<TodoRes>> page(@RequestBody TodoPageReq req) {
-    var page =
-        service.page(req.status(), req.contentLike(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = service.page(req.status(), req.contentLike(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, TodoController::toDto));
   }
 
   @PostMapping("/reorder")
   public ApiResponse<Object> reorder(@RequestBody TodoReorderReq req) {
-    List<TodoReorderCommand.GroupCommand> groups =
-        req.groups() == null
-            ? List.of()
-            : req.groups().stream()
-                .map(
-                    group ->
-                        new TodoReorderCommand.GroupCommand(group.status(), group.orderedIds()))
-                .toList();
+    List<TodoReorderCommand.GroupCommand> groups = req.groups() == null
+        ? List.of()
+        : req.groups().stream()
+            .map(
+                group -> new TodoReorderCommand.GroupCommand(group.status(), group.orderedIds()))
+            .toList();
     service.reorder(new TodoReorderCommand(groups));
     return ApiResponse.ok();
   }

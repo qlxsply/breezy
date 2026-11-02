@@ -12,4 +12,5 @@ import com.corwin.system.auth.domain.model.LoginEvent;
  */
 public interface LoginLogRepository
     extends DomainRepository<LoginEvent, Long>,
-        DynamicPageQueryRepository<LoginEvent, LoginLogPageQuery> {}
+    DynamicPageQueryRepository<LoginEvent, LoginLogPageQuery> {
+}

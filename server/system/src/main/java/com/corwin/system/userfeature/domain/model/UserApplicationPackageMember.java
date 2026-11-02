@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 用户应用包成员。
  *
- * <p>表示用户与用户应用包之间的成员关系。
+ * <p>
+ * 表示用户与用户应用包之间的成员关系。
  *
  * @author Corwin
  */
@@ -17,14 +18,14 @@ import lombok.Getter;
 @Table(
     name = "sys_user_application_package_member",
     indexes = {
-      @Index(
-          name = "idx_sys_user_application_package_member_unique",
-          columnList = "package_id,user_id",
-          unique = true),
-      @Index(
-          name = "idx_sys_user_application_package_member_package_id",
-          columnList = "package_id"),
-      @Index(name = "idx_sys_user_application_package_member_user_id", columnList = "user_id")
+        @Index(
+            name = "idx_sys_user_application_package_member_unique",
+            columnList = "package_id,user_id",
+            unique = true),
+        @Index(
+            name = "idx_sys_user_application_package_member_package_id",
+            columnList = "package_id"),
+        @Index(name = "idx_sys_user_application_package_member_user_id", columnList = "user_id")
     })
 public class UserApplicationPackageMember {
 
@@ -36,7 +37,8 @@ public class UserApplicationPackageMember {
   /**
    * 用户应用包 ID。
    *
-   * <p>逻辑引用 {@link UserApplicationPackage#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link UserApplicationPackage#getId()}，数据库层面不创建外键。
    */
   @Column(name = "package_id", nullable = false)
   private Long packageId;
@@ -44,7 +46,8 @@ public class UserApplicationPackageMember {
   /**
    * 用户 ID。
    *
-   * <p>逻辑引用用户表主键，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用用户表主键，数据库层面不创建外键。
    */
   @Column(name = "user_id", nullable = false)
   private Long userId;
@@ -58,7 +61,8 @@ public class UserApplicationPackageMember {
   private Instant createdAt;
 
   /** JPA 构造方法。 */
-  protected UserApplicationPackageMember() {}
+  protected UserApplicationPackageMember() {
+  }
 
   /**
    * 创建用户应用包成员关系。

@@ -47,7 +47,8 @@ public class RecurrenceRule {
   @Column(name = "count_limit")
   private Integer countLimit;
 
-  protected RecurrenceRule() {}
+  protected RecurrenceRule() {
+  }
 
   // ---------- 工厂方法（便于约束） ----------
 

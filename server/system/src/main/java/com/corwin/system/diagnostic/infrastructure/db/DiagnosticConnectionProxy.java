@@ -52,12 +52,11 @@ public final class DiagnosticConnectionProxy implements InvocationHandler {
     if (target == null) {
       return null;
     }
-    return (Connection)
-        Proxy.newProxyInstance(
-            Connection.class.getClassLoader(),
-            new Class[] {Connection.class},
-            new DiagnosticConnectionProxy(
-                dataSourceName, target, runtimeManager, sqlExecutionObserver));
+    return (Connection) Proxy.newProxyInstance(
+        Connection.class.getClassLoader(),
+        new Class[]{Connection.class},
+        new DiagnosticConnectionProxy(
+            dataSourceName, target, runtimeManager, sqlExecutionObserver));
   }
 
   /**
@@ -86,22 +85,22 @@ public final class DiagnosticConnectionProxy implements InvocationHandler {
       Object result = method.invoke(target, args);
       return switch (methodName) {
         case "createStatement" ->
-            DiagnosticStatementProxy.wrap(
-                dataSourceName, (Statement) result, null, runtimeManager, sqlExecutionObserver);
+          DiagnosticStatementProxy.wrap(
+              dataSourceName, (Statement) result, null, runtimeManager, sqlExecutionObserver);
         case "prepareStatement" ->
-            DiagnosticStatementProxy.wrap(
-                dataSourceName,
-                (PreparedStatement) result,
-                args != null && args.length > 0 && args[0] instanceof String sql ? sql : null,
-                runtimeManager,
-                sqlExecutionObserver);
+          DiagnosticStatementProxy.wrap(
+              dataSourceName,
+              (PreparedStatement) result,
+              args != null && args.length > 0 && args[0] instanceof String sql ? sql : null,
+              runtimeManager,
+              sqlExecutionObserver);
         case "prepareCall" ->
-            DiagnosticStatementProxy.wrap(
-                dataSourceName,
-                (CallableStatement) result,
-                args != null && args.length > 0 && args[0] instanceof String sql ? sql : null,
-                runtimeManager,
-                sqlExecutionObserver);
+          DiagnosticStatementProxy.wrap(
+              dataSourceName,
+              (CallableStatement) result,
+              args != null && args.length > 0 && args[0] instanceof String sql ? sql : null,
+              runtimeManager,
+              sqlExecutionObserver);
         default -> result;
       };
     } catch (InvocationTargetException ex) {

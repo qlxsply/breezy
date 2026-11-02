@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/1/11
  */
 public enum DatabaseSourceStatus implements DictEnumDefinition {
+
   NEW("未测试", DictTagColor.SLATE, DictTagType.INFO),
   OK("正常", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   FAILED("失败", DictTagColor.DANGER_RED, DictTagType.DANGER);

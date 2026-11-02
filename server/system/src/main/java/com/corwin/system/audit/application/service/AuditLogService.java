@@ -44,35 +44,34 @@ public class AuditLogService {
     }
 
     var auditPolicy = Configs.snapshot(SystemAuditConfigSpecs.AUDIT_POLICY).value();
-    AuditLog auditLog =
-        new AuditLog(
-            command.traceId(),
-            command.requestId(),
-            command.operatorUserId(),
-            StrUtil.trimToNull(command.operatorUsername()),
-            StrUtil.trimToNull(command.operatorUserType()),
-            StrUtil.trimToNull(command.applicationCode()),
-            command.protocol(),
-            command.httpMethod(),
-            StrUtil.trimToNull(command.pathPattern()),
-            StrUtil.trimToNull(command.requestUri()),
-            StrUtil.trimToNull(command.permissionCodes()),
-            StrUtil.trimToNull(command.auditResource()),
-            StrUtil.trimToNull(command.auditAction()),
-            StrUtil.trimToNull(command.auditDescription()),
-            command.auditLevel(),
-            StrUtil.trimToNull(command.requestIp()),
-            StrUtil.trimToNull(command.userAgent()),
-            StrUtil.trimToNull(command.requestParamSummary()),
-            StrUtil.trimToNull(command.requestBodySummary()),
-            StrUtil.trimToNull(command.responseSummary()),
-            command.success(),
-            StrUtil.trimToNull(command.errorCode()),
-            StrUtil.trimToNull(command.errorMessage()),
-            command.startedAt(),
-            command.endedAt(),
-            command.durationMs(),
-            command.createdAt() == null ? HighDate.mockInstant() : command.createdAt());
+    AuditLog auditLog = new AuditLog(
+        command.traceId(),
+        command.requestId(),
+        command.operatorUserId(),
+        StrUtil.trimToNull(command.operatorUsername()),
+        StrUtil.trimToNull(command.operatorUserType()),
+        StrUtil.trimToNull(command.applicationCode()),
+        command.protocol(),
+        command.httpMethod(),
+        StrUtil.trimToNull(command.pathPattern()),
+        StrUtil.trimToNull(command.requestUri()),
+        StrUtil.trimToNull(command.permissionCodes()),
+        StrUtil.trimToNull(command.auditResource()),
+        StrUtil.trimToNull(command.auditAction()),
+        StrUtil.trimToNull(command.auditDescription()),
+        command.auditLevel(),
+        StrUtil.trimToNull(command.requestIp()),
+        StrUtil.trimToNull(command.userAgent()),
+        StrUtil.trimToNull(command.requestParamSummary()),
+        StrUtil.trimToNull(command.requestBodySummary()),
+        StrUtil.trimToNull(command.responseSummary()),
+        command.success(),
+        StrUtil.trimToNull(command.errorCode()),
+        StrUtil.trimToNull(command.errorMessage()),
+        command.startedAt(),
+        command.endedAt(),
+        command.durationMs(),
+        command.createdAt() == null ? HighDate.mockInstant() : command.createdAt());
 
     if (!auditPolicy.asyncEnabled()) {
       saveSafely(auditLog);
@@ -107,19 +106,18 @@ public class AuditLogService {
       Instant startAt,
       Instant endAt,
       PageSpec spec) {
-    AuditLogPageQuery query =
-        new AuditLogPageQuery(
-            StrUtil.trimToNull(traceId),
-            operatorUserId,
-            StrUtil.trimToNull(operatorUsername),
-            StrUtil.trimToNull(applicationCode),
-            StrUtil.trimToNull(requestUri),
-            StrUtil.trimToNull(auditResource),
-            StrUtil.trimToNull(auditAction),
-            auditLevel,
-            success,
-            startAt,
-            endAt);
+    AuditLogPageQuery query = new AuditLogPageQuery(
+        StrUtil.trimToNull(traceId),
+        operatorUserId,
+        StrUtil.trimToNull(operatorUsername),
+        StrUtil.trimToNull(applicationCode),
+        StrUtil.trimToNull(requestUri),
+        StrUtil.trimToNull(auditResource),
+        StrUtil.trimToNull(auditAction),
+        auditLevel,
+        success,
+        startAt,
+        endAt);
     return auditLogRepository.pageByQuery(query, PageSpecSorts.apply(spec));
   }
 

@@ -74,9 +74,8 @@ public class DiagnosticRuntimeManager {
       jfrCollector.start(session.config());
     }
     sessionRepository.save(session);
-    ScheduledFuture<?> future =
-        diagnosticScheduler.scheduleAtFixedRate(
-            () -> captureSnapshot(session), session.config().intervalMs());
+    ScheduledFuture<?> future = diagnosticScheduler.scheduleAtFixedRate(
+        () -> captureSnapshot(session), session.config().intervalMs());
     state.set(new RuntimeState(session, future));
     captureSnapshot(session);
     return session;
@@ -102,9 +101,8 @@ public class DiagnosticRuntimeManager {
       jfrCollector.stop();
     }
     sessionRepository.save(session);
-    ScheduledFuture<?> future =
-        diagnosticScheduler.scheduleAtFixedRate(
-            () -> captureSnapshot(session), session.config().intervalMs());
+    ScheduledFuture<?> future = diagnosticScheduler.scheduleAtFixedRate(
+        () -> captureSnapshot(session), session.config().intervalMs());
     state.set(new RuntimeState(session, future));
     captureSnapshot(session);
     return session;
@@ -204,5 +202,6 @@ public class DiagnosticRuntimeManager {
     snapshotRepository.append(snapshotCollector.collect(session.config()));
   }
 
-  private record RuntimeState(DiagnosticSession session, ScheduledFuture<?> future) {}
+  private record RuntimeState(DiagnosticSession session, ScheduledFuture<?> future) {
+  }
 }

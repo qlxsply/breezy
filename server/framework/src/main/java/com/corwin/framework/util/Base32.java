@@ -3,21 +3,22 @@ package com.corwin.framework.util;
 /**
  * Utility for custom base‑32 encoding/decoding.
  *
- * <p>Uses a 32‑character alphabet that omits visually ambiguous letters (e.g. g, l, o, q in
+ * <p>
+ * Uses a 32‑character alphabet that omits visually ambiguous letters (e.g. g, l, o, q in
  * lowercase; I, O, U, V in uppercase). Supports conversion between integral values and fixed‑width
  * strings with optional zero padding.
  *
  * <h3>Potential issues/notices:</h3>
  *
  * <ul>
- *   <li><strong>Character set choice:</strong> This is not RFC4648 base32— branded applications may
- *       be confused if they expect canonical base32.
- *   <li><strong>Fixed buffer size:</strong> toStr(long,…) computes length by bit‑width; for very
- *       small values plus large minScale you may get leading zeros.
- *   <li><strong>Index arrays size:</strong> uses 128‑length int[]; non‑ASCII input will result in
- *       {@code ArrayIndexOutOfBoundsException}—consider validating/limiting to [0..127].
- *   <li><strong>Negative numbers:</strong> toStr assumes unsigned behavior (logical shift);
- *       longFromStr treats input as unsigned too. If negative inputs occur, results are undefined.
+ * <li><strong>Character set choice:</strong> This is not RFC4648 base32— branded applications may
+ * be confused if they expect canonical base32.
+ * <li><strong>Fixed buffer size:</strong> toStr(long,…) computes length by bit‑width; for very
+ * small values plus large minScale you may get leading zeros.
+ * <li><strong>Index arrays size:</strong> uses 128‑length int[]; non‑ASCII input will result in
+ * {@code ArrayIndexOutOfBoundsException}—consider validating/limiting to [0..127].
+ * <li><strong>Negative numbers:</strong> toStr assumes unsigned behavior (logical shift);
+ * longFromStr treats input as unsigned too. If negative inputs occur, results are undefined.
  * </ul>
  *
  * @author Corwin 2025/5/12
@@ -86,14 +87,14 @@ public class Base32 {
 
   /** Lowercase alphabet (32 chars) omitting g, l, o, q to avoid visual ambiguity. */
   private static final char[] LOWERCASE_CODE = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'h', 'i', 'j',
-    'k', 'm', 'n', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'h', 'i', 'j',
+      'k', 'm', 'n', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
   };
 
   /** Uppercase alphabet (32 chars) omitting I, O, U, V to avoid visual ambiguity. */
   private static final char[] UPPERCASE_CODE = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J',
-    'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'W', 'X', 'Y', 'Z'
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J',
+      'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'W', 'X', 'Y', 'Z'
   };
 
   /** Lookup table for lowercase chars → index. */

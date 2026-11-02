@@ -15,13 +15,12 @@ public record SubscriptionOptions(List<String> sources, int order, boolean allow
     if (sources == null || sources.isEmpty()) {
       sources = List.of();
     } else {
-      sources =
-          sources.stream()
-              .filter(Objects::nonNull)
-              .map(String::trim)
-              .filter(item -> !item.isEmpty())
-              .distinct()
-              .toList();
+      sources = sources.stream()
+          .filter(Objects::nonNull)
+          .map(String::trim)
+          .filter(item -> !item.isEmpty())
+          .distinct()
+          .toList();
     }
   }
 }

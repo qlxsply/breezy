@@ -14,8 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InMemoryDiagnosticEventRepository implements DiagnosticEventRepository {
 
-  private final DiagnosticRingBuffer<DiagnosticEvent> buffer =
-      new DiagnosticRingBuffer<>(DiagnosticConfig.DEFAULT_EVENT_CAPACITY);
+  private final DiagnosticRingBuffer<DiagnosticEvent> buffer = new DiagnosticRingBuffer<>(
+      DiagnosticConfig.DEFAULT_EVENT_CAPACITY);
 
   @Override
   public void configureCapacity(int capacity) {

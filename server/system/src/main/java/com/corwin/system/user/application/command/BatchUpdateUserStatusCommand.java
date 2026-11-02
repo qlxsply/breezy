@@ -8,4 +8,5 @@ import java.util.List;
  *
  * @author Corwin 2026/7/7
  */
-public record BatchUpdateUserStatusCommand(List<Long> userIds, UserStatus status) {}
+public record BatchUpdateUserStatusCommand(List<Long> userIds, UserStatus status) {
+}

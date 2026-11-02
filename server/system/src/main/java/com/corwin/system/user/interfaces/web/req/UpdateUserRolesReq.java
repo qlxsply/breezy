@@ -12,5 +12,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateUserRolesReq {
+
   private List<Long> roleIds;
 }

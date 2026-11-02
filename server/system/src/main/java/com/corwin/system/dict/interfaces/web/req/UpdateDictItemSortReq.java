@@ -7,4 +7,5 @@ import java.util.List;
  *
  * @author Corwin 2026/3/15
  */
-public record UpdateDictItemSortReq(List<String> itemIds) {}
+public record UpdateDictItemSortReq(List<String> itemIds) {
+}

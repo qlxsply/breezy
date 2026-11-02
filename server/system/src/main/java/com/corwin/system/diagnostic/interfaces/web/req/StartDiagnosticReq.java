@@ -16,4 +16,5 @@ public record StartDiagnosticReq(
     Boolean deepMode,
     Long slowRequestThresholdMs,
     Long slowSqlThresholdMs,
-    Long ttlSeconds) {}
+    Long ttlSeconds) {
+}

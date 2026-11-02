@@ -62,11 +62,9 @@ public class LiquibaseEngine {
       Connection connection, Set<String> selectedTableNames, Set<String> selectedViewNames) {
     try {
       Database database = toDatabase(connection);
-      SnapshotControl snapshotControl =
-          createSnapshotControl(database, selectedTableNames, selectedViewNames);
-      DatabaseSnapshot snapshot =
-          SnapshotGeneratorFactory.getInstance()
-              .createSnapshot(database.getDefaultSchema(), database, snapshotControl);
+      SnapshotControl snapshotControl = createSnapshotControl(database, selectedTableNames, selectedViewNames);
+      DatabaseSnapshot snapshot = SnapshotGeneratorFactory.getInstance()
+          .createSnapshot(database.getDefaultSchema(), database, snapshotControl);
       byte[] content = serializeSnapshot(snapshot);
 
       return new SnapshotResult(
@@ -83,11 +81,9 @@ public class LiquibaseEngine {
   public DdlResult generateDdl(
       Connection connection, Set<String> selectedTableNames, Set<String> selectedViewNames) {
     try {
-      SnapshotContext context =
-          buildSnapshotContext(connection, selectedTableNames, selectedViewNames);
+      SnapshotContext context = buildSnapshotContext(connection, selectedTableNames, selectedViewNames);
       DdlPolicy policy = ddlPolicy();
-      String sql =
-          renderSql(context.diffResult(), context.database(), new DiffOutputControl(), policy);
+      String sql = renderSql(context.diffResult(), context.database(), new DiffOutputControl(), policy);
       return new DdlResult(
           sql.getBytes(StandardCharsets.UTF_8),
           context.database().getShortName(),
@@ -104,21 +100,18 @@ public class LiquibaseEngine {
       String sourceQualifierHint,
       String targetQualifierHint) {
     try {
-      DatabaseSnapshot targetSnapshot =
-          parseSnapshot(targetSnapshotContent, "target.snapshot.yaml");
+      DatabaseSnapshot targetSnapshot = parseSnapshot(targetSnapshotContent, "target.snapshot.yaml");
       DatabaseSnapshot sourceSnapshot = buildSourceSnapshot(sourceSnapshotContent, targetSnapshot);
 
-      DiffResult diffResult =
-          DiffGeneratorFactory.getInstance()
-              .compare(targetSnapshot, sourceSnapshot, new CompareControl());
+      DiffResult diffResult = DiffGeneratorFactory.getInstance()
+          .compare(targetSnapshot, sourceSnapshot, new CompareControl());
       Database targetDatabase = targetSnapshot.getDatabase();
       Database sourceDatabase = sourceSnapshot.getDatabase();
       String targetQualifier = resolveDatabaseQualifier(targetDatabase, targetQualifierHint);
       String sourceQualifier = resolveDatabaseQualifier(sourceDatabase, sourceQualifierHint);
       DdlPolicy policy = ddlPolicy();
       QualifierMode qualifierMode = policy.qualifierMode();
-      DiffOutputControl outputControl =
-          buildOutputControlForSnapshots(qualifierMode, sourceQualifier, targetQualifier);
+      DiffOutputControl outputControl = buildOutputControlForSnapshots(qualifierMode, sourceQualifier, targetQualifier);
       String sql = renderSql(diffResult, sourceDatabase, outputControl, policy);
       if (qualifierMode == QualifierMode.ALWAYS_SOURCE) {
         sql = alignSqlQualifierToSource(sql, sourceQualifier, targetQualifier);
@@ -137,9 +130,8 @@ public class LiquibaseEngine {
     try {
       Database referenceDatabase = toDatabase(referenceConnection);
       Database targetDatabase = toDatabase(targetConnection);
-      DiffResult diffResult =
-          DiffGeneratorFactory.getInstance()
-              .compare(targetDatabase, referenceDatabase, new CompareControl());
+      DiffResult diffResult = DiffGeneratorFactory.getInstance()
+          .compare(targetDatabase, referenceDatabase, new CompareControl());
 
       String xml = renderChangeLogXml(diffResult);
       DdlPolicy policy = ddlPolicy();
@@ -163,30 +155,25 @@ public class LiquibaseEngine {
       Connection connection, Set<String> selectedTableNames, Set<String> selectedViewNames)
       throws Exception {
     Database database = toDatabase(connection);
-    SnapshotControl snapshotControl =
-        createSnapshotControl(database, selectedTableNames, selectedViewNames);
-    DatabaseSnapshot snapshot =
-        SnapshotGeneratorFactory.getInstance()
-            .createSnapshot(database.getDefaultSchema(), database, snapshotControl);
+    SnapshotControl snapshotControl = createSnapshotControl(database, selectedTableNames, selectedViewNames);
+    DatabaseSnapshot snapshot = SnapshotGeneratorFactory.getInstance()
+        .createSnapshot(database.getDefaultSchema(), database, snapshotControl);
     DatabaseSnapshot emptySnapshot = new EmptyDatabaseSnapshot(database, snapshotControl);
-    DiffResult diffResult =
-        DiffGeneratorFactory.getInstance().compare(snapshot, emptySnapshot, new CompareControl());
+    DiffResult diffResult = DiffGeneratorFactory.getInstance().compare(snapshot, emptySnapshot, new CompareControl());
     return new SnapshotContext(database, diffResult);
   }
 
   private Database toDatabase(Connection connection) throws DatabaseException {
     Objects.requireNonNull(connection, "connection required");
-    Database database =
-        DatabaseFactory.getInstance()
-            .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+    Database database = DatabaseFactory.getInstance()
+        .findCorrectDatabaseImplementation(new JdbcConnection(connection));
     applyDefaultSchema(connection, database);
     return database;
   }
 
   private SnapshotControl createSnapshotControl(
       Database database, Set<String> selectedTableNames, Set<String> selectedViewNames) {
-    ObjectChangeFilter objectChangeFilter =
-        buildObjectChangeFilter(selectedTableNames, selectedViewNames);
+    ObjectChangeFilter objectChangeFilter = buildObjectChangeFilter(selectedTableNames, selectedViewNames);
     if (objectChangeFilter == null) {
       return new SnapshotControl(database);
     }
@@ -219,12 +206,11 @@ public class LiquibaseEngine {
     if (names == null || names.isEmpty()) {
       return null;
     }
-    String merged =
-        names.stream()
-            .map(this::normalizeObjectName)
-            .filter(item -> item != null && !item.isEmpty())
-            .map(Pattern::quote)
-            .collect(Collectors.joining("|"));
+    String merged = names.stream()
+        .map(this::normalizeObjectName)
+        .filter(item -> item != null && !item.isEmpty())
+        .map(Pattern::quote)
+        .collect(Collectors.joining("|"));
     if (merged.isEmpty()) {
       return null;
     }
@@ -280,10 +266,9 @@ public class LiquibaseEngine {
       byte[] sourceSnapshotContent, DatabaseSnapshot targetSnapshot)
       throws DatabaseException, LiquibaseException {
     if (sourceSnapshotContent == null || sourceSnapshotContent.length == 0) {
-      SnapshotControl snapshotControl =
-          targetSnapshot.getSnapshotControl() == null
-              ? new SnapshotControl(targetSnapshot.getDatabase())
-              : targetSnapshot.getSnapshotControl();
+      SnapshotControl snapshotControl = targetSnapshot.getSnapshotControl() == null
+          ? new SnapshotControl(targetSnapshot.getDatabase())
+          : targetSnapshot.getSnapshotControl();
       return new EmptyDatabaseSnapshot(targetSnapshot.getDatabase(), snapshotControl);
     }
     return parseSnapshot(sourceSnapshotContent, "source.snapshot.yaml");
@@ -368,9 +353,8 @@ public class LiquibaseEngine {
         outputControl.setIncludeSchema(false);
       }
       case AUTO -> {
-        boolean sameQualifier =
-            Objects.equals(
-                normalizeQualifier(sourceQualifier), normalizeQualifier(targetQualifier));
+        boolean sameQualifier = Objects.equals(
+            normalizeQualifier(sourceQualifier), normalizeQualifier(targetQualifier));
         outputControl.setIncludeCatalog(sameQualifier);
         outputControl.setIncludeSchema(sameQualifier);
       }
@@ -408,12 +392,10 @@ public class LiquibaseEngine {
     result = result.replace("`" + targetQualifier + "`.", "`" + sourceQualifier + "`.");
     result = result.replace("\"" + targetQualifier + "\".", "\"" + sourceQualifier + "\".");
 
-    Pattern plainQualifierPattern =
-        Pattern.compile("(?i)\\b" + Pattern.quote(targetQualifier) + "\\.");
-    result =
-        plainQualifierPattern
-            .matcher(result)
-            .replaceAll(Matcher.quoteReplacement(sourceQualifier + "."));
+    Pattern plainQualifierPattern = Pattern.compile("(?i)\\b" + Pattern.quote(targetQualifier) + "\\.");
+    result = plainQualifierPattern
+        .matcher(result)
+        .replaceAll(Matcher.quoteReplacement(sourceQualifier + "."));
     return result;
   }
 
@@ -464,26 +446,29 @@ public class LiquibaseEngine {
   }
 
   public record SnapshotResult(
-      byte[] content, String dbType, String dbVersion, String schemaName) {}
+      byte[] content, String dbType, String dbVersion, String schemaName) {
+  }
 
-  public record DdlResult(byte[] content, String dbType, String dbVersion, String schemaName) {}
+  public record DdlResult(byte[] content, String dbType, String dbVersion, String schemaName) {
+  }
 
   public record CompareResult(
-      int addedCount, int removedCount, int changedCount, String changeLogXml, String changeSql) {}
+      int addedCount, int removedCount, int changedCount, String changeLogXml, String changeSql) {
+  }
 
-  private record SnapshotContext(Database database, DiffResult diffResult) {}
+  private record SnapshotContext(Database database, DiffResult diffResult) {
+  }
 
   private static final class MemoryResourceAccessor implements ResourceAccessor {
 
     private final Map<String, MemoryResource> resources;
 
     private MemoryResourceAccessor(Map<String, byte[]> contents) {
-      this.resources =
-          contents.entrySet().stream()
-              .collect(
-                  Collectors.toMap(
-                      Map.Entry::getKey,
-                      entry -> new MemoryResource(entry.getKey(), entry.getValue())));
+      this.resources = contents.entrySet().stream()
+          .collect(
+              Collectors.toMap(
+                  Map.Entry::getKey,
+                  entry -> new MemoryResource(entry.getKey(), entry.getValue())));
     }
 
     @Override
@@ -510,7 +495,8 @@ public class LiquibaseEngine {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
   }
 
   private static final class MemoryResource implements Resource {

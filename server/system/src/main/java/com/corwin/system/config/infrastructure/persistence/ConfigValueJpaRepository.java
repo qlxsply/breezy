@@ -17,19 +17,18 @@ public interface ConfigValueJpaRepository extends JpaRepository<ConfigValueEntit
 
   @Transactional
   @Modifying(clearAutomatically = true, flushAutomatically = true)
-  @Query(
-      """
-            update ConfigValueEntity entity
-               set entity.content = :content,
-                   entity.schemaVersion = :schemaVersion,
-                   entity.revision = :nextRevision,
-                   entity.configured = :configured,
-                   entity.updatedBy = :updatedBy,
-                   entity.updatedAt = :updatedAt,
-                   entity.updateReason = :updateReason
-             where entity.configKey = :configKey
-               and entity.revision = :expectedRevision
-            """)
+  @Query("""
+      update ConfigValueEntity entity
+         set entity.content = :content,
+             entity.schemaVersion = :schemaVersion,
+             entity.revision = :nextRevision,
+             entity.configured = :configured,
+             entity.updatedBy = :updatedBy,
+             entity.updatedAt = :updatedAt,
+             entity.updateReason = :updateReason
+       where entity.configKey = :configKey
+         and entity.revision = :expectedRevision
+      """)
   int updateByExpectedRevision(
       @Param("configKey") String configKey,
       @Param("content") String content,

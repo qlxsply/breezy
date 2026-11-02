@@ -23,14 +23,15 @@ import org.springframework.util.StringUtils;
  * Scans Spring beans for methods annotated with {@link AsyncEventListener} and registers them in
  * the {@link com.corwin.framework.event.subscription.SubscriptionRegistry}.
  *
- * <p>Responsibilities:
+ * <p>
+ * Responsibilities:
  *
  * <ul>
- *   <li>Validate the method signature (single parameter of type AsyncEvent or
- *       AsyncEventEnvelope&lt;T&gt;).
- *   <li>Derive the event type and generate subscription metadata.
- *   <li>Resolve the consumer group and subscription ID.
- *   <li>构建 {@link SubscriberInvoker} 并注册到 {@link SubscriptionRegistry}。
+ * <li>Validate the method signature (single parameter of type AsyncEvent or
+ * AsyncEventEnvelope&lt;T&gt;).
+ * <li>Derive the event type and generate subscription metadata.
+ * <li>Resolve the consumer group and subscription ID.
+ * <li>构建 {@link SubscriberInvoker} 并注册到 {@link SubscriptionRegistry}。
  * </ul>
  *
  * 该类是 V2 注解监听模型的核心入口，负责把 Spring 方法模型转换成统一订阅模型。
@@ -50,8 +51,7 @@ public class AsyncEventListenerBeanPostProcessor implements BeanPostProcessor {
     this.groupResolver = Objects.requireNonNull(groupResolver, "groupResolver required");
     Objects.requireNonNull(environment, "environment required");
     String configuredName = environment.getProperty("spring.application.name");
-    this.applicationName =
-        StringUtils.hasText(configuredName) ? configuredName.trim() : "application";
+    this.applicationName = StringUtils.hasText(configuredName) ? configuredName.trim() : "application";
   }
 
   /** 扫描 Bean 目标类中的监听方法并完成注册。 */
@@ -74,8 +74,7 @@ public class AsyncEventListenerBeanPostProcessor implements BeanPostProcessor {
   /** 处理单个监听方法，生成并注册订阅描述。 */
   private void processMethod(Object bean, Class<?> targetClass, Method method) {
     Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
-    AsyncEventListener annotation =
-        AnnotatedElementUtils.findMergedAnnotation(bridgedMethod, AsyncEventListener.class);
+    AsyncEventListener annotation = AnnotatedElementUtils.findMergedAnnotation(bridgedMethod, AsyncEventListener.class);
     if (annotation == null || !annotation.enabled()) {
       return;
     }
@@ -84,23 +83,21 @@ public class AsyncEventListenerBeanPostProcessor implements BeanPostProcessor {
     if (!processedMethodKeys.add(methodKey)) {
       return;
     }
-    String rawGroup =
-        resolveRawGroup(annotation, targetClass, bridgedMethod, signature.eventClass().getName());
+    String rawGroup = resolveRawGroup(annotation, targetClass, bridgedMethod, signature.eventClass().getName());
     String consumerGroup = groupResolver.resolveGroup(rawGroup, applicationName);
     String subscriptionId = resolveSubscriptionId(annotation, targetClass, bridgedMethod, rawGroup);
     String subscriberName = targetClass.getSimpleName() + "#" + bridgedMethod.getName();
-    SubscriptionDescriptor descriptor =
-        new SubscriptionDescriptor(
-            subscriptionId,
-            subscriberName,
-            rawGroup,
-            consumerGroup,
-            signature.eventClass(),
-            signature.eventClass().getName(),
-            createInvoker(bean, bridgedMethod, signature),
-            SubscriptionMode.DEFAULT,
-            new SubscriptionOptions(
-                resolveSources(annotation), annotation.order(), annotation.allowSharedGroup()));
+    SubscriptionDescriptor descriptor = new SubscriptionDescriptor(
+        subscriptionId,
+        subscriberName,
+        rawGroup,
+        consumerGroup,
+        signature.eventClass(),
+        signature.eventClass().getName(),
+        createInvoker(bean, bridgedMethod, signature),
+        SubscriptionMode.DEFAULT,
+        new SubscriptionOptions(
+            resolveSources(annotation), annotation.order(), annotation.allowSharedGroup()));
     registry.register(descriptor);
   }
 
@@ -163,8 +160,7 @@ public class AsyncEventListenerBeanPostProcessor implements BeanPostProcessor {
       Object bean, Method method, MethodSignature signature, AsyncEventEnvelope<?> envelope)
       throws Exception {
     try {
-      Object argument =
-          signature.envelopeArgument() ? envelope : signature.eventClass().cast(envelope.payload());
+      Object argument = signature.envelopeArgument() ? envelope : signature.eventClass().cast(envelope.payload());
       method.invoke(bean, argument);
     } catch (InvocationTargetException ex) {
       Throwable target = ex.getTargetException();
@@ -233,5 +229,6 @@ public class AsyncEventListenerBeanPostProcessor implements BeanPostProcessor {
 
   /** 监听方法签名解析结果： eventClass 表示监听的事件类型；envelopeArgument 表示方法是否以 Envelope 作为入参。 */
   private record MethodSignature(
-      Class<? extends AsyncEvent> eventClass, boolean envelopeArgument) {}
+      Class<? extends AsyncEvent> eventClass, boolean envelopeArgument) {
+  }
 }

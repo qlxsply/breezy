@@ -76,51 +76,46 @@ public class SchedulerCommandAppService {
     byte[] payloadBody = serializer.serializePayload(payload);
     String payloadTypeName = payload == null ? null : payload.getClass().getName();
 
-    SchedulerJobDefinition definition =
-        definitionRepository
-            .findById(spec.jobId())
-            .map(
-                existing -> {
-                  existing.updateEventJob(
-                      spec.namespace(),
-                      spec.name(),
-                      handlerKey,
-                      scheduleRule,
-                      scheduleRuleBody,
-                      payloadTypeName,
-                      payloadBody,
-                      spec.enabled(),
-                      spec.allowConcurrent(),
-                      spec.remark());
-                  return existing;
-                })
-            .orElseGet(
-                () ->
-                    SchedulerJobDefinition.createEventJob(
-                        spec.jobId(),
-                        spec.namespace(),
-                        spec.name(),
-                        handlerKey,
-                        scheduleRule,
-                        scheduleRuleBody,
-                        payloadTypeName,
-                        payloadBody,
-                        spec.enabled(),
-                        spec.allowConcurrent(),
-                        spec.remark()));
+    SchedulerJobDefinition definition = definitionRepository
+        .findById(spec.jobId())
+        .map(
+            existing -> {
+              existing.updateEventJob(
+                  spec.namespace(),
+                  spec.name(),
+                  handlerKey,
+                  scheduleRule,
+                  scheduleRuleBody,
+                  payloadTypeName,
+                  payloadBody,
+                  spec.enabled(),
+                  spec.allowConcurrent(),
+                  spec.remark());
+              return existing;
+            })
+        .orElseGet(
+            () -> SchedulerJobDefinition.createEventJob(
+                spec.jobId(),
+                spec.namespace(),
+                spec.name(),
+                handlerKey,
+                scheduleRule,
+                scheduleRuleBody,
+                payloadTypeName,
+                payloadBody,
+                spec.enabled(),
+                spec.allowConcurrent(),
+                spec.remark()));
     definitionRepository.save(definition);
 
-    Instant firstExecution =
-        spec.enabled() ? ScheduleRuleTrigger.firstExecution(scheduleRule) : null;
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(spec.jobId())
-            .orElseGet(
-                () ->
-                    SchedulerJobRuntime.create(
-                        spec.jobId(),
-                        spec.enabled() ? SchedulerJobStatus.SCHEDULED : SchedulerJobStatus.PAUSED,
-                        firstExecution));
+    Instant firstExecution = spec.enabled() ? ScheduleRuleTrigger.firstExecution(scheduleRule) : null;
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(spec.jobId())
+        .orElseGet(
+            () -> SchedulerJobRuntime.create(
+                spec.jobId(),
+                spec.enabled() ? SchedulerJobStatus.SCHEDULED : SchedulerJobStatus.PAUSED,
+                firstExecution));
     if (spec.enabled()) {
       runtime.markScheduled(firstExecution);
     } else {
@@ -149,10 +144,9 @@ public class SchedulerCommandAppService {
     definition.markPaused();
     definitionRepository.save(definition);
 
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.PAUSED, null));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.PAUSED, null));
     runtime.markPaused();
     runtimeRepository.save(runtime);
     afterCommit(() -> runtimeRegistrar.cancel(jobId));
@@ -170,18 +164,15 @@ public class SchedulerCommandAppService {
     definition.markResumed();
     definitionRepository.save(definition);
 
-    ScheduleRule rule =
-        serializer.deserializeScheduleRule(
-            definition.getScheduleRuleBody(), definition.getScheduleRuleType());
+    ScheduleRule rule = serializer.deserializeScheduleRule(
+        definition.getScheduleRuleBody(), definition.getScheduleRuleType());
     Instant firstExecution = ScheduleRuleTrigger.firstExecution(rule);
 
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(
-                () ->
-                    SchedulerJobRuntime.create(
-                        jobId, SchedulerJobStatus.SCHEDULED, firstExecution));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(
+            () -> SchedulerJobRuntime.create(
+                jobId, SchedulerJobStatus.SCHEDULED, firstExecution));
     runtime.markScheduled(firstExecution);
     runtimeRepository.save(runtime);
     afterCommit(() -> runtimeRegistrar.register(jobId));
@@ -198,10 +189,9 @@ public class SchedulerCommandAppService {
     definition.markCancelled();
     definitionRepository.save(definition);
 
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.CANCELLED, null));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.CANCELLED, null));
     runtime.markCancelled();
     runtimeRepository.save(runtime);
     afterCommit(() -> runtimeRegistrar.cancel(jobId));
@@ -218,10 +208,9 @@ public class SchedulerCommandAppService {
     definition.markDeleted();
     definitionRepository.save(definition);
 
-    SchedulerJobRuntime runtime =
-        runtimeRepository
-            .findById(jobId)
-            .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.CANCELLED, null));
+    SchedulerJobRuntime runtime = runtimeRepository
+        .findById(jobId)
+        .orElseGet(() -> SchedulerJobRuntime.create(jobId, SchedulerJobStatus.CANCELLED, null));
     runtime.markCancelled();
     runtimeRepository.save(runtime);
     afterCommit(() -> runtimeRegistrar.cancel(jobId));
@@ -249,6 +238,7 @@ public class SchedulerCommandAppService {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
       TransactionSynchronizationManager.registerSynchronization(
           new TransactionSynchronization() {
+
             @Override
             public void afterCommit() {
               action.run();

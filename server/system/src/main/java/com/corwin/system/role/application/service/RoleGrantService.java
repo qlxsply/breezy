@@ -52,12 +52,11 @@ public class RoleGrantService {
    */
   public RoleGrantSelectionView roleGrantSelection(Long roleId) {
     requireRole(roleId);
-    List<Long> resourceIds =
-        roleResourceRepository.findByRoleId(roleId).stream()
-            .map(RoleResource::getResourceId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
+    List<Long> resourceIds = roleResourceRepository.findByRoleId(roleId).stream()
+        .map(RoleResource::getResourceId)
+        .filter(Objects::nonNull)
+        .distinct()
+        .toList();
     return new RoleGrantSelectionView(resourceIds);
   }
 
@@ -86,12 +85,11 @@ public class RoleGrantService {
   @Transactional
   public boolean updateRoleGrant(Long roleId, UpdateRoleGrantCommand cmd) {
     requireRole(roleId);
-    List<Long> affectedUserIds =
-        userRoleRepository.findByRoleId(roleId).stream()
-            .map(UserRole::getUserId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
+    List<Long> affectedUserIds = userRoleRepository.findByRoleId(roleId).stream()
+        .map(UserRole::getUserId)
+        .filter(Objects::nonNull)
+        .distinct()
+        .toList();
     roleResourceRepository.deleteByRoleId(roleId);
     List<Long> resourceIds = normalizeResourceIds(cmd == null ? null : cmd.resourceIds());
     Long operatorId = operatorId();
@@ -113,13 +111,12 @@ public class RoleGrantService {
     if (resourceIds == null || resourceIds.isEmpty()) {
       return List.of();
     }
-    Set<Long> allowedResourceIds =
-        grantResources().stream()
-            .filter(RoleGrantResourceView::selectable)
-            .map(RoleGrantResourceView::resourceId)
-            .filter(Objects::nonNull)
-            .map(Long::valueOf)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<Long> allowedResourceIds = grantResources().stream()
+        .filter(RoleGrantResourceView::selectable)
+        .map(RoleGrantResourceView::resourceId)
+        .filter(Objects::nonNull)
+        .map(Long::valueOf)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
 
     LinkedHashSet<Long> normalized = new LinkedHashSet<>();
     for (Long resourceId : resourceIds) {

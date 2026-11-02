@@ -11,4 +11,5 @@ public record SavePushSubscriptionReq(
     @NotBlank String deviceId,
     @NotBlank String endpoint,
     @NotBlank String p256dh,
-    @NotBlank String auth) {}
+    @NotBlank String auth) {
+}

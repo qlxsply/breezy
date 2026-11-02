@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface TodoTaskRepository
     extends DomainRepository<TodoTask, Long>,
-        DynamicPageQueryRepository<TodoTask, TodoTaskPageQuery> {
+    DynamicPageQueryRepository<TodoTask, TodoTaskPageQuery> {
 
   PageData<TodoTask> findByStatusInAndRemindAtLessThanEqual(
       List<TodoTaskStatus> statuses, Instant now, PageSpec spec);

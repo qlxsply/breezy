@@ -66,10 +66,9 @@ public class LoginLogRepositoryJpaAdapter implements LoginLogRepository {
     if (query == null) {
       return null;
     }
-    List<LoginEventType> eventTypes =
-        query.eventTypes() == null
-            ? List.of()
-            : query.eventTypes().stream().filter(Objects::nonNull).toList();
+    List<LoginEventType> eventTypes = query.eventTypes() == null
+        ? List.of()
+        : query.eventTypes().stream().filter(Objects::nonNull).toList();
     return new LoginLogPageQuery(
         StrUtil.trimToNull(query.userAccount()),
         query.startAt(),

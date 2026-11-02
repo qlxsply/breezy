@@ -5,7 +5,8 @@ import com.corwin.framework.event.model.EventCtxSnapshot;
 /**
  * Binds the consume context from {@link EventCtxSnapshot} to the current consumer thread.
  *
- * <p>Returns a {@link ConsumeContextScope} that restores the original context when closed. All
+ * <p>
+ * Returns a {@link ConsumeContextScope} that restores the original context when closed. All
  * transports share this single context-restore abstraction.
  *
  * @author Corwin 2026/4/9

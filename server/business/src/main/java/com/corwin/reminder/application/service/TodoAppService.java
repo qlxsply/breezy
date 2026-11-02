@@ -49,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class TodoAppService {
+
   private static final int TODO_TEXT_MAX_LENGTH = 2000;
   private final TodoTaskRepository repo;
   private final TodoAttachmentRepository attachmentRepo;
@@ -95,8 +96,7 @@ public class TodoAppService {
   }
 
   public PageData<TodoView> page(TodoTaskStatus status, String contentLike, PageSpec spec) {
-    TodoTaskPageQuery query =
-        new TodoTaskPageQuery(expandStatus(status), StrUtil.trimToNull(contentLike));
+    TodoTaskPageQuery query = new TodoTaskPageQuery(expandStatus(status), StrUtil.trimToNull(contentLike));
     PageData<TodoTask> page = withAttachments(repo.pageByQuery(query, PageSpecSorts.apply(spec)));
     return new PageData<>(
         page.pageNo(),
@@ -111,8 +111,7 @@ public class TodoAppService {
   public void reorder(TodoReorderCommand command) {
     BizAssert.notNull(command, BaseError.MISSING_PARAMETER);
     BizAssert.notEmpty(command.groups(), BaseError.MISSING_PARAMETER);
-    List<TodoReorderCommand.GroupCommand> groups =
-        command.groups().stream().filter(Objects::nonNull).toList();
+    List<TodoReorderCommand.GroupCommand> groups = command.groups().stream().filter(Objects::nonNull).toList();
     BizAssert.notEmpty(groups, BaseError.MISSING_PARAMETER);
     LinkedHashSet<Long> ids = new LinkedHashSet<>();
     for (var group : groups) {
@@ -131,7 +130,8 @@ public class TodoAppService {
     for (var group : groups) {
       for (int i = 0; i < group.orderedIds().size(); i++) {
         TodoTask task = taskMap.get(group.orderedIds().get(i));
-        if (task == null) throw new BizException(ReminderError.TODO_NOT_FOUND);
+        if (task == null)
+          throw new BizException(ReminderError.TODO_NOT_FOUND);
         applyStatus(task, group.status());
         task.applySortNo((long) i);
         updated.add(task);
@@ -139,11 +139,10 @@ public class TodoAppService {
     }
     repo.saveAll(updated);
     updated.forEach(
-        task ->
-            eventPublisher.publishEvent(
-                task.getStatus() == TodoTaskStatus.TODO
-                    ? TodoTaskReminderChangedEvent.updated(task.getId(), task.getRemindAt())
-                    : TodoTaskReminderChangedEvent.removed(task.getId())));
+        task -> eventPublisher.publishEvent(
+            task.getStatus() == TodoTaskStatus.TODO
+                ? TodoTaskReminderChangedEvent.updated(task.getId(), task.getRemindAt())
+                : TodoTaskReminderChangedEvent.removed(task.getId())));
   }
 
   public List<TodoDailyStatsView> dailyStats(LocalDate startDate, LocalDate endDate) {
@@ -153,14 +152,12 @@ public class TodoAppService {
     ZoneId zoneId = defaultZoneId();
     Instant start = startDate.atStartOfDay(zoneId).toInstant();
     Instant end = endDate.plusDays(1).atStartOfDay(zoneId).toInstant();
-    Map<LocalDate, Integer> created =
-        buildDailyCountMap(
-            repo.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end), zoneId, true);
-    Map<LocalDate, Integer> completed =
-        buildDailyCountMap(
-            repo.findByCompletedAtGreaterThanEqualAndCompletedAtLessThan(start, end),
-            zoneId,
-            false);
+    Map<LocalDate, Integer> created = buildDailyCountMap(
+        repo.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end), zoneId, true);
+    Map<LocalDate, Integer> completed = buildDailyCountMap(
+        repo.findByCompletedAtGreaterThanEqualAndCompletedAtLessThan(start, end),
+        zoneId,
+        false);
     List<TodoDailyStatsView> result = new ArrayList<>();
     for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
       result.add(
@@ -175,18 +172,16 @@ public class TodoAppService {
     ZoneId zoneId = defaultZoneId();
     Instant start = date.atStartOfDay(zoneId).toInstant();
     Instant end = date.plusDays(1).atStartOfDay(zoneId).toInstant();
-    List<TodoView> created =
-        withAttachments(repo.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end))
-            .stream()
-            .sorted((a, b) -> compareInstantDesc(a.getCreatedAt(), b.getCreatedAt()))
-            .map(this::toView)
-            .toList();
-    List<TodoView> completed =
-        withAttachments(repo.findByCompletedAtGreaterThanEqualAndCompletedAtLessThan(start, end))
-            .stream()
-            .sorted((a, b) -> compareInstantDesc(a.getCompletedAt(), b.getCompletedAt()))
-            .map(this::toView)
-            .toList();
+    List<TodoView> created = withAttachments(repo.findByCreatedAtGreaterThanEqualAndCreatedAtLessThan(start, end))
+        .stream()
+        .sorted((a, b) -> compareInstantDesc(a.getCreatedAt(), b.getCreatedAt()))
+        .map(this::toView)
+        .toList();
+    List<TodoView> completed = withAttachments(repo.findByCompletedAtGreaterThanEqualAndCompletedAtLessThan(start, end))
+        .stream()
+        .sorted((a, b) -> compareInstantDesc(a.getCompletedAt(), b.getCompletedAt()))
+        .map(this::toView)
+        .toList();
     return new TodoDailyDetailView(date, created, completed);
   }
 
@@ -248,8 +243,10 @@ public class TodoAppService {
   private void changeStatus(Long id, TodoTaskStatus required, boolean resume) {
     TodoTask task = getTask(id);
     BizAssert.state(task.getStatus() == required, ReminderError.TODO_STATUS_TRANSITION_INVALID);
-    if (resume) task.resume();
-    else task.pause();
+    if (resume)
+      task.resume();
+    else
+      task.pause();
     repo.save(task);
     eventPublisher.publishEvent(
         resume
@@ -271,7 +268,8 @@ public class TodoAppService {
   }
 
   private List<TodoTask> withAttachments(List<TodoTask> tasks) {
-    if (tasks == null || tasks.isEmpty()) return List.of();
+    if (tasks == null || tasks.isEmpty())
+      return List.of();
     Map<Long, List<TodoAttachment>> map = new HashMap<>();
     List<Long> ids = tasks.stream().map(TodoTask::getId).filter(Objects::nonNull).toList();
     for (TodoAttachment attachment : attachmentRepo.findByTodoIdInOrderByTodoIdAscSortNoAsc(ids)) {
@@ -283,8 +281,7 @@ public class TodoAppService {
 
   private TodoTask getTask(Long id) {
     BizAssert.notNull(id, BaseError.MISSING_PARAMETER);
-    TodoTask task =
-        repo.findById(id).orElseThrow(() -> new BizException(ReminderError.TODO_NOT_FOUND));
+    TodoTask task = repo.findById(id).orElseThrow(() -> new BizException(ReminderError.TODO_NOT_FOUND));
     task.loadAttachments(attachmentRepo.findByTodoIdOrderBySortNoAsc(task.getId()));
     return task;
   }
@@ -301,12 +298,11 @@ public class TodoAppService {
       attachmentRepo.saveAll(
           task.attachments().stream()
               .map(
-                  item ->
-                      TodoAttachment.create(
-                          task.getId(),
-                          item.stage(),
-                          item.fileId(),
-                          Objects.requireNonNullElse(item.sortNo(), 0L)))
+                  item -> TodoAttachment.create(
+                      task.getId(),
+                      item.stage(),
+                      item.fileId(),
+                      Objects.requireNonNullElse(item.sortNo(), 0L)))
               .toList());
   }
 
@@ -326,7 +322,8 @@ public class TodoAppService {
   }
 
   private void applyStatus(TodoTask task, TodoTaskStatus target) {
-    if (task.getStatus() == target) return;
+    if (task.getStatus() == target)
+      return;
     switch (target) {
       case TODO -> {
         BizAssert.state(
@@ -349,13 +346,15 @@ public class TodoAppService {
     Map<LocalDate, Integer> result = new LinkedHashMap<>();
     for (TodoTask task : tasks) {
       Instant time = created ? task.getCreatedAt() : task.getCompletedAt();
-      if (time != null) result.merge(time.atZone(zoneId).toLocalDate(), 1, Integer::sum);
+      if (time != null)
+        result.merge(time.atZone(zoneId).toLocalDate(), 1, Integer::sum);
     }
     return result;
   }
 
   private int compareInstantDesc(Instant left, Instant right) {
-    if (left == null) return right == null ? 0 : 1;
+    if (left == null)
+      return right == null ? 0 : 1;
     return right == null ? -1 : right.compareTo(left);
   }
 
@@ -373,9 +372,11 @@ public class TodoAppService {
   }
 
   private String normalizeOptionalText(String value) {
-    if (value == null) return null;
+    if (value == null)
+      return null;
     String normalized = value.trim();
-    if (normalized.isEmpty()) return null;
+    if (normalized.isEmpty())
+      return null;
     ensureTextLengthWithinLimit(normalized);
     return normalized;
   }

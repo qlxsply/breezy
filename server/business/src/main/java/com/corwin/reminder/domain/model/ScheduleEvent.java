@@ -15,8 +15,8 @@ import lombok.Getter;
 @Table(
     name = "schedule_event",
     indexes = {
-      @Index(name = "idx_schedule_start_time", columnList = "start_time"),
-      @Index(name = "idx_schedule_status", columnList = "event_status")
+        @Index(name = "idx_schedule_start_time", columnList = "start_time"),
+        @Index(name = "idx_schedule_status", columnList = "event_status")
     })
 public class ScheduleEvent {
 
@@ -38,7 +38,8 @@ public class ScheduleEvent {
   private String eventTimeZoneId;
 
   /** 简化规则 */
-  @Embedded private RecurrenceRule rule;
+  @Embedded
+  private RecurrenceRule rule;
 
   /** 提醒提前秒数列表 */
   @Convert(converter = com.corwin.framework.jpa.IntegerListStringConverter.class)
@@ -55,7 +56,8 @@ public class ScheduleEvent {
   @Column(name = "owner_id")
   private Long ownerId;
 
-  protected ScheduleEvent() {}
+  protected ScheduleEvent() {
+  }
 
   public static ScheduleEvent create(
       String title,
@@ -92,8 +94,7 @@ public class ScheduleEvent {
     this.title = Objects.requireNonNull(title, "title required").trim();
     this.startTime = Objects.requireNonNull(startTime, "startTime required");
     this.endTime = endTime;
-    this.eventTimeZoneId =
-        Objects.requireNonNull(eventTimeZoneId, "eventTimeZoneId required").trim();
+    this.eventTimeZoneId = Objects.requireNonNull(eventTimeZoneId, "eventTimeZoneId required").trim();
     this.rule = Objects.requireNonNull(rule, "rule required");
     this.note = note;
 

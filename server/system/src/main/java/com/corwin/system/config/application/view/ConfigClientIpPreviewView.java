@@ -13,4 +13,5 @@ public record ConfigClientIpPreviewView(
     String xRealIp,
     String xForwardedFor,
     String cfConnectingIp,
-    String trueClientIp) {}
+    String trueClientIp) {
+}

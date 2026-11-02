@@ -10,7 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link Api} entity.
  *
- * <p>Provides database access for API metadata CRUD operations.
+ * <p>
+ * Provides database access for API metadata CRUD operations.
  *
  * @author Corwin 2026/3/30
  */

@@ -9,42 +9,43 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * Request context utility for managing the current thread-bound {@link Ctx}.
  *
- * <p>Based on {@link ThreadLocal}, it stores and provides access to request-scoped data throughout
+ * <p>
+ * Based on {@link ThreadLocal}, it stores and provides access to request-scoped data throughout
  * a single request processing lifecycle.
  *
  * <h2>Core responsibilities</h2>
  *
  * <ul>
- *   <li>Initialise request context (trace, client, start time, etc.)
- *   <li>Provide a central read/write entry point for contextual data
- *   <li>Support context snapshot and restore for async thread propagation
- *   <li>Bind context to MDC for distributed log tracing
+ * <li>Initialise request context (trace, client, start time, etc.)
+ * <li>Provide a central read/write entry point for contextual data
+ * <li>Support context snapshot and restore for async thread propagation
+ * <li>Bind context to MDC for distributed log tracing
  * </ul>
  *
  * <h2>Thread model</h2>
  *
  * <ul>
- *   <li>Each thread holds its own {@link Ctx} instance
- *   <li>Context does not propagate across threads by default
- *   <li>For async execution, call {@link #snapshot()} first, then {@link #restore(Ctx)} in the
- *       target thread
+ * <li>Each thread holds its own {@link Ctx} instance
+ * <li>Context does not propagate across threads by default
+ * <li>For async execution, call {@link #snapshot()} first, then {@link #restore(Ctx)} in the
+ * target thread
  * </ul>
  *
  * <h2>Lifecycle recommendation</h2>
  *
  * <ol>
- *   <li>Call {@link #initTrace(HttpServletRequest, String)} at request entry
- *   <li>Call {@link #setPrincipal(AuthPrincipal)} after authentication
- *   <li>Call {@link #bindMdc()} before logging
- *   <li>Call {@link #reset()} at request completion — mandatory
+ * <li>Call {@link #initTrace(HttpServletRequest, String)} at request entry
+ * <li>Call {@link #setPrincipal(AuthPrincipal)} after authentication
+ * <li>Call {@link #bindMdc()} before logging
+ * <li>Call {@link #reset()} at request completion — mandatory
  * </ol>
  *
  * <h2>Important notes</h2>
  *
  * <ul>
- *   <li>This class relies on ThreadLocal; correct reset is essential in thread-pool scenarios
- *   <li>Do not pass the current thread's Ctx directly to another thread; use a snapshot copy
- *   <li>This is a static utility class and must not be instantiated
+ * <li>This class relies on ThreadLocal; correct reset is essential in thread-pool scenarios
+ * <li>Do not pass the current thread's Ctx directly to another thread; use a snapshot copy
+ * <li>This is a static utility class and must not be instantiated
  * </ul>
  *
  * @author Corwin
@@ -55,18 +56,21 @@ public final class CtxUtil {
   /**
    * Current thread-bound request context cache.
    *
-   * <p>Lazily initialised via {@link ThreadLocal#withInitial(java.util.function.Supplier)},
+   * <p>
+   * Lazily initialised via {@link ThreadLocal#withInitial(java.util.function.Supplier)},
    * ensuring a usable {@link Ctx} instance is available on first access.
    */
   private static final ThreadLocal<Ctx> CTX_CACHE = ThreadLocal.withInitial(Ctx::new);
 
   /** Utility class — no instantiation allowed. */
-  private CtxUtil() {}
+  private CtxUtil() {
+  }
 
   /**
    * Returns the context bound to the current thread.
    *
-   * <p>If the current thread has not been initialised yet, a new empty {@link Ctx} instance is
+   * <p>
+   * If the current thread has not been initialised yet, a new empty {@link Ctx} instance is
    * created automatically.
    *
    * @return the current thread's context
@@ -78,7 +82,8 @@ public final class CtxUtil {
   /**
    * Returns a snapshot copy of the current context.
    *
-   * <p>Primarily used for context propagation in async tasks, thread pools, and concurrent
+   * <p>
+   * Primarily used for context propagation in async tasks, thread pools, and concurrent
    * execution. Returns a copy rather than the original to avoid sharing the same instance across
    * threads.
    *
@@ -91,10 +96,12 @@ public final class CtxUtil {
   /**
    * Restores the given context to the current thread.
    *
-   * <p>Typically used before executing an async task to restore the parent thread's context. A copy
+   * <p>
+   * Typically used before executing an async task to restore the parent thread's context. A copy
    * is saved internally to prevent external mutation.
    *
-   * <p>If {@code ctx} is null, this is equivalent to calling {@link #reset()}.
+   * <p>
+   * If {@code ctx} is null, this is equivalent to calling {@link #reset()}.
    *
    * @param ctx the context to restore
    */
@@ -109,17 +116,19 @@ public final class CtxUtil {
   /**
    * Initialises the basic context for an HTTP request.
    *
-   * <p>Initialisation includes:
+   * <p>
+   * Initialisation includes:
    *
    * <ul>
-   *   <li>Request start time (epoch millis)
-   *   <li>Request start time (nanos)
-   *   <li>traceId
-   *   <li>Client identifier (from request header)
-   *   <li>Client IP
+   * <li>Request start time (epoch millis)
+   * <li>Request start time (nanos)
+   * <li>traceId
+   * <li>Client identifier (from request header)
+   * <li>Client IP
    * </ul>
    *
-   * <p>Typically invoked in a Filter, Interceptor, or gateway entry point.
+   * <p>
+   * Typically invoked in a Filter, Interceptor, or gateway entry point.
    *
    * @param request the current HTTP request
    * @param traceId the trace ID assigned to this request
@@ -136,15 +145,17 @@ public final class CtxUtil {
   /**
    * Initialises context for scheduled / background tasks (non-HTTP threads).
    *
-   * <p>Intended for:
+   * <p>
+   * Intended for:
    *
    * <ul>
-   *   <li>Scheduled tasks
-   *   <li>Background jobs
-   *   <li>Message consumers
+   * <li>Scheduled tasks
+   * <li>Background jobs
+   * <li>Message consumers
    * </ul>
    *
-   * <p>Since there is no HTTP request, client and clientIp are left null.
+   * <p>
+   * Since there is no HTTP request, client and clientIp are left null.
    *
    * @param traceId the trace ID for the current task
    */
@@ -190,7 +201,8 @@ public final class CtxUtil {
   /**
    * Sets the authenticated principal for the current request.
    *
-   * <p>Typically called after successful authentication.
+   * <p>
+   * Typically called after successful authentication.
    *
    * @param principal the current user identity
    */
@@ -210,7 +222,8 @@ public final class CtxUtil {
   /**
    * Sets the token hash value.
    *
-   * <p>Used for recording a digest of the current authentication token for auditing, tracking, or
+   * <p>
+   * Used for recording a digest of the current authentication token for auditing, tracking, or
    * secondary validation. The plaintext token must never be stored.
    *
    * @param tokenHash the token digest
@@ -236,7 +249,8 @@ public final class CtxUtil {
   /**
    * Writes an extension attribute.
    *
-   * <p>Used to store additional contextual data for the current request, such as business
+   * <p>
+   * Used to store additional contextual data for the current request, such as business
    * identifiers, extended security info, or feature flags.
    *
    * @param key the attribute key
@@ -258,7 +272,8 @@ public final class CtxUtil {
   /**
    * Returns an extension attribute with type checking.
    *
-   * <p>Returns null if the attribute is absent. Throws {@link ClassCastException} if the value is
+   * <p>
+   * Returns null if the attribute is absent. Throws {@link ClassCastException} if the value is
    * not of the expected type.
    *
    * @param key the attribute key
@@ -273,7 +288,8 @@ public final class CtxUtil {
   /**
    * Binds the current context data to MDC.
    *
-   * <p>Call this at request entry or after restoring context in an async thread so that log
+   * <p>
+   * Call this at request entry or after restoring context in an async thread so that log
    * patterns automatically include traceId, userId, clientIp, etc.
    */
   public static void bindMdc() {
@@ -283,7 +299,8 @@ public final class CtxUtil {
   /**
    * Clears context fields from MDC.
    *
-   * <p>Typically called at request completion to prevent log cross-contamination on thread reuse.
+   * <p>
+   * Typically called at request completion to prevent log cross-contamination on thread reuse.
    */
   public static void clearMdc() {
     Ctx.clearMdc();
@@ -292,14 +309,16 @@ public final class CtxUtil {
   /**
    * Resets the current thread's context.
    *
-   * <p>This operation:
+   * <p>
+   * This operation:
    *
    * <ul>
-   *   <li>Clears MDC
-   *   <li>Removes the ThreadLocal context for the current thread
+   * <li>Clears MDC
+   * <li>Removes the ThreadLocal context for the current thread
    * </ul>
    *
-   * <p>This is a mandatory cleanup at the end of every request. Without it, thread-pool reuse could
+   * <p>
+   * This is a mandatory cleanup at the end of every request. Without it, thread-pool reuse could
    * leak data from one request to the next.
    */
   public static void reset() {
@@ -337,7 +356,8 @@ public final class CtxUtil {
   /**
    * Returns the current trace ID, throwing if absent.
    *
-   * <p>Useful when the current thread is required to have completed trace initialisation.
+   * <p>
+   * Useful when the current thread is required to have completed trace initialisation.
    *
    * @return the non-null trace ID
    * @throws IllegalStateException if no trace ID has been set for this thread

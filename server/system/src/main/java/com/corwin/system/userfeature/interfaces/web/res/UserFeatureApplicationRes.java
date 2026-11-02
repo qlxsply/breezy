@@ -29,4 +29,5 @@ public record UserFeatureApplicationRes(
     boolean enabled,
     int featureCount,
     int permissionBindingCount,
-    List<UserFeatureItemRes> features) {}
+    List<UserFeatureItemRes> features) {
+}

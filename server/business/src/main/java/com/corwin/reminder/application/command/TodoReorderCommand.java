@@ -8,5 +8,6 @@ import java.util.List;
  */
 public record TodoReorderCommand(List<GroupCommand> groups) {
 
-  public record GroupCommand(TodoTaskStatus status, List<Long> orderedIds) {}
+  public record GroupCommand(TodoTaskStatus status, List<Long> orderedIds) {
+  }
 }

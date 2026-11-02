@@ -12,4 +12,5 @@ public record DeliveryTaskRef(
     String consumerGroup,
     long deliverAtMillis,
     long deliveryVersion,
-    long sequence) {}
+    long sequence) {
+}

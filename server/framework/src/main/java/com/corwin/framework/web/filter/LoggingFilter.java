@@ -47,8 +47,7 @@ public class LoggingFilter extends OncePerRequestFilter implements Ordered {
 
     ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
     boolean streamRequest = isStreamRequest(request);
-    ContentCachingResponseWrapper wrappedResponse =
-        streamRequest ? null : new ContentCachingResponseWrapper(response);
+    ContentCachingResponseWrapper wrappedResponse = streamRequest ? null : new ContentCachingResponseWrapper(response);
     HttpServletResponse responseToUse = wrappedResponse == null ? response : wrappedResponse;
 
     log.info("--> {} {} {} from {}", protocol, method, uri, remote);

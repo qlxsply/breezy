@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
 /**
  * Application service for querying dictionary items.
  *
- * <p>Provides read-only access to enabled dictionary data for internal use and external consumers.
+ * <p>
+ * Provides read-only access to enabled dictionary data for internal use and external consumers.
  *
  * @author Corwin 2026/3/15
  */
@@ -88,10 +89,9 @@ public class DictQueryService {
 
   private DictType getEnabledType(String code) {
     BizAssert.notBlank(code, BaseError.MISSING_PARAMETER);
-    DictType dictType =
-        dictTypeRepository
-            .findByCode(code.trim())
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    DictType dictType = dictTypeRepository
+        .findByCode(code.trim())
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     BizAssert.state(dictType.isEnabled(), BaseError.FORBIDDEN);
     return dictType;
   }

@@ -7,4 +7,5 @@ import java.util.List;
  *
  * @author Corwin 2026/5/19
  */
-public record RoleGrantSelectionRes(List<String> resourceIds) {}
+public record RoleGrantSelectionRes(List<String> resourceIds) {
+}

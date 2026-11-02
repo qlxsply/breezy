@@ -17,4 +17,5 @@ public record PushHealthView(
     Instant latestSubscriptionPushAt,
     String latestSubscriptionError,
     List<PushHealthSubscriptionView> subscriptions,
-    PushHealthDeliveryView latestDelivery) {}
+    PushHealthDeliveryView latestDelivery) {
+}

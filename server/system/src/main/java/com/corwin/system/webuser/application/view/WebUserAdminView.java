@@ -24,4 +24,5 @@ public record WebUserAdminView(
     String status,
     Instant lastLoginAt,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link ResourcePermissionRepository}.
  *
- * <p>Delegates all CRUD operations to the underlying {@link ResourcePermissionJpaRepository}.
+ * <p>
+ * Delegates all CRUD operations to the underlying {@link ResourcePermissionJpaRepository}.
  *
  * @author Corwin 2026/6/29
  */

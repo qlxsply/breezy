@@ -12,7 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Abstract base processor for delay-queue-based task scheduling.
  *
- * <p>Submits {@link DelayedElement} instances to a {@link java.util.concurrent.DelayQueue} and
+ * <p>
+ * Submits {@link DelayedElement} instances to a {@link java.util.concurrent.DelayQueue} and
  * processes them asynchronously via a dedicated single-thread executor. Duplicate payloads are
  * automatically replaced with the latest submission.
  *
@@ -29,13 +30,12 @@ public abstract class DelayQueueProcessor<T> {
 
   protected DelayQueueProcessor(String processorName) {
     this.processorName = processorName;
-    this.executorService =
-        Executors.newSingleThreadExecutor(
-            r -> {
-              Thread thread = new Thread(r, processorName + "-thread");
-              thread.setDaemon(true);
-              return thread;
-            });
+    this.executorService = Executors.newSingleThreadExecutor(
+        r -> {
+          Thread thread = new Thread(r, processorName + "-thread");
+          thread.setDaemon(true);
+          return thread;
+        });
   }
 
   @PostConstruct

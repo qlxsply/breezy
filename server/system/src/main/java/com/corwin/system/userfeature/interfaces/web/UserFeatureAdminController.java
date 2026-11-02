@@ -29,7 +29,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST controller for user feature administration.
  *
- * <p>Provides endpoints for managing product applications, user application packages, and per-user
+ * <p>
+ * Provides endpoints for managing product applications, user application packages, and per-user
  * feature access overrides in the admin console.
  *
  * @author Corwin 2026/6/14
@@ -54,9 +55,8 @@ public class UserFeatureAdminController {
       permissions = {"ufa.view"})
   public ApiResponse<PageResult<UserFeatureApplicationRes>> pageApplications(
       @RequestBody UserFeatureApplicationPageReq req) {
-    var page =
-        userFeatureAdminService.pageApplications(
-            req.keyword(), req.enabled(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = userFeatureAdminService.pageApplications(
+        req.keyword(), req.enabled(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toApplicationRes));
   }
 
@@ -122,9 +122,8 @@ public class UserFeatureAdminController {
       permissions = {"ufp.view"})
   public ApiResponse<PageResult<UserFeaturePackageRes>> pagePackages(
       @RequestBody UserFeaturePackagePageReq req) {
-    var page =
-        userFeatureAdminService.pagePackages(
-            req.keyword(), req.enabled(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = userFeatureAdminService.pagePackages(
+        req.keyword(), req.enabled(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, UserFeatureAdminController::toPackageRes));
   }
 
@@ -209,7 +208,8 @@ public class UserFeatureAdminController {
   /**
    * Deletes a user application package by its ID.
    *
-   * <p>Also removes all associated application/feature access records and package member mappings.
+   * <p>
+   * Also removes all associated application/feature access records and package member mappings.
    *
    * @param id the package ID
    * @return true on success
@@ -230,7 +230,8 @@ public class UserFeatureAdminController {
   /**
    * Gets the full user feature management view for a specific user.
    *
-   * <p>Returns assigned packages, application access state with inherited/effective visibility, and
+   * <p>
+   * Returns assigned packages, application access state with inherited/effective visibility, and
    * per-feature overrides.
    *
    * @param userId the user ID
@@ -247,7 +248,8 @@ public class UserFeatureAdminController {
   /**
    * Saves the full user feature management configuration for a specific user.
    *
-   * <p>Updates package assignments, application-level overrides, and feature-level overrides.
+   * <p>
+   * Updates package assignments, application-level overrides, and feature-level overrides.
    *
    * @param userId the user ID
    * @param req the user management configuration request
@@ -269,15 +271,13 @@ public class UserFeatureAdminController {
   }
 
   private static SaveUserFeaturePackageCommand toPackageCommand(SaveUserFeaturePackageReq req) {
-    var accesses =
-        req.applicationAccesses() == null
-            ? List.<SaveUserFeaturePackageCommand.ApplicationAccessCommand>of()
-            : req.applicationAccesses().stream()
-                .map(
-                    item ->
-                        new SaveUserFeaturePackageCommand.ApplicationAccessCommand(
-                            item.applicationId(), item.featureAccessScope(), item.featureIds()))
-                .toList();
+    var accesses = req.applicationAccesses() == null
+        ? List.<SaveUserFeaturePackageCommand.ApplicationAccessCommand>of()
+        : req.applicationAccesses().stream()
+            .map(
+                item -> new SaveUserFeaturePackageCommand.ApplicationAccessCommand(
+                    item.applicationId(), item.featureAccessScope(), item.featureIds()))
+            .toList();
     return new SaveUserFeaturePackageCommand(
         req.code(),
         req.name(),
@@ -290,24 +290,20 @@ public class UserFeatureAdminController {
 
   private static SaveUserFeatureUserManagementCommand toUserManagementCommand(
       SaveUserFeatureUserManagementReq req) {
-    var appOverrides =
-        req.applicationOverrides() == null
-            ? List.<ApplicationOverrideCommand>of()
-            : req.applicationOverrides().stream()
-                .map(
-                    item ->
-                        new ApplicationOverrideCommand(
-                            item.applicationId(), item.overrideType(), item.featureAccessScope()))
-                .toList();
-    var featureOverrides =
-        req.featureOverrides() == null
-            ? List.<FeatureOverrideCommand>of()
-            : req.featureOverrides().stream()
-                .map(
-                    item ->
-                        new FeatureOverrideCommand(
-                            item.applicationId(), item.featureId(), item.overrideType()))
-                .toList();
+    var appOverrides = req.applicationOverrides() == null
+        ? List.<ApplicationOverrideCommand>of()
+        : req.applicationOverrides().stream()
+            .map(
+                item -> new ApplicationOverrideCommand(
+                    item.applicationId(), item.overrideType(), item.featureAccessScope()))
+            .toList();
+    var featureOverrides = req.featureOverrides() == null
+        ? List.<FeatureOverrideCommand>of()
+        : req.featureOverrides().stream()
+            .map(
+                item -> new FeatureOverrideCommand(
+                    item.applicationId(), item.featureId(), item.overrideType()))
+            .toList();
     return new SaveUserFeatureUserManagementCommand(
         req.packageIds(), appOverrides, featureOverrides);
   }
@@ -349,16 +345,15 @@ public class UserFeatureAdminController {
         view.defaultPackage(),
         view.applicationAccesses().stream()
             .map(
-                item ->
-                    new UserFeaturePackageApplicationAccessRes(
-                        item.applicationId(),
-                        item.applicationCode(),
-                        item.applicationName(),
-                        item.featureAccessScope(),
-                        item.featureIds(),
-                        item.features().stream()
-                            .map(UserFeatureAdminController::toItemRes)
-                            .toList()))
+                item -> new UserFeaturePackageApplicationAccessRes(
+                    item.applicationId(),
+                    item.applicationCode(),
+                    item.applicationName(),
+                    item.featureAccessScope(),
+                    item.featureIds(),
+                    item.features().stream()
+                        .map(UserFeatureAdminController::toItemRes)
+                        .toList()))
             .toList());
   }
 
@@ -370,49 +365,46 @@ public class UserFeatureAdminController {
         view.packageIds(),
         view.packages().stream()
             .map(
-                item ->
-                    new UserFeaturePackageOptionRes(
-                        item.id(),
-                        item.code(),
-                        item.name(),
-                        item.packageType(),
-                        item.description(),
-                        item.enabled(),
-                        item.defaultPackage()))
+                item -> new UserFeaturePackageOptionRes(
+                    item.id(),
+                    item.code(),
+                    item.name(),
+                    item.packageType(),
+                    item.description(),
+                    item.enabled(),
+                    item.defaultPackage()))
             .toList(),
         view.applications().stream()
             .map(
-                item ->
-                    new UserFeatureUserApplicationRes(
-                        item.id(),
-                        item.code(),
-                        item.name(),
-                        item.description(),
-                        item.icon(),
-                        item.routePath(),
-                        item.componentPath(),
-                        item.enabled(),
-                        item.inheritedVisible(),
-                        item.effectiveVisible(),
-                        item.packageAccessScope(),
-                        item.overrideType(),
-                        item.overrideAccessScope(),
-                        item.features().stream()
-                            .map(
-                                feature ->
-                                    new UserFeatureUserFeatureRes(
-                                        feature.id(),
-                                        feature.applicationId(),
-                                        feature.applicationCode(),
-                                        feature.code(),
-                                        feature.name(),
-                                        feature.description(),
-                                        feature.enabled(),
-                                        feature.permissionCodes(),
-                                        feature.inheritedEnabled(),
-                                        feature.effectiveEnabled(),
-                                        feature.overrideType()))
-                            .toList()))
+                item -> new UserFeatureUserApplicationRes(
+                    item.id(),
+                    item.code(),
+                    item.name(),
+                    item.description(),
+                    item.icon(),
+                    item.routePath(),
+                    item.componentPath(),
+                    item.enabled(),
+                    item.inheritedVisible(),
+                    item.effectiveVisible(),
+                    item.packageAccessScope(),
+                    item.overrideType(),
+                    item.overrideAccessScope(),
+                    item.features().stream()
+                        .map(
+                            feature -> new UserFeatureUserFeatureRes(
+                                feature.id(),
+                                feature.applicationId(),
+                                feature.applicationCode(),
+                                feature.code(),
+                                feature.name(),
+                                feature.description(),
+                                feature.enabled(),
+                                feature.permissionCodes(),
+                                feature.inheritedEnabled(),
+                                feature.effectiveEnabled(),
+                                feature.overrideType()))
+                        .toList()))
             .toList());
   }
 }

@@ -17,7 +17,8 @@ import lombok.Getter;
 /**
  * Logical file node representing either a file or a folder in the storage tree.
  *
- * <p>Each logical file has an owner (user or application), a parent folder, and optionally
+ * <p>
+ * Each logical file has an owner (user or application), a parent folder, and optionally
  * references a physical file on disk (for file nodes). Folder nodes have no physical file
  * reference.
  *
@@ -28,8 +29,8 @@ import lombok.Getter;
 @Table(
     name = "sys_storage_file",
     uniqueConstraints = {
-      @UniqueConstraint(
-          columnNames = {"owner_type", "owner_id", "parent_id", "node_type", "file_name"})
+        @UniqueConstraint(
+            columnNames = {"owner_type", "owner_id", "parent_id", "node_type", "file_name"})
     })
 public class LogicalFile {
 
@@ -66,7 +67,8 @@ public class LogicalFile {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  protected LogicalFile() {}
+  protected LogicalFile() {
+  }
 
   private LogicalFile(
       OwnerType ownerType,

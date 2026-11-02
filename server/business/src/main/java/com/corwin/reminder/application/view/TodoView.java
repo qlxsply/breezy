@@ -18,4 +18,5 @@ public record TodoView(
     Long sortNo,
     String completionNote,
     Instant completedAt,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

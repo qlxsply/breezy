@@ -16,4 +16,5 @@ public record UpdateDictTypeCommand(
     DictValueType valueType,
     DictStructureType structureType,
     boolean enabled,
-    List<SaveDictTypeItemCommand> items) {}
+    List<SaveDictTypeItemCommand> items) {
+}

@@ -8,6 +8,7 @@ import java.util.List;
  */
 public record MetadataExtractResult(
     BaseInfo baseInfo, List<TableInfo> tables, List<ColumnInfo> columns) {
+
   public record BaseInfo(
       String productName,
       String productVersion,
@@ -15,10 +16,12 @@ public record MetadataExtractResult(
       String driverVersion,
       String jdbcUrl,
       String dbUser,
-      Instant fetchedAt) {}
+      Instant fetchedAt) {
+  }
 
   public record TableInfo(
-      String catalog, String schema, String name, String type, String remarkDb) {}
+      String catalog, String schema, String name, String type, String remarkDb) {
+  }
 
   public record ColumnInfo(
       String tableCatalog,
@@ -32,5 +35,6 @@ public record MetadataExtractResult(
       Boolean nullable,
       Integer ordinalPosition,
       String defaultValue,
-      String remarkDb) {}
+      String remarkDb) {
+  }
 }

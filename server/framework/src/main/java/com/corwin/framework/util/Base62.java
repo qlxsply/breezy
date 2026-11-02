@@ -6,18 +6,19 @@ import java.util.Arrays;
 /**
  * Utility for custom base‑62 encoding/decoding.
  *
- * <p>Uses the 62-character alphabet [0-9][A-Z][a-z]. Supports conversion between integral values
+ * <p>
+ * Uses the 62-character alphabet [0-9][A-Z][a-z]. Supports conversion between integral values
  * and fixed‑width strings with optional zero padding. Rejects negative inputs and invalid chars.
  *
  * <h3>Potential issues/notices:</h3>
  *
  * <ul>
- *   <li><strong>Unsupported negative values:</strong> {@link #toBase62} throws
- *       IllegalArgumentException for negatives.
- *   <li><strong>Invalid chars:</strong> {@link #parseBase62} throws when encountering non‑alphabet
- *       characters or overflow.
- *   <li><strong>Padding:</strong> minScale pads with ‘0’, which may be ambiguous if leading zeros
- *       are significant.
+ * <li><strong>Unsupported negative values:</strong> {@link #toBase62} throws
+ * IllegalArgumentException for negatives.
+ * <li><strong>Invalid chars:</strong> {@link #parseBase62} throws when encountering non‑alphabet
+ * characters or overflow.
+ * <li><strong>Padding:</strong> minScale pads with ‘0’, which may be ambiguous if leading zeros
+ * are significant.
  * </ul>
  *
  * @author Corwin 2025/5/12
@@ -72,10 +73,10 @@ public class Base62 {
 
   /** Alphabet for Base62: digits, uppercase, then lowercase letters. */
   private static final char[] BASE62_CODE = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-    'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
-    'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-    'v', 'w', 'x', 'y', 'z'
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+      'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
+      'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+      'v', 'w', 'x', 'y', 'z'
   };
 
   /** Base value for encoding */

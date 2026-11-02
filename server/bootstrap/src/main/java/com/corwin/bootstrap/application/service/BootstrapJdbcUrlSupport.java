@@ -7,7 +7,8 @@ import com.corwin.bootstrap.application.DatabaseType;
  */
 public final class BootstrapJdbcUrlSupport {
 
-  private BootstrapJdbcUrlSupport() {}
+  private BootstrapJdbcUrlSupport() {
+  }
 
   public static String toFolder(DatabaseType databaseType) {
     return switch (databaseType) {

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface DatabaseTableRepository
     extends DomainRepository<DatabaseTable, Long>,
-        DynamicPageQueryRepository<DatabaseTable, DatabaseTablePageQuery> {
+    DynamicPageQueryRepository<DatabaseTable, DatabaseTablePageQuery> {
 
   void deleteByDatabaseId(Long databaseId);
 

@@ -21,9 +21,9 @@ import lombok.Getter;
 @Table(
     name = "sys_user_config",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_user_config",
-          columnNames = {"user_id", "config_code"})
+        @UniqueConstraint(
+            name = "uk_user_config",
+            columnNames = {"user_id", "config_code"})
     })
 public class UserConfig {
 
@@ -44,7 +44,8 @@ public class UserConfig {
   @Column(name = "config_value", nullable = false, length = 4000)
   private String configValue;
 
-  protected UserConfig() {}
+  protected UserConfig() {
+  }
 
   public UserConfig(Long userId, String configCode, String configValue) {
     this.userId = Objects.requireNonNull(userId);

@@ -5,7 +5,8 @@ import java.util.List;
 /**
  * {@link PaginationDialect} for MySQL and MariaDB.
  *
- * <p>Appends {@code LIMIT ? OFFSET ?} to the original SQL statement.
+ * <p>
+ * Appends {@code LIMIT ? OFFSET ?} to the original SQL statement.
  *
  * @author Corwin 2026/7/28
  */

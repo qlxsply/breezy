@@ -49,8 +49,7 @@ public class AuditAnnotationResolver {
     Class<?> implementationClass = cacheKey.implementationClass();
     Method implementationMethod = resolveImplementationMethod(implementationClass, declaredMethod);
 
-    Audit annotation =
-        findAuditAnnotation(implementationMethod, declaredMethod, implementationClass);
+    Audit annotation = findAuditAnnotation(implementationMethod, declaredMethod, implementationClass);
     if (annotation == null) {
       return Optional.empty();
     }
@@ -75,8 +74,7 @@ public class AuditAnnotationResolver {
 
   private Audit findAuditAnnotation(
       Method implementationMethod, Method declaredMethod, Class<?> implementationClass) {
-    Audit annotation =
-        AnnotatedElementUtils.findMergedAnnotation(implementationMethod, Audit.class);
+    Audit annotation = AnnotatedElementUtils.findMergedAnnotation(implementationMethod, Audit.class);
     if (annotation != null) {
       return annotation;
     }
@@ -93,8 +91,7 @@ public class AuditAnnotationResolver {
   }
 
   private ApiMeta findApiMeta(Class<?> implementationClass, Method declaredMethod) {
-    ApiMeta apiMeta =
-        AnnotatedElementUtils.findMergedAnnotation(implementationClass, ApiMeta.class);
+    ApiMeta apiMeta = AnnotatedElementUtils.findMergedAnnotation(implementationClass, ApiMeta.class);
     if (apiMeta != null) {
       return apiMeta;
     }
@@ -127,5 +124,6 @@ public class AuditAnnotationResolver {
     return resource.label() + action.label();
   }
 
-  private record CacheKey(Method declaredMethod, Class<?> implementationClass) {}
+  private record CacheKey(Method declaredMethod, Class<?> implementationClass) {
+  }
 }

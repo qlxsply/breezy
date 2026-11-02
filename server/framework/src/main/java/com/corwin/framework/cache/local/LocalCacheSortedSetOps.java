@@ -36,8 +36,7 @@ public class LocalCacheSortedSetOps<T> extends AbstractLocalCacheOps
         dataType(),
         key,
         (entry, now) -> {
-          LocalSortedSetValue sortedSet =
-              entry == null ? new LocalSortedSetValue() : asSortedSet(entry);
+          LocalSortedSetValue sortedSet = entry == null ? new LocalSortedSetValue() : asSortedSet(entry);
           boolean changed = sortedSet.add(member, score);
           return LocalCacheWriteResult.keep(upsert(entry, sortedSet, now), changed);
         });
@@ -55,8 +54,7 @@ public class LocalCacheSortedSetOps<T> extends AbstractLocalCacheOps
         dataType(),
         key,
         (entry, now) -> {
-          LocalSortedSetValue sortedSet =
-              entry == null ? new LocalSortedSetValue() : asSortedSet(entry);
+          LocalSortedSetValue sortedSet = entry == null ? new LocalSortedSetValue() : asSortedSet(entry);
           long changed = sortedSet.addAll(members);
           return LocalCacheWriteResult.keep(upsert(entry, sortedSet, now), changed);
         });

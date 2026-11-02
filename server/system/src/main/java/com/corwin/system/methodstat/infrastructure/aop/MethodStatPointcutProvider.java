@@ -13,15 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class MethodStatPointcutProvider {
 
-  private static final String METHOD_STAT_ANNOTATION =
-      "com.corwin.system.methodstat.domain.model.MethodStat";
-  private static final String EXPRESSION =
-      "(execution(public * *(..)) && (@annotation("
-          + METHOD_STAT_ANNOTATION
-          + ") || @within("
-          + METHOD_STAT_ANNOTATION
-          + ")))"
-          + " || execution(public * com.corwin..interfaces.web..*(..))";
+  private static final String METHOD_STAT_ANNOTATION = "com.corwin.system.methodstat.domain.model.MethodStat";
+  private static final String EXPRESSION = "(execution(public * *(..)) && (@annotation("
+      + METHOD_STAT_ANNOTATION
+      + ") || @within("
+      + METHOD_STAT_ANNOTATION
+      + ")))"
+      + " || execution(public * com.corwin..interfaces.web..*(..))";
 
   private final AspectJExpressionPointcut pointcut;
 

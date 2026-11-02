@@ -23,36 +23,33 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserConfigAppService {
 
-  private static final Set<String> PERSONALIZED_CODES =
-      Set.of(
-          UserConfigCodes.TIME_ZONE,
-          UserConfigCodes.DATE_TIME_FORMAT,
-          UserConfigCodes.DATE_FORMAT,
-          UserConfigCodes.DECIMAL_FORMAT,
-          UserConfigCodes.ADMIN_TAB_KEEP_ALIVE);
+  private static final Set<String> PERSONALIZED_CODES = Set.of(
+      UserConfigCodes.TIME_ZONE,
+      UserConfigCodes.DATE_TIME_FORMAT,
+      UserConfigCodes.DATE_FORMAT,
+      UserConfigCodes.DECIMAL_FORMAT,
+      UserConfigCodes.ADMIN_TAB_KEEP_ALIVE);
 
   private final UserConfigRepository userConfigRepository;
   private final DictQueryService dictQueryService;
 
   public List<UserConfigView> getMergedConfigs(Long userId) {
     Map<String, String> defaults = publicDefaults();
-    Map<String, String> overrides =
-        userId == null
-            ? Map.of()
-            : userConfigRepository.findByUserId(userId).stream()
-                .collect(
-                    Collectors.toMap(
-                        UserConfig::getConfigCode,
-                        UserConfig::getConfigValue,
-                        (left, right) -> left));
+    Map<String, String> overrides = userId == null
+        ? Map.of()
+        : userConfigRepository.findByUserId(userId).stream()
+            .collect(
+                Collectors.toMap(
+                    UserConfig::getConfigCode,
+                    UserConfig::getConfigValue,
+                    (left, right) -> left));
     return defaults.entrySet().stream()
         .map(
-            entry ->
-                new UserConfigView(
-                    entry.getKey(),
-                    description(entry.getKey()),
-                    valueType(entry.getKey()),
-                    overrides.getOrDefault(entry.getKey(), entry.getValue())))
+            entry -> new UserConfigView(
+                entry.getKey(),
+                description(entry.getKey()),
+                valueType(entry.getKey()),
+                overrides.getOrDefault(entry.getKey(), entry.getValue())))
         .toList();
   }
 
@@ -66,10 +63,9 @@ public class UserConfigAppService {
     }
     String normalizedValue = value == null ? "" : value.trim();
     validateValue(code, normalizedValue);
-    UserConfig userConfig =
-        userConfigRepository
-            .findByUserIdAndConfigCode(userId, code)
-            .orElse(new UserConfig(userId, code, normalizedValue));
+    UserConfig userConfig = userConfigRepository
+        .findByUserIdAndConfigCode(userId, code)
+        .orElse(new UserConfig(userId, code, normalizedValue));
     userConfig.updateValue(normalizedValue);
     userConfigRepository.save(userConfig);
   }

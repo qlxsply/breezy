@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/1/12
  */
 public enum RecurrenceRuleFrequency implements DictEnumDefinition {
+
   ONCE("一次", DictTagColor.SLATE, DictTagType.INFO),
   DAILY("每天", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   WEEKLY("每周", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),

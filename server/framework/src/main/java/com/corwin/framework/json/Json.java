@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
 /**
  * Static convenience wrapper around a Spring-managed {@link ObjectMapper}.
  *
- * <p>Provides common JSON operations (serialize / deserialize / convert / pretty-print) as static
+ * <p>
+ * Provides common JSON operations (serialize / deserialize / convert / pretty-print) as static
  * methods, throwing {@link com.corwin.framework.error.SysException} on failure.
  *
  * @author Corwin 2026/1/7

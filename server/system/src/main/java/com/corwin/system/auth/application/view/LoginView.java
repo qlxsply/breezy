@@ -11,4 +11,5 @@ public record LoginView(
     String refreshToken,
     String accessTokenExpiresAt,
     String refreshTokenExpiresAt,
-    AuthUserView user) {}
+    AuthUserView user) {
+}

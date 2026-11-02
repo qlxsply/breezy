@@ -7,7 +7,8 @@ import java.time.Instant;
 /**
  * Entry point for publishing async events.
  *
- * <p>Business code should depend on this interface only, not on the underlying transport or
+ * <p>
+ * Business code should depend on this interface only, not on the underlying transport or
  * message-queue client. The implementation handles envelope creation, context snapshotting, and
  * delivery.
  *

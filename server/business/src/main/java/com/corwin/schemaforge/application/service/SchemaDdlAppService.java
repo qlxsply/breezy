@@ -60,76 +60,65 @@ public class SchemaDdlAppService {
           "Source snapshot and target snapshot cannot be the same", BaseError.CONFLICT);
     }
 
-    DatabaseSnapshot targetSnapshot =
-        databaseSnapshotRepository
-            .findById(targetSnapshotId)
-            .orElseThrow(
-                () ->
-                    new BizException(
-                        "Target snapshot not found: " + targetSnapshotId, BaseError.NOT_FOUND));
+    DatabaseSnapshot targetSnapshot = databaseSnapshotRepository
+        .findById(targetSnapshotId)
+        .orElseThrow(
+            () -> new BizException(
+                "Target snapshot not found: " + targetSnapshotId, BaseError.NOT_FOUND));
 
     DatabaseSnapshot sourceSnapshot = null;
     if (sourceSnapshotId != null) {
-      sourceSnapshot =
-          databaseSnapshotRepository
-              .findById(sourceSnapshotId)
-              .orElseThrow(
-                  () ->
-                      new BizException(
-                          "Source snapshot not found: " + sourceSnapshotId, BaseError.NOT_FOUND));
+      sourceSnapshot = databaseSnapshotRepository
+          .findById(sourceSnapshotId)
+          .orElseThrow(
+              () -> new BizException(
+                  "Source snapshot not found: " + sourceSnapshotId, BaseError.NOT_FOUND));
       validateSnapshotPair(sourceSnapshot, targetSnapshot);
     }
 
-    byte[] sourceSnapshotContent =
-        sourceSnapshot == null
-            ? null
-            : fileService.readFileContent(sourceSnapshot.getLogicalFileId());
+    byte[] sourceSnapshotContent = sourceSnapshot == null
+        ? null
+        : fileService.readFileContent(sourceSnapshot.getLogicalFileId());
     byte[] targetSnapshotContent = fileService.readFileContent(targetSnapshot.getLogicalFileId());
-    String sourceQualifierHint =
-        sourceSnapshot == null ? null : StrUtil.trimToNull(sourceSnapshot.getSchemaName());
+    String sourceQualifierHint = sourceSnapshot == null ? null : StrUtil.trimToNull(sourceSnapshot.getSchemaName());
     String targetQualifierHint = StrUtil.trimToNull(targetSnapshot.getSchemaName());
 
-    LiquibaseEngine.DdlResult ddlResult =
-        liquibaseEngine.generateDdlFromSnapshots(
-            sourceSnapshotContent, targetSnapshotContent, sourceQualifierHint, targetQualifierHint);
+    LiquibaseEngine.DdlResult ddlResult = liquibaseEngine.generateDdlFromSnapshots(
+        sourceSnapshotContent, targetSnapshotContent, sourceQualifierHint, targetQualifierHint);
 
     byte[] content = ddlResult.content();
-    String logicalFileId =
-        fileService.createInternalFile(ddlName, InternalFileType.SQL, content, FilePurpose.DDL);
+    String logicalFileId = fileService.createInternalFile(ddlName, InternalFileType.SQL, content, FilePurpose.DDL);
 
-    DatabaseDdl ddl =
-        new DatabaseDdl(
-            targetSnapshot.getManagedDatabaseId(),
-            sourceSnapshotId,
-            targetSnapshotId,
-            ddlName,
-            remark,
-            resolveDbType(ddlResult, targetSnapshot),
-            resolveDbVersion(ddlResult, targetSnapshot),
-            resolveSchemaName(ddlResult, targetSnapshot),
-            logicalFileId,
-            calculateHash(content));
+    DatabaseDdl ddl = new DatabaseDdl(
+        targetSnapshot.getManagedDatabaseId(),
+        sourceSnapshotId,
+        targetSnapshotId,
+        ddlName,
+        remark,
+        resolveDbType(ddlResult, targetSnapshot),
+        resolveDbVersion(ddlResult, targetSnapshot),
+        resolveSchemaName(ddlResult, targetSnapshot),
+        logicalFileId,
+        calculateHash(content));
     databaseDdlRepository.save(ddl);
     return ddl.getId();
   }
 
   public PageResult<SchemaDdlRes> pageQuery(
       Long managedDatabaseId, String nameLike, PageSpec spec) {
-    PageData<SchemaDdlRes> page =
-        schemaDdlMybatisMapper.pageQuery(
-            managedDatabaseId,
-            LikePatternUtils.toContainsPattern(nameLike),
-            PageSpecSorts.apply(spec));
+    PageData<SchemaDdlRes> page = schemaDdlMybatisMapper.pageQuery(
+        managedDatabaseId,
+        LikePatternUtils.toContainsPattern(nameLike),
+        PageSpecSorts.apply(spec));
     return PageResult.of(page);
   }
 
   @Transactional
   public void delete(String id) {
     BizAssert.notBlank(id, BaseError.MISSING_PARAMETER);
-    DatabaseDdl ddl =
-        databaseDdlRepository
-            .findById(id)
-            .orElseThrow(() -> new BizException("DDL not found: " + id, BaseError.NOT_FOUND));
+    DatabaseDdl ddl = databaseDdlRepository
+        .findById(id)
+        .orElseThrow(() -> new BizException("DDL not found: " + id, BaseError.NOT_FOUND));
 
     databaseDdlRepository.delete(ddl);
     fileService.deleteFile(ddl.getLogicalFileId());
@@ -144,11 +133,10 @@ public class SchemaDdlAppService {
     BizAssert.notBlank(ddlName, BaseError.MISSING_PARAMETER);
     String remark = StrUtil.trimToNull(command.remark());
 
-    DatabaseDdl ddl =
-        databaseDdlRepository
-            .findById(command.id())
-            .orElseThrow(
-                () -> new BizException("DDL not found: " + command.id(), BaseError.NOT_FOUND));
+    DatabaseDdl ddl = databaseDdlRepository
+        .findById(command.id())
+        .orElseThrow(
+            () -> new BizException("DDL not found: " + command.id(), BaseError.NOT_FOUND));
     ddl.updateInfo(ddlName, remark);
     databaseDdlRepository.save(ddl);
   }

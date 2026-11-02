@@ -13,7 +13,8 @@ import java.util.Properties;
  */
 public final class DatabaseMetaSupport {
 
-  private DatabaseMetaSupport() {}
+  private DatabaseMetaSupport() {
+  }
 
   public static void applyDriverClassIfNeeded(HikariConfig cfg, DatabaseSource source) {
     if (source.getDbType() == null) {

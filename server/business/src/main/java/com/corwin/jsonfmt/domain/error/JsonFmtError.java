@@ -8,6 +8,7 @@ import com.corwin.framework.error.ErrorCodeRanges;
  * @author Corwin 2026/3/2
  */
 public enum JsonFmtError implements ErrorCode {
+
   JSONFMT_RECORD_NOT_FOUND("102001", "记录不存在或无权限访问"),
   JSONFMT_RECORD_NAME_REQUIRED("102002", "记录名称不能为空"),
   JSONFMT_RECORD_NAME_TOO_LONG("102003", "记录名称长度超过限制"),

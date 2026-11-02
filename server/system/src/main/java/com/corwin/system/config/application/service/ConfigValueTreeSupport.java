@@ -131,5 +131,6 @@ final class ConfigValueTreeSupport {
     }
   }
 
-  private ConfigValueTreeSupport() {}
+  private ConfigValueTreeSupport() {
+  }
 }

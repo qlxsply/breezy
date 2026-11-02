@@ -6,6 +6,7 @@ import java.util.Locale;
  * @author Corwin 2026/4/28
  */
 public enum DatabaseType {
+
   MYSQL,
   POSTGRESQL;
 

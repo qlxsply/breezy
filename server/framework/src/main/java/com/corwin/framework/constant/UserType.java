@@ -7,12 +7,14 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * Built-in user type enumeration.
  *
- * <p>Defines the hierarchy of system identities with corresponding tag colors and tag types for UI
+ * <p>
+ * Defines the hierarchy of system identities with corresponding tag colors and tag types for UI
  * display.
  *
  * @author Corwin 2026/4/19
  */
 public enum UserType implements DictEnumDefinition {
+
   SYSTEM("系统账号", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
   ADMIN("账号", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   USER("用户", DictTagColor.SLATE, DictTagType.INFO),

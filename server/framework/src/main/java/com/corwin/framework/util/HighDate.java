@@ -448,5 +448,6 @@ public final class HighDate {
     return format(lt, DateTimeFormatter.ofPattern(pattern));
   }
 
-  private HighDate() {}
+  private HighDate() {
+  }
 }

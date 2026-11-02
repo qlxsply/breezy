@@ -13,13 +13,13 @@ import org.apache.ibatis.mapping.SqlSource;
  */
 public final class MappedStatementFactory {
 
-  private MappedStatementFactory() {}
+  private MappedStatementFactory() {
+  }
 
   public static MappedStatement copy(
       MappedStatement source, String id, SqlSource sqlSource, List<ResultMap> resultMaps) {
-    MappedStatement.Builder builder =
-        new MappedStatement.Builder(
-            source.getConfiguration(), id, sqlSource, source.getSqlCommandType());
+    MappedStatement.Builder builder = new MappedStatement.Builder(
+        source.getConfiguration(), id, sqlSource, source.getSqlCommandType());
 
     builder.resource(source.getResource());
     builder.fetchSize(source.getFetchSize());

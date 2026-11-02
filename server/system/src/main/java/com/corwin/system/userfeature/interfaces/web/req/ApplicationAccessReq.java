@@ -14,4 +14,5 @@ import java.util.List;
 public record ApplicationAccessReq(
     String applicationId,
     ApplicationFeatureAccessScope featureAccessScope,
-    List<String> featureIds) {}
+    List<String> featureIds) {
+}

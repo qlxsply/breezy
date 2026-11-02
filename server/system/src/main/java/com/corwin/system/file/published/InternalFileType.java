@@ -7,6 +7,7 @@ package com.corwin.system.file.published;
  * @author Corwin 2026/4/16
  */
 public enum InternalFileType {
+
   TEXT("text/plain; charset=UTF-8", ".txt", "Text"),
   JSON("application/json", ".json", "JSON"),
   CSV("text/csv; charset=UTF-8", ".csv", "CSV"),

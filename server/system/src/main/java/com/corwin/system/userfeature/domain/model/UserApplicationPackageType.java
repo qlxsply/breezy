@@ -5,11 +5,13 @@ import com.corwin.framework.dict.DictEnumDefinition;
 /**
  * 用户应用包类型。
  *
- * <p>用于区分用户应用包的业务来源。
+ * <p>
+ * 用于区分用户应用包的业务来源。
  *
  * @author Corwin
  */
 public enum UserApplicationPackageType implements DictEnumDefinition {
+
   /** 默认包。 */
   DEFAULT("默认包"),
   /** 会员包。 */

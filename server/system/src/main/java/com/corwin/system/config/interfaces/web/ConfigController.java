@@ -53,9 +53,8 @@ public class ConfigController {
       userType = UserType.ADMIN,
       permissions = {"cfg.view"})
   public ApiResponse<PageResult<ConfigRes>> page(@Valid @RequestBody ConfigPageReq req) {
-    var page =
-        configQueryService.page(
-            req.keyword(), req.module(), req.group(), PageSpecFactory.of(req.page(), null));
+    var page = configQueryService.page(
+        req.keyword(), req.module(), req.group(), PageSpecFactory.of(req.page(), null));
     return ApiResponse.ok(PageResult.of(page, ConfigController::toRes));
   }
 
@@ -96,9 +95,8 @@ public class ConfigController {
       recordRequest = false)
   public ApiResponse<ConfigChangeRes> update(
       @PathVariable String configKey, @Valid @RequestBody UpdateConfigReq req) {
-    var view =
-        configCommandService.update(
-            new UpdateConfigCommand(configKey, req.expectedRevision(), req.reason(), req.value()));
+    var view = configCommandService.update(
+        new UpdateConfigCommand(configKey, req.expectedRevision(), req.reason(), req.value()));
     return ApiResponse.ok(toRes(view));
   }
 
@@ -113,9 +111,8 @@ public class ConfigController {
       recordRequest = false)
   public ApiResponse<ConfigChangeRes> resetDefault(
       @PathVariable String configKey, @Valid @RequestBody ResetConfigReq req) {
-    var view =
-        configCommandService.resetDefault(
-            new ResetConfigCommand(configKey, req.expectedRevision(), req.reason()));
+    var view = configCommandService.resetDefault(
+        new ResetConfigCommand(configKey, req.expectedRevision(), req.reason()));
     return ApiResponse.ok(toRes(view));
   }
 
@@ -130,12 +127,10 @@ public class ConfigController {
       recordRequest = false)
   public ApiResponse<List<ConfigChangeRes>> batchResetDefault(
       @Valid @RequestBody BatchResetConfigReq req) {
-    var commands =
-        req.items().stream()
-            .map(
-                item ->
-                    new ResetConfigCommand(item.configKey(), item.expectedRevision(), req.reason()))
-            .toList();
+    var commands = req.items().stream()
+        .map(
+            item -> new ResetConfigCommand(item.configKey(), item.expectedRevision(), req.reason()))
+        .toList();
     return ApiResponse.ok(
         configCommandService.resetDefaults(commands).stream()
             .map(ConfigController::toRes)

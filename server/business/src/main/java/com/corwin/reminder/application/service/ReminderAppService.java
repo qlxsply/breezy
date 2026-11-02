@@ -35,19 +35,18 @@ public class ReminderAppService {
   @Transactional(readOnly = true)
   public ReminderPollView poll(Long userId, Instant startTime) {
     Instant cutoffTime = HighDate.mockInstant();
-    List<ReminderView> items =
-        Stream.concat(
-                outboxRepo
-                    .findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
-                        userId, ReminderOutboxStatus.PENDING, startTime, cutoffTime)
-                    .stream(),
-                outboxRepo
-                    .findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
-                        userId, ReminderOutboxStatus.SENT, startTime, cutoffTime)
-                    .stream())
-            .sorted(Comparator.comparing(ReminderOutbox::getCreatedAt))
-            .map(this::toReminderView)
-            .toList();
+    List<ReminderView> items = Stream.concat(
+        outboxRepo
+            .findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
+                userId, ReminderOutboxStatus.PENDING, startTime, cutoffTime)
+            .stream(),
+        outboxRepo
+            .findByUserIdAndStatusAndCreatedAtGreaterThanAndCreatedAtLessThanEqualOrderByCreatedAtAsc(
+                userId, ReminderOutboxStatus.SENT, startTime, cutoffTime)
+            .stream())
+        .sorted(Comparator.comparing(ReminderOutbox::getCreatedAt))
+        .map(this::toReminderView)
+        .toList();
     return new ReminderPollView(cutoffTime, items);
   }
 
@@ -86,11 +85,10 @@ public class ReminderAppService {
   private ReminderView toReminderView(ReminderOutbox outbox) {
     String eventTimeZoneId = null;
     if (outbox.getSourceType() == SourceType.SCHEDULE) {
-      eventTimeZoneId =
-          scheduleRepo
-              .findById(outbox.getSourceId())
-              .map(ScheduleEvent::getEventTimeZoneId)
-              .orElse(null);
+      eventTimeZoneId = scheduleRepo
+          .findById(outbox.getSourceId())
+          .map(ScheduleEvent::getEventTimeZoneId)
+          .orElse(null);
     }
     return new ReminderView(
         outbox.getId(),

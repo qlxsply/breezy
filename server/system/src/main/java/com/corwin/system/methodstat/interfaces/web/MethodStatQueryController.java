@@ -43,14 +43,13 @@ public class MethodStatQueryController {
       @RequestBody MethodStatStatsPageReq req) {
     SortSpec sortSpec = firstSort(req);
     var pageSpec = PageSpecFactory.of(req.page(), req.sort());
-    var page =
-        queryAppService.pageStats(
-            req.methodName(),
-            req.collectEnabled(),
-            sortSpec == null ? null : sortSpec.field(),
-            sortSpec == null || sortSpec.direction() == null ? null : sortSpec.direction().name(),
-            pageSpec.pageNo(),
-            pageSpec.pageSize());
+    var page = queryAppService.pageStats(
+        req.methodName(),
+        req.collectEnabled(),
+        sortSpec == null ? null : sortSpec.field(),
+        sortSpec == null || sortSpec.direction() == null ? null : sortSpec.direction().name(),
+        pageSpec.pageNo(),
+        pageSpec.pageSize());
     return ApiResponse.ok(PageResult.of(page, MethodStatQueryController::toStatsRes));
   }
 

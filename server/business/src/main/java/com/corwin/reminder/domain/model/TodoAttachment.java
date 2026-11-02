@@ -23,8 +23,8 @@ import lombok.Getter;
 @Table(
     name = "todo_attachment",
     indexes = {
-      @Index(name = "idx_todo_attachment_todo", columnList = "todo_id"),
-      @Index(name = "idx_todo_attachment_stage", columnList = "attachment_stage")
+        @Index(name = "idx_todo_attachment_todo", columnList = "todo_id"),
+        @Index(name = "idx_todo_attachment_stage", columnList = "attachment_stage")
     })
 public class TodoAttachment {
 
@@ -48,7 +48,8 @@ public class TodoAttachment {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected TodoAttachment() {}
+  protected TodoAttachment() {
+  }
 
   public static TodoAttachment create(
       Long todoId, TodoAttachmentStage stage, String fileId, long sortNo) {

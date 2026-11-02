@@ -77,30 +77,28 @@ public class UserService {
             .isEmpty(),
         BaseError.CONFLICT);
 
-    WebUser user =
-        webUserRepository.save(
-            new WebUser(
-                nickname,
-                nickname,
-                WebUserRegisterMethod.USERNAME_PASSWORD,
-                WebUserRegisterChannel.WEB,
-                "self-register",
-                null,
-                null,
-                username));
-    WebUserIdentity identity =
-        webUserIdentityRepository.save(
-            new WebUserIdentity(
-                user.getId(),
-                WebUserIdentityType.USERNAME,
-                username,
-                webUserIdentitySupport.normalizeForType(WebUserIdentityType.USERNAME, username),
-                identityHash,
-                null,
-                null,
-                true,
-                true,
-                username));
+    WebUser user = webUserRepository.save(
+        new WebUser(
+            nickname,
+            nickname,
+            WebUserRegisterMethod.USERNAME_PASSWORD,
+            WebUserRegisterChannel.WEB,
+            "self-register",
+            null,
+            null,
+            username));
+    WebUserIdentity identity = webUserIdentityRepository.save(
+        new WebUserIdentity(
+            user.getId(),
+            WebUserIdentityType.USERNAME,
+            username,
+            webUserIdentitySupport.normalizeForType(WebUserIdentityType.USERNAME, username),
+            identityHash,
+            null,
+            null,
+            true,
+            true,
+            username));
     webUserCredentialRepository.save(
         new WebUserCredential(
             user.getId(),

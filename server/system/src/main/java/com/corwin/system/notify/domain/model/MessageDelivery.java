@@ -17,7 +17,8 @@ import lombok.Getter;
 /**
  * Domain entity representing a message delivery record.
  *
- * <p>Tracks the delivery lifecycle of a notification, including status transitions (PENDING -> SENT
+ * <p>
+ * Tracks the delivery lifecycle of a notification, including status transitions (PENDING -> SENT
  * -> ACKED/FAILED), delivery channels, and timestamps.
  *
  * @author Corwin 2026/3/19
@@ -27,13 +28,13 @@ import lombok.Getter;
 @Table(
     name = "sys_message_delivery",
     indexes = {
-      @Index(
-          name = "idx_msg_delivery_user_status",
-          columnList = "user_type, user_id, delivery_status"),
-      @Index(name = "idx_msg_delivery_user_id", columnList = "user_type, user_id, id"),
-      @Index(
-          name = "idx_msg_delivery_user_notification",
-          columnList = "user_type, user_id, notification_id")
+        @Index(
+            name = "idx_msg_delivery_user_status",
+            columnList = "user_type, user_id, delivery_status"),
+        @Index(name = "idx_msg_delivery_user_id", columnList = "user_type, user_id, id"),
+        @Index(
+            name = "idx_msg_delivery_user_notification",
+            columnList = "user_type, user_id, notification_id")
     })
 public class MessageDelivery {
 
@@ -91,7 +92,8 @@ public class MessageDelivery {
   @Column(name = "acked_at")
   private Instant ackedAt;
 
-  protected MessageDelivery() {}
+  protected MessageDelivery() {
+  }
 
   /**
    * Creates a new delivery record in PENDING status with full parameters.
@@ -144,7 +146,8 @@ public class MessageDelivery {
   /**
    * Creates a new delivery record in PENDING status with simplified parameters.
    *
-   * <p>Auto-resolves panelAutoOpen and osNotificationEnabled based on priority.
+   * <p>
+   * Auto-resolves panelAutoOpen and osNotificationEnabled based on priority.
    *
    * @param userId the target user ID
    * @param userType the target user type

@@ -27,24 +27,22 @@ public class BootstrapSystemFileSyncService {
   public BootstrapTaskReport run(boolean dryRun) {
     long startedAt = System.currentTimeMillis();
     List<FolderSeed> seeds = buildSeeds();
-    FolderSyncSummary summary =
-        dryRun
-            ? BootstrapJdbcTransactionSupport.execute(
-                dataSource, connection -> inspect(connection, seeds))
-            : BootstrapJdbcTransactionSupport.execute(
-                dataSource, connection -> synchronize(connection, seeds));
+    FolderSyncSummary summary = dryRun
+        ? BootstrapJdbcTransactionSupport.execute(
+            dataSource, connection -> inspect(connection, seeds))
+        : BootstrapJdbcTransactionSupport.execute(
+            dataSource, connection -> synchronize(connection, seeds));
 
-    String message =
-        "total="
-            + seeds.size()
-            + "; created="
-            + summary.created()
-            + "; skipped="
-            + summary.skipped()
-            + "; ownerType="
-            + OwnerType.APPLICATION.name()
-            + "; ownerId="
-            + DefaultUser.SYSTEM.account();
+    String message = "total="
+        + seeds.size()
+        + "; created="
+        + summary.created()
+        + "; skipped="
+        + summary.skipped()
+        + "; ownerType="
+        + OwnerType.APPLICATION.name()
+        + "; ownerId="
+        + DefaultUser.SYSTEM.account();
     return new BootstrapTaskReport(
         BootstrapTaskKey.SYSTEM_FILE_SYNC,
         dryRun,
@@ -121,7 +119,9 @@ public class BootstrapSystemFileSyncService {
     return List.copyOf(result);
   }
 
-  private record FolderSeed(String id, String ownerType, String ownerId, String folderName) {}
+  private record FolderSeed(String id, String ownerType, String ownerId, String folderName) {
+  }
 
-  private record FolderSyncSummary(int created, int skipped) {}
+  private record FolderSyncSummary(int created, int skipped) {
+  }
 }

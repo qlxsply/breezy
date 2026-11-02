@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @author Corwin 2026/4/19
  */
-public interface AuditLogJpaRepository extends JpaRepository<AuditLog, Long> {}
+public interface AuditLogJpaRepository extends JpaRepository<AuditLog, Long> {
+}

@@ -10,7 +10,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DatabaseSchemaCreateReq {
-  @JsonLongString private Long dataSourceId;
+
+  @JsonLongString
+  private Long dataSourceId;
   private String databaseName;
   private String alias;
   private String remarkCustom;

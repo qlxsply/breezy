@@ -42,22 +42,19 @@ public class ConfigQueryService {
   public PageData<ConfigManagementView> page(
       String keyword, String module, String group, PageSpec pageSpec) {
     PageSpec effectivePageSpec = PageSpec.ensure(pageSpec);
-    Map<String, ConfigValue> storedValues =
-        configValueRepository.findAll().stream()
-            .collect(Collectors.toMap(ConfigValue::configKey, Function.identity()));
+    Map<String, ConfigValue> storedValues = configValueRepository.findAll().stream()
+        .collect(Collectors.toMap(ConfigValue::configKey, Function.identity()));
     String normalizedKeyword = normalize(keyword);
     String normalizedModule = normalize(module);
     String normalizedGroup = normalize(group);
 
-    List<ConfigManagementView> matched =
-        ConfigSpecCatalog.loadAll().values().stream()
-            .filter(spec -> matches(spec, normalizedKeyword, normalizedModule, normalizedGroup))
-            .sorted(specComparator())
-            .map(spec -> toView(spec, storedValues.get(spec.key().value())))
-            .toList();
+    List<ConfigManagementView> matched = ConfigSpecCatalog.loadAll().values().stream()
+        .filter(spec -> matches(spec, normalizedKeyword, normalizedModule, normalizedGroup))
+        .sorted(specComparator())
+        .map(spec -> toView(spec, storedValues.get(spec.key().value())))
+        .toList();
 
-    long offset =
-        Math.max(0L, (long) (effectivePageSpec.pageNo() - 1) * effectivePageSpec.pageSize());
+    long offset = Math.max(0L, (long) (effectivePageSpec.pageNo() - 1) * effectivePageSpec.pageSize());
     int fromIndex = (int) Math.min(offset, matched.size());
     int toIndex = Math.min(fromIndex + effectivePageSpec.pageSize(), matched.size());
     return PageData.of(effectivePageSpec, matched.size(), matched.subList(fromIndex, toIndex));
@@ -66,8 +63,7 @@ public class ConfigQueryService {
   @Transactional(readOnly = true)
   public ConfigManagementView detail(String configKey) {
     ConfigSpec<?> spec = requireSpec(configKey);
-    ConfigValue storedValue =
-        configValueRepository.findByConfigKey(spec.key().value()).orElse(null);
+    ConfigValue storedValue = configValueRepository.findByConfigKey(spec.key().value()).orElse(null);
     return toView(spec, storedValue);
   }
 
@@ -75,8 +71,8 @@ public class ConfigQueryService {
   public ConfigEffectiveView effective(String configKey) {
     ConfigSpec<?> spec = requireSpec(configKey);
     ConfigSnapshot<?> snapshot = ConfigRegistry.snapshot(spec);
-    JsonNode effectiveValue =
-        ConfigValueTreeSupport.redact(ConfigJsonCodec.valueToTree(snapshot.value()), spec.fields());
+    JsonNode effectiveValue = ConfigValueTreeSupport.redact(ConfigJsonCodec.valueToTree(snapshot.value()),
+        spec.fields());
     return new ConfigEffectiveView(
         spec.key().value(), spec.title(), spec.description(), effectiveValue);
   }
@@ -110,10 +106,9 @@ public class ConfigQueryService {
     PersistedTree persisted = persistedTree(spec, storedValue, defaultValue);
     long persistedRevision = storedValue == null ? 0 : storedValue.revision();
     boolean configured = storedValue != null && storedValue.configured();
-    boolean pendingRestart =
-        spec.activationPolicy() == ConfigActivationPolicy.RESTART_REQUIRED
-            && storedValue != null
-            && persistedRevision != snapshot.revision();
+    boolean pendingRestart = spec.activationPolicy() == ConfigActivationPolicy.RESTART_REQUIRED
+        && storedValue != null
+        && persistedRevision != snapshot.revision();
 
     return new ConfigManagementView(
         spec.key().value(),
@@ -175,13 +170,13 @@ public class ConfigQueryService {
   private ConfigSpec<?> requireSpec(String configKey) {
     return ConfigSpecCatalog.find(configKey)
         .orElseThrow(
-            () ->
-                new BizException("Config definition not found: " + configKey, BaseError.NOT_FOUND));
+            () -> new BizException("Config definition not found: " + configKey, BaseError.NOT_FOUND));
   }
 
   private String normalize(String value) {
     return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
   }
 
-  private record PersistedTree(JsonNode value, JsonNode presenceSource) {}
+  private record PersistedTree(JsonNode value, JsonNode presenceSource) {
+  }
 }

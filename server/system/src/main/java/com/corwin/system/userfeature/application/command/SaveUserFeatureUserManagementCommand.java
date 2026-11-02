@@ -13,4 +13,5 @@ import java.util.List;
 public record SaveUserFeatureUserManagementCommand(
     List<String> packageIds,
     List<ApplicationOverrideCommand> applicationOverrides,
-    List<FeatureOverrideCommand> featureOverrides) {}
+    List<FeatureOverrideCommand> featureOverrides) {
+}

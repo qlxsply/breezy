@@ -18,20 +18,21 @@ import lombok.Getter;
 @Table(
     name = "sys_audit_log",
     indexes = {
-      @Index(name = "idx_sys_audit_log_trace_id", columnList = "trace_id"),
-      @Index(name = "idx_sys_audit_log_request_id", columnList = "request_id"),
-      @Index(name = "idx_sys_audit_log_operator_user_id", columnList = "operator_user_id"),
-      @Index(name = "idx_sys_audit_log_application_code", columnList = "application_code"),
-      @Index(
-          name = "idx_sys_audit_log_path",
-          columnList = "application_code,http_method,path_pattern"),
-      @Index(
-          name = "idx_sys_audit_log_resource_action",
-          columnList = "audit_resource,audit_action"),
-      @Index(name = "idx_sys_audit_log_success", columnList = "success"),
-      @Index(name = "idx_sys_audit_log_created_at", columnList = "created_at")
+        @Index(name = "idx_sys_audit_log_trace_id", columnList = "trace_id"),
+        @Index(name = "idx_sys_audit_log_request_id", columnList = "request_id"),
+        @Index(name = "idx_sys_audit_log_operator_user_id", columnList = "operator_user_id"),
+        @Index(name = "idx_sys_audit_log_application_code", columnList = "application_code"),
+        @Index(
+            name = "idx_sys_audit_log_path",
+            columnList = "application_code,http_method,path_pattern"),
+        @Index(
+            name = "idx_sys_audit_log_resource_action",
+            columnList = "audit_resource,audit_action"),
+        @Index(name = "idx_sys_audit_log_success", columnList = "success"),
+        @Index(name = "idx_sys_audit_log_created_at", columnList = "created_at")
     })
 public class AuditLog {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -125,7 +126,8 @@ public class AuditLog {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected AuditLog() {}
+  protected AuditLog() {
+  }
 
   public AuditLog(
       String traceId,

@@ -17,4 +17,5 @@ public record UserFeatureUserManagementRes(
     String account,
     List<String> packageIds,
     List<UserFeaturePackageOptionRes> packages,
-    List<UserFeatureUserApplicationRes> applications) {}
+    List<UserFeatureUserApplicationRes> applications) {
+}

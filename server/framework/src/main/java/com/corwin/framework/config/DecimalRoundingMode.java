@@ -9,6 +9,7 @@ import java.math.RoundingMode;
  * @author Corwin 2026/7/31
  */
 public enum DecimalRoundingMode implements DictEnumDefinition {
+
   HALF_UP("四舍五入", RoundingMode.HALF_UP),
   HALF_DOWN("五舍六入", RoundingMode.HALF_DOWN),
   HALF_EVEN("银行家舍入", RoundingMode.HALF_EVEN),

@@ -15,5 +15,6 @@ public final class Configs {
     return ConfigRegistry.snapshot(spec);
   }
 
-  private Configs() {}
+  private Configs() {
+  }
 }

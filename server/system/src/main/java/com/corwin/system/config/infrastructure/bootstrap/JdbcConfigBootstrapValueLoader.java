@@ -17,18 +17,16 @@ public final class JdbcConfigBootstrapValueLoader implements ConfigBootstrapValu
 
   private static final String TABLE_NAME = "sys_config_value";
 
-  private static final String LOAD_SQL =
-      """
-            select config_key, content, schema_version, revision, configured
-            from sys_config_value
-            """;
+  private static final String LOAD_SQL = """
+      select config_key, content, schema_version, revision, configured
+      from sys_config_value
+      """;
 
   @Override
   public Map<String, RawConfigValue> load(ConfigurableEnvironment environment) {
-    String url =
-        firstNonBlank(
-            environment.getProperty("spring.datasource.url"),
-            environment.getProperty("bootstrap.datasource.url"));
+    String url = firstNonBlank(
+        environment.getProperty("spring.datasource.url"),
+        environment.getProperty("bootstrap.datasource.url"));
     if (url == null) {
       throw new ConfigLoadException("Datasource URL is required before loading unified configs");
     }
@@ -55,13 +53,12 @@ public final class JdbcConfigBootstrapValueLoader implements ConfigBootstrapValu
     try (PreparedStatement statement = connection.prepareStatement(LOAD_SQL);
         ResultSet resultSet = statement.executeQuery()) {
       while (resultSet.next()) {
-        var value =
-            new RawConfigValue(
-                resultSet.getString("config_key"),
-                resultSet.getString("content"),
-                resultSet.getInt("schema_version"),
-                resultSet.getLong("revision"),
-                resultSet.getBoolean("configured"));
+        var value = new RawConfigValue(
+            resultSet.getString("config_key"),
+            resultSet.getString("content"),
+            resultSet.getInt("schema_version"),
+            resultSet.getLong("revision"),
+            resultSet.getBoolean("configured"));
         if (values.putIfAbsent(value.configKey(), value) != null) {
           throw new ConfigLoadException("Duplicate persisted config key: " + value.configKey());
         }
@@ -86,26 +83,23 @@ public final class JdbcConfigBootstrapValueLoader implements ConfigBootstrapValu
   private boolean tableExists(
       DatabaseMetaData metadata, String catalog, String schema, String tableName)
       throws SQLException {
-    try (ResultSet tables =
-        metadata.getTables(catalog, schema, tableName, new String[] {"TABLE"})) {
+    try (ResultSet tables = metadata.getTables(catalog, schema, tableName, new String[]{"TABLE"})) {
       return tables.next();
     }
   }
 
   private String[] tableNameCandidates() {
-    return new String[] {TABLE_NAME, TABLE_NAME.toUpperCase(Locale.ROOT), toTitleCase(TABLE_NAME)};
+    return new String[]{TABLE_NAME, TABLE_NAME.toUpperCase(Locale.ROOT), toTitleCase(TABLE_NAME)};
   }
 
   private Properties connectionProperties(ConfigurableEnvironment environment) {
     var properties = new Properties();
-    String username =
-        firstNonBlank(
-            environment.getProperty("spring.datasource.username"),
-            environment.getProperty("bootstrap.datasource.username"));
-    String password =
-        firstNonBlank(
-            environment.getProperty("spring.datasource.password"),
-            environment.getProperty("bootstrap.datasource.password"));
+    String username = firstNonBlank(
+        environment.getProperty("spring.datasource.username"),
+        environment.getProperty("bootstrap.datasource.username"));
+    String password = firstNonBlank(
+        environment.getProperty("spring.datasource.password"),
+        environment.getProperty("bootstrap.datasource.password"));
     if (username != null) {
       properties.setProperty("user", username);
     }

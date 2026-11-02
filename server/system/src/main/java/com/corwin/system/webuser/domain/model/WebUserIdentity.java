@@ -16,9 +16,9 @@ import lombok.Getter;
 @Table(
     name = "tb_identity",
     indexes = {
-      @Index(name = "idx_tb_identity_user", columnList = "user_id"),
-      @Index(name = "idx_tb_identity_hash", columnList = "identity_type,identity_hash"),
-      @Index(name = "idx_tb_identity_provider", columnList = "provider_code,provider_subject")
+        @Index(name = "idx_tb_identity_user", columnList = "user_id"),
+        @Index(name = "idx_tb_identity_hash", columnList = "identity_type,identity_hash"),
+        @Index(name = "idx_tb_identity_provider", columnList = "provider_code,provider_subject")
     })
 public class WebUserIdentity {
 
@@ -86,7 +86,8 @@ public class WebUserIdentity {
   private String updatedBy;
 
   /** JPA required no-arg constructor. */
-  protected WebUserIdentity() {}
+  protected WebUserIdentity() {
+  }
 
   /** Construct a new identity bound to the given user. */
   public WebUserIdentity(

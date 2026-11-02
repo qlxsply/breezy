@@ -15,8 +15,8 @@ import lombok.Getter;
 @Table(
     name = "sys_role",
     indexes = {
-      @Index(name = "idx_sys_role_code", columnList = "code", unique = true),
-      @Index(name = "idx_sys_role_enabled", columnList = "enabled")
+        @Index(name = "idx_sys_role_code", columnList = "code", unique = true),
+        @Index(name = "idx_sys_role_enabled", columnList = "enabled")
     })
 public class Role {
 
@@ -61,7 +61,8 @@ public class Role {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected Role() {}
+  protected Role() {
+  }
 
   /**
    * Creates a new role with the given attributes. Defaults to enabled.

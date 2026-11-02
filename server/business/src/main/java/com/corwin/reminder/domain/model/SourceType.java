@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/2/4
  */
 public enum SourceType implements DictEnumDefinition {
+
   TODO("待办", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   SCHEDULE("日程", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS);
 

@@ -16,4 +16,5 @@ public record CreateDictItemReq(
     String tagColor,
     String tagType,
     String extraJson,
-    String description) {}
+    String description) {
+}

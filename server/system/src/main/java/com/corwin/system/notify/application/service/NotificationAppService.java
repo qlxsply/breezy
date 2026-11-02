@@ -21,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Application service for notification management.
  *
- * <p>Handles querying, pulling, and marking notifications as read.
+ * <p>
+ * Handles querying, pulling, and marking notifications as read.
  *
  * @author Corwin 2026/3/30
  */
@@ -60,10 +61,8 @@ public class NotificationAppService {
    */
   public PageData<NotificationView> page(
       Long userId, UserType userType, String status, PageSpec spec) {
-    NotificationPageQuery query =
-        new NotificationPageQuery(userId, userType, isUnreadStatus(status));
-    PageData<Notification> page =
-        notificationRepository.pageByQuery(query, PageSpecSorts.apply(spec));
+    NotificationPageQuery query = new NotificationPageQuery(userId, userType, isUnreadStatus(status));
+    PageData<Notification> page = notificationRepository.pageByQuery(query, PageSpecSorts.apply(spec));
     List<NotificationView> items = page.elements().stream().map(this::toRes).toList();
     return new PageData<>(
         page.pageNo(),
@@ -98,13 +97,12 @@ public class NotificationAppService {
       Long userId, UserType userType, long afterMillis, int limit) {
     int safeLimit = Math.clamp(limit, 1, 200);
     Instant after = afterMillis > 0 ? Instant.ofEpochMilli(afterMillis) : Instant.EPOCH;
-    List<Notification> list =
-        notificationRepository
-            .findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-                userId, userType, after)
-            .stream()
-            .limit(safeLimit)
-            .toList();
+    List<Notification> list = notificationRepository
+        .findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+            userId, userType, after)
+        .stream()
+        .limit(safeLimit)
+        .toList();
     long lastPullAt = resolveLastPullAt(afterMillis, list);
     List<NotificationView> items = list.stream().map(this::toRes).toList();
     return new NotificationPullView(items, lastPullAt);
@@ -137,9 +135,8 @@ public class NotificationAppService {
    */
   @Transactional
   public void markAllRead(Long userId, UserType userType) {
-    List<Notification> unread =
-        notificationRepository.findByUserIdAndUserTypeAndIsReadFalseOrderByCreatedAtDesc(
-            userId, userType);
+    List<Notification> unread = notificationRepository.findByUserIdAndUserTypeAndIsReadFalseOrderByCreatedAtDesc(
+        userId, userType);
     notificationRepository.markAllReadByUserIdAndUserType(userId, userType);
     for (Notification notification : unread) {
       ackNotificationDeliveries(userId, userType, notification);
@@ -148,9 +145,8 @@ public class NotificationAppService {
 
   private void ackNotificationDeliveries(
       Long userId, UserType userType, Notification notification) {
-    List<MessageDelivery> deliveries =
-        messageDeliveryRepository.findByUserIdAndUserTypeAndNotificationId(
-            userId, userType, notification.getId());
+    List<MessageDelivery> deliveries = messageDeliveryRepository.findByUserIdAndUserTypeAndNotificationId(
+        userId, userType, notification.getId());
     for (MessageDelivery delivery : deliveries) {
       if (delivery.getStatus() == MessageDeliveryStatus.ACKED) {
         continue;

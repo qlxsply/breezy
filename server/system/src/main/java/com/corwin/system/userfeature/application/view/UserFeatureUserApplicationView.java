@@ -24,4 +24,5 @@ public record UserFeatureUserApplicationView(
     String packageAccessScope,
     UserAccessOverrideType overrideType,
     ApplicationFeatureAccessScope overrideAccessScope,
-    List<UserFeatureUserFeatureView> features) {}
+    List<UserFeatureUserFeatureView> features) {
+}

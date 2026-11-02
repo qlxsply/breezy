@@ -13,4 +13,5 @@ public record PushHealthSubscriptionRes(
     String endpointHost,
     Instant updatedAt,
     Instant lastPushAt,
-    String lastError) {}
+    String lastError) {
+}

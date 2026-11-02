@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 用户应用包。
  *
- * <p>表示一组用户共享的应用权益集合，例如普通用户、VIP1、VIP2、企业版。
+ * <p>
+ * 表示一组用户共享的应用权益集合，例如普通用户、VIP1、VIP2、企业版。
  *
  * @author Corwin
  */
@@ -17,13 +18,13 @@ import lombok.Getter;
 @Table(
     name = "sys_user_application_package",
     indexes = {
-      @Index(
-          name = "idx_sys_user_application_package_code",
-          columnList = "package_code",
-          unique = true),
-      @Index(name = "idx_sys_user_application_package_type", columnList = "package_type"),
-      @Index(name = "idx_sys_user_application_package_enabled", columnList = "enabled"),
-      @Index(name = "idx_sys_user_application_package_default", columnList = "default_package")
+        @Index(
+            name = "idx_sys_user_application_package_code",
+            columnList = "package_code",
+            unique = true),
+        @Index(name = "idx_sys_user_application_package_type", columnList = "package_type"),
+        @Index(name = "idx_sys_user_application_package_enabled", columnList = "enabled"),
+        @Index(name = "idx_sys_user_application_package_default", columnList = "default_package")
     })
 public class UserApplicationPackage {
 
@@ -52,7 +53,8 @@ public class UserApplicationPackage {
   /**
    * 是否启用。
    *
-   * <p>用户应用包关闭后，该包下应用授权和功能授权均不生效。
+   * <p>
+   * 用户应用包关闭后，该包下应用授权和功能授权均不生效。
    */
   @Column(name = "enabled", nullable = false)
   private Boolean enabled;
@@ -86,7 +88,8 @@ public class UserApplicationPackage {
   private Instant updatedAt;
 
   /** JPA 构造方法。 */
-  protected UserApplicationPackage() {}
+  protected UserApplicationPackage() {
+  }
 
   /**
    * 创建用户应用包。

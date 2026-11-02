@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link UserPackageFeatureAccessRepository}.
  *
- * <p>Delegates CRUD operations to {@link UserPackageFeatureAccessJpaRepository} and flushes after
+ * <p>
+ * Delegates CRUD operations to {@link UserPackageFeatureAccessJpaRepository} and flushes after
  * destructive operations.
  *
  * @author Corwin 2026/6/14

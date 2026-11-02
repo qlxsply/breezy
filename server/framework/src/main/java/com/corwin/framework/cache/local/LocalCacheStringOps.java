@@ -94,11 +94,10 @@ public class LocalCacheStringOps extends AbstractLocalCacheOps implements CacheS
             expireAt = entry.getExpireAt();
           }
           long updatedValue = current + delta;
-          CacheEntry updated =
-              entry == null
-                  ? CacheEntry.create(dataType(), Long.toString(updatedValue), now, null)
-                  : new CacheEntry(
-                      dataType(), Long.toString(updatedValue), entry.getCreatedAt(), now, expireAt);
+          CacheEntry updated = entry == null
+              ? CacheEntry.create(dataType(), Long.toString(updatedValue), now, null)
+              : new CacheEntry(
+                  dataType(), Long.toString(updatedValue), entry.getCreatedAt(), now, expireAt);
           return LocalCacheWriteResult.keep(updated, updatedValue);
         });
   }

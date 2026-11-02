@@ -47,8 +47,7 @@ public class SchedulerQueryAppService {
   public List<SchedulerJobView> listJobs() {
     return definitionRepository.findAllByDeletedFalse().stream()
         .map(
-            definition ->
-                toView(definition, runtimeRepository.findById(definition.getJobId()).orElse(null)))
+            definition -> toView(definition, runtimeRepository.findById(definition.getJobId()).orElse(null)))
         .sorted(Comparator.comparing(SchedulerJobView::jobId))
         .toList();
   }
@@ -61,11 +60,10 @@ public class SchedulerQueryAppService {
    */
   public SchedulerJobDetailView getJob(String jobId) {
     BizAssert.notBlank(jobId, BaseError.MISSING_PARAMETER);
-    SchedulerJobDefinition definition =
-        definitionRepository
-            .findById(jobId)
-            .filter(item -> !item.isDeleted())
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    SchedulerJobDefinition definition = definitionRepository
+        .findById(jobId)
+        .filter(item -> !item.isDeleted())
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     SchedulerJobRuntime runtime = runtimeRepository.findById(jobId).orElse(null);
     return toDetailView(definition, runtime);
   }

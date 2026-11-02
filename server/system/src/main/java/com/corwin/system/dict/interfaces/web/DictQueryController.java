@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST controller for querying dictionary data.
  *
- * <p>Provides read-only endpoints to retrieve enabled dictionary items.
+ * <p>
+ * Provides read-only endpoints to retrieve enabled dictionary items.
  *
  * @author Corwin 2026/3/15
  */
@@ -46,14 +47,13 @@ public class DictQueryController {
       permissions = {"dict.view"})
   public ApiResponse<Map<String, List<DictItemRes>>> batchItems(
       @RequestBody DictBatchQueryReq req) {
-    Map<String, List<DictItemRes>> result =
-        dictQueryService.batchListEnabledItems(req.codes()).entrySet().stream()
-            .collect(
-                java.util.stream.Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> entry.getValue().stream().map(this::toItemRes).toList(),
-                    (left, right) -> left,
-                    java.util.LinkedHashMap::new));
+    Map<String, List<DictItemRes>> result = dictQueryService.batchListEnabledItems(req.codes()).entrySet().stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().stream().map(this::toItemRes).toList(),
+                (left, right) -> left,
+                java.util.LinkedHashMap::new));
     return ApiResponse.ok(result);
   }
 

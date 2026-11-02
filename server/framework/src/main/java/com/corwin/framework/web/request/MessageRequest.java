@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MessageRequest extends BaseRequest {
+
   /** Number of retry attempts for the message */
   private Integer retryCount;
 }

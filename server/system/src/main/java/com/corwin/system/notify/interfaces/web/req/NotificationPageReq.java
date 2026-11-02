@@ -9,4 +9,5 @@ import com.corwin.framework.web.request.PageRuleRequest;
  * @param status the filter status ("all" or "unread")
  * @author Corwin 2026/7/29
  */
-public record NotificationPageReq(PageRuleRequest page, String status) {}
+public record NotificationPageReq(PageRuleRequest page, String status) {
+}

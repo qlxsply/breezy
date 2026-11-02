@@ -3,11 +3,12 @@ package com.corwin.framework.error;
 /**
  * Framework-level / common error codes.
  *
- * <p>Conventions:
+ * <p>
+ * Conventions:
  *
  * <ul>
- *   <li>{@code code} — six-digit numeric business error code
- *   <li>{@code msg} — English message exposed to API consumers
+ * <li>{@code code} — six-digit numeric business error code
+ * <li>{@code msg} — English message exposed to API consumers
  * </ul>
  *
  * Business modules may define their own enums implementing {@link ErrorCode}.
@@ -15,6 +16,7 @@ package com.corwin.framework.error;
  * @author Corwin 2026/3/30
  */
 public enum BaseError implements ErrorCode {
+
   SUCCESS("000000", "Success"),
   INTERNAL_ERROR("000001", "Internal error"),
   SERVICE_ERROR("000002", "Service error"),

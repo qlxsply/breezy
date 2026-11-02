@@ -14,4 +14,5 @@ public record UserFeatureItemView(
     String name,
     String description,
     boolean enabled,
-    List<String> permissionCodes) {}
+    List<String> permissionCodes) {
+}

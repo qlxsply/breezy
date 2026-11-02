@@ -10,4 +10,5 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/3/25
  */
 public record MethodStatStatsPageReq(
-    PageRuleRequest page, SortRuleRequest sort, String methodName, Boolean collectEnabled) {}
+    PageRuleRequest page, SortRuleRequest sort, String methodName, Boolean collectEnabled) {
+}

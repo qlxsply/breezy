@@ -31,7 +31,8 @@ public class SseAppService {
   /**
    * Sends missed messages to a reconnecting SSE client based on the last event ID.
    *
-   * <p>Deliveries already in ACKED status are skipped.
+   * <p>
+   * Deliveries already in ACKED status are skipped.
    *
    * @param userId the target user ID
    * @param userType the target user type
@@ -40,32 +41,28 @@ public class SseAppService {
   @Transactional
   public void catchUp(Long userId, UserType userType, @Nullable Long lastEventId) {
     long afterEventId = lastEventId == null || lastEventId < 0 ? 0L : lastEventId;
-    List<MessageDelivery> deliveries =
-        new ArrayList<>(
-            messageDeliveryRepository.findByUserIdAndUserTypeAndIdGreaterThanOrderByIdAsc(
-                userId, userType, afterEventId));
+    List<MessageDelivery> deliveries = new ArrayList<>(
+        messageDeliveryRepository.findByUserIdAndUserTypeAndIdGreaterThanOrderByIdAsc(
+            userId, userType, afterEventId));
 
     for (MessageDelivery delivery : deliveries) {
       if (delivery.getStatus() == MessageDeliveryStatus.ACKED) {
         continue;
       }
       String eventId = String.valueOf(delivery.getId());
-      String notificationId =
-          delivery.getNotificationId() == null ? "" : String.valueOf(delivery.getNotificationId());
-      MsgPushPayloadView payload =
-          new MsgPushPayloadView(
-              eventId,
-              notificationId,
-              delivery.getMsgType(),
-              delivery.getTitle(),
-              delivery.getContent(),
-              delivery.getRoute(),
-              delivery.getPriority(),
-              delivery.isPanelAutoOpen(),
-              delivery.isOsNotificationEnabled());
-      boolean delivered =
-          sessionManager.send(
-              userId, userType, resolveEventName(delivery.getMsgType()), payload, eventId);
+      String notificationId = delivery.getNotificationId() == null ? "" : String.valueOf(delivery.getNotificationId());
+      MsgPushPayloadView payload = new MsgPushPayloadView(
+          eventId,
+          notificationId,
+          delivery.getMsgType(),
+          delivery.getTitle(),
+          delivery.getContent(),
+          delivery.getRoute(),
+          delivery.getPriority(),
+          delivery.isPanelAutoOpen(),
+          delivery.isOsNotificationEnabled());
+      boolean delivered = sessionManager.send(
+          userId, userType, resolveEventName(delivery.getMsgType()), payload, eventId);
       if (!delivered) {
         continue;
       }

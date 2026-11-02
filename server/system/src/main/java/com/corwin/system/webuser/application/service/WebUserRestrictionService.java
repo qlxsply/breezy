@@ -28,9 +28,8 @@ public class WebUserRestrictionService {
   public boolean hasLoginRestriction(Long userId) {
     return repository.findByUserId(userId).stream()
         .filter(
-            restriction ->
-                restriction.getRestrictionScope() == WebUserRestrictionScope.LOGIN
-                    || restriction.getRestrictionScope() == WebUserRestrictionScope.ALL)
+            restriction -> restriction.getRestrictionScope() == WebUserRestrictionScope.LOGIN
+                || restriction.getRestrictionScope() == WebUserRestrictionScope.ALL)
         .anyMatch(restriction -> restriction.activeAt(HighDate.realInstant()));
   }
 }

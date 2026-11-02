@@ -46,10 +46,9 @@ public class JsonFmtRecordController {
       @RequestBody(required = false) JsonFmtRecordListReq req) {
     Long userId = currentUserId();
     String keyword = req == null ? null : req.keyword();
-    List<JsonFmtRecordListItemRes> records =
-        recordAppService.list(userId, keyword).stream()
-            .map(JsonFmtRecordController::toListItemRes)
-            .toList();
+    List<JsonFmtRecordListItemRes> records = recordAppService.list(userId, keyword).stream()
+        .map(JsonFmtRecordController::toListItemRes)
+        .toList();
     return ApiResponse.ok(records);
   }
 
@@ -63,9 +62,8 @@ public class JsonFmtRecordController {
   @PostMapping
   public ApiResponse<JsonFmtRecordDetailRes> save(@RequestBody JsonFmtRecordSaveReq req) {
     Long userId = currentUserId();
-    JsonFmtRecordDetailView view =
-        recordAppService.save(
-            userId, new JsonFmtRecordSaveCommand(req.id(), req.name(), req.content()));
+    JsonFmtRecordDetailView view = recordAppService.save(
+        userId, new JsonFmtRecordSaveCommand(req.id(), req.name(), req.content()));
     return ApiResponse.ok(toDetailRes(view));
   }
 

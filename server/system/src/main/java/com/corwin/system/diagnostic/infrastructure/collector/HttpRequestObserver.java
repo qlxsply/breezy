@@ -37,8 +37,7 @@ public class HttpRequestObserver {
   private final LongAdder errorRequestCount = new LongAdder();
   private final ConcurrentHashMap<Integer, LongAdder> statusCounts = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, HttpUriAggregate> uriStats = new ConcurrentHashMap<>();
-  private final DiagnosticRingBuffer<Long> durationSamples =
-      new DiagnosticRingBuffer<>(DURATION_SAMPLE_CAPACITY);
+  private final DiagnosticRingBuffer<Long> durationSamples = new DiagnosticRingBuffer<>(DURATION_SAMPLE_CAPACITY);
 
   public HttpRequestObserver(DiagnosticEventRepository eventRepository) {
     this.eventRepository = eventRepository;
@@ -75,10 +74,9 @@ public class HttpRequestObserver {
 
     String normalizedMethod = normalize(method);
     String normalizedUri = normalizeUri(uri);
-    HttpUriAggregate aggregate =
-        uriStats.computeIfAbsent(
-            normalizedMethod + " " + normalizedUri,
-            _key -> new HttpUriAggregate(normalizedMethod, normalizedUri));
+    HttpUriAggregate aggregate = uriStats.computeIfAbsent(
+        normalizedMethod + " " + normalizedUri,
+        _key -> new HttpUriAggregate(normalizedMethod, normalizedUri));
     aggregate.totalRequests.increment();
     aggregate.totalDurationMs.add(Math.max(0L, durationMs));
 
@@ -129,15 +127,14 @@ public class HttpRequestObserver {
     statusCounts.entrySet().stream()
         .sorted(Map.Entry.comparingByKey())
         .forEach(entry -> statusDistribution.put(entry.getKey(), entry.getValue().sum()));
-    List<HttpUriStatSnapshot> topUris =
-        uriStats.values().stream()
-            .sorted(
-                Comparator.comparingLong(HttpUriAggregate::totalRequestsValue)
-                    .reversed()
-                    .thenComparing(HttpUriAggregate::uri))
-            .limit(20)
-            .map(HttpUriAggregate::toSnapshot)
-            .toList();
+    List<HttpUriStatSnapshot> topUris = uriStats.values().stream()
+        .sorted(
+            Comparator.comparingLong(HttpUriAggregate::totalRequestsValue)
+                .reversed()
+                .thenComparing(HttpUriAggregate::uri))
+        .limit(20)
+        .map(HttpUriAggregate::toSnapshot)
+        .toList();
     List<Long> samples = durationSamples.latest(DURATION_SAMPLE_CAPACITY);
     long p95 = percentile(samples, 95);
     long p99 = percentile(samples, 99);

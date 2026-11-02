@@ -5,4 +5,5 @@ import java.util.List;
 /**
  * @author Corwin 2026/3/11
  */
-public record JsonFmtRecordBatchDeleteCommand(List<String> recordIds) {}
+public record JsonFmtRecordBatchDeleteCommand(List<String> recordIds) {
+}

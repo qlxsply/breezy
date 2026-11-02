@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 产品功能权限码绑定。
  *
- * <p>表示应用内功能与后端权限码之间的绑定关系，用于后端 API 权限校验。
+ * <p>
+ * 表示应用内功能与后端权限码之间的绑定关系，用于后端 API 权限校验。
  *
  * @author Corwin
  */
@@ -17,19 +18,19 @@ import lombok.Getter;
 @Table(
     name = "sys_product_feature_permission_binding",
     indexes = {
-      @Index(
-          name = "idx_sys_product_feature_permission_binding_unique",
-          columnList = "feature_id,permission_id",
-          unique = true),
-      @Index(
-          name = "idx_sys_product_feature_permission_binding_application_id",
-          columnList = "application_id"),
-      @Index(
-          name = "idx_sys_product_feature_permission_binding_feature_id",
-          columnList = "feature_id"),
-      @Index(
-          name = "idx_sys_product_feature_permission_binding_permission_id",
-          columnList = "permission_id")
+        @Index(
+            name = "idx_sys_product_feature_permission_binding_unique",
+            columnList = "feature_id,permission_id",
+            unique = true),
+        @Index(
+            name = "idx_sys_product_feature_permission_binding_application_id",
+            columnList = "application_id"),
+        @Index(
+            name = "idx_sys_product_feature_permission_binding_feature_id",
+            columnList = "feature_id"),
+        @Index(
+            name = "idx_sys_product_feature_permission_binding_permission_id",
+            columnList = "permission_id")
     })
 public class ProductFeaturePermissionBinding {
 
@@ -41,7 +42,8 @@ public class ProductFeaturePermissionBinding {
   /**
    * 产品应用 ID。
    *
-   * <p>逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
+   * <p>
+   * 逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
    */
   @Column(name = "application_id", nullable = false)
   private Long applicationId;
@@ -49,7 +51,8 @@ public class ProductFeaturePermissionBinding {
   /**
    * 产品功能 ID。
    *
-   * <p>逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
    */
   @Column(name = "feature_id", nullable = false)
   private Long featureId;
@@ -57,7 +60,8 @@ public class ProductFeaturePermissionBinding {
   /**
    * 权限码 ID。
    *
-   * <p>逻辑引用权限码实体主键，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用权限码实体主键，数据库层面不创建外键。
    */
   @Column(name = "permission_id", nullable = false)
   private Long permissionId;
@@ -71,7 +75,8 @@ public class ProductFeaturePermissionBinding {
   private Instant createdAt;
 
   /** JPA 构造方法。 */
-  protected ProductFeaturePermissionBinding() {}
+  protected ProductFeaturePermissionBinding() {
+  }
 
   /**
    * 创建产品功能权限码绑定。

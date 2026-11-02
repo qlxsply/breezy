@@ -13,7 +13,8 @@ import lombok.Getter;
 /**
  * Physical file record representing a real file on disk.
  *
- * <p>Files are de-duplicated by their SHA-256 hash. Multiple logical files may reference the same
+ * <p>
+ * Files are de-duplicated by their SHA-256 hash. Multiple logical files may reference the same
  * physical file. The reference count tracks how many logical references exist.
  *
  * @author Corwin 2026/2/23
@@ -48,7 +49,8 @@ public class PhysicalFile {
   @Column(name = "created_at", nullable = false)
   private LocalDateTime createdAt;
 
-  protected PhysicalFile() {}
+  protected PhysicalFile() {
+  }
 
   public PhysicalFile(
       String hash, String relativePath, String fileName, Long fileSize, String contentType) {

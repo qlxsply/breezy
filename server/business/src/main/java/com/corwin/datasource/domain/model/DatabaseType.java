@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/1/11
  */
 public enum DatabaseType implements DictEnumDefinition {
+
   H2("H2", DictTagColor.SLATE, DictTagType.INFO),
   MYSQL("MySQL", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   POSTGRESQL("PostgreSQL", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),

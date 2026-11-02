@@ -13,7 +13,8 @@ import java.util.List;
  */
 public final class PageSpecFactory {
 
-  private PageSpecFactory() {}
+  private PageSpecFactory() {
+  }
 
   public static PageSpec of(PageRuleRequest page, SortRuleRequest sort) {
     Integer pageNo = page == null ? null : page.pageNo();

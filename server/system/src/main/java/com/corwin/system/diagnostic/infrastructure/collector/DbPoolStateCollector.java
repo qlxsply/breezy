@@ -60,12 +60,11 @@ public class DbPoolStateCollector {
    * @return a DbPoolSnapshot with combined pool metrics
    */
   public DbPoolSnapshot snapshot() {
-    List<DbPoolEntrySnapshot> pools =
-        dataSources.entrySet().stream()
-            .map(entry -> toSnapshot(entry.getKey(), entry.getValue()))
-            .flatMap(Optional::stream)
-            .sorted(java.util.Comparator.comparing(DbPoolEntrySnapshot::beanName))
-            .toList();
+    List<DbPoolEntrySnapshot> pools = dataSources.entrySet().stream()
+        .map(entry -> toSnapshot(entry.getKey(), entry.getValue()))
+        .flatMap(Optional::stream)
+        .sorted(java.util.Comparator.comparing(DbPoolEntrySnapshot::beanName))
+        .toList();
     int active = pools.stream().mapToInt(DbPoolEntrySnapshot::activeConnections).sum();
     int idle = pools.stream().mapToInt(DbPoolEntrySnapshot::idleConnections).sum();
     int total = pools.stream().mapToInt(DbPoolEntrySnapshot::totalConnections).sum();

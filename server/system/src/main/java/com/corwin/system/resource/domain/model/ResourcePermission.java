@@ -8,16 +8,18 @@ import lombok.Getter;
 /**
  * Entity representing the binding between a resource (button) and a permission code.
  *
- * <p>In the resource model, the resource tree is represented by {@link Resource} and permission
+ * <p>
+ * In the resource model, the resource tree is represented by {@link Resource} and permission
  * codes by {@link Permission}. This entity establishes the many-to-many relationship between them.
  *
- * <p>Key notes:
+ * <p>
+ * Key notes:
  *
  * <ul>
- *   <li>A {@code resourceId} must point to a {@link ResourceType#BUTTON} resource.
- *   <li>A button resource can be bound to one or more permission codes.
- *   <li>A permission code can be reused across multiple button resources.
- *   <li>This entity only persists the binding; type validation should be done by domain services.
+ * <li>A {@code resourceId} must point to a {@link ResourceType#BUTTON} resource.
+ * <li>A button resource can be bound to one or more permission codes.
+ * <li>A permission code can be reused across multiple button resources.
+ * <li>This entity only persists the binding; type validation should be done by domain services.
  * </ul>
  *
  * @author Corwin
@@ -27,12 +29,12 @@ import lombok.Getter;
 @Table(
     name = "sys_resource_permission",
     indexes = {
-      @Index(
-          name = "idx_sys_resource_permission_unique",
-          columnList = "resource_id,permission_id",
-          unique = true),
-      @Index(name = "idx_sys_resource_permission_resource_id", columnList = "resource_id"),
-      @Index(name = "idx_sys_resource_permission_permission_id", columnList = "permission_id")
+        @Index(
+            name = "idx_sys_resource_permission_unique",
+            columnList = "resource_id,permission_id",
+            unique = true),
+        @Index(name = "idx_sys_resource_permission_resource_id", columnList = "resource_id"),
+        @Index(name = "idx_sys_resource_permission_permission_id", columnList = "permission_id")
     })
 public class ResourcePermission {
 
@@ -44,7 +46,8 @@ public class ResourcePermission {
   /**
    * Resource ID referencing {@link Resource#getId()}.
    *
-   * <p>Business constraints: the referenced resource must exist, be enabled, and be of type {@link
+   * <p>
+   * Business constraints: the referenced resource must exist, be enabled, and be of type {@link
    * ResourceType#BUTTON}. No {@code @ManyToOne} is used to avoid unnecessary cascade queries when
    * loading the resource tree.
    */
@@ -54,7 +57,8 @@ public class ResourcePermission {
   /**
    * Permission code ID referencing {@link Permission#getId()}.
    *
-   * <p>Business constraints: the referenced permission must exist and be enabled.
+   * <p>
+   * Business constraints: the referenced permission must exist and be enabled.
    */
   @Column(name = "permission_id", nullable = false)
   private Long permissionId;
@@ -71,7 +75,8 @@ public class ResourcePermission {
   private Instant createdAt;
 
   /** JPA 构造函数。 */
-  protected ResourcePermission() {}
+  protected ResourcePermission() {
+  }
 
   /**
    * Creates a resource-permission binding.

@@ -48,7 +48,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 /**
  * Auto-configuration for the async event component.
  *
- * <p>Assembles core dependencies: publisher, envelope factory, subscription registry, listener
+ * <p>
+ * Assembles core dependencies: publisher, envelope factory, subscription registry, listener
  * scanner, context binder, serializer, topic resolver, and transport. Each bean is conditional on
  * {@code @ConditionalOnMissingBean} to allow overriding.
  *
@@ -127,15 +128,15 @@ public class AsyncEventAutoConfiguration {
     return switch (properties.getMode()) {
       case IN_MEMORY -> createInMemoryTransport(properties, contextBinder);
       case IN_MEMORY_DURABLE ->
-          createInMemoryDurableTransport(
-              properties,
-              contextBinder,
-              serializer,
-              dataSourceProvider.getIfAvailable(),
-              txManagerProvider.getIfAvailable(),
-              environment);
+        createInMemoryDurableTransport(
+            properties,
+            contextBinder,
+            serializer,
+            dataSourceProvider.getIfAvailable(),
+            txManagerProvider.getIfAvailable(),
+            environment);
       case KAFKA ->
-          new KafkaAsyncEventTransport(properties, topicResolver, serializer, contextBinder);
+        new KafkaAsyncEventTransport(properties, topicResolver, serializer, contextBinder);
       case RABBITMQ -> new RabbitMqAsyncEventTransport(properties, serializer, contextBinder);
     };
   }
@@ -169,11 +170,10 @@ public class AsyncEventAutoConfiguration {
   /** Builds an in-memory transport with the configured dispatch engine. */
   private AsyncEventTransport createInMemoryTransport(
       AsyncEventProperties properties, ConsumeContextBinder contextBinder) {
-    InMemoryDispatchExecutor executor =
-        switch (properties.getInMemory().getEngine()) {
-          case THREAD_POOL -> new ThreadPoolInMemoryDispatchExecutor(properties);
-          case DISRUPTOR -> new DisruptorInMemoryDispatchExecutor(properties);
-        };
+    InMemoryDispatchExecutor executor = switch (properties.getInMemory().getEngine()) {
+      case THREAD_POOL -> new ThreadPoolInMemoryDispatchExecutor(properties);
+      case DISRUPTOR -> new DisruptorInMemoryDispatchExecutor(properties);
+    };
     return new InMemoryAsyncEventTransport(executor, contextBinder);
   }
 
@@ -195,17 +195,14 @@ public class AsyncEventAutoConfiguration {
     }
     DatabaseVendorResolver vendorResolver = new DefaultDatabaseVendorResolver();
     DatabaseVendor vendor = vendorResolver.resolve(dataSource);
-    JdbcDialectRegistry registry =
-        new JdbcDialectRegistry(java.util.List.of(new MySqlJdbcDialect()));
+    JdbcDialectRegistry registry = new JdbcDialectRegistry(java.util.List.of(new MySqlJdbcDialect()));
     JdbcDialect dialect = registry.require(vendor);
-    JdbcPersistentEventStore store =
-        new JdbcPersistentEventStore(
-            new JdbcTemplate(dataSource), dialect, properties.getDurable().getTablePrefix());
-    InMemoryDispatchExecutor executor =
-        switch (properties.getInMemory().getEngine()) {
-          case THREAD_POOL -> new ThreadPoolInMemoryDispatchExecutor(properties);
-          case DISRUPTOR -> new DisruptorInMemoryDispatchExecutor(properties);
-        };
+    JdbcPersistentEventStore store = new JdbcPersistentEventStore(
+        new JdbcTemplate(dataSource), dialect, properties.getDurable().getTablePrefix());
+    InMemoryDispatchExecutor executor = switch (properties.getInMemory().getEngine()) {
+      case THREAD_POOL -> new ThreadPoolInMemoryDispatchExecutor(properties);
+      case DISRUPTOR -> new DisruptorInMemoryDispatchExecutor(properties);
+    };
     return new InMemoryDurableAsyncEventTransport(
         properties,
         store,

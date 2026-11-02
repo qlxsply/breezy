@@ -10,7 +10,8 @@ import com.corwin.framework.error.CacheError;
  */
 public abstract class TypeSafeValueCaster {
 
-  private TypeSafeValueCaster() {}
+  private TypeSafeValueCaster() {
+  }
 
   public static <T> T cast(Object value, Class<T> valueType) {
     if (value == null) {

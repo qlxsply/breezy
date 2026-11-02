@@ -52,8 +52,7 @@ public class AuthController {
   @PostMapping("/login")
   @PermitAll
   public ApiResponse<LoginResponseRes> login(@RequestBody LoginReq req) {
-    WebUserLoginView result =
-        webUserAuthService.login(new LoginCommand(req.account(), req.password()));
+    WebUserLoginView result = webUserAuthService.login(new LoginCommand(req.account(), req.password()));
     return ApiResponse.ok(
         new LoginResponseRes(
             result.token(),
@@ -100,10 +99,9 @@ public class AuthController {
   }
 
   private AuthUserRes toAuthDto(WebUserAuthView view) {
-    List<UserConfigsRes> configs =
-        userConfigAppService.getMergedConfigs(view.id()).stream()
-            .map(AuthController::toUserConfigsRes)
-            .toList();
+    List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(view.id()).stream()
+        .map(AuthController::toUserConfigsRes)
+        .toList();
     return new AuthUserRes(
         String.valueOf(view.id()),
         view.account(),

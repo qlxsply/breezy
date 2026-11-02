@@ -15,4 +15,5 @@ public record PushHealthDeliveryRes(
     String route,
     Instant createdAt,
     Instant sentAt,
-    Instant ackedAt) {}
+    Instant ackedAt) {
+}

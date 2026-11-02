@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 public interface DatabaseSourceRepository
     extends DomainRepository<DatabaseSource, Long>,
-        DynamicPageQueryRepository<DatabaseSource, DatabaseSourcePageQuery> {
+    DynamicPageQueryRepository<DatabaseSource, DatabaseSourcePageQuery> {
 
   Optional<DatabaseSource> findByName(String name);
 

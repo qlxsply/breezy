@@ -9,7 +9,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 /**
  * Configuration for the dedicated scheduled-task thread pool.
  *
- * <p>Separates scheduling infrastructure from the async task pool to avoid interference. Context is
+ * <p>
+ * Separates scheduling infrastructure from the async task pool to avoid interference. Context is
  * managed by {@link SchedulerTaskDecorator} — HTTP request context is <b>not</b> propagated.
  *
  * @author Corwin 2026/3/30
@@ -28,7 +29,8 @@ public class SchedulerThreadPoolConfig {
   /**
    * The dedicated thread-pool-task-scheduler bean named {@code "taskScheduler"}.
    *
-   * <p>Pool size = 4, with graceful shutdown waiting up to 10 seconds.
+   * <p>
+   * Pool size = 4, with graceful shutdown waiting up to 10 seconds.
    *
    * @param schedulerTaskDecorator the scheduler context decorator
    * @return the configured scheduler

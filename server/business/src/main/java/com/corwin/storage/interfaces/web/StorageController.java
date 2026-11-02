@@ -58,26 +58,22 @@ public class StorageController {
     String keyword = resolved.keyword();
     boolean recursive = Boolean.TRUE.equals(resolved.recursive());
     StorageSortBy sortBy = resolved.sortBy() == null ? StorageSortBy.NAME : resolved.sortBy();
-    StorageSortOrder sortOrder =
-        resolved.sortOrder() == null ? StorageSortOrder.ASC : resolved.sortOrder();
+    StorageSortOrder sortOrder = resolved.sortOrder() == null ? StorageSortOrder.ASC : resolved.sortOrder();
     boolean effectiveRecursive = recursive || (keyword != null && !keyword.isBlank());
-    StorageQueryCommand query =
-        new StorageQueryCommand(
-            resolved.parentId(), keyword, effectiveRecursive, sortBy, sortOrder);
-    List<StorageItemRes> items =
-        fileQueryService.listContent(OwnerType.USER, ownerId, query).stream()
-            .map(
-                v ->
-                    new StorageItemRes(
-                        v.id(),
-                        v.type(),
-                        v.name(),
-                        v.parentId(),
-                        v.size(),
-                        v.contentType(),
-                        v.createdAt(),
-                        v.updatedAt()))
-            .collect(Collectors.toList());
+    StorageQueryCommand query = new StorageQueryCommand(
+        resolved.parentId(), keyword, effectiveRecursive, sortBy, sortOrder);
+    List<StorageItemRes> items = fileQueryService.listContent(OwnerType.USER, ownerId, query).stream()
+        .map(
+            v -> new StorageItemRes(
+                v.id(),
+                v.type(),
+                v.name(),
+                v.parentId(),
+                v.size(),
+                v.contentType(),
+                v.createdAt(),
+                v.updatedAt()))
+        .collect(Collectors.toList());
     return ApiResponse.ok(items);
   }
 
@@ -132,9 +128,8 @@ public class StorageController {
       @RequestParam(required = false) String parentId, @RequestParam("file") MultipartFile file)
       throws Exception {
     String ownerId = currentUserId().toString();
-    UploadFileCommand cmd =
-        new UploadFileCommand(
-            OwnerType.USER, ownerId, parentId, file.getOriginalFilename(), file.getContentType());
+    UploadFileCommand cmd = new UploadFileCommand(
+        OwnerType.USER, ownerId, parentId, file.getOriginalFilename(), file.getContentType());
     try (InputStream is = file.getInputStream()) {
       return ApiResponse.ok(fileService.uploadFile(cmd, is, FilePurpose.DRIVE));
     }

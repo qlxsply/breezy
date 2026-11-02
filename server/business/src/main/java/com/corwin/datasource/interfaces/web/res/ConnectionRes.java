@@ -31,4 +31,5 @@ public record ConnectionRes(
     String status,
     Instant lastTestTime,
     Instant lastOkTime,
-    String lastError) {}
+    String lastError) {
+}

@@ -16,7 +16,8 @@ public record MethodStatInvocationEvent(
     long durationMillis,
     boolean success,
     String exceptionClassName)
-    implements AsyncEvent {
+    implements
+      AsyncEvent {
 
   public MethodStatInvocationEvent {
     Objects.requireNonNull(key, "key required");

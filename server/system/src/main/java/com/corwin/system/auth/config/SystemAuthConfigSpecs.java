@@ -13,75 +13,73 @@ import java.util.List;
  */
 public final class SystemAuthConfigSpecs {
 
-  public static final ConfigSpec<AuthenticationConfig> AUTHENTICATION =
-      new SimpleConfigSpec<>(
-          new ConfigKey("system.security.authentication"),
-          "system",
-          "security",
-          "认证策略",
-          "内部会话和外部令牌有效期策略",
-          AuthenticationConfig.class,
-          new AuthenticationConfig(
-              28800,
-              false,
-              300,
-              60,
-              1800,
-              604800,
-              60,
-              "breezy-external-user-jwt-secret-please-change",
-              "breezy"),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.FAIL_STARTUP,
-          List.of(
-              required("adminSessionTtlSeconds", "admin会话有效秒数", ConfigFieldType.LONG, 10),
-              required("adminSingleLoginEnabled", "admin账号单点登录", ConfigFieldType.BOOLEAN, 20),
-              required("sessionCacheTtlSeconds", "会话缓存秒数", ConfigFieldType.LONG, 30),
-              required("lastAccessRefreshIntervalSeconds", "访问时间刷新间隔秒数", ConfigFieldType.LONG, 40),
-              required("userAccessTokenTtlSeconds", "访问令牌有效秒数", ConfigFieldType.LONG, 50),
-              required("userRefreshTokenTtlSeconds", "刷新令牌有效秒数", ConfigFieldType.LONG, 60),
-              required("userAccessTokenRefreshSkewSeconds", "令牌提前刷新秒数", ConfigFieldType.LONG, 70),
-              requiredSensitive("userJwtSecret", "用户 JWT 密钥", ConfigFieldType.STRING, 80),
-              required("userJwtIssuer", "JWT 签发者", ConfigFieldType.STRING, 90)),
-          "default",
-          SystemAuthConfigSpecs::validateAuthentication,
-          SystemAuthConfigSpecs::validateAuthentication);
+  public static final ConfigSpec<AuthenticationConfig> AUTHENTICATION = new SimpleConfigSpec<>(
+      new ConfigKey("system.security.authentication"),
+      "system",
+      "security",
+      "认证策略",
+      "内部会话和外部令牌有效期策略",
+      AuthenticationConfig.class,
+      new AuthenticationConfig(
+          28800,
+          false,
+          300,
+          60,
+          1800,
+          604800,
+          60,
+          "breezy-external-user-jwt-secret-please-change",
+          "breezy"),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.FAIL_STARTUP,
+      List.of(
+          required("adminSessionTtlSeconds", "admin会话有效秒数", ConfigFieldType.LONG, 10),
+          required("adminSingleLoginEnabled", "admin账号单点登录", ConfigFieldType.BOOLEAN, 20),
+          required("sessionCacheTtlSeconds", "会话缓存秒数", ConfigFieldType.LONG, 30),
+          required("lastAccessRefreshIntervalSeconds", "访问时间刷新间隔秒数", ConfigFieldType.LONG, 40),
+          required("userAccessTokenTtlSeconds", "访问令牌有效秒数", ConfigFieldType.LONG, 50),
+          required("userRefreshTokenTtlSeconds", "刷新令牌有效秒数", ConfigFieldType.LONG, 60),
+          required("userAccessTokenRefreshSkewSeconds", "令牌提前刷新秒数", ConfigFieldType.LONG, 70),
+          requiredSensitive("userJwtSecret", "用户 JWT 密钥", ConfigFieldType.STRING, 80),
+          required("userJwtIssuer", "JWT 签发者", ConfigFieldType.STRING, 90)),
+      "default",
+      SystemAuthConfigSpecs::validateAuthentication,
+      SystemAuthConfigSpecs::validateAuthentication);
 
-  public static final ConfigSpec<PasswordPolicyConfig> PASSWORD_POLICY =
-      new SimpleConfigSpec<>(
-          new ConfigKey("system.security.password-policy"),
-          "system",
-          "security",
-          "密码策略",
-          "系统密码复杂度和强制修改策略",
-          PasswordPolicyConfig.class,
-          new PasswordPolicyConfig(6, true, true, false, false, false, false, true),
-          1,
-          20,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.FAIL_STARTUP,
-          List.of(
-              requiredRange(
-                  "minLength",
-                  "最小长度",
-                  ConfigFieldType.INTEGER,
-                  10,
-                  BigDecimal.valueOf(6),
-                  BigDecimal.valueOf(32)),
-              required("requireDigit", "要求数字", ConfigFieldType.BOOLEAN, 20),
-              required("requireLetter", "要求字母", ConfigFieldType.BOOLEAN, 30),
-              required("requireUpper", "要求大写字母", ConfigFieldType.BOOLEAN, 40),
-              required("requireLower", "要求小写字母", ConfigFieldType.BOOLEAN, 50),
-              required("requireSpecial", "要求特殊字符", ConfigFieldType.BOOLEAN, 60),
-              required("forceChangeOnFirstLogin", "首次登录强制修改", ConfigFieldType.BOOLEAN, 70),
-              required("forceChangeOnReset", "重置后强制修改", ConfigFieldType.BOOLEAN, 80)),
-          "default",
-          SystemAuthConfigSpecs::validatePasswordRuntime,
-          SystemAuthConfigSpecs::validatePasswordPublish);
+  public static final ConfigSpec<PasswordPolicyConfig> PASSWORD_POLICY = new SimpleConfigSpec<>(
+      new ConfigKey("system.security.password-policy"),
+      "system",
+      "security",
+      "密码策略",
+      "系统密码复杂度和强制修改策略",
+      PasswordPolicyConfig.class,
+      new PasswordPolicyConfig(6, true, true, false, false, false, false, true),
+      1,
+      20,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.FAIL_STARTUP,
+      List.of(
+          requiredRange(
+              "minLength",
+              "最小长度",
+              ConfigFieldType.INTEGER,
+              10,
+              BigDecimal.valueOf(6),
+              BigDecimal.valueOf(32)),
+          required("requireDigit", "要求数字", ConfigFieldType.BOOLEAN, 20),
+          required("requireLetter", "要求字母", ConfigFieldType.BOOLEAN, 30),
+          required("requireUpper", "要求大写字母", ConfigFieldType.BOOLEAN, 40),
+          required("requireLower", "要求小写字母", ConfigFieldType.BOOLEAN, 50),
+          required("requireSpecial", "要求特殊字符", ConfigFieldType.BOOLEAN, 60),
+          required("forceChangeOnFirstLogin", "首次登录强制修改", ConfigFieldType.BOOLEAN, 70),
+          required("forceChangeOnReset", "重置后强制修改", ConfigFieldType.BOOLEAN, 80)),
+      "default",
+      SystemAuthConfigSpecs::validatePasswordRuntime,
+      SystemAuthConfigSpecs::validatePasswordPublish);
 
   public record AuthenticationConfig(
       long adminSessionTtlSeconds,
@@ -92,7 +90,8 @@ public final class SystemAuthConfigSpecs {
       long userRefreshTokenTtlSeconds,
       long userAccessTokenRefreshSkewSeconds,
       String userJwtSecret,
-      String userJwtIssuer) {}
+      String userJwtIssuer) {
+  }
 
   public record PasswordPolicyConfig(
       int minLength,
@@ -102,7 +101,8 @@ public final class SystemAuthConfigSpecs {
       boolean requireLower,
       boolean requireSpecial,
       boolean forceChangeOnFirstLogin,
-      boolean forceChangeOnReset) {}
+      boolean forceChangeOnReset) {
+  }
 
   private static List<ConfigViolation> validateAuthentication(AuthenticationConfig value) {
     var violations = new ArrayList<ConfigViolation>();
@@ -157,5 +157,6 @@ public final class SystemAuthConfigSpecs {
     return new ConfigViolation(path, code, message);
   }
 
-  private SystemAuthConfigSpecs() {}
+  private SystemAuthConfigSpecs() {
+  }
 }

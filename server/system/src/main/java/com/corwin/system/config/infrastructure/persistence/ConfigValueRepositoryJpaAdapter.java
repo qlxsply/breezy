@@ -42,17 +42,16 @@ public class ConfigValueRepositoryJpaAdapter implements ConfigValueRepository {
       throw new IllegalArgumentException(
           "configValue revision must immediately follow expectedRevision");
     }
-    int updated =
-        jpaRepository.updateByExpectedRevision(
-            configValue.configKey(),
-            configValue.content(),
-            configValue.schemaVersion(),
-            configValue.revision(),
-            configValue.configured(),
-            configValue.updatedBy(),
-            configValue.updatedAt(),
-            configValue.updateReason(),
-            expectedRevision);
+    int updated = jpaRepository.updateByExpectedRevision(
+        configValue.configKey(),
+        configValue.content(),
+        configValue.schemaVersion(),
+        configValue.revision(),
+        configValue.configured(),
+        configValue.updatedBy(),
+        configValue.updatedAt(),
+        configValue.updateReason(),
+        expectedRevision);
     return updated == 1;
   }
 }

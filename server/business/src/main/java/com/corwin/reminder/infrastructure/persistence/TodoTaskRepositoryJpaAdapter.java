@@ -92,10 +92,9 @@ public class TodoTaskRepositoryJpaAdapter implements TodoTaskRepository {
     if (query == null) {
       return null;
     }
-    List<TodoTaskStatus> statuses =
-        query.statuses() == null
-            ? List.of()
-            : query.statuses().stream().filter(Objects::nonNull).toList();
+    List<TodoTaskStatus> statuses = query.statuses() == null
+        ? List.of()
+        : query.statuses().stream().filter(Objects::nonNull).toList();
     return new TodoTaskPageQuery(statuses, LikePatternUtils.toContainsPattern(query.contentLike()));
   }
 }

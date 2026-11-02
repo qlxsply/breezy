@@ -18,10 +18,9 @@ public class ErrorCodeTest {
 
   @Test
   void should_not_have_duplicate_codes_and_all_codes_should_be_in_range() {
-    Class[] errorEnums =
-        new Class[] {
-          BaseError.class, DatabaseSourceError.class, JsonFmtError.class, ReminderError.class
-        };
+    Class[] errorEnums = new Class[]{
+        BaseError.class, DatabaseSourceError.class, JsonFmtError.class, ReminderError.class
+    };
 
     Map<String, String> codeIndex = new LinkedHashMap<>();
 
@@ -64,8 +63,7 @@ public class ErrorCodeTest {
         ErrorCodeRanges a = ranges[i];
         ErrorCodeRanges b = ranges[j];
 
-        boolean overlapped =
-            a.getStart().compareTo(b.getEnd()) <= 0 && b.getStart().compareTo(a.getEnd()) <= 0;
+        boolean overlapped = a.getStart().compareTo(b.getEnd()) <= 0 && b.getStart().compareTo(a.getEnd()) <= 0;
 
         assertFalse(
             overlapped,

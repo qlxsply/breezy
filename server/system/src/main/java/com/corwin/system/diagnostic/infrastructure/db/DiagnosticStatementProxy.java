@@ -60,16 +60,14 @@ public final class DiagnosticStatementProxy implements InvocationHandler {
     if (statement == null) {
       return null;
     }
-    Class<?> interfaceType =
-        statement instanceof CallableStatement
-            ? CallableStatement.class
-            : statement instanceof PreparedStatement ? PreparedStatement.class : Statement.class;
-    return (Statement)
-        Proxy.newProxyInstance(
-            interfaceType.getClassLoader(),
-            new Class[] {interfaceType},
-            new DiagnosticStatementProxy(
-                dataSourceName, statement, preparedSql, runtimeManager, sqlExecutionObserver));
+    Class<?> interfaceType = statement instanceof CallableStatement
+        ? CallableStatement.class
+        : statement instanceof PreparedStatement ? PreparedStatement.class : Statement.class;
+    return (Statement) Proxy.newProxyInstance(
+        interfaceType.getClassLoader(),
+        new Class[]{interfaceType},
+        new DiagnosticStatementProxy(
+            dataSourceName, statement, preparedSql, runtimeManager, sqlExecutionObserver));
   }
 
   /** Intercepts execute methods on the statement to record timing and errors. */

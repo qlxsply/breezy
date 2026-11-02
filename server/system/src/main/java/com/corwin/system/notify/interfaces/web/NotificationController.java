@@ -23,7 +23,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST controller for notification management.
  *
- * <p>Exposes endpoints for querying, pulling, and marking notifications as read.
+ * <p>
+ * Exposes endpoints for querying, pulling, and marking notifications as read.
  *
  * @author Corwin 2026/3/30
  */
@@ -43,8 +44,7 @@ public class NotificationController {
     UserType userType = CtxUtil.getPrincipal().userType();
     String status = req.status() == null || req.status().isBlank() ? "all" : req.status();
     PageSpec spec = PageSpecFactory.of(req.page(), null);
-    PageData<NotificationView> pageData =
-        notificationAppService.page(userId, userType, status, spec);
+    PageData<NotificationView> pageData = notificationAppService.page(userId, userType, status, spec);
     PageResult<NotificationRes> pageResult = PageResult.of(pageData, NotificationController::toRes);
     return ApiResponse.ok(pageResult);
   }
@@ -71,7 +71,8 @@ public class NotificationController {
   /**
    * 拉取指定时间点之后的未读通知
    *
-   * <p>按 createdAt 升序返回，用于增量拉取。
+   * <p>
+   * 按 createdAt 升序返回，用于增量拉取。
    */
   @GetMapping("/unread/pull")
   @Authenticated

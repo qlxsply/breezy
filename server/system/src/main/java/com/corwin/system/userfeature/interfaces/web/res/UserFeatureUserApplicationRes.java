@@ -38,4 +38,5 @@ public record UserFeatureUserApplicationRes(
     String packageAccessScope,
     UserAccessOverrideType overrideType,
     ApplicationFeatureAccessScope overrideAccessScope,
-    List<UserFeatureUserFeatureRes> features) {}
+    List<UserFeatureUserFeatureRes> features) {
+}

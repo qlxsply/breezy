@@ -7,4 +7,5 @@ import java.util.List;
  *
  * @author Corwin 2026/1/23
  */
-public record ApiServiceGroupRes(String service, List<ApiModuleGroupRes> modules) {}
+public record ApiServiceGroupRes(String service, List<ApiModuleGroupRes> modules) {
+}

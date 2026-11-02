@@ -24,4 +24,5 @@ public record DatabaseSourceConnectionInfoRes(
     String username,
     String passwordRaw,
     String remarkCustom,
-    String extraParams) {}
+    String extraParams) {
+}

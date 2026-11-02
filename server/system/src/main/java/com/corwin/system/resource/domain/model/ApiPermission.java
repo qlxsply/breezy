@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * API-permission binding entity.
  *
- * <p>Links an API endpoint to a permission code, defining which permission is required to access
+ * <p>
+ * Links an API endpoint to a permission code, defining which permission is required to access
  * the API. A single API can be bound to multiple permissions, and a single permission can be
  * referenced by multiple APIs.
  *
@@ -19,14 +20,15 @@ import lombok.Getter;
 @Table(
     name = "sys_api_permission",
     indexes = {
-      @Index(
-          name = "idx_sys_api_permission_unique",
-          columnList = "api_id,permission_id",
-          unique = true),
-      @Index(name = "idx_sys_api_permission_api_id", columnList = "api_id"),
-      @Index(name = "idx_sys_api_permission_permission_id", columnList = "permission_id")
+        @Index(
+            name = "idx_sys_api_permission_unique",
+            columnList = "api_id,permission_id",
+            unique = true),
+        @Index(name = "idx_sys_api_permission_api_id", columnList = "api_id"),
+        @Index(name = "idx_sys_api_permission_permission_id", columnList = "permission_id")
     })
 public class ApiPermission {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -47,7 +49,8 @@ public class ApiPermission {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected ApiPermission() {}
+  protected ApiPermission() {
+  }
 
   /**
    * Creates an API-permission binding.

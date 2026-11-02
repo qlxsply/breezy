@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * @author Corwin 2026/8/17
  */
 public enum TimeMockMode implements DictEnumDefinition {
+
   DYNAMIC("动态偏移"),
   FIXED("固定时间");
 

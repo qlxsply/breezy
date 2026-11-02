@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Application service for admin API metadata management.
  *
- * <p>Provides use-case orchestration for listing, paginating, enabling/disabling APIs, and updating
+ * <p>
+ * Provides use-case orchestration for listing, paginating, enabling/disabling APIs, and updating
  * sort options. Clears the API permission cache on state changes.
  *
  * @author Corwin 2026/1/23

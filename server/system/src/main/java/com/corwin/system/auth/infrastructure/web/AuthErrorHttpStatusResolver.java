@@ -27,7 +27,7 @@ public class AuthErrorHttpStatusResolver implements ErrorHttpStatusResolver {
   public static HttpStatus resolve(AuthError error) {
     return switch (error) {
       case UNAUTHENTICATED, INVALID_TOKEN, TOKEN_EXPIRED, TOKEN_REVOKED, BAD_CREDENTIALS ->
-          HttpStatus.UNAUTHORIZED;
+        HttpStatus.UNAUTHORIZED;
       case FORBIDDEN, USER_DISABLED -> HttpStatus.FORBIDDEN;
       case PERMISSION_DECLARATION_MISSING -> HttpStatus.INTERNAL_SERVER_ERROR;
     };

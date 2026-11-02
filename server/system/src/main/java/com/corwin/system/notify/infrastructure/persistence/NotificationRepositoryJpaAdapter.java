@@ -16,7 +16,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link NotificationRepository}.
  *
- * <p>Delegates standard CRUD operations to {@link NotificationJpaRepository} and dynamic page
+ * <p>
+ * Delegates standard CRUD operations to {@link NotificationJpaRepository} and dynamic page
  * queries to {@link NotificationMybatisMapper}.
  *
  * @author Corwin 2026/3/30
@@ -73,9 +74,8 @@ public class NotificationRepositoryJpaAdapter implements NotificationRepository 
   }
 
   @Override
-  public List<Notification>
-      findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
-          Long userId, UserType userType, Instant after) {
+  public List<Notification> findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
+      Long userId, UserType userType, Instant after) {
     return repo.findByUserIdAndUserTypeAndIsReadFalseAndCreatedAtAfterOrderByCreatedAtDesc(
         userId, userType, after);
   }

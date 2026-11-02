@@ -92,13 +92,12 @@ public class SpringAppDataSourceProvider implements AppDataSourceProvider {
         return dataSource;
       }
     }
-    for (String methodName :
-        List.of(
-            "getTargetDataSource",
-            "getDelegate",
-            "getDataSource",
-            "getRealDataSource",
-            "getWrappedDataSource")) {
+    for (String methodName : List.of(
+        "getTargetDataSource",
+        "getDelegate",
+        "getDataSource",
+        "getRealDataSource",
+        "getWrappedDataSource")) {
       Optional<DataSource> unwrapped = readDataSourceProperty(dataSource, methodName);
       if (unwrapped.isPresent() && unwrapped.get() != dataSource) {
         return unwrapped.get();

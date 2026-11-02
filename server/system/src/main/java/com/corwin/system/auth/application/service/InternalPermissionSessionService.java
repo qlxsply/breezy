@@ -37,8 +37,7 @@ public class InternalPermissionSessionService {
       if (userId == null) {
         continue;
       }
-      for (LoginSession session :
-          loginSessionRepository.findByUserIdAndSessionStatus(userId, SessionStatus.ACTIVE)) {
+      for (LoginSession session : loginSessionRepository.findByUserIdAndSessionStatus(userId, SessionStatus.ACTIVE)) {
         session.kickOut(normalizedOperator);
         loginSessionRepository.save(session);
         authSessionCacheService.delete(session.getTokenHash());

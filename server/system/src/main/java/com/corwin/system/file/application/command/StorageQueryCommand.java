@@ -19,6 +19,7 @@ public record StorageQueryCommand(
     boolean recursive,
     StorageSortBy sortBy,
     StorageSortOrder sortOrder) {
+
   public StorageQueryCommand {
     parentId = StrUtil.trimToNull(parentId);
     keyword = StrUtil.trimToNull(keyword);

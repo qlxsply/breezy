@@ -3,7 +3,8 @@ package com.corwin.framework.error;
 /**
  * Business exception representing an expected, recoverable failure.
  *
- * <p>Carries an {@link ErrorCode} that is returned to the API consumer.
+ * <p>
+ * Carries an {@link ErrorCode} that is returned to the API consumer.
  *
  * @author Corwin 2026/3/30
  */

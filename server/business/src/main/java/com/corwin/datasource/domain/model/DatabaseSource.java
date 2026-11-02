@@ -12,14 +12,14 @@ import lombok.Getter;
 @Table(
     name = "db_source",
     indexes = {
-      @Index(name = "idx_db_source_name", columnList = "name"),
-      @Index(name = "idx_db_source_type", columnList = "db_type"),
-      @Index(name = "idx_db_source_status", columnList = "ds_status")
+        @Index(name = "idx_db_source_name", columnList = "name"),
+        @Index(name = "idx_db_source_type", columnList = "db_type"),
+        @Index(name = "idx_db_source_status", columnList = "ds_status")
     },
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_db_source_name",
-          columnNames = {"name"})
+        @UniqueConstraint(
+            name = "uk_db_source_name",
+            columnNames = {"name"})
     })
 public class DatabaseSource {
 
@@ -46,7 +46,8 @@ public class DatabaseSource {
   @Column(length = 128)
   private String host;
 
-  @Column private Integer port;
+  @Column
+  private Integer port;
 
   @Column(name = "database_name", length = 128)
   private String databaseName;
@@ -98,7 +99,8 @@ public class DatabaseSource {
   @Column(name = "last_error", length = 1000)
   private String lastError;
 
-  protected DatabaseSource() {}
+  protected DatabaseSource() {
+  }
 
   public static DatabaseSource createUser(
       String name,

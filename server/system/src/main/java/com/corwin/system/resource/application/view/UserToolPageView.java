@@ -16,4 +16,5 @@ public record UserToolPageView(
     int sortNo,
     String level,
     boolean enabled,
-    boolean guestAccess) {}
+    boolean guestAccess) {
+}

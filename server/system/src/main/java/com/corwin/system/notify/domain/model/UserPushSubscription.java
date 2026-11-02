@@ -18,7 +18,8 @@ import lombok.Getter;
 /**
  * Domain entity representing a user's Web Push subscription.
  *
- * <p>Stores browser push subscription details including endpoint, encryption keys, and tracks push
+ * <p>
+ * Stores browser push subscription details including endpoint, encryption keys, and tracks push
  * delivery status per device.
  *
  * @author Corwin 2026/3/19
@@ -29,9 +30,9 @@ import lombok.Getter;
     name = "sys_user_push_subscription",
     indexes = {@Index(name = "idx_push_user_active", columnList = "user_type, user_id, active")},
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_push_user_device",
-          columnNames = {"user_type", "user_id", "device_id"})
+        @UniqueConstraint(
+            name = "uk_push_user_device",
+            columnNames = {"user_type", "user_id", "device_id"})
     })
 public class UserPushSubscription {
 
@@ -73,7 +74,8 @@ public class UserPushSubscription {
   @Column(name = "last_error", length = 1000)
   private String lastError;
 
-  protected UserPushSubscription() {}
+  protected UserPushSubscription() {
+  }
 
   /**
    * Creates a new active push subscription for the given user and device.

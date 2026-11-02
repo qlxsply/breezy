@@ -71,9 +71,8 @@ class AdminAuthenticationFiltersTest {
     AuthPrincipal user = new AuthPrincipal(7L, "user", UserType.USER, false, Set.of());
     when(authenticator.authenticateUserToken("header.jwt.token")).thenReturn(user);
     when(cookieService.readSession(org.mockito.ArgumentMatchers.any())).thenReturn("admin-session");
-    AuthenticationFilter filter =
-        new AuthenticationFilter(
-            authenticator, opaqueTokenService, cookieService, Optional.empty());
+    AuthenticationFilter filter = new AuthenticationFilter(
+        authenticator, opaqueTokenService, cookieService, Optional.empty());
     MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/user/profile");
     request.addHeader(HttpHeaderNames.AUTHORIZATION, "Bearer header.jwt.token");
     MockHttpServletResponse response = new MockHttpServletResponse();

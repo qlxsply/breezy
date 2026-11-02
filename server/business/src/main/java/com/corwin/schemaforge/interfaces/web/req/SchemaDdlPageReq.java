@@ -11,4 +11,5 @@ public record SchemaDdlPageReq(
     PageRuleRequest page,
     SortRuleRequest sort,
     @JsonLongString Long managedDatabaseId,
-    String nameLike) {}
+    String nameLike) {
+}

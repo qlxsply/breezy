@@ -10,14 +10,16 @@ import java.util.stream.Collectors;
 /**
  * Null-safe string utility methods.
  *
- * <p>Provides common operations such as emptiness/blankness checks, joining, splitting, trimming,
+ * <p>
+ * Provides common operations such as emptiness/blankness checks, joining, splitting, trimming,
  * and default-value fallbacks, complementing the standard {@link java.lang.String} API.
  *
  * @author Corwin 2026/1/11
  */
 public final class StrUtil {
 
-  private StrUtil() {}
+  private StrUtil() {
+  }
 
   /**
    * Checks whether the given string is {@code null} or empty ({@code ""}).
@@ -237,7 +239,8 @@ public final class StrUtil {
   /**
    * Splits the given string by the specified literal delimiter, trimming each part.
    *
-   * <p>Uses {@link Pattern#quote(String)} to treat the delimiter as a literal string (not a regex),
+   * <p>
+   * Uses {@link Pattern#quote(String)} to treat the delimiter as a literal string (not a regex),
    * and a negative limit to preserve trailing empty strings.
    *
    * @param str the string to split
@@ -249,7 +252,7 @@ public final class StrUtil {
     Objects.requireNonNull(str, "input string must not be null");
     Objects.requireNonNull(delimiter, "delimiter must not be null");
     if (str.isEmpty()) {
-      return new String[] {};
+      return new String[]{};
     }
     String[] parts = str.split(Pattern.quote(delimiter), -1);
     for (int i = 0; i < parts.length; i++) {

@@ -15,8 +15,8 @@ import lombok.Getter;
 @Table(
     name = "tb_user_lifecycle_event",
     indexes = {
-      @Index(name = "idx_tb_user_event_user", columnList = "user_id"),
-      @Index(name = "idx_tb_user_event_type", columnList = "event_type,created_at")
+        @Index(name = "idx_tb_user_event_user", columnList = "user_id"),
+        @Index(name = "idx_tb_user_event_type", columnList = "event_type,created_at")
     })
 public class WebUserLifecycleEvent {
 
@@ -52,7 +52,8 @@ public class WebUserLifecycleEvent {
   private Instant createdAt;
 
   /** JPA required no-arg constructor. */
-  protected WebUserLifecycleEvent() {}
+  protected WebUserLifecycleEvent() {
+  }
 
   /** Construct a new lifecycle event record. */
   public WebUserLifecycleEvent(

@@ -5,7 +5,8 @@ import java.lang.annotation.*;
 /**
  * Annotation marking a Spring bean method as an asynchronous event subscriber.
  *
- * <p>By default, each annotated method maps to its own consumer group.
+ * <p>
+ * By default, each annotated method maps to its own consumer group.
  *
  * @author Corwin 2026/4/9
  */

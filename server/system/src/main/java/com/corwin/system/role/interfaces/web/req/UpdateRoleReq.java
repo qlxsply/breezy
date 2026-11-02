@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateRoleReq {
+
   private String code;
   private String name;
   private Boolean enabled;

@@ -28,9 +28,9 @@ import lombok.Getter;
 @Table(
     name = "todo_task",
     indexes = {
-      @Index(name = "idx_todo_due_time", columnList = "due_time"),
-      @Index(name = "idx_todo_status", columnList = "task_status"),
-      @Index(name = "idx_todo_sort_no", columnList = "sort_no")
+        @Index(name = "idx_todo_due_time", columnList = "due_time"),
+        @Index(name = "idx_todo_status", columnList = "task_status"),
+        @Index(name = "idx_todo_sort_no", columnList = "sort_no")
     })
 public class TodoTask {
 
@@ -78,9 +78,11 @@ public class TodoTask {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  @Transient private final List<TodoAttachment> attachments = new ArrayList<>();
+  @Transient
+  private final List<TodoAttachment> attachments = new ArrayList<>();
 
-  protected TodoTask() {}
+  protected TodoTask() {
+  }
 
   public static TodoTask create(String content, Instant dueTime) {
     TodoTask t = new TodoTask();
@@ -215,10 +217,9 @@ public class TodoTask {
     return attachments.stream()
         .filter(item -> item.stage() == stage)
         .sorted(
-            (left, right) ->
-                Long.compare(
-                    Objects.requireNonNullElse(left.sortNo(), 0L),
-                    Objects.requireNonNullElse(right.sortNo(), 0L)))
+            (left, right) -> Long.compare(
+                Objects.requireNonNullElse(left.sortNo(), 0L),
+                Objects.requireNonNullElse(right.sortNo(), 0L)))
         .map(TodoAttachment::fileId)
         .toList();
   }

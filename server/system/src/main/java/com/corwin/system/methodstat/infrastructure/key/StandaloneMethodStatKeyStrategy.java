@@ -21,8 +21,7 @@ public class StandaloneMethodStatKeyStrategy implements MethodStatKeyStrategy {
    */
   @Override
   public MethodStatKey buildKey(String methodSignature) {
-    String normalizedSignature =
-        methodSignature == null ? TextConstants.EMPTY : methodSignature.trim();
+    String normalizedSignature = methodSignature == null ? TextConstants.EMPTY : methodSignature.trim();
     if (normalizedSignature.isEmpty()) {
       throw new IllegalArgumentException("methodSignature required");
     }

@@ -23,7 +23,8 @@ import org.springframework.context.annotation.Bean;
 /**
  * Auto-configuration for the MyBatis {@link PageData} pagination plugin.
  *
- * <p>Registers the {@link PageDataPaginationInterceptor}, resolves the database-specific {@link
+ * <p>
+ * Registers the {@link PageDataPaginationInterceptor}, resolves the database-specific {@link
  * com.corwin.framework.mybatis.pagination.dialect.PaginationDialect}, and provides the {@link
  * JSqlParserCountSqlOptimizer}.
  *

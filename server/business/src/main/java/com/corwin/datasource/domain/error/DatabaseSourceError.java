@@ -8,6 +8,7 @@ import com.corwin.framework.error.ErrorCodeRanges;
  * @author Corwin 2026/2/26
  */
 public enum DatabaseSourceError implements ErrorCode {
+
   MANAGED_DATABASE_DUPLICATE("101001", "数据库已经接管，无法重复创建");
 
   private final ErrorCodeRange RANGE = ErrorCodeRanges.BREEZY_DATASOURCE;

@@ -42,20 +42,19 @@ public class AuditLogController {
       userType = UserType.ADMIN,
       permissions = {"audit.log.view"})
   public ApiResponse<PageResult<AuditLogRes>> page(@RequestBody AuditLogPageReq req) {
-    var page =
-        auditLogService.page(
-            req.traceId(),
-            req.operatorUserId(),
-            req.operatorUsername(),
-            req.applicationCode(),
-            req.requestUri(),
-            req.auditResource(),
-            req.auditAction(),
-            req.auditLevel(),
-            req.success(),
-            req.startAt(),
-            req.endAt(),
-            PageSpecFactory.of(req.page(), req.sort()));
+    var page = auditLogService.page(
+        req.traceId(),
+        req.operatorUserId(),
+        req.operatorUsername(),
+        req.applicationCode(),
+        req.requestUri(),
+        req.auditResource(),
+        req.auditAction(),
+        req.auditLevel(),
+        req.success(),
+        req.startAt(),
+        req.endAt(),
+        PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, AuditLogController::toRes));
   }
 
@@ -110,7 +109,8 @@ public class AuditLogController {
       return List.of();
     }
     try {
-      return Json.parse(rawPermissionCodes, new TypeReference<List<String>>() {});
+      return Json.parse(rawPermissionCodes, new TypeReference<List<String>>() {
+      });
     } catch (RuntimeException ex) {
       return List.of(rawPermissionCodes);
     }

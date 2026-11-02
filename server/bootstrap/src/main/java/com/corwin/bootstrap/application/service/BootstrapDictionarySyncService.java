@@ -29,9 +29,8 @@ public class BootstrapDictionarySyncService {
 
   public BootstrapTaskReport run(boolean dryRun) {
     long startedAt = System.currentTimeMillis();
-    List<DictTypeSeed> definitions =
-        dictionaryDefinitionLoader.loadDefinitions(
-            definitionResources.dictionariesXml(), definitionResources.dictionariesXsd());
+    List<DictTypeSeed> definitions = dictionaryDefinitionLoader.loadDefinitions(
+        definitionResources.dictionariesXml(), definitionResources.dictionariesXsd());
     List<DictItemRow> itemRows = flattenItems(definitions);
 
     if (!dryRun) {
@@ -45,12 +44,11 @@ public class BootstrapDictionarySyncService {
           });
     }
 
-    String message =
-        "dictTypes="
-            + definitions.size()
-            + "; dictItems="
-            + itemRows.size()
-            + "; strategy=delete-all-and-rebuild";
+    String message = "dictTypes="
+        + definitions.size()
+        + "; dictItems="
+        + itemRows.size()
+        + "; strategy=delete-all-and-rebuild";
     return new BootstrapTaskReport(
         BootstrapTaskKey.DICTIONARY_SYNC,
         dryRun,
@@ -132,5 +130,6 @@ public class BootstrapDictionarySyncService {
     ps.setString(15, OPERATOR);
   }
 
-  private record DictItemRow(String dictTypeId, DictItemSeed item) {}
+  private record DictItemRow(String dictTypeId, DictItemSeed item) {
+  }
 }

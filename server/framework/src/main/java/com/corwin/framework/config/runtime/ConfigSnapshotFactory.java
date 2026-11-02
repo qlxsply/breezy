@@ -72,13 +72,13 @@ public final class ConfigSnapshotFactory {
 
   private static String warning(RuntimeException ex) {
     String message = ex.getMessage();
-    String warning =
-        ex.getClass().getSimpleName()
-            + (message == null || message.isBlank() ? "" : ": " + message);
+    String warning = ex.getClass().getSimpleName()
+        + (message == null || message.isBlank() ? "" : ": " + message);
     return warning.length() <= WARNING_MAX_LENGTH
         ? warning
         : warning.substring(0, WARNING_MAX_LENGTH);
   }
 
-  private ConfigSnapshotFactory() {}
+  private ConfigSnapshotFactory() {
+  }
 }

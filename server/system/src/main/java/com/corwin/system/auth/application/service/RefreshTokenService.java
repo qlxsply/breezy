@@ -68,8 +68,7 @@ public class RefreshTokenService {
    */
   @Transactional
   public void revokeActiveTokens(Long userId, String reason) {
-    List<RefreshToken> activeTokens =
-        refreshTokenRepository.findByUserIdAndStatus(userId, RefreshTokenStatus.ACTIVE);
+    List<RefreshToken> activeTokens = refreshTokenRepository.findByUserIdAndStatus(userId, RefreshTokenStatus.ACTIVE);
     activeTokens.stream().filter(Objects::nonNull).forEach(token -> token.revoke(reason));
     if (!activeTokens.isEmpty()) {
       refreshTokenRepository.saveAll(activeTokens);
@@ -81,10 +80,9 @@ public class RefreshTokenService {
       throw new BizException(AuthError.INVALID_TOKEN);
     }
     String tokenHash = opaqueTokenService.hash(rawRefreshToken.trim());
-    RefreshToken token =
-        refreshTokenRepository
-            .findByRefreshTokenHash(tokenHash)
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    RefreshToken token = refreshTokenRepository
+        .findByRefreshTokenHash(tokenHash)
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     Instant now = HighDate.realInstant();
     if (token.expired(now)) {
       token.markExpired();
@@ -106,5 +104,6 @@ public class RefreshTokenService {
   }
 
   /** Record representing a newly issued refresh token with its expiry time. */
-  public record IssuedRefreshToken(Long userId, String rawToken, Instant expiresAt) {}
+  public record IssuedRefreshToken(Long userId, String rawToken, Instant expiresAt) {
+  }
 }

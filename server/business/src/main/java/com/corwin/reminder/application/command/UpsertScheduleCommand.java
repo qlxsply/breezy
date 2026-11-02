@@ -18,6 +18,7 @@ public record UpsertScheduleCommand(
     RuleCommand rule,
     List<Integer> advanceSecondsList,
     String note) {
+
   public record RuleCommand(
       RecurrenceRuleFrequency frequency,
       Integer interval,
@@ -28,5 +29,6 @@ public record UpsertScheduleCommand(
       Integer monthOfYear,
       // YEARLY
       Instant until,
-      Integer countLimit) {}
+      Integer countLimit) {
+  }
 }

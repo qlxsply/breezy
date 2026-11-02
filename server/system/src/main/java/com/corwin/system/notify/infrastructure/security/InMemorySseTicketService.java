@@ -70,5 +70,6 @@ public class InMemorySseTicketService implements SseTicketService {
     return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
   }
 
-  private record TicketEntry(TokenPayload payload, Instant expiresAt) {}
+  private record TicketEntry(TokenPayload payload, Instant expiresAt) {
+  }
 }

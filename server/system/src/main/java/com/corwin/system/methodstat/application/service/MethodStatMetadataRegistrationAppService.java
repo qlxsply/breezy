@@ -31,14 +31,13 @@ public class MethodStatMetadataRegistrationAppService {
     Objects.requireNonNull(descriptor, "descriptor required");
 
     boolean methodSwitchEnabled = ensureMethodSwitchState(descriptor);
-    MethodStatMetadata metadata =
-        new MethodStatMetadata(
-            descriptor.key(),
-            descriptor.packageName(),
-            descriptor.className(),
-            descriptor.methodName(),
-            descriptor.methodSignature(),
-            methodSwitchEnabled);
+    MethodStatMetadata metadata = new MethodStatMetadata(
+        descriptor.key(),
+        descriptor.packageName(),
+        descriptor.className(),
+        descriptor.methodName(),
+        descriptor.methodSignature(),
+        methodSwitchEnabled);
     return metadataRepository.save(metadata);
   }
 

@@ -10,4 +10,5 @@ public record LoginResponseRes(
     String refreshToken,
     String accessTokenExpiresAt,
     String refreshTokenExpiresAt,
-    AuthUserRes user) {}
+    AuthUserRes user) {
+}

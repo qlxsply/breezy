@@ -3,7 +3,8 @@ package com.corwin.framework.support;
 /**
  * A mutable reference box that allows reassigning a value inside a lambda or inner class.
  *
- * <p>Useful when you need to capture a result variable in a context that requires effectively-final
+ * <p>
+ * Useful when you need to capture a result variable in a context that requires effectively-final
  * variables.
  *
  * @param <T> the referenced value type

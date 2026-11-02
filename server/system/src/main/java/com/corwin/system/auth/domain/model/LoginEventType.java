@@ -11,6 +11,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/1/23
  */
 public enum LoginEventType implements DictEnumDefinition {
+
   LOGIN_SUCCESS("成功", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   LOGIN_FAILURE("失败", DictTagColor.DANGER_RED, DictTagType.DANGER),
   LOGOUT("登出", DictTagColor.SLATE, DictTagType.INFO),

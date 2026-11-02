@@ -8,6 +8,7 @@ import com.corwin.framework.error.ErrorCodeRanges;
  * @author Corwin 2026/3/12
  */
 public enum ReminderError implements ErrorCode {
+
   TODO_NOT_FOUND("103001", "待处理事项不存在"),
   TODO_CONTENT_REQUIRED("103002", "待处理事项内容不能为空"),
   TODO_STATUS_TRANSITION_INVALID("103003", "待处理事项状态流转非法"),

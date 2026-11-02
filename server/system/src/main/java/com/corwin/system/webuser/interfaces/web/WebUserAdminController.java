@@ -42,9 +42,8 @@ public class WebUserAdminController {
       userType = UserType.ADMIN,
       permissions = {"usr.view"})
   public ApiResponse<PageResult<WebUserRes>> page(@RequestBody WebUserPageReq req) {
-    var page =
-        webUserAdminService.page(
-            req.keyword(), req.status(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = webUserAdminService.page(
+        req.keyword(), req.status(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, WebUserAdminController::toRes));
   }
 

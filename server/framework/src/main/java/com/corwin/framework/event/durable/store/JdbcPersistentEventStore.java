@@ -105,9 +105,8 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
     int normalizedOffset = Math.max(0, offset);
     int normalizedLimit = Math.max(1, limit);
     String placeholders = String.join(",", Collections.nCopies(consumerGroups.size(), "?"));
-    String sql =
-        String.format(
-            Locale.ROOT, dialect.selectRecoverableDeliveriesSql(deliveryTable), placeholders);
+    String sql = String.format(
+        Locale.ROOT, dialect.selectRecoverableDeliveriesSql(deliveryTable), placeholders);
     List<Object> parameters = new ArrayList<>(consumerGroups.size() + 3);
     parameters.addAll(consumerGroups);
     parameters.add(now);
@@ -120,8 +119,7 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
   @Override
   public Optional<PersistedEvent> findEvent(String eventId) {
     Objects.requireNonNull(eventId, "eventId required");
-    List<PersistedEvent> rows =
-        jdbcTemplate.query(dialect.selectEventByIdSql(eventTable), this::mapEvent, eventId);
+    List<PersistedEvent> rows = jdbcTemplate.query(dialect.selectEventByIdSql(eventTable), this::mapEvent, eventId);
     if (rows.isEmpty()) {
       return Optional.empty();
     }
@@ -134,15 +132,14 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
       String deliveryId, long expectedVersion, String ownerNode, long claimUntil, long now) {
     Objects.requireNonNull(deliveryId, "deliveryId required");
     Objects.requireNonNull(ownerNode, "ownerNode required");
-    int updated =
-        jdbcTemplate.update(
-            dialect.claimDeliverySql(deliveryTable),
-            ownerNode,
-            claimUntil,
-            now,
-            deliveryId,
-            now,
-            expectedVersion);
+    int updated = jdbcTemplate.update(
+        dialect.claimDeliverySql(deliveryTable),
+        ownerNode,
+        claimUntil,
+        now,
+        deliveryId,
+        now,
+        expectedVersion);
     return updated > 0;
   }
 
@@ -150,13 +147,12 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
   @Override
   public boolean markDeliverySucceeded(
       String deliveryId, String eventId, long expectedVersion, long completedAt, long updatedAt) {
-    int updated =
-        jdbcTemplate.update(
-            dialect.markDeliverySucceededSql(deliveryTable),
-            completedAt,
-            updatedAt,
-            deliveryId,
-            expectedVersion);
+    int updated = jdbcTemplate.update(
+        dialect.markDeliverySucceededSql(deliveryTable),
+        completedAt,
+        updatedAt,
+        deliveryId,
+        expectedVersion);
     if (updated == 0) {
       return false;
     }
@@ -168,13 +164,12 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
   @Override
   public boolean markDeliveryFailed(
       String deliveryId, long expectedVersion, String errorMessage, long updatedAt) {
-    int updated =
-        jdbcTemplate.update(
-            dialect.markDeliveryFailedSql(deliveryTable),
-            updatedAt,
-            truncate(errorMessage),
-            deliveryId,
-            expectedVersion);
+    int updated = jdbcTemplate.update(
+        dialect.markDeliveryFailedSql(deliveryTable),
+        updatedAt,
+        truncate(errorMessage),
+        deliveryId,
+        expectedVersion);
     return updated > 0;
   }
 
@@ -182,13 +177,12 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
   @Override
   public boolean markDeliveryCancelled(
       String deliveryId, String eventId, long expectedVersion, long completedAt, long updatedAt) {
-    int updated =
-        jdbcTemplate.update(
-            dialect.markDeliveryCancelledSql(deliveryTable),
-            completedAt,
-            updatedAt,
-            deliveryId,
-            expectedVersion);
+    int updated = jdbcTemplate.update(
+        dialect.markDeliveryCancelledSql(deliveryTable),
+        completedAt,
+        updatedAt,
+        deliveryId,
+        expectedVersion);
     if (updated == 0) {
       return false;
     }
@@ -201,14 +195,12 @@ public class JdbcPersistentEventStore implements PersistentEventStore {
   public CleanupResult cleanupCompleted(
       long deliveryCompletedBefore, long eventCompletedBefore, int batchSize) {
     int normalizedBatchSize = Math.max(1, batchSize);
-    int deletedDeliveries =
-        jdbcTemplate.update(
-            dialect.cleanupDeliverySql(deliveryTable),
-            deliveryCompletedBefore,
-            normalizedBatchSize);
-    int deletedEvents =
-        jdbcTemplate.update(
-            dialect.cleanupEventSql(eventTable), eventCompletedBefore, normalizedBatchSize);
+    int deletedDeliveries = jdbcTemplate.update(
+        dialect.cleanupDeliverySql(deliveryTable),
+        deliveryCompletedBefore,
+        normalizedBatchSize);
+    int deletedEvents = jdbcTemplate.update(
+        dialect.cleanupEventSql(eventTable), eventCompletedBefore, normalizedBatchSize);
     return new CleanupResult(deletedDeliveries, deletedEvents);
   }
 

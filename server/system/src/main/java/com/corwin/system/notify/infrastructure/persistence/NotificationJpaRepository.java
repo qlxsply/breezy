@@ -12,7 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 /**
  * Spring Data JPA repository for {@link Notification} entity.
  *
- * <p>Provides derived query methods for notification lookup and bulk read-status updates.
+ * <p>
+ * Provides derived query methods for notification lookup and bulk read-status updates.
  *
  * @author Corwin 2026/3/30
  */
@@ -66,7 +67,6 @@ public interface NotificationJpaRepository extends JpaRepository<Notification, L
    * @param readAt the timestamp to set as read time
    */
   @Modifying
-  @Query(
-      "update Notification n set n.isRead = true, n.readAt = :readAt where n.userId = :userId and n.userType = :userType and n.isRead = false")
+  @Query("update Notification n set n.isRead = true, n.readAt = :readAt where n.userId = :userId and n.userType = :userType and n.isRead = false")
   void markAllReadByUserIdAndUserType(Long userId, UserType userType, Instant readAt);
 }

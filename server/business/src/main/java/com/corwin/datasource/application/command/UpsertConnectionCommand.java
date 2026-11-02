@@ -24,4 +24,5 @@ public record UpsertConnectionCommand(
     String passwordRaw,
     String defaultSchema,
     String remarkCustom,
-    String extraParams) {}
+    String extraParams) {
+}

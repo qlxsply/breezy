@@ -14,7 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Disruptor-based in-memory dispatch executor.
  *
- * <p>Wraps consumption tasks as RingBuffer events for high-throughput, low-latency scenarios.
+ * <p>
+ * Wraps consumption tasks as RingBuffer events for high-throughput, low-latency scenarios.
  * Currently supports only a single consumer thread per config; values above 1 are degraded with a
  * warning.
  *
@@ -31,9 +32,8 @@ public class DisruptorInMemoryDispatchExecutor implements InMemoryDispatchExecut
 
   public DisruptorInMemoryDispatchExecutor(AsyncEventProperties properties) {
     Objects.requireNonNull(properties, "properties required");
-    this.config =
-        Objects.requireNonNull(
-            properties.getInMemory().getDisruptor(), "disruptor config required");
+    this.config = Objects.requireNonNull(
+        properties.getInMemory().getDisruptor(), "disruptor config required");
   }
 
   /** 初始化 Disruptor、注册事件处理器并启动 RingBuffer。 */
@@ -51,9 +51,8 @@ public class DisruptorInMemoryDispatchExecutor implements InMemoryDispatchExecut
           "Disruptor dispatch executor currently supports single consumer only. configuredConsumerThreads={} will fallback to 1",
           configuredConsumerThreads);
     }
-    this.disruptor =
-        new Disruptor<>(
-            EVENT_FACTORY, ringBufferSize, new ExecutorThreadFactory(), producerType, waitStrategy);
+    this.disruptor = new Disruptor<>(
+        EVENT_FACTORY, ringBufferSize, new ExecutorThreadFactory(), producerType, waitStrategy);
     this.disruptor.setDefaultExceptionHandler(new DispatchExceptionHandler());
     this.disruptor.handleEventsWith(
         (event, sequence, endOfBatch) -> {
@@ -127,8 +126,8 @@ public class DisruptorInMemoryDispatchExecutor implements InMemoryDispatchExecut
       case "SINGLE" -> ProducerType.SINGLE;
       case "MULTI" -> ProducerType.MULTI;
       default ->
-          throw new IllegalArgumentException(
-              "Unsupported producerType: " + producerType + ". supported: SINGLE/MULTI");
+        throw new IllegalArgumentException(
+            "Unsupported producerType: " + producerType + ". supported: SINGLE/MULTI");
     };
   }
 
@@ -141,10 +140,10 @@ public class DisruptorInMemoryDispatchExecutor implements InMemoryDispatchExecut
       case "SLEEPING" -> new SleepingWaitStrategy();
       case "BUSY_SPIN" -> new BusySpinWaitStrategy();
       default ->
-          throw new IllegalArgumentException(
-              "Unsupported waitStrategy: "
-                  + waitStrategy
-                  + ". supported: BLOCKING/YIELDING/SLEEPING/BUSY_SPIN");
+        throw new IllegalArgumentException(
+            "Unsupported waitStrategy: "
+                + waitStrategy
+                + ". supported: BLOCKING/YIELDING/SLEEPING/BUSY_SPIN");
     };
   }
 
@@ -162,6 +161,7 @@ public class DisruptorInMemoryDispatchExecutor implements InMemoryDispatchExecut
 
   /** RingBuffer 事件容器，承载单个待执行任务。 */
   private static final class EventContainer {
+
     private Runnable task;
 
     /** 任务执行后清理引用，避免对象滞留。 */

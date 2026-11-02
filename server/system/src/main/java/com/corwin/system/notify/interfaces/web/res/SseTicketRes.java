@@ -5,4 +5,5 @@ package com.corwin.system.notify.interfaces.web.res;
  *
  * @author Corwin 2026/3/19
  */
-public record SseTicketRes(String ticket, long expiresAtEpochMillis) {}
+public record SseTicketRes(String ticket, long expiresAtEpochMillis) {
+}

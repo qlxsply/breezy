@@ -11,13 +11,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * In-memory {@link SubscriptionRegistry} implementation.
  *
- * <p>Design:
+ * <p>
+ * Design:
  *
  * <ul>
- *   <li>Write lock for atomic conflict detection and registration.
- *   <li>Concurrent containers + immutable copies for safe reads.
- *   <li>Configurable fail-fast on group conflicts to prevent implicit subscription override at
- *       runtime.
+ * <li>Write lock for atomic conflict detection and registration.
+ * <li>Concurrent containers + immutable copies for safe reads.
+ * <li>Configurable fail-fast on group conflicts to prevent implicit subscription override at
+ * runtime.
  * </ul>
  *
  * @author Corwin 2026/4/9
@@ -26,8 +27,7 @@ public class DefaultSubscriptionRegistry implements SubscriptionRegistry {
 
   private final boolean failOnGroupConflict;
   private final CopyOnWriteArrayList<SubscriptionDescriptor> all = new CopyOnWriteArrayList<>();
-  private final ConcurrentHashMap<String, CopyOnWriteArrayList<SubscriptionDescriptor>>
-      byEventType = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, CopyOnWriteArrayList<SubscriptionDescriptor>> byEventType = new ConcurrentHashMap<>();
   private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public DefaultSubscriptionRegistry(boolean failOnGroupConflict) {
@@ -82,16 +82,15 @@ public class DefaultSubscriptionRegistry implements SubscriptionRegistry {
 
   /** 校验同一事件类型下是否出现消费组冲突。 */
   private void assertNoGroupConflict(SubscriptionDescriptor current) {
-    for (SubscriptionDescriptor descriptor :
-        byEventType.getOrDefault(current.eventType(), new CopyOnWriteArrayList<>())) {
+    for (SubscriptionDescriptor descriptor : byEventType.getOrDefault(current.eventType(),
+        new CopyOnWriteArrayList<>())) {
       if (descriptor.consumerGroup().equals(current.consumerGroup())) {
-        String message =
-            String.format(
-                "Async event group conflict detected. eventType=%s, group=%s, existing=%s, incoming=%s",
-                current.eventType(),
-                current.consumerGroup(),
-                descriptor.subscriptionId(),
-                current.subscriptionId());
+        String message = String.format(
+            "Async event group conflict detected. eventType=%s, group=%s, existing=%s, incoming=%s",
+            current.eventType(),
+            current.consumerGroup(),
+            descriptor.subscriptionId(),
+            current.subscriptionId());
         throw new IllegalStateException(message);
       }
     }

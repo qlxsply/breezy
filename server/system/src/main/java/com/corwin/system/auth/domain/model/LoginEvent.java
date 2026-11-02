@@ -15,9 +15,9 @@ import lombok.Getter;
 @Table(
     name = "sys_login_event",
     indexes = {
-      @Index(name = "idx_sys_login_log_user", columnList = "user_id"),
-      @Index(name = "idx_sys_login_log_event_type", columnList = "event_type"),
-      @Index(name = "idx_sys_login_log_occurred_at", columnList = "occurred_at")
+        @Index(name = "idx_sys_login_log_user", columnList = "user_id"),
+        @Index(name = "idx_sys_login_log_event_type", columnList = "event_type"),
+        @Index(name = "idx_sys_login_log_occurred_at", columnList = "occurred_at")
     })
 public class LoginEvent {
 
@@ -67,7 +67,8 @@ public class LoginEvent {
   @Column(name = "remark", length = 255)
   private String remark;
 
-  protected LoginEvent() {}
+  protected LoginEvent() {
+  }
 
   /** Creates a new login event with the given details and the current timestamp. */
   public LoginEvent(

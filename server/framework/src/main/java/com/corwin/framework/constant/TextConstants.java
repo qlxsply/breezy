@@ -11,5 +11,6 @@ public final class TextConstants {
 
   public static final String EMPTY = "";
 
-  private TextConstants() {}
+  private TextConstants() {
+  }
 }

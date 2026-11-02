@@ -5,7 +5,8 @@ import java.util.List;
 /**
  * Generic paginated data result.
  *
- * <p>Carries the current page number, page size, element count metadata, and the actual element
+ * <p>
+ * Carries the current page number, page size, element count metadata, and the actual element
  * list for the current page.
  *
  * @param <T> the element type
@@ -39,8 +40,7 @@ public record PageData<T>(
     int totalElements = safeLongToInt(count);
     List<T> elements = (list == null || list.isEmpty()) ? List.of() : List.copyOf(list);
     int numberOfElements = elements.size();
-    int totalPages =
-        (totalElements <= 0 || pageSize <= 0) ? 0 : ((totalElements + pageSize - 1) / pageSize);
+    int totalPages = (totalElements <= 0 || pageSize <= 0) ? 0 : ((totalElements + pageSize - 1) / pageSize);
     return new PageData<>(pageNo, pageSize, numberOfElements, totalPages, totalElements, elements);
   }
 

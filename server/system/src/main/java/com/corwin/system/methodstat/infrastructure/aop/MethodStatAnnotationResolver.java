@@ -34,8 +34,7 @@ public class MethodStatAnnotationResolver {
     Class<?> implementationClass = resolveImplementationClass(declaredMethod, targetClass);
     Method implementationMethod = resolveImplementationMethod(implementationClass, declaredMethod);
 
-    String methodSignature =
-        MethodStatMethodDescriptor.buildMethodSignature(implementationClass, implementationMethod);
+    String methodSignature = MethodStatMethodDescriptor.buildMethodSignature(implementationClass, implementationMethod);
     MethodStatKey key = keyStrategy.buildKey(methodSignature);
     return new MethodStatMethodDescriptor(
         implementationClass, implementationMethod, declaredMethod, key);

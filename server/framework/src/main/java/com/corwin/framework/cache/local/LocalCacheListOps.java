@@ -92,8 +92,7 @@ public class LocalCacheListOps<T> extends AbstractLocalCacheOps implements Cache
             return LocalCacheWriteResult.remove(Optional.empty());
           }
           LocalListValue listValue = asList(entry);
-          Optional<T> popped =
-              listValue.leftPop().map(value -> TypeSafeValueCaster.cast(value, valueType));
+          Optional<T> popped = listValue.leftPop().map(value -> TypeSafeValueCaster.cast(value, valueType));
           if (listValue.size() == 0L) {
             return LocalCacheWriteResult.remove(popped);
           }
@@ -112,8 +111,7 @@ public class LocalCacheListOps<T> extends AbstractLocalCacheOps implements Cache
             return LocalCacheWriteResult.remove(Optional.empty());
           }
           LocalListValue listValue = asList(entry);
-          Optional<T> popped =
-              listValue.rightPop().map(value -> TypeSafeValueCaster.cast(value, valueType));
+          Optional<T> popped = listValue.rightPop().map(value -> TypeSafeValueCaster.cast(value, valueType));
           if (listValue.size() == 0L) {
             return LocalCacheWriteResult.remove(popped);
           }

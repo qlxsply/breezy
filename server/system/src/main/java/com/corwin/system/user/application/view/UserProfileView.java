@@ -16,4 +16,5 @@ public record UserProfileView(
     String status,
     boolean mustChangePassword,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

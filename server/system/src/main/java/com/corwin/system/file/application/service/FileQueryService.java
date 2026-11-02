@@ -79,25 +79,22 @@ public class FileQueryService implements FileQueryPort {
    * @throws BizException if the file is not found or is a folder node
    */
   public LogicalPhysicalFileView getLogicalPhysicalFile(String fileId) {
-    LogicalFile logicalFile =
-        logicalFileRepository
-            .findById(fileId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile logicalFile = logicalFileRepository
+        .findById(fileId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFileNode(logicalFile);
-    PhysicalFile physicalFile =
-        physicalFileRepository
-            .findById(logicalFile.getPhysicalFileId())
-            .orElseThrow(() -> new BizException("物理文件丢失", BaseError.SERVICE_ERROR));
+    PhysicalFile physicalFile = physicalFileRepository
+        .findById(logicalFile.getPhysicalFileId())
+        .orElseThrow(() -> new BizException("物理文件丢失", BaseError.SERVICE_ERROR));
     return new LogicalPhysicalFileView(logicalFile, physicalFile);
   }
 
   /** Retrieves the metadata view for a single file by its logical file ID. */
   @Override
   public StorageNodeView getFileMetadata(String fileId) {
-    LogicalFile logicalFile =
-        logicalFileRepository
-            .findById(fileId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile logicalFile = logicalFileRepository
+        .findById(fileId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFileNode(logicalFile);
     return toFileView(logicalFile);
   }
@@ -138,9 +135,8 @@ public class FileQueryService implements FileQueryPort {
       String currentParentId = pendingParents.get(cursor);
       cursor++;
 
-      List<LogicalFile> currentNodes =
-          logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentId(
-              ownerType, ownerId, currentParentId);
+      List<LogicalFile> currentNodes = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentId(
+          ownerType, ownerId, currentParentId);
       nodes.addAll(currentNodes);
       pendingParents.addAll(
           currentNodes.stream().filter(LogicalFile::isFolder).map(LogicalFile::getId).toList());
@@ -169,8 +165,7 @@ public class FileQueryService implements FileQueryPort {
 
   private List<StorageNodeView> buildNodeViews(List<LogicalFile> nodes, String keyword) {
     String normalizedKeyword = normalizeKeyword(keyword);
-    Map<String, PhysicalFile> physicalMap =
-        toPhysicalMap(nodes.stream().filter(LogicalFile::isFile).toList());
+    Map<String, PhysicalFile> physicalMap = toPhysicalMap(nodes.stream().filter(LogicalFile::isFile).toList());
 
     List<StorageNodeView> nodeViews = new ArrayList<>();
     for (LogicalFile node : nodes) {
@@ -183,8 +178,7 @@ public class FileQueryService implements FileQueryPort {
   }
 
   private Map<String, PhysicalFile> toPhysicalMap(List<LogicalFile> files) {
-    Set<String> physicalIds =
-        files.stream().map(LogicalFile::getPhysicalFileId).collect(Collectors.toSet());
+    Set<String> physicalIds = files.stream().map(LogicalFile::getPhysicalFileId).collect(Collectors.toSet());
     if (physicalIds.isEmpty()) {
       return Map.of();
     }
@@ -204,21 +198,21 @@ public class FileQueryService implements FileQueryPort {
   private Comparator<StorageNodeView> buildComparator(StorageSortBy sortBy) {
     return switch (sortBy) {
       case SIZE ->
-          Comparator.comparingLong(this::sortableSize)
-              .thenComparing(node -> normalizeName(node.name()))
-              .thenComparing(StorageNodeView::id);
+        Comparator.comparingLong(this::sortableSize)
+            .thenComparing(node -> normalizeName(node.name()))
+            .thenComparing(StorageNodeView::id);
       case TYPE ->
-          Comparator.comparingInt(this::typeRank)
-              .thenComparing(node -> normalizeName(node.name()))
-              .thenComparing(StorageNodeView::id);
+        Comparator.comparingInt(this::typeRank)
+            .thenComparing(node -> normalizeName(node.name()))
+            .thenComparing(StorageNodeView::id);
       case UPDATED_AT ->
-          Comparator.comparing(
-                  this::sortableUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-              .thenComparing(node -> normalizeName(node.name()))
-              .thenComparing(StorageNodeView::id);
+        Comparator.comparing(
+            this::sortableUpdatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(node -> normalizeName(node.name()))
+            .thenComparing(StorageNodeView::id);
       case NAME ->
-          Comparator.comparing((StorageNodeView node) -> normalizeName(node.name()))
-              .thenComparing(StorageNodeView::id);
+        Comparator.comparing((StorageNodeView node) -> normalizeName(node.name()))
+            .thenComparing(StorageNodeView::id);
     };
   }
 
@@ -271,10 +265,9 @@ public class FileQueryService implements FileQueryPort {
       throw new BizException(BaseError.NOT_FOUND);
     }
     PhysicalFile pf = node.isFile() ? physicalMap.get(node.getPhysicalFileId()) : null;
-    String contentType =
-        node.isFile()
-            ? resolveContentType(node.getFileName(), pf != null ? pf.getContentType() : null)
-            : null;
+    String contentType = node.isFile()
+        ? resolveContentType(node.getFileName(), pf != null ? pf.getContentType() : null)
+        : null;
     return new StorageNodeView(
         node.getId(),
         node.getNodeType().name(),

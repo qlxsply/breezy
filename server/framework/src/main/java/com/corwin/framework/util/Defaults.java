@@ -3,14 +3,16 @@ package com.corwin.framework.util;
 /**
  * Null-safe fallback utilities for retrieving a value or a default.
  *
- * <p>Provides overloaded {@link #or(Object, Object)} methods for common types, allowing concise
+ * <p>
+ * Provides overloaded {@link #or(Object, Object)} methods for common types, allowing concise
  * inline default-value expressions without manual null checks.
  *
  * @author wl0180 2026/6/15
  */
 public class Defaults {
 
-  private Defaults() {}
+  private Defaults() {
+  }
 
   /**
    * Returns {@code value} if non-null, otherwise {@code defaultValue}.

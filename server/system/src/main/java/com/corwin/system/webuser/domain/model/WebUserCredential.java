@@ -16,9 +16,9 @@ import lombok.Getter;
 @Table(
     name = "tb_credential",
     indexes = {
-      @Index(name = "idx_tb_credential_user", columnList = "user_id"),
-      @Index(name = "idx_tb_credential_identity", columnList = "identity_id"),
-      @Index(name = "idx_tb_credential_type", columnList = "credential_type,status")
+        @Index(name = "idx_tb_credential_user", columnList = "user_id"),
+        @Index(name = "idx_tb_credential_identity", columnList = "identity_id"),
+        @Index(name = "idx_tb_credential_type", columnList = "credential_type,status")
     })
 public class WebUserCredential {
 
@@ -74,7 +74,8 @@ public class WebUserCredential {
   private String updatedBy;
 
   /** JPA required no-arg constructor. */
-  protected WebUserCredential() {}
+  protected WebUserCredential() {
+  }
 
   /** Construct a new active credential for the given user. */
   public WebUserCredential(

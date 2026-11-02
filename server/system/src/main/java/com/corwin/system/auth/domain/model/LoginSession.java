@@ -16,8 +16,8 @@ import lombok.Getter;
 @Table(
     name = "sys_login_session",
     indexes = {
-      @Index(name = "idx_sys_login_session_token_hash", columnList = "token_hash", unique = true),
-      @Index(name = "idx_sys_login_session_user_status", columnList = "user_id,session_status")
+        @Index(name = "idx_sys_login_session_token_hash", columnList = "token_hash", unique = true),
+        @Index(name = "idx_sys_login_session_user_status", columnList = "user_id,session_status")
     })
 public class LoginSession {
 
@@ -110,7 +110,8 @@ public class LoginSession {
   @Column(name = "updated_by", length = 64)
   private String updatedBy;
 
-  protected LoginSession() {}
+  protected LoginSession() {
+  }
 
   /** Creates a new active login session. */
   public LoginSession(

@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST controller for retrieving the admin menu resource tree.
  *
- * <p>Provides the menu tree structure that is displayed in the admin panel sidebar. The returned
+ * <p>
+ * Provides the menu tree structure that is displayed in the admin panel sidebar. The returned
  * resources are filtered based on the current admin user's role-based permissions.
  *
  * @author Corwin 2026/5/31

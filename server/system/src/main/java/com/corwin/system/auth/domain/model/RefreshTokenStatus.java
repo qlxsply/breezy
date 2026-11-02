@@ -10,6 +10,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/4/19
  */
 public enum RefreshTokenStatus implements DictEnumDefinition {
+
   ACTIVE("有效", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   ROTATED("已轮换", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   EXPIRED("已过期", DictTagColor.SLATE, DictTagType.INFO),

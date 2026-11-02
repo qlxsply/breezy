@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link Resource} entity.
  *
- * <p>Provides database access for system resource CRUD operations.
+ * <p>
+ * Provides database access for system resource CRUD operations.
  *
  * @author Corwin 2026/6/29
  */

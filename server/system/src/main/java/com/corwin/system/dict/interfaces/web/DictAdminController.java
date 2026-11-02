@@ -32,7 +32,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST controller for dictionary type and item administration.
  *
- * <p>Provides admin CRUD endpoints for managing dictionary types and their items.
+ * <p>
+ * Provides admin CRUD endpoints for managing dictionary types and their items.
  *
  * @author Corwin 2026/3/15
  */
@@ -72,17 +73,16 @@ public class DictAdminController {
       userType = UserType.ADMIN,
       permissions = {"dict.edit"})
   public ApiResponse<DictTypeRes> create(@RequestBody CreateDictTypeReq req) {
-    DictTypeView view =
-        dictAdminService.createType(
-            new CreateDictTypeCommand(
-                req.code(),
-                req.name(),
-                req.description(),
-                req.enumClass(),
-                req.valueType(),
-                req.structureType(),
-                req.enabled(),
-                toItemCommands(req.items())));
+    DictTypeView view = dictAdminService.createType(
+        new CreateDictTypeCommand(
+            req.code(),
+            req.name(),
+            req.description(),
+            req.enumClass(),
+            req.valueType(),
+            req.structureType(),
+            req.enabled(),
+            toItemCommands(req.items())));
     return ApiResponse.ok(toTypeRes(view));
   }
 
@@ -93,17 +93,16 @@ public class DictAdminController {
       permissions = {"dict.edit"})
   public ApiResponse<DictTypeRes> update(
       @PathVariable String id, @RequestBody UpdateDictTypeReq req) {
-    DictTypeView view =
-        dictAdminService.updateType(
-            id,
-            new UpdateDictTypeCommand(
-                req.name(),
-                req.description(),
-                req.enumClass(),
-                req.valueType(),
-                req.structureType(),
-                req.enabled(),
-                toItemCommands(req.items())));
+    DictTypeView view = dictAdminService.updateType(
+        id,
+        new UpdateDictTypeCommand(
+            req.name(),
+            req.description(),
+            req.enumClass(),
+            req.valueType(),
+            req.structureType(),
+            req.enabled(),
+            toItemCommands(req.items())));
     return ApiResponse.ok(toTypeRes(view));
   }
 
@@ -142,21 +141,20 @@ public class DictAdminController {
       permissions = {"dict.edit"})
   public ApiResponse<DictItemRes> createItem(
       @PathVariable String id, @RequestBody CreateDictItemReq req) {
-    DictItemView view =
-        dictAdminService.createItem(
-            id,
-            new CreateDictItemCommand(
-                req.parentItemId(),
-                req.itemCode(),
-                req.itemLabel(),
-                req.itemValue(),
-                req.sortNo(),
-                req.enabled(),
-                req.defaultItem(),
-                req.tagColor(),
-                req.tagType(),
-                req.extraJson(),
-                req.description()));
+    DictItemView view = dictAdminService.createItem(
+        id,
+        new CreateDictItemCommand(
+            req.parentItemId(),
+            req.itemCode(),
+            req.itemLabel(),
+            req.itemValue(),
+            req.sortNo(),
+            req.enabled(),
+            req.defaultItem(),
+            req.tagColor(),
+            req.tagType(),
+            req.extraJson(),
+            req.description()));
     return ApiResponse.ok(toItemRes(view));
   }
 
@@ -167,20 +165,19 @@ public class DictAdminController {
       permissions = {"dict.edit"})
   public ApiResponse<DictItemRes> updateItem(
       @PathVariable String itemId, @RequestBody UpdateDictItemReq req) {
-    DictItemView view =
-        dictAdminService.updateItem(
-            itemId,
-            new UpdateDictItemCommand(
-                req.parentItemId(),
-                req.itemLabel(),
-                req.itemValue(),
-                req.sortNo(),
-                req.enabled(),
-                req.defaultItem(),
-                req.tagColor(),
-                req.tagType(),
-                req.extraJson(),
-                req.description()));
+    DictItemView view = dictAdminService.updateItem(
+        itemId,
+        new UpdateDictItemCommand(
+            req.parentItemId(),
+            req.itemLabel(),
+            req.itemValue(),
+            req.sortNo(),
+            req.enabled(),
+            req.defaultItem(),
+            req.tagColor(),
+            req.tagType(),
+            req.extraJson(),
+            req.description()));
     return ApiResponse.ok(toItemRes(view));
   }
 
@@ -249,21 +246,20 @@ public class DictAdminController {
     }
     return items.stream()
         .map(
-            item ->
-                new SaveDictTypeItemCommand(
-                    item.id(),
-                    item.clientKey(),
-                    item.parentClientKey(),
-                    item.itemCode(),
-                    item.itemLabel(),
-                    item.itemValue(),
-                    item.sortNo(),
-                    item.enabled(),
-                    item.defaultItem(),
-                    item.tagColor(),
-                    item.tagType(),
-                    item.extraJson(),
-                    item.description()))
+            item -> new SaveDictTypeItemCommand(
+                item.id(),
+                item.clientKey(),
+                item.parentClientKey(),
+                item.itemCode(),
+                item.itemLabel(),
+                item.itemValue(),
+                item.sortNo(),
+                item.enabled(),
+                item.defaultItem(),
+                item.tagColor(),
+                item.tagType(),
+                item.extraJson(),
+                item.description()))
         .toList();
   }
 }

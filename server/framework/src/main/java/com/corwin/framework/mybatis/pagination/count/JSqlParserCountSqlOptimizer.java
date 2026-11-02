@@ -15,7 +15,8 @@ import net.sf.jsqlparser.statement.select.Select;
 /**
  * Optimizes count SQL generation using JSqlParser-based AST analysis.
  *
- * <p>When safe, removes ORDER BY and replaces select items with {@code COUNT(*)} to allow the
+ * <p>
+ * When safe, removes ORDER BY and replaces select items with {@code COUNT(*)} to allow the
  * database to use a simpler execution plan. Falls back to {@code SELECT COUNT(*) FROM (...)}
  * wrapping when the SQL cannot be safely rewritten.
  *
@@ -32,14 +33,14 @@ public final class JSqlParserCountSqlOptimizer {
   public JSqlParserCountSqlOptimizer(int cacheSize) {
     this.cacheSize = Math.max(cacheSize, 0);
 
-    this.cache =
-        new LinkedHashMap<>(64, 0.75F, true) {
-          @Override
-          protected boolean removeEldestEntry(Map.Entry<CacheKey, String> eldest) {
-            return JSqlParserCountSqlOptimizer.this.cacheSize > 0
-                && size() > JSqlParserCountSqlOptimizer.this.cacheSize;
-          }
-        };
+    this.cache = new LinkedHashMap<>(64, 0.75F, true) {
+
+      @Override
+      protected boolean removeEldestEntry(Map.Entry<CacheKey, String> eldest) {
+        return JSqlParserCountSqlOptimizer.this.cacheSize > 0
+            && size() > JSqlParserCountSqlOptimizer.this.cacheSize;
+      }
+    };
   }
 
   public String buildCountSql(String originalSql, int parameterMappingCount) {
@@ -84,8 +85,7 @@ public final class JSqlParserCountSqlOptimizer {
 
       rejectExistingPagination(select);
 
-      OrderByRemoval orderByRemoval =
-          removeTopLevelOrderBySafely(select, originalSql, parameterMappingCount);
+      OrderByRemoval orderByRemoval = removeTopLevelOrderBySafely(select, originalSql, parameterMappingCount);
 
       if (select instanceof PlainSelect plainSelect
           && orderByRemoval.directCountAllowed()
@@ -200,7 +200,9 @@ public final class JSqlParserCountSqlOptimizer {
     return result;
   }
 
-  private record CacheKey(String sql, int parameterCount) {}
+  private record CacheKey(String sql, int parameterCount) {
+  }
 
-  private record OrderByRemoval(String sql, boolean directCountAllowed) {}
+  private record OrderByRemoval(String sql, boolean directCountAllowed) {
+  }
 }

@@ -11,4 +11,5 @@ public record JsonFmtRecordDetailView(
     String content,
     Integer orderNo,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

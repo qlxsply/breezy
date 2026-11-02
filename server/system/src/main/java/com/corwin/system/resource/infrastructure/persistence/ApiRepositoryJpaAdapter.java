@@ -17,7 +17,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link ApiRepository}.
  *
- * <p>Delegates basic CRUD to {@link ApiJpaRepository} and paginated queries to {@link
+ * <p>
+ * Delegates basic CRUD to {@link ApiJpaRepository} and paginated queries to {@link
  * ApiMybatisMapper} for dynamic filtering support.
  *
  * @author Corwin 2026/3/30

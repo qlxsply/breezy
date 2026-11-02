@@ -17,15 +17,15 @@ import org.apache.ibatis.session.Configuration;
  */
 public final class BoundSqlFactory {
 
-  private BoundSqlFactory() {}
+  private BoundSqlFactory() {
+  }
 
   public static BoundSql forCount(Configuration configuration, BoundSql source, String countSql) {
-    BoundSql target =
-        new BoundSql(
-            configuration,
-            countSql,
-            new ArrayList<>(source.getParameterMappings()),
-            source.getParameterObject());
+    BoundSql target = new BoundSql(
+        configuration,
+        countSql,
+        new ArrayList<>(source.getParameterMappings()),
+        source.getParameterObject());
 
     copyAdditionalParameters(source, target);
     return target;
@@ -40,8 +40,7 @@ public final class BoundSqlFactory {
               .build());
     }
 
-    BoundSql target =
-        new BoundSql(configuration, pageSql.sql(), mappings, source.getParameterObject());
+    BoundSql target = new BoundSql(configuration, pageSql.sql(), mappings, source.getParameterObject());
 
     copyAdditionalParameters(source, target);
 

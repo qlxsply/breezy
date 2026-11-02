@@ -7,4 +7,5 @@ import java.util.List;
  *
  * @author Corwin 2026/6/29
  */
-public record SystemResourcePermissionSelectionView(List<Long> permissionIds) {}
+public record SystemResourcePermissionSelectionView(List<Long> permissionIds) {
+}

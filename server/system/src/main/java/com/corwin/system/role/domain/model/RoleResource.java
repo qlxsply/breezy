@@ -21,12 +21,12 @@ import lombok.Getter;
 @Table(
     name = "sys_role_resource",
     indexes = {
-      @Index(
-          name = "idx_sys_role_resource_unique",
-          columnList = "role_id,resource_id",
-          unique = true),
-      @Index(name = "idx_sys_role_resource_role_id", columnList = "role_id"),
-      @Index(name = "idx_sys_role_resource_resource_id", columnList = "resource_id")
+        @Index(
+            name = "idx_sys_role_resource_unique",
+            columnList = "role_id,resource_id",
+            unique = true),
+        @Index(name = "idx_sys_role_resource_role_id", columnList = "role_id"),
+        @Index(name = "idx_sys_role_resource_resource_id", columnList = "resource_id")
     })
 public class RoleResource {
 
@@ -51,7 +51,8 @@ public class RoleResource {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected RoleResource() {}
+  protected RoleResource() {
+  }
 
   /**
    * Creates a role-resource association.

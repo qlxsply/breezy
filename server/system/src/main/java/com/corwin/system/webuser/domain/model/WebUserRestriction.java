@@ -15,10 +15,10 @@ import lombok.Getter;
 @Table(
     name = "tb_user_restriction",
     indexes = {
-      @Index(name = "idx_tb_user_restriction_user", columnList = "user_id"),
-      @Index(
-          name = "idx_tb_user_restriction_scope",
-          columnList = "restriction_scope,start_at,end_at")
+        @Index(name = "idx_tb_user_restriction_user", columnList = "user_id"),
+        @Index(
+            name = "idx_tb_user_restriction_scope",
+            columnList = "restriction_scope,start_at,end_at")
     })
 public class WebUserRestriction {
 
@@ -70,7 +70,8 @@ public class WebUserRestriction {
   private String updatedBy;
 
   /** JPA required no-arg constructor. */
-  protected WebUserRestriction() {}
+  protected WebUserRestriction() {
+  }
 
   /** Construct a new restriction starting immediately. */
   public WebUserRestriction(

@@ -4,6 +4,7 @@ package com.corwin.bootstrap.application;
  * @author Corwin 2026/5/5
  */
 public enum BootstrapTaskKey {
+
   SCHEMA_SYNC("schema"),
   API_SYNC("api"),
   RESOURCE_SYNC("resource"),

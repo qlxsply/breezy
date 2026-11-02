@@ -6,4 +6,5 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @author Corwin 2026/7/30
  */
 public record UpdateConfigCommand(
-    String configKey, long expectedRevision, String reason, JsonNode value) {}
+    String configKey, long expectedRevision, String reason, JsonNode value) {
+}

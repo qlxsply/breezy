@@ -3,12 +3,14 @@ package com.corwin.system.resource.published;
 /**
  * API module code constants.
  *
- * <p>Defines the set of recognized module codes used to classify API endpoints into functional
+ * <p>
+ * Defines the set of recognized module codes used to classify API endpoints into functional
  * domains such as system, datasource, storage, etc.
  *
  * @author Corwin 2026/4/16
  */
 public enum ApiModuleCode {
+
   DEFAULT("default"),
   SYSTEM("system"),
   DATASOURCE("datasource"),

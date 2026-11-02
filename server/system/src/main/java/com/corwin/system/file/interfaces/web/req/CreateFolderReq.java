@@ -11,4 +11,5 @@ import com.corwin.system.file.published.OwnerType;
  * @param name the folder name
  * @author Corwin 2026/2/23
  */
-public record CreateFolderReq(OwnerType ownerType, String ownerId, String parentId, String name) {}
+public record CreateFolderReq(OwnerType ownerType, String ownerId, String parentId, String name) {
+}

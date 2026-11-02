@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
  * @author Corwin 2026/1/30
  */
 public enum DefaultUser {
+
   SYSTEM(1L, "system", UserType.SYSTEM),
   SCHEDULER(2L, "scheduler", UserType.SYSTEM),
   EVENT(3L, "event", UserType.SYSTEM),
@@ -101,20 +102,19 @@ public enum DefaultUser {
   }
 
   private static final class Cache {
-    private static final EnumSet<DefaultUser> SYSTEM_USERS_SET =
-        Arrays.stream(DefaultUser.values())
-            .filter(u -> u.userType == UserType.SYSTEM)
-            .collect(Collectors.toCollection(() -> EnumSet.noneOf(DefaultUser.class)));
+
+    private static final EnumSet<DefaultUser> SYSTEM_USERS_SET = Arrays.stream(DefaultUser.values())
+        .filter(u -> u.userType == UserType.SYSTEM)
+        .collect(Collectors.toCollection(() -> EnumSet.noneOf(DefaultUser.class)));
 
     private static final List<DefaultUser> SYSTEM_USERS_LIST = List.copyOf(SYSTEM_USERS_SET);
 
-    private static final Map<Long, DefaultUser> BY_ID =
-        Arrays.stream(DefaultUser.values())
-            .collect(Collectors.toUnmodifiableMap(DefaultUser::id, Function.identity()));
+    private static final Map<Long, DefaultUser> BY_ID = Arrays.stream(DefaultUser.values())
+        .collect(Collectors.toUnmodifiableMap(DefaultUser::id, Function.identity()));
 
     private static final Set<Long> RESERVED_IDS = BY_ID.keySet();
 
-    private static final Set<Long> SYSTEM_USER_IDS =
-        SYSTEM_USERS_SET.stream().map(DefaultUser::id).collect(Collectors.toUnmodifiableSet());
+    private static final Set<Long> SYSTEM_USER_IDS = SYSTEM_USERS_SET.stream().map(DefaultUser::id)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

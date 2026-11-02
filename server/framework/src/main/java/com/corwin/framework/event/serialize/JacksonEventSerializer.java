@@ -10,7 +10,8 @@ import java.util.Objects;
 /**
  * Jackson-based {@link EventSerializer} implementation.
  *
- * <p>Uses a two-phase deserialisation strategy: first reads the envelope shell and the generic
+ * <p>
+ * Uses a two-phase deserialisation strategy: first reads the envelope shell and the generic
  * payload structure, then resolves the concrete event class via {@code eventType} and restores the
  * typed payload. This preserves type information without requiring manual per-type binding
  * configuration.
@@ -23,18 +24,17 @@ public class JacksonEventSerializer implements EventSerializer {
   @Override
   public byte[] serialize(AsyncEventEnvelope<?> envelope) {
     Objects.requireNonNull(envelope, "envelope required");
-    SerializedEnvelope serialized =
-        new SerializedEnvelope(
-            envelope.eventId(),
-            envelope.eventType(),
-            envelope.occurredAtMillis(),
-            envelope.deliverAtMillis(),
-            envelope.ctxSnapshot(),
-            envelope.payload(),
-            envelope.source(),
-            envelope.producerService(),
-            envelope.partitionKey(),
-            envelope.headers());
+    SerializedEnvelope serialized = new SerializedEnvelope(
+        envelope.eventId(),
+        envelope.eventType(),
+        envelope.occurredAtMillis(),
+        envelope.deliverAtMillis(),
+        envelope.ctxSnapshot(),
+        envelope.payload(),
+        envelope.source(),
+        envelope.producerService(),
+        envelope.partitionKey(),
+        envelope.headers());
     try {
       return Json.toBytes(serialized);
     } catch (RuntimeException ex) {
@@ -97,5 +97,6 @@ public class JacksonEventSerializer implements EventSerializer {
       String source,
       String producerService,
       String partitionKey,
-      Map<String, String> headers) {}
+      Map<String, String> headers) {
+  }
 }

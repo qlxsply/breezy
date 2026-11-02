@@ -12,8 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class ConfigRegistry {
 
-  private static final AtomicReference<Map<String, ConfigSnapshot<?>>> CURRENT =
-      new AtomicReference<>(Map.of());
+  private static final AtomicReference<Map<String, ConfigSnapshot<?>>> CURRENT = new AtomicReference<>(Map.of());
 
   public static void initialize(Map<String, ConfigSnapshot<?>> snapshots) {
     Objects.requireNonNull(snapshots, "snapshots required");
@@ -71,5 +70,6 @@ public final class ConfigRegistry {
     return (ConfigSnapshot<T>) snapshot;
   }
 
-  private ConfigRegistry() {}
+  private ConfigRegistry() {
+  }
 }

@@ -28,4 +28,5 @@ public record ApiRes(
     String sortOptionsJson,
     boolean enabled,
     int referenceCount,
-    boolean referenced) {}
+    boolean referenced) {
+}

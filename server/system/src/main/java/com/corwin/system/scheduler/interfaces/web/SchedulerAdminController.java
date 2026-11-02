@@ -61,8 +61,8 @@ public class SchedulerAdminController {
       permissions = {"scheduler.job.view"})
   public ApiResponse<PageData<SchedulerJobExecutionRes>> executions(
       @PathVariable String jobId, @RequestBody SchedulerJobExecutionPageReq req) {
-    PageData<SchedulerJobExecutionView> page =
-        queryAppService.pageExecutions(jobId, PageSpecFactory.of(req.page(), null));
+    PageData<SchedulerJobExecutionView> page = queryAppService.pageExecutions(jobId,
+        PageSpecFactory.of(req.page(), null));
     return ApiResponse.ok(
         PageData.of(
             page.pageNo(),

@@ -12,7 +12,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link MessageDeliveryRepository}.
  *
- * <p>Delegates persistence operations to {@link MessageDeliveryJpaRepository}.
+ * <p>
+ * Delegates persistence operations to {@link MessageDeliveryJpaRepository}.
  *
  * @author Corwin 2026/3/19
  */

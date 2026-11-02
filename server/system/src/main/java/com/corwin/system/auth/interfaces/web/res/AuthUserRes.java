@@ -14,4 +14,5 @@ public record AuthUserRes(
     String account,
     UserType userType,
     boolean mustChangePassword,
-    List<UserConfigsRes> configs) {}
+    List<UserConfigsRes> configs) {
+}

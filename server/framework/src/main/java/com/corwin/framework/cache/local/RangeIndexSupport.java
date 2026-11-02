@@ -7,7 +7,8 @@ package com.corwin.framework.cache.local;
  */
 public abstract class RangeIndexSupport {
 
-  private RangeIndexSupport() {}
+  private RangeIndexSupport() {
+  }
 
   public static RangeIndex normalize(long start, long end, int size) {
     if (size <= 0) {

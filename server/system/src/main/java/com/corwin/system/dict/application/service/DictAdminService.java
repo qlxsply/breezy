@@ -33,7 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Application service for dictionary type and item administration.
  *
- * <p>Handles CRUD operations, sorting, status toggling, and draft-based batch item synchronization.
+ * <p>
+ * Handles CRUD operations, sorting, status toggling, and draft-based batch item synchronization.
  *
  * @author Corwin 2026/3/15
  */
@@ -91,18 +92,17 @@ public class DictAdminService {
     String code = normalizeCode(cmd.code());
     BizAssert.state(!dictTypeRepository.existsByCode(code), BaseError.CONFLICT);
     String operator = operator();
-    DictType entity =
-        new DictType(
-            newId(),
-            code,
-            normalizeName(cmd.name()),
-            trimToNull(cmd.description(), TYPE_DESCRIPTION_MAX),
-            trimToNull(cmd.enumClass(), TYPE_DESCRIPTION_MAX),
-            defaultValueType(cmd.valueType()),
-            defaultStructureType(cmd.structureType()),
-            DictSourceType.CUSTOM,
-            cmd.enabled(),
-            operator);
+    DictType entity = new DictType(
+        newId(),
+        code,
+        normalizeName(cmd.name()),
+        trimToNull(cmd.description(), TYPE_DESCRIPTION_MAX),
+        trimToNull(cmd.enumClass(), TYPE_DESCRIPTION_MAX),
+        defaultValueType(cmd.valueType()),
+        defaultStructureType(cmd.structureType()),
+        DictSourceType.CUSTOM,
+        cmd.enabled(),
+        operator);
     entity = dictTypeRepository.save(entity);
     syncTypeItems(entity, cmd.items(), operator);
     return toTypeView(entity);
@@ -173,22 +173,21 @@ public class DictAdminService {
     BizAssert.state(
         !dictItemRepository.existsByDictTypeIdAndItemValue(type.getId(), itemValue),
         BaseError.CONFLICT);
-    DictItem item =
-        new DictItem(
-            newId(),
-            type.getId(),
-            parentItemId,
-            itemCode,
-            normalizeItemLabel(cmd.itemLabel()),
-            itemValue,
-            normalizeSortNo(cmd.sortNo()),
-            enabled,
-            cmd.defaultItem(),
-            trimToNull(cmd.tagColor(), ITEM_TAG_COLOR_MAX),
-            trimToNull(cmd.tagType(), ITEM_TAG_TYPE_MAX),
-            trimToNull(cmd.extraJson(), ITEM_EXTRA_JSON_MAX),
-            trimToNull(cmd.description(), ITEM_DESCRIPTION_MAX),
-            operator());
+    DictItem item = new DictItem(
+        newId(),
+        type.getId(),
+        parentItemId,
+        itemCode,
+        normalizeItemLabel(cmd.itemLabel()),
+        itemValue,
+        normalizeSortNo(cmd.sortNo()),
+        enabled,
+        cmd.defaultItem(),
+        trimToNull(cmd.tagColor(), ITEM_TAG_COLOR_MAX),
+        trimToNull(cmd.tagType(), ITEM_TAG_TYPE_MAX),
+        trimToNull(cmd.extraJson(), ITEM_EXTRA_JSON_MAX),
+        trimToNull(cmd.description(), ITEM_DESCRIPTION_MAX),
+        operator());
     item = dictItemRepository.save(item);
     if (item.isDefaultItem()) {
       normalizeDefaultItem(type.getId(), item.getId(), operator());
@@ -205,8 +204,7 @@ public class DictAdminService {
     validateParent(type, parentItemId, item.getId());
     String nextValue = normalizeItemValue(type.getValueType(), cmd.itemValue());
     boolean enabled = normalizeItemEnabled(cmd.enabled(), cmd.defaultItem());
-    DictItem existingValueItem =
-        dictItemRepository.findByDictTypeIdAndItemValue(type.getId(), nextValue).orElse(null);
+    DictItem existingValueItem = dictItemRepository.findByDictTypeIdAndItemValue(type.getId(), nextValue).orElse(null);
     if (existingValueItem != null && !existingValueItem.getId().equals(item.getId())) {
       BizAssert.fail(BaseError.CONFLICT);
     }
@@ -258,8 +256,7 @@ public class DictAdminService {
   public boolean sortItems(String typeId, List<String> itemIds) {
     DictType type = getTypeEntity(typeId);
     BizAssert.notEmpty(itemIds, BaseError.MISSING_PARAMETER);
-    List<DictItem> items =
-        dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId());
+    List<DictItem> items = dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId());
     BizAssert.state(items.size() == itemIds.size(), BaseError.INVALID_PARAMETER);
     for (int i = 0; i < itemIds.size(); i++) {
       String itemId = itemIds.get(i);
@@ -286,38 +283,35 @@ public class DictAdminService {
   private void syncTypeItems(
       DictType type, List<SaveDictTypeItemCommand> itemCommands, String operator) {
     List<SaveDictTypeItemCommand> safeCommands = itemCommands == null ? List.of() : itemCommands;
-    List<DictItem> existingItems =
-        dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId());
+    List<DictItem> existingItems = dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(type.getId());
     Map<String, DictItem> existingById = new HashMap<>();
     for (DictItem existing : existingItems) {
       existingById.put(existing.getId(), existing);
     }
 
-    Map<String, DraftItemPayload> payloadByClientKey =
-        normalizeDraftItems(type, safeCommands, existingById);
+    Map<String, DraftItemPayload> payloadByClientKey = normalizeDraftItems(type, safeCommands, existingById);
     validateDraftItemRelations(type, payloadByClientKey);
 
     Map<String, DictItem> entityByClientKey = new LinkedHashMap<>();
     Set<String> retainedIds = new HashSet<>();
     for (DraftItemPayload payload : payloadByClientKey.values()) {
-      DictItem entity =
-          payload.id() == null
-              ? new DictItem(
-                  newId(),
-                  type.getId(),
-                  null,
-                  payload.itemCode(),
-                  payload.itemLabel(),
-                  payload.itemValue(),
-                  payload.sortNo(),
-                  payload.enabled(),
-                  payload.defaultItem(),
-                  payload.tagColor(),
-                  payload.tagType(),
-                  payload.extraJson(),
-                  payload.description(),
-                  operator)
-              : existingById.get(payload.id());
+      DictItem entity = payload.id() == null
+          ? new DictItem(
+              newId(),
+              type.getId(),
+              null,
+              payload.itemCode(),
+              payload.itemLabel(),
+              payload.itemValue(),
+              payload.sortNo(),
+              payload.enabled(),
+              payload.defaultItem(),
+              payload.tagColor(),
+              payload.tagType(),
+              payload.extraJson(),
+              payload.description(),
+              operator)
+          : existingById.get(payload.id());
       BizAssert.notNull(entity, BaseError.INVALID_PARAMETER);
       if (payload.id() != null) {
         retainedIds.add(payload.id());
@@ -328,10 +322,9 @@ public class DictAdminService {
     String defaultItemId = null;
     for (DraftItemPayload payload : payloadByClientKey.values()) {
       DictItem entity = entityByClientKey.get(payload.clientKey());
-      String parentItemId =
-          payload.parentClientKey() == null
-              ? null
-              : resolveParentItemId(payload.parentClientKey(), entityByClientKey, entity.getId());
+      String parentItemId = payload.parentClientKey() == null
+          ? null
+          : resolveParentItemId(payload.parentClientKey(), entityByClientKey, entity.getId());
       entity.update(
           parentItemId,
           payload.itemLabel(),
@@ -361,8 +354,7 @@ public class DictAdminService {
 
   /** Ensures only the specified item is marked as default within the dictionary type. */
   private void normalizeDefaultItem(String dictTypeId, String keepId, String operator) {
-    for (DictItem existing :
-        dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(dictTypeId)) {
+    for (DictItem existing : dictItemRepository.findByDictTypeIdOrderBySortNoAscItemLabelAsc(dictTypeId)) {
       if (keepId != null && existing.getId().equals(keepId)) {
         continue;
       }
@@ -391,10 +383,9 @@ public class DictAdminService {
       return;
     }
     BizAssert.state(type.getStructureType() == DictStructureType.TREE, BaseError.INVALID_PARAMETER);
-    DictItem parent =
-        dictItemRepository
-            .findById(parentItemId.trim())
-            .orElseThrow(() -> new BizException(BaseError.INVALID_PARAMETER));
+    DictItem parent = dictItemRepository
+        .findById(parentItemId.trim())
+        .orElseThrow(() -> new BizException(BaseError.INVALID_PARAMETER));
     BizAssert.state(parent.getDictTypeId().equals(type.getId()), BaseError.INVALID_PARAMETER);
     if (currentItemId == null || currentItemId.isBlank()) {
       return;
@@ -661,5 +652,6 @@ public class DictAdminService {
       String tagColor,
       String tagType,
       String extraJson,
-      String description) {}
+      String description) {
+  }
 }

@@ -38,22 +38,21 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuditPayloadSanitizer {
 
   private static final String MASK = "******";
-  private static final Set<String> SENSITIVE_FIELDS =
-      Set.of(
-          "password",
-          "pwd",
-          "oldpassword",
-          "newpassword",
-          "confirmpassword",
-          "token",
-          "accesstoken",
-          "refreshtoken",
-          "authorization",
-          "secret",
-          "secretkey",
-          "privatekey",
-          "credential",
-          "credentials");
+  private static final Set<String> SENSITIVE_FIELDS = Set.of(
+      "password",
+      "pwd",
+      "oldpassword",
+      "newpassword",
+      "confirmpassword",
+      "token",
+      "accesstoken",
+      "refreshtoken",
+      "authorization",
+      "secret",
+      "secretkey",
+      "privatekey",
+      "credential",
+      "credentials");
 
   public String summarizeRequestParameters(
       Map<String, String[]> parameterMap, AuditPolicyConfig policy) {
@@ -146,8 +145,7 @@ public class AuditPayloadSanitizer {
       ObjectNode sanitized = Json.mapper().createObjectNode();
       node.fields()
           .forEachRemaining(
-              entry ->
-                  sanitized.set(entry.getKey(), sanitizeNode(entry.getValue(), entry.getKey())));
+              entry -> sanitized.set(entry.getKey(), sanitizeNode(entry.getValue(), entry.getKey())));
       return sanitized;
     }
     if (node.isArray()) {

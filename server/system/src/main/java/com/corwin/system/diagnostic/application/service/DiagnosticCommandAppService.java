@@ -55,10 +55,9 @@ public class DiagnosticCommandAppService {
    */
   public DiagnosticSessionView updateConfig(UpdateDiagnosticConfigCommand command) {
     Instant now = HighDate.realInstant();
-    DiagnosticSession current =
-        runtimeManager
-            .currentSession()
-            .orElseThrow(() -> new BizException("运行时诊断未开启", BaseError.CONFLICT));
+    DiagnosticSession current = runtimeManager
+        .currentSession()
+        .orElseThrow(() -> new BizException("运行时诊断未开启", BaseError.CONFLICT));
     DiagnosticConfig updatedConfig = mergeConfig(current.config(), command);
     DiagnosticSession updatedSession = current.withConfig(updatedConfig, now);
     runtimeManager.update(updatedSession);

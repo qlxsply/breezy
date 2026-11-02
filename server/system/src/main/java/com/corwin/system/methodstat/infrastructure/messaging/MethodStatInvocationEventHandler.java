@@ -25,8 +25,7 @@ public class MethodStatInvocationEventHandler {
   public MethodStatInvocationEventHandler(
       MethodStatAggregateRepository aggregateRepository,
       MethodStatSwitchAppService switchAppService) {
-    this.aggregateRepository =
-        Objects.requireNonNull(aggregateRepository, "aggregateRepository required");
+    this.aggregateRepository = Objects.requireNonNull(aggregateRepository, "aggregateRepository required");
     this.switchAppService = Objects.requireNonNull(switchAppService, "switchAppService required");
   }
 

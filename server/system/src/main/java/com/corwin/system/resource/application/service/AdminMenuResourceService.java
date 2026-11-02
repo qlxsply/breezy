@@ -20,7 +20,8 @@ import org.springframework.stereotype.Service;
 /**
  * Application service for building the admin menu resource tree.
  *
- * <p>Resolves the menu hierarchy visible to the current admin user based on their assigned roles
+ * <p>
+ * Resolves the menu hierarchy visible to the current admin user based on their assigned roles
  * and resource permissions. Supports both super admin (full tree) and role-constrained views.
  *
  * @author Corwin 2026/6/29
@@ -37,7 +38,8 @@ public class AdminMenuResourceService {
   /**
    * Builds the admin menu resource tree for the currently authenticated admin user.
    *
-   * <p>Super admins receive the full resource tree; role-constrained admins receive only the
+   * <p>
+   * Super admins receive the full resource tree; role-constrained admins receive only the
    * resources assigned to their roles, including ancestor nodes.
    *
    * @return the admin menu resources view
@@ -67,30 +69,27 @@ public class AdminMenuResourceService {
   }
 
   private List<AdminMenuResourceView> buildInternalResources(Long userId) {
-    List<Long> roleIds =
-        userRoleRepository.findByUserId(userId).stream()
-            .map(UserRole::getRoleId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
+    List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+        .map(UserRole::getRoleId)
+        .filter(Objects::nonNull)
+        .distinct()
+        .toList();
     if (roleIds.isEmpty()) {
       return List.of();
     }
 
-    Map<Long, Resource> resourceById =
-        resourceRepository.findAll().stream()
-            .filter(this::resourceVisibleAndEnabled)
-            .filter(resource -> resource.getId() != null)
-            .collect(
-                Collectors.toMap(
-                    Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
+    Map<Long, Resource> resourceById = resourceRepository.findAll().stream()
+        .filter(this::resourceVisibleAndEnabled)
+        .filter(resource -> resource.getId() != null)
+        .collect(
+            Collectors.toMap(
+                Resource::getId, value -> value, (left, right) -> left, LinkedHashMap::new));
 
-    LinkedHashSet<Long> includedIds =
-        roleResourceRepository.findByRoleIdIn(roleIds).stream()
-            .map(RoleResource::getResourceId)
-            .filter(Objects::nonNull)
-            .filter(resourceById::containsKey)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    LinkedHashSet<Long> includedIds = roleResourceRepository.findByRoleIdIn(roleIds).stream()
+        .map(RoleResource::getResourceId)
+        .filter(Objects::nonNull)
+        .filter(resourceById::containsKey)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     includeAncestors(includedIds, resourceById);
 
     return includedIds.stream()
@@ -105,14 +104,13 @@ public class AdminMenuResourceService {
     if (flatResources.isEmpty()) {
       return List.of();
     }
-    Map<String, AdminMenuResourceView> resourceById =
-        flatResources.stream()
-            .collect(
-                Collectors.toMap(
-                    AdminMenuResourceView::id,
-                    value -> value,
-                    (left, right) -> left,
-                    LinkedHashMap::new));
+    Map<String, AdminMenuResourceView> resourceById = flatResources.stream()
+        .collect(
+            Collectors.toMap(
+                AdminMenuResourceView::id,
+                value -> value,
+                (left, right) -> left,
+                LinkedHashMap::new));
     Map<String, List<AdminMenuResourceView>> childrenByParentId = new LinkedHashMap<>();
     for (AdminMenuResourceView resource : flatResources) {
       childrenByParentId
@@ -121,18 +119,16 @@ public class AdminMenuResourceService {
     }
     return flatResources.stream()
         .filter(
-            resource ->
-                resource.parentId() == null || !resourceById.containsKey(resource.parentId()))
+            resource -> resource.parentId() == null || !resourceById.containsKey(resource.parentId()))
         .map(resource -> buildTreeNode(resource, childrenByParentId))
         .toList();
   }
 
   private AdminMenuResourceView buildTreeNode(
       AdminMenuResourceView resource, Map<String, List<AdminMenuResourceView>> childrenByParentId) {
-    List<AdminMenuResourceView> children =
-        childrenByParentId.getOrDefault(resource.id(), List.of()).stream()
-            .map(child -> buildTreeNode(child, childrenByParentId))
-            .toList();
+    List<AdminMenuResourceView> children = childrenByParentId.getOrDefault(resource.id(), List.of()).stream()
+        .map(child -> buildTreeNode(child, childrenByParentId))
+        .toList();
     return new AdminMenuResourceView(
         resource.id(),
         resource.parentId(),

@@ -5,11 +5,13 @@ import com.corwin.framework.dict.DictEnumDefinition;
 /**
  * 产品功能类型。
  *
- * <p>用于区分应用内功能的控制对象类型。
+ * <p>
+ * 用于区分应用内功能的控制对象类型。
  *
  * @author Corwin
  */
 public enum ProductFeatureType implements DictEnumDefinition {
+
   /** 页面入口。 */
   PAGE_ENTRY("页面入口"),
   /** 子功能。 */

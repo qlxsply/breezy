@@ -11,6 +11,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/4/19
  */
 public enum AuditLevel implements DictEnumDefinition {
+
   LOW("低", DictTagColor.SLATE, DictTagType.INFO),
   MEDIUM("中", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   HIGH("高", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),

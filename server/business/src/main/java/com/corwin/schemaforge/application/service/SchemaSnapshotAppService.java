@@ -74,29 +74,24 @@ public class SchemaSnapshotAppService {
     BizAssert.notBlank(snapshotName, BaseError.MISSING_PARAMETER);
     String remark = StrUtil.trimToNull(command.remark());
 
-    DatabaseSchema managedDatabase =
-        databaseSchemaRepository
-            .findById(command.managedDatabaseId())
-            .orElseThrow(
-                () ->
-                    new BizException(
-                        "Managed database not found: " + command.managedDatabaseId(),
-                        BaseError.NOT_FOUND));
+    DatabaseSchema managedDatabase = databaseSchemaRepository
+        .findById(command.managedDatabaseId())
+        .orElseThrow(
+            () -> new BizException(
+                "Managed database not found: " + command.managedDatabaseId(),
+                BaseError.NOT_FOUND));
 
     Long dataSourceId = managedDatabase.getDataSourceId();
     BizAssert.notNull(dataSourceId, BaseError.CONFLICT);
 
-    DatabaseSource dataSource =
-        databaseSourceRepository
-            .findById(dataSourceId)
-            .orElseThrow(
-                () ->
-                    new BizException("DataSource not found: " + dataSourceId, BaseError.NOT_FOUND));
+    DatabaseSource dataSource = databaseSourceRepository
+        .findById(dataSourceId)
+        .orElseThrow(
+            () -> new BizException("DataSource not found: " + dataSourceId, BaseError.NOT_FOUND));
 
-    List<DatabaseTable> availableObjects =
-        databaseTableRepository.findByDatabaseId(managedDatabase.getId());
-    SnapshotObjectSelection selectedObjects =
-        resolveSnapshotObjectSelection(command.selectedObjectIds(), availableObjects);
+    List<DatabaseTable> availableObjects = databaseTableRepository.findByDatabaseId(managedDatabase.getId());
+    SnapshotObjectSelection selectedObjects = resolveSnapshotObjectSelection(command.selectedObjectIds(),
+        availableObjects);
     BizAssert.state(
         !selectedObjects.selectedTableNames().isEmpty()
             || !selectedObjects.selectedViewNames().isEmpty(),
@@ -105,19 +100,16 @@ public class SchemaSnapshotAppService {
     LiquibaseEngine.SnapshotResult snapshotResult;
     LiquibaseEngine.DdlResult ddlResult;
     try (Connection connection = jdbcConnectionFactory.openConnection(dataSource)) {
-      DatabaseScopeState scopeState =
-          applyManagedDatabaseScope(connection, managedDatabase, dataSource);
+      DatabaseScopeState scopeState = applyManagedDatabaseScope(connection, managedDatabase, dataSource);
       try {
-        snapshotResult =
-            liquibaseEngine.generateSnapshot(
-                connection,
-                selectedObjects.selectedTableNames(),
-                selectedObjects.selectedViewNames());
-        ddlResult =
-            liquibaseEngine.generateDdl(
-                connection,
-                selectedObjects.selectedTableNames(),
-                selectedObjects.selectedViewNames());
+        snapshotResult = liquibaseEngine.generateSnapshot(
+            connection,
+            selectedObjects.selectedTableNames(),
+            selectedObjects.selectedViewNames());
+        ddlResult = liquibaseEngine.generateDdl(
+            connection,
+            selectedObjects.selectedTableNames(),
+            selectedObjects.selectedViewNames());
       } finally {
         restoreManagedDatabaseScope(connection, scopeState);
       }
@@ -126,24 +118,21 @@ public class SchemaSnapshotAppService {
     }
 
     byte[] content = snapshotResult.content();
-    String logicalFileId =
-        fileService.createInternalFile(
-            snapshotName, InternalFileType.YAML, content, FilePurpose.SNAPSHOT);
-    String sqlLogicalFileId =
-        fileService.createInternalFile(
-            snapshotName, InternalFileType.SQL, ddlResult.content(), FilePurpose.SNAPSHOT);
+    String logicalFileId = fileService.createInternalFile(
+        snapshotName, InternalFileType.YAML, content, FilePurpose.SNAPSHOT);
+    String sqlLogicalFileId = fileService.createInternalFile(
+        snapshotName, InternalFileType.SQL, ddlResult.content(), FilePurpose.SNAPSHOT);
 
-    DatabaseSnapshot snapshot =
-        new DatabaseSnapshot(
-            managedDatabase.getId(),
-            snapshotName,
-            remark,
-            snapshotResult.dbType(),
-            snapshotResult.dbVersion(),
-            resolveSchemaName(snapshotResult, managedDatabase),
-            logicalFileId,
-            sqlLogicalFileId,
-            calculateHash(content));
+    DatabaseSnapshot snapshot = new DatabaseSnapshot(
+        managedDatabase.getId(),
+        snapshotName,
+        remark,
+        snapshotResult.dbType(),
+        snapshotResult.dbVersion(),
+        resolveSchemaName(snapshotResult, managedDatabase),
+        logicalFileId,
+        sqlLogicalFileId,
+        calculateHash(content));
     databaseSnapshotRepository.save(snapshot);
     return snapshot.getId();
   }
@@ -153,9 +142,8 @@ public class SchemaSnapshotAppService {
     databaseSchemaRepository
         .findById(managedDatabaseId)
         .orElseThrow(
-            () ->
-                new BizException(
-                    "Managed database not found: " + managedDatabaseId, BaseError.NOT_FOUND));
+            () -> new BizException(
+                "Managed database not found: " + managedDatabaseId, BaseError.NOT_FOUND));
     return databaseTableRepository.findByDatabaseId(managedDatabaseId).stream()
         .sorted(
             Comparator.comparingInt(this::tableTypeOrder)
@@ -163,13 +151,12 @@ public class SchemaSnapshotAppService {
                 .thenComparing(item -> normalize(item.getTableSchema()))
                 .thenComparing(item -> normalize(item.getTableName())))
         .map(
-            item ->
-                new SnapshotSelectableObjectView(
-                    item.getId(),
-                    item.getTableName(),
-                    item.getTableSchema(),
-                    item.getTableType(),
-                    item.getAlias()))
+            item -> new SnapshotSelectableObjectView(
+                item.getId(),
+                item.getTableName(),
+                item.getTableSchema(),
+                item.getTableType(),
+                item.getAlias()))
         .toList();
   }
 
@@ -177,8 +164,7 @@ public class SchemaSnapshotAppService {
       Long managedDatabaseId, String nameLike, PageSpec spec) {
     PageSpec spec0 = PageSpecSorts.apply(spec);
     String nameLike0 = LikePatternUtils.toContainsPattern(nameLike);
-    PageData<SchemaSnapshotRes> page =
-        schemaSnapshotMybatisMapper.pageQuery(managedDatabaseId, nameLike0, spec0);
+    PageData<SchemaSnapshotRes> page = schemaSnapshotMybatisMapper.pageQuery(managedDatabaseId, nameLike0, spec0);
     return PageResult.of(page);
   }
 
@@ -189,10 +175,9 @@ public class SchemaSnapshotAppService {
   @Transactional
   public void delete(String id) {
     BizAssert.notBlank(id, BaseError.MISSING_PARAMETER);
-    DatabaseSnapshot snapshot =
-        databaseSnapshotRepository
-            .findById(id)
-            .orElseThrow(() -> new BizException("Snapshot not found: " + id, BaseError.NOT_FOUND));
+    DatabaseSnapshot snapshot = databaseSnapshotRepository
+        .findById(id)
+        .orElseThrow(() -> new BizException("Snapshot not found: " + id, BaseError.NOT_FOUND));
 
     databaseSnapshotRepository.delete(snapshot);
     fileService.deleteFile(snapshot.getLogicalFileId());
@@ -210,11 +195,10 @@ public class SchemaSnapshotAppService {
     BizAssert.notBlank(snapshotName, BaseError.MISSING_PARAMETER);
     String remark = StrUtil.trimToNull(command.remark());
 
-    DatabaseSnapshot snapshot =
-        databaseSnapshotRepository
-            .findById(command.id())
-            .orElseThrow(
-                () -> new BizException("Snapshot not found: " + command.id(), BaseError.NOT_FOUND));
+    DatabaseSnapshot snapshot = databaseSnapshotRepository
+        .findById(command.id())
+        .orElseThrow(
+            () -> new BizException("Snapshot not found: " + command.id(), BaseError.NOT_FOUND));
     snapshot.updateInfo(snapshotName, remark);
     databaseSnapshotRepository.save(snapshot);
   }
@@ -284,6 +268,7 @@ public class SchemaSnapshotAppService {
       boolean usesCatalog,
       String originalCatalog,
       String originalSchema) {
+
     private static DatabaseScopeState none() {
       return new DatabaseScopeState(false, false, false, null, null);
     }
@@ -320,9 +305,8 @@ public class SchemaSnapshotAppService {
       return SnapshotObjectSelection.empty();
     }
 
-    Map<Long, DatabaseTable> objectMap =
-        availableObjects.stream()
-            .collect(Collectors.toMap(DatabaseTable::getId, Function.identity()));
+    Map<Long, DatabaseTable> objectMap = availableObjects.stream()
+        .collect(Collectors.toMap(DatabaseTable::getId, Function.identity()));
     List<DatabaseTable> selectedObjects;
     if (selectedObjectIds == null) {
       selectedObjects = availableObjects;

@@ -13,4 +13,5 @@ public record TablePageReq(
     @JsonLongString Long databaseId,
     String schema,
     String nameLike,
-    String tableType) {}
+    String tableType) {
+}

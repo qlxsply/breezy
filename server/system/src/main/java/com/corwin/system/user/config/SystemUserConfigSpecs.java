@@ -16,41 +16,42 @@ import java.util.List;
  */
 public final class SystemUserConfigSpecs {
 
-  public static final ConfigSpec<UserPreferenceDefaults> USER_PREFERENCE_DEFAULTS =
-      new SimpleConfigSpec<>(
-          new ConfigKey("system.user.preference-defaults"),
-          "system",
-          "user",
-          "用户偏好默认值",
-          "用户未设置个人偏好时使用的公共默认值",
-          UserPreferenceDefaults.class,
-          new UserPreferenceDefaults(
-              UserTimeZoneOption.ASIA_SHANGHAI,
-              UserDateTimeFormatOption.YMD_DASH_24H_SECOND,
-              UserDateFormatOption.YMD_DASH,
-              UserDecimalFormatOption.COMMA_DOT,
-              true),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.USE_DEFAULT,
-          List.of(
-              requiredEnum("timeZone", "默认时区", UserTimeZoneOption.values(), 10),
-              requiredEnum("dateTimeFormat", "默认日期时间格式", UserDateTimeFormatOption.values(), 20),
-              requiredEnum("dateFormat", "默认日期格式", UserDateFormatOption.values(), 30),
-              requiredEnum("decimalFormat", "默认数字符号组合", UserDecimalFormatOption.values(), 40),
-              required("adminTabKeepAlive", "默认记忆后台标签页状态", BOOLEAN, 50)),
-          "user-preference-defaults",
-          value -> List.of(),
-          value -> List.of());
+  public static final ConfigSpec<UserPreferenceDefaults> USER_PREFERENCE_DEFAULTS = new SimpleConfigSpec<>(
+      new ConfigKey("system.user.preference-defaults"),
+      "system",
+      "user",
+      "用户偏好默认值",
+      "用户未设置个人偏好时使用的公共默认值",
+      UserPreferenceDefaults.class,
+      new UserPreferenceDefaults(
+          UserTimeZoneOption.ASIA_SHANGHAI,
+          UserDateTimeFormatOption.YMD_DASH_24H_SECOND,
+          UserDateFormatOption.YMD_DASH,
+          UserDecimalFormatOption.COMMA_DOT,
+          true),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.USE_DEFAULT,
+      List.of(
+          requiredEnum("timeZone", "默认时区", UserTimeZoneOption.values(), 10),
+          requiredEnum("dateTimeFormat", "默认日期时间格式", UserDateTimeFormatOption.values(), 20),
+          requiredEnum("dateFormat", "默认日期格式", UserDateFormatOption.values(), 30),
+          requiredEnum("decimalFormat", "默认数字符号组合", UserDecimalFormatOption.values(), 40),
+          required("adminTabKeepAlive", "默认记忆后台标签页状态", BOOLEAN, 50)),
+      "user-preference-defaults",
+      value -> List.of(),
+      value -> List.of());
 
   public record UserPreferenceDefaults(
       UserTimeZoneOption timeZone,
       UserDateTimeFormatOption dateTimeFormat,
       UserDateFormatOption dateFormat,
       UserDecimalFormatOption decimalFormat,
-      boolean adminTabKeepAlive) {}
+      boolean adminTabKeepAlive) {
+  }
 
-  private SystemUserConfigSpecs() {}
+  private SystemUserConfigSpecs() {
+  }
 }

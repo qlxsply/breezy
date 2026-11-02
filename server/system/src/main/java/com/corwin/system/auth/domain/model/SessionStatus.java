@@ -10,6 +10,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/4/19
  */
 public enum SessionStatus implements DictEnumDefinition {
+
   ACTIVE("有效", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   REVOKED("已撤销", DictTagColor.DANGER_RED, DictTagType.DANGER),
   EXPIRED("已过期", DictTagColor.SLATE, DictTagType.INFO),

@@ -6,4 +6,5 @@ package com.corwin.system.webuser.application.command;
  * @param status the target status value
  * @author Corwin 2026/5/11
  */
-public record UpdateWebUserCommand(String status) {}
+public record UpdateWebUserCommand(String status) {
+}

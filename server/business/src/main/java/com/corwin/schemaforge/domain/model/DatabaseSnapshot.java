@@ -54,7 +54,8 @@ public class DatabaseSnapshot {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected DatabaseSnapshot() {}
+  protected DatabaseSnapshot() {
+  }
 
   public DatabaseSnapshot(
       Long managedDatabaseId,
@@ -67,8 +68,7 @@ public class DatabaseSnapshot {
       String sqlLogicalFileId,
       String contentHash) {
     this.id = UUID.randomUUID().toString();
-    this.managedDatabaseId =
-        Objects.requireNonNull(managedDatabaseId, "managedDatabaseId required");
+    this.managedDatabaseId = Objects.requireNonNull(managedDatabaseId, "managedDatabaseId required");
     this.name = Objects.requireNonNull(name, "name required");
     this.remark = remark;
     this.dbType = dbType;

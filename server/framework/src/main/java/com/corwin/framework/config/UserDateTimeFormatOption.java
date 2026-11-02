@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Corwin 2026/5/5
  */
 public enum UserDateTimeFormatOption implements DictEnumDefinition {
+
   YMD_DASH_24H_MINUTE("年-月-日 24小时制", "yyyy-MM-dd HH:mm"),
   YMD_DASH_24H_SECOND("年-月-日 24小时制（精确到秒）", "yyyy-MM-dd HH:mm:ss"),
   YMD_CHINESE_24H_MINUTE("中文年月日 24小时制", "yyyy年M月d日 HH:mm"),

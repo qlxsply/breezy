@@ -9,7 +9,8 @@ import org.springframework.beans.factory.SmartInitializingSingleton;
 /**
  * Lifecycle-aware extension of {@link AsyncEventTransport}.
  *
- * <p>Adds start/stop methods and a bound flag so transports can bind their topology at startup and
+ * <p>
+ * Adds start/stop methods and a bound flag so transports can bind their topology at startup and
  * release resources on shutdown.
  *
  * @author Corwin 2026/4/9

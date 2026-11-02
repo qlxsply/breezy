@@ -56,8 +56,7 @@ public final class SimpleConfigSpec<T> implements ConfigSpec<T> {
     this.order = order;
     this.activationPolicy = Objects.requireNonNull(activationPolicy, "activationPolicy required");
     this.editPolicy = Objects.requireNonNull(editPolicy, "editPolicy required");
-    this.invalidValuePolicy =
-        Objects.requireNonNull(invalidValuePolicy, "invalidValuePolicy required");
+    this.invalidValuePolicy = Objects.requireNonNull(invalidValuePolicy, "invalidValuePolicy required");
     this.fields = fields == null ? List.of() : List.copyOf(fields);
     this.editorId = requireText(editorId, "editorId");
     this.runtimeValidator = Objects.requireNonNull(runtimeValidator, "runtimeValidator required");

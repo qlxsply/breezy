@@ -37,4 +37,5 @@ public record PhysicalFileDetailRes(
     Long fileSize,
     String contentType,
     Integer refCount,
-    LocalDateTime physicalCreatedAt) {}
+    LocalDateTime physicalCreatedAt) {
+}

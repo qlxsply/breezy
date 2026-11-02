@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/3/6
  */
 public enum ConnectMode implements DictEnumDefinition {
+
   HOST_PORT("主机端口", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   SERVICE_NAME("服务名", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   SID("SID", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),

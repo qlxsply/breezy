@@ -12,4 +12,5 @@ public record ColumnPageReq(
     SortRuleRequest sort,
     @JsonLongString Long databaseId,
     @JsonLongString Long tableId,
-    String nameLike) {}
+    String nameLike) {
+}

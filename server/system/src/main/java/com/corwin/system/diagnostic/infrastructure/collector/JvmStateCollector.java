@@ -32,8 +32,8 @@ public class JvmStateCollector {
     ClassLoadingMXBean classLoading = ManagementFactory.getClassLoadingMXBean();
     MemoryUsage heap = memory.getHeapMemoryUsage();
     MemoryUsage nonHeap = memory.getNonHeapMemoryUsage();
-    List<MemoryPoolSnapshot> pools =
-        ManagementFactory.getMemoryPoolMXBeans().stream().map(this::toMemoryPoolSnapshot).toList();
+    List<MemoryPoolSnapshot> pools = ManagementFactory.getMemoryPoolMXBeans().stream().map(this::toMemoryPoolSnapshot)
+        .toList();
 
     long gcCount = 0L;
     long gcTime = 0L;

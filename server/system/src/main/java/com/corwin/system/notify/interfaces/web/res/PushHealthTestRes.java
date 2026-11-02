@@ -5,4 +5,5 @@ package com.corwin.system.notify.interfaces.web.res;
  *
  * @author Corwin 2026/3/21
  */
-public record PushHealthTestRes(String message, PushHealthDeliveryRes delivery) {}
+public record PushHealthTestRes(String message, PushHealthDeliveryRes delivery) {
+}

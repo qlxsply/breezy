@@ -8,10 +8,12 @@ import lombok.Getter;
 /**
  * System resource entity representing a node in the admin resource tree.
  *
- * <p>This unified entity represents directories, menus, functions, and buttons, distinguished by
+ * <p>
+ * This unified entity represents directories, menus, functions, and buttons, distinguished by
  * the {@code resourceType} field. The tree hierarchy is built using the {@code parentId} field.
  *
- * <p>Supported tree structure:
+ * <p>
+ * Supported tree structure:
  *
  * <pre>
  * DIRECTORY
@@ -23,12 +25,13 @@ import lombok.Getter;
  *     └── BUTTON
  * </pre>
  *
- * <p>Key constraints:
+ * <p>
+ * Key constraints:
  *
  * <ul>
- *   <li>Permission codes are not resource tree nodes.
- *   <li>Only BUTTON-type resources can bind permission codes.
- *   <li>Permission bindings are managed via {@link ResourcePermission}.
+ * <li>Permission codes are not resource tree nodes.
+ * <li>Only BUTTON-type resources can bind permission codes.
+ * <li>Permission bindings are managed via {@link ResourcePermission}.
  * </ul>
  *
  * @author Corwin
@@ -38,10 +41,10 @@ import lombok.Getter;
 @Table(
     name = "sys_resource",
     indexes = {
-      @Index(name = "idx_sys_resource_code", columnList = "code", unique = true),
-      @Index(name = "idx_sys_resource_parent_id", columnList = "parent_id"),
-      @Index(name = "idx_sys_resource_type", columnList = "resource_type"),
-      @Index(name = "idx_sys_resource_sort_no", columnList = "sort_no")
+        @Index(name = "idx_sys_resource_code", columnList = "code", unique = true),
+        @Index(name = "idx_sys_resource_parent_id", columnList = "parent_id"),
+        @Index(name = "idx_sys_resource_type", columnList = "resource_type"),
+        @Index(name = "idx_sys_resource_sort_no", columnList = "sort_no")
     })
 public class Resource {
 
@@ -118,7 +121,8 @@ public class Resource {
   private Instant updatedAt;
 
   /** JPA 构造函数。 */
-  protected Resource() {}
+  protected Resource() {
+  }
 
   /**
    * Creates a new resource.
@@ -208,7 +212,8 @@ public class Resource {
   /**
    * Updates the front-end route information (path and component).
    *
-   * <p>Typically applicable to MENU or FUNCTION resources.
+   * <p>
+   * Typically applicable to MENU or FUNCTION resources.
    *
    * @param path the new front-end route path
    * @param component the new front-end component path
@@ -222,7 +227,8 @@ public class Resource {
   /**
    * Moves this resource under a new parent.
    *
-   * <p>Type compatibility should be validated by the domain service using {@link
+   * <p>
+   * Type compatibility should be validated by the domain service using {@link
    * ResourceType#canHaveChild(ResourceType)}.
    *
    * @param parentId the new parent resource ID

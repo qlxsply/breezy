@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Corwin 2026/5/5
  */
 public enum UserDateFormatOption implements DictEnumDefinition {
+
   YMD_DASH("年-月-日", "yyyy-MM-dd"),
   YMD_SLASH("年/月/日", "yyyy/MM/dd"),
   YMD_CHINESE("中文年月日", "yyyy年M月d日"),

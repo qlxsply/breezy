@@ -9,4 +9,6 @@ import java.time.ZoneId;
  * @author Corwin 2026/4/15
  */
 public record MonthlyRule(MonthlyDayMode dayMode, Integer dayOfMonth, LocalTime time, ZoneId zoneId)
-    implements ScheduleRule {}
+    implements
+      ScheduleRule {
+}

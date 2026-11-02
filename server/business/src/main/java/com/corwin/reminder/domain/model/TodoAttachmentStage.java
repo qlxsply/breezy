@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/3/12
  */
 public enum TodoAttachmentStage implements DictEnumDefinition {
+
   CONTENT("内容附件", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   COMPLETION("完成附件", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS);
 

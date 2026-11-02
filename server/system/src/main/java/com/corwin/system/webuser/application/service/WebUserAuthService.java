@@ -98,18 +98,15 @@ public class WebUserAuthService {
 
     WebUserIdentityType identityType = webUserIdentitySupport.detectType(cmd.account());
     String identityHash = webUserIdentitySupport.hash(identityType, cmd.account());
-    WebUserCurrentIdentity currentIdentity =
-        webUserCurrentIdentityRepository
-            .findByIdentityTypeAndIdentityHash(identityType, identityHash)
-            .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
-    WebUserIdentity identity =
-        webUserIdentityRepository
-            .findById(currentIdentity.getIdentityId())
-            .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
-    WebUser user =
-        webUserRepository
-            .findById(currentIdentity.getUserId())
-            .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+    WebUserCurrentIdentity currentIdentity = webUserCurrentIdentityRepository
+        .findByIdentityTypeAndIdentityHash(identityType, identityHash)
+        .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+    WebUserIdentity identity = webUserIdentityRepository
+        .findById(currentIdentity.getIdentityId())
+        .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+    WebUser user = webUserRepository
+        .findById(currentIdentity.getUserId())
+        .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
 
     BizAssert.state(user.canLogin(), AuthError.USER_DISABLED);
     BizAssert.state(Boolean.TRUE.equals(identity.getLoginEnabled()), AuthError.FORBIDDEN);
@@ -118,11 +115,10 @@ public class WebUserAuthService {
     BizAssert.state(
         !webUserRestrictionService.hasLoginRestriction(user.getId()), AuthError.FORBIDDEN);
 
-    WebUserCredential credential =
-        webUserCredentialRepository
-            .findFirstByUserIdAndCredentialTypeAndStatus(
-                user.getId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
-            .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+    WebUserCredential credential = webUserCredentialRepository
+        .findFirstByUserIdAndCredentialTypeAndStatus(
+            user.getId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
+        .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
     if (!BCrypt.checkpw(cmd.password(), credential.getSecretHash())) {
       throw new BizException(AuthError.BAD_CREDENTIALS);
     }
@@ -130,14 +126,11 @@ public class WebUserAuthService {
     user.markLoginSuccess(CtxUtil.getClientIp(), operatorName(identity.getIdentityValue()));
     webUserRepository.save(user);
 
-    Set<String> permissionCodes =
-        permissionService.permissionCodesForUser(user.getId(), UserType.USER);
-    AuthPrincipal principal =
-        new AuthPrincipal(
-            user.getId(), identity.getIdentityValue(), UserType.USER, false, permissionCodes);
-    var accessToken =
-        webUserJwtTokenService.issue(
-            principal, user.getTokenVersion() == null ? 1L : user.getTokenVersion());
+    Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+    AuthPrincipal principal = new AuthPrincipal(
+        user.getId(), identity.getIdentityValue(), UserType.USER, false, permissionCodes);
+    var accessToken = webUserJwtTokenService.issue(
+        principal, user.getTokenVersion() == null ? 1L : user.getTokenVersion());
     var refreshToken = refreshTokenService.issue(user.getId(), currentUserAgent());
     webUserLifecycleService.record(
         user.getId(),
@@ -165,21 +158,17 @@ public class WebUserAuthService {
     BizAssert.state(
         !webUserRestrictionService.hasLoginRestriction(user.getId()), AuthError.FORBIDDEN);
 
-    WebUserIdentity identity =
-        webUserIdentityRepository.findByUserId(user.getId()).stream()
-            .filter(item -> item.getBindStatus() == WebUserIdentityBindStatus.ACTIVE)
-            .filter(item -> Boolean.TRUE.equals(item.getLoginEnabled()))
-            .findFirst()
-            .orElseThrow(() -> new BizException(AuthError.FORBIDDEN));
+    WebUserIdentity identity = webUserIdentityRepository.findByUserId(user.getId()).stream()
+        .filter(item -> item.getBindStatus() == WebUserIdentityBindStatus.ACTIVE)
+        .filter(item -> Boolean.TRUE.equals(item.getLoginEnabled()))
+        .findFirst()
+        .orElseThrow(() -> new BizException(AuthError.FORBIDDEN));
 
-    Set<String> permissionCodes =
-        permissionService.permissionCodesForUser(user.getId(), UserType.USER);
-    AuthPrincipal principal =
-        new AuthPrincipal(
-            user.getId(), identity.getIdentityValue(), UserType.USER, false, permissionCodes);
-    var accessToken =
-        webUserJwtTokenService.issue(
-            principal, user.getTokenVersion() == null ? 1L : user.getTokenVersion());
+    Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+    AuthPrincipal principal = new AuthPrincipal(
+        user.getId(), identity.getIdentityValue(), UserType.USER, false, permissionCodes);
+    var accessToken = webUserJwtTokenService.issue(
+        principal, user.getTokenVersion() == null ? 1L : user.getTokenVersion());
     return new WebUserLoginView(
         accessToken.token(),
         rotatedRefreshToken.rawToken(),
@@ -207,11 +196,10 @@ public class WebUserAuthService {
     passwordPolicyService.validate(cmd.newPassword());
 
     AuthPrincipal principal = requireWebUserPrincipal();
-    WebUserCredential credential =
-        webUserCredentialRepository
-            .findFirstByUserIdAndCredentialTypeAndStatus(
-                principal.userId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    WebUserCredential credential = webUserCredentialRepository
+        .findFirstByUserIdAndCredentialTypeAndStatus(
+            principal.userId(), WebUserCredentialType.PASSWORD, WebUserCredentialStatus.ACTIVE)
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     if (!BCrypt.checkpw(cmd.oldPassword(), credential.getSecretHash())) {
       throw new BizException(AuthError.BAD_CREDENTIALS);
     }

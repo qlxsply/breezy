@@ -11,4 +11,5 @@ public record TodoUpdateReq(
     Instant dueTime,
     String note,
     List<String> contentAttachmentFileIds,
-    List<String> completionAttachmentFileIds) {}
+    List<String> completionAttachmentFileIds) {
+}

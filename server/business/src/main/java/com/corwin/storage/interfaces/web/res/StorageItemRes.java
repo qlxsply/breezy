@@ -13,4 +13,5 @@ public record StorageItemRes(
     Long size,
     String contentType,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt) {
+}

@@ -250,5 +250,6 @@ public class MethodStatAggregate {
     }
   }
 
-  private record BucketCount(long total, long success, long failure) {}
+  private record BucketCount(long total, long success, long failure) {
+  }
 }

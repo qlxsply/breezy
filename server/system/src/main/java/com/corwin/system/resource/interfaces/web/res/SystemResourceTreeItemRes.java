@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * Response DTO representing a node in the system resource tree.
  *
- * <p>Supports recursive children to represent the full tree hierarchy.
+ * <p>
+ * Supports recursive children to represent the full tree hierarchy.
  *
  * @author Corwin 2026/6/29
  */
@@ -26,4 +27,5 @@ public record SystemResourceTreeItemRes(
     boolean systemBuiltin,
     String remark,
     List<String> permissionIds,
-    List<SystemResourceTreeItemRes> children) {}
+    List<SystemResourceTreeItemRes> children) {
+}

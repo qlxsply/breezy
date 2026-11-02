@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 用户包功能授权。
  *
- * <p>表示用户应用包在部分功能访问模式下可使用的应用内功能。
+ * <p>
+ * 表示用户应用包在部分功能访问模式下可使用的应用内功能。
  *
  * @author Corwin
  */
@@ -17,15 +18,15 @@ import lombok.Getter;
 @Table(
     name = "sys_user_package_feature_access",
     indexes = {
-      @Index(
-          name = "idx_sys_user_package_feature_access_unique",
-          columnList = "package_id,feature_id",
-          unique = true),
-      @Index(name = "idx_sys_user_package_feature_access_package_id", columnList = "package_id"),
-      @Index(
-          name = "idx_sys_user_package_feature_access_application_id",
-          columnList = "application_id"),
-      @Index(name = "idx_sys_user_package_feature_access_feature_id", columnList = "feature_id")
+        @Index(
+            name = "idx_sys_user_package_feature_access_unique",
+            columnList = "package_id,feature_id",
+            unique = true),
+        @Index(name = "idx_sys_user_package_feature_access_package_id", columnList = "package_id"),
+        @Index(
+            name = "idx_sys_user_package_feature_access_application_id",
+            columnList = "application_id"),
+        @Index(name = "idx_sys_user_package_feature_access_feature_id", columnList = "feature_id")
     })
 public class UserPackageFeatureAccess {
 
@@ -37,7 +38,8 @@ public class UserPackageFeatureAccess {
   /**
    * 用户应用包 ID。
    *
-   * <p>逻辑引用 {@link UserApplicationPackage#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link UserApplicationPackage#getId()}，数据库层面不创建外键。
    */
   @Column(name = "package_id", nullable = false)
   private Long packageId;
@@ -45,7 +47,8 @@ public class UserPackageFeatureAccess {
   /**
    * 产品应用 ID。
    *
-   * <p>逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
+   * <p>
+   * 逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
    */
   @Column(name = "application_id", nullable = false)
   private Long applicationId;
@@ -53,7 +56,8 @@ public class UserPackageFeatureAccess {
   /**
    * 产品功能 ID。
    *
-   * <p>逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
    */
   @Column(name = "feature_id", nullable = false)
   private Long featureId;
@@ -71,7 +75,8 @@ public class UserPackageFeatureAccess {
   private Instant createdAt;
 
   /** JPA 构造方法。 */
-  protected UserPackageFeatureAccess() {}
+  protected UserPackageFeatureAccess() {
+  }
 
   /**
    * 创建用户包功能授权。

@@ -50,8 +50,7 @@ public class UserController {
       description = "用户注册",
       level = AuditLevel.HIGH)
   public ApiResponse<UserProfileRes> register(@RequestBody RegisterUserReq req) {
-    RegisterUserCommand cmd =
-        new RegisterUserCommand(req.username(), req.nickname(), req.password());
+    RegisterUserCommand cmd = new RegisterUserCommand(req.username(), req.nickname(), req.password());
     return ApiResponse.ok(toRes(userService.register(cmd)));
   }
 

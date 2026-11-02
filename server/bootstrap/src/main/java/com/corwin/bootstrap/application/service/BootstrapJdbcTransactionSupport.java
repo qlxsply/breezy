@@ -9,7 +9,8 @@ import javax.sql.DataSource;
  */
 public final class BootstrapJdbcTransactionSupport {
 
-  private BootstrapJdbcTransactionSupport() {}
+  private BootstrapJdbcTransactionSupport() {
+  }
 
   public static <T> T execute(DataSource dataSource, SqlCallback<T> callback) {
     return execute(dataSource::getConnection, callback);
@@ -86,16 +87,19 @@ public final class BootstrapJdbcTransactionSupport {
 
   @FunctionalInterface
   public interface ConnectionSupplier {
+
     Connection get() throws SQLException;
   }
 
   @FunctionalInterface
   public interface SqlCallback<T> {
+
     T execute(Connection connection) throws Exception;
   }
 
   @FunctionalInterface
   public interface SqlRunnable {
+
     void run(Connection connection) throws Exception;
   }
 }

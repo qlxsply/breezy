@@ -7,4 +7,5 @@ package com.corwin.framework.web.request;
  * @param pageSize the requested page size, may be null
  * @author Corwin 2026/4/1
  */
-public record PageRuleRequest(Integer pageNo, Integer pageSize) {}
+public record PageRuleRequest(Integer pageNo, Integer pageSize) {
+}

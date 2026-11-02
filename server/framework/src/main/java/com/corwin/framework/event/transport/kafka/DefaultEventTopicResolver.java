@@ -7,7 +7,8 @@ import java.util.Objects;
 /**
  * Default Kafka topic resolver.
  *
- * <p>Rule: {@code normalized(topicPrefix) + "." + normalized(eventType)}. Normalisation replaces
+ * <p>
+ * Rule: {@code normalized(topicPrefix) + "." + normalized(eventType)}. Normalisation replaces
  * illegal characters with dots and collapses consecutive separators.
  *
  * @author Corwin 2026/4/10
@@ -24,8 +25,7 @@ public class DefaultEventTopicResolver implements EventTopicResolver {
   @Override
   public String resolveTopic(String eventType) {
     String prefix = properties.getKafka().getTopicPrefix();
-    String normalizedPrefix =
-        normalize(prefix == null || prefix.isBlank() ? "framework.async.event" : prefix);
+    String normalizedPrefix = normalize(prefix == null || prefix.isBlank() ? "framework.async.event" : prefix);
     String normalizedType = normalize(eventType == null ? "unknown" : eventType);
     return normalizedPrefix + "." + normalizedType;
   }

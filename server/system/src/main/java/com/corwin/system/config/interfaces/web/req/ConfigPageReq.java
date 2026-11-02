@@ -11,4 +11,5 @@ public record ConfigPageReq(
     @Valid PageRuleRequest page,
     @Size(max = 160) String keyword,
     @Size(max = 64) String module,
-    @Size(max = 64) String group) {}
+    @Size(max = 64) String group) {
+}

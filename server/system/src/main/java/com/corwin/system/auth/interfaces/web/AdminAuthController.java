@@ -95,10 +95,9 @@ public class AdminAuthController {
   }
 
   private AuthUserRes toAuthDto(AuthUserView view) {
-    List<UserConfigsRes> configs =
-        userConfigAppService.getMergedConfigs(view.id()).stream()
-            .map(AdminAuthController::toUserConfigsRes)
-            .toList();
+    List<UserConfigsRes> configs = userConfigAppService.getMergedConfigs(view.id()).stream()
+        .map(AdminAuthController::toUserConfigsRes)
+        .toList();
     return new AuthUserRes(
         String.valueOf(view.id()),
         view.account(),

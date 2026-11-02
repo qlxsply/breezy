@@ -10,4 +10,5 @@ public record DatabaseSchemaBasicInfoRes(
     DatabaseType dbType,
     String jdbcUrl,
     String username,
-    String passwordRaw) {}
+    String passwordRaw) {
+}

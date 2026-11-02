@@ -25,7 +25,8 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Admin REST controller for managing API metadata.
  *
- * <p>Provides endpoints for listing, searching, enabling/disabling APIs, and updating sort
+ * <p>
+ * Provides endpoints for listing, searching, enabling/disabling APIs, and updating sort
  * configurations. All endpoints require ADMIN authentication.
  *
  * @author Corwin 2026/1/23
@@ -63,17 +64,16 @@ public class ApiAdminController {
       permissions = {"api.view"})
   public ApiResponse<PageResult<ApiRes>> page(@RequestBody ApiPageReq req) {
     PageSpec pageSpec = PageSpecFactory.of(req.page(), null);
-    ApiPageQuery query =
-        new ApiPageQuery(
-            req.module(),
-            req.pathPattern(),
-            req.handlerClass(),
-            req.handlerMethod(),
-            resolvePermissionDeclared(req.permissionDeclared()),
-            resolveAccessType(req.accessType()),
-            resolveUserType(req.userType()),
-            resolveAuditDeclared(req.auditDeclared()),
-            resolveEnabled(req.status()));
+    ApiPageQuery query = new ApiPageQuery(
+        req.module(),
+        req.pathPattern(),
+        req.handlerClass(),
+        req.handlerMethod(),
+        resolvePermissionDeclared(req.permissionDeclared()),
+        resolveAccessType(req.accessType()),
+        resolveUserType(req.userType()),
+        resolveAuditDeclared(req.auditDeclared()),
+        resolveEnabled(req.status()));
     return ApiResponse.ok(PageResult.of(apiAdminService.page(query, pageSpec), this::toDto));
   }
 

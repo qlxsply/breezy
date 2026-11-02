@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST controller for permission queries.
  *
- * <p>Provides endpoints for listing assignable permissions and retrieving the current user's
+ * <p>
+ * Provides endpoints for listing assignable permissions and retrieving the current user's
  * granted permissions and details.
  *
  * @author Corwin 2026/1/22

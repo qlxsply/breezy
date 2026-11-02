@@ -7,11 +7,13 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * Enum representing the value type of dictionary items.
  *
- * <p>Supported types: STRING, NUMBER, BOOLEAN.
+ * <p>
+ * Supported types: STRING, NUMBER, BOOLEAN.
  *
  * @author Corwin 2026/3/15
  */
 public enum DictValueType implements DictEnumDefinition {
+
   STRING("文本", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   NUMBER("数字", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
   BOOLEAN("布尔", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS);

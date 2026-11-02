@@ -13,10 +13,10 @@ import lombok.Getter;
 @Table(
     name = "reminder_outbox",
     indexes = {
-      @Index(name = "idx_reminder_due_time", columnList = "due_time"),
-      @Index(name = "idx_reminder_status", columnList = "outbox_status"),
-      @Index(name = "idx_reminder_delivery_id", columnList = "delivery_id"),
-      @Index(name = "uk_reminder_dedupe", columnList = "dedupe_key", unique = true)
+        @Index(name = "idx_reminder_due_time", columnList = "due_time"),
+        @Index(name = "idx_reminder_status", columnList = "outbox_status"),
+        @Index(name = "idx_reminder_delivery_id", columnList = "delivery_id"),
+        @Index(name = "uk_reminder_dedupe", columnList = "dedupe_key", unique = true)
     })
 public class ReminderOutbox {
 
@@ -66,7 +66,8 @@ public class ReminderOutbox {
   @Column(name = "delivery_id")
   private Long deliveryId;
 
-  protected ReminderOutbox() {}
+  protected ReminderOutbox() {
+  }
 
   public static ReminderOutbox pending(
       Long userId,

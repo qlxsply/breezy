@@ -24,4 +24,5 @@ public record AuditLogPageReq(
     AuditLevel auditLevel,
     Boolean success,
     Instant startAt,
-    Instant endAt) {}
+    Instant endAt) {
+}

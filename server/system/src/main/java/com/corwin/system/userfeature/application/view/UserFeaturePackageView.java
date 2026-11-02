@@ -16,4 +16,5 @@ public record UserFeaturePackageView(
     String description,
     boolean enabled,
     boolean defaultPackage,
-    List<UserFeaturePackageApplicationAccessView> applicationAccesses) {}
+    List<UserFeaturePackageApplicationAccessView> applicationAccesses) {
+}

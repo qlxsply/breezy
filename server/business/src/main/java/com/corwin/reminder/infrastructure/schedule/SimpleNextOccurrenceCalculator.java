@@ -42,8 +42,7 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
     ZoneId eventZone = ZoneId.of(event.getEventTimeZoneId());
 
     ZonedDateTime start = ZonedDateTime.ofInstant(event.getStartTime(), eventZone);
-    ZonedDateTime from =
-        ZonedDateTime.ofInstant(fromExclusive.plusNanos(1), eventZone); // strict > exclusive
+    ZonedDateTime from = ZonedDateTime.ofInstant(fromExclusive.plusNanos(1), eventZone); // strict > exclusive
 
     ZonedDateTime next;
     switch (rule.getFrequency()) {
@@ -51,9 +50,8 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
       case WEEKLY -> next = nextWeekly(start, from, rule.getInterval(), rule.getDaysOfWeek());
       case MONTHLY -> next = nextMonthly(start, from, rule.getInterval(), rule.getDayOfMonth());
       case YEARLY ->
-          next =
-              nextYearly(
-                  start, from, rule.getInterval(), rule.getMonthOfYear(), rule.getDayOfMonth());
+        next = nextYearly(
+            start, from, rule.getInterval(), rule.getMonthOfYear(), rule.getDayOfMonth());
       default -> next = null;
     }
 
@@ -71,11 +69,10 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
 
   private ZonedDateTime nextDaily(ZonedDateTime start, ZonedDateTime from, int intervalDays) {
     // 以 start 的“时分秒”对齐，每 intervalDays 天一次
-    ZonedDateTime candidate =
-        from.withHour(start.getHour())
-            .withMinute(start.getMinute())
-            .withSecond(start.getSecond())
-            .withNano(start.getNano());
+    ZonedDateTime candidate = from.withHour(start.getHour())
+        .withMinute(start.getMinute())
+        .withSecond(start.getSecond())
+        .withNano(start.getNano());
     if (!candidate.isAfter(from)) {
       candidate = candidate.plusDays(1);
     }
@@ -86,11 +83,10 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
     }
 
     // 对齐到 interval
-    long daysBetween =
-        Duration.between(
-                start.toLocalDate().atStartOfDay(start.getZone()),
-                candidate.toLocalDate().atStartOfDay(candidate.getZone()))
-            .toDays();
+    long daysBetween = Duration.between(
+        start.toLocalDate().atStartOfDay(start.getZone()),
+        candidate.toLocalDate().atStartOfDay(candidate.getZone()))
+        .toDays();
     long mod = daysBetween % intervalDays;
     if (mod != 0) {
       candidate = candidate.plusDays(intervalDays - mod);
@@ -105,11 +101,10 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
     }
 
     // 从 from 的下一分钟（保持 start 的时分秒）开始找最近满足 dayOfWeek 的日期
-    ZonedDateTime base =
-        from.withHour(start.getHour())
-            .withMinute(start.getMinute())
-            .withSecond(start.getSecond())
-            .withNano(start.getNano());
+    ZonedDateTime base = from.withHour(start.getHour())
+        .withMinute(start.getMinute())
+        .withSecond(start.getSecond())
+        .withNano(start.getNano());
     if (!base.isAfter(from)) {
       base = base.plusMinutes(1);
     }
@@ -144,7 +139,7 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
     LocalDate s = start.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     LocalDate c = candidate.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     return Duration.between(s.atStartOfDay(start.getZone()), c.atStartOfDay(candidate.getZone()))
-            .toDays()
+        .toDays()
         / 7;
   }
 
@@ -154,11 +149,10 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
       return null;
     }
 
-    ZonedDateTime base =
-        from.withHour(start.getHour())
-            .withMinute(start.getMinute())
-            .withSecond(start.getSecond())
-            .withNano(start.getNano());
+    ZonedDateTime base = from.withHour(start.getHour())
+        .withMinute(start.getMinute())
+        .withSecond(start.getSecond())
+        .withNano(start.getNano());
     if (!base.isAfter(from)) {
       base = base.plusMinutes(1);
     }
@@ -188,9 +182,8 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
 
   private boolean monthAligned(ZonedDateTime start, YearMonth candYm, int intervalMonths) {
     YearMonth startYm = YearMonth.from(start);
-    long monthsBetween =
-        (candYm.getYear() - startYm.getYear()) * 12L
-            + (candYm.getMonthValue() - startYm.getMonthValue());
+    long monthsBetween = (candYm.getYear() - startYm.getYear()) * 12L
+        + (candYm.getMonthValue() - startYm.getMonthValue());
     return monthsBetween >= 0 && monthsBetween % intervalMonths == 0;
   }
 
@@ -204,11 +197,10 @@ public class SimpleNextOccurrenceCalculator implements NextOccurrenceCalculator 
       return null;
     }
 
-    ZonedDateTime base =
-        from.withHour(start.getHour())
-            .withMinute(start.getMinute())
-            .withSecond(start.getSecond())
-            .withNano(start.getNano());
+    ZonedDateTime base = from.withHour(start.getHour())
+        .withMinute(start.getMinute())
+        .withSecond(start.getSecond())
+        .withNano(start.getNano());
     if (!base.isAfter(from)) {
       base = base.plusMinutes(1);
     }

@@ -21,11 +21,10 @@ public interface WebUserJpaRepository extends JpaRepository<WebUser, Long> {
       String displayName, String nickname, Pageable pageable);
 
   /** Find users by status combined with display name or nickname search. */
-  Page<WebUser>
-      findByStatusAndDisplayNameContainingIgnoreCaseOrStatusAndNicknameContainingIgnoreCase(
-          WebUserStatus leftStatus,
-          String displayName,
-          WebUserStatus rightStatus,
-          String nickname,
-          Pageable pageable);
+  Page<WebUser> findByStatusAndDisplayNameContainingIgnoreCaseOrStatusAndNicknameContainingIgnoreCase(
+      WebUserStatus leftStatus,
+      String displayName,
+      WebUserStatus rightStatus,
+      String nickname,
+      Pageable pageable);
 }

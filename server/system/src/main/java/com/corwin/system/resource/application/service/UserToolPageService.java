@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 /**
  * Application service for user-facing tool pages.
  *
- * <p>Builds the list of accessible tool pages and granted permission codes for the currently
+ * <p>
+ * Builds the list of accessible tool pages and granted permission codes for the currently
  * authenticated end-user based on their feature access configuration.
  *
  * @author Corwin 2026/6/6
@@ -42,13 +43,12 @@ public class UserToolPageService {
       return new UserToolsView(List.of(), List.of());
     }
     Set<String> permissionCodes = permissionService.permissionCodesForCurrent();
-    List<String> grantedPermissionCodes =
-        permissionCodes.stream()
-            .filter(Objects::nonNull)
-            .map(String::trim)
-            .filter(code -> !code.isBlank())
-            .sorted()
-            .toList();
+    List<String> grantedPermissionCodes = permissionCodes.stream()
+        .filter(Objects::nonNull)
+        .map(String::trim)
+        .filter(code -> !code.isBlank())
+        .sorted()
+        .toList();
     return new UserToolsView(buildTools(principal), grantedPermissionCodes);
   }
 
@@ -59,11 +59,9 @@ public class UserToolPageService {
     return userFeatureAccessService.accessibleApplicationsForUser(principal.userId()).stream()
         .filter(application -> application.getId() != null)
         .filter(
-            application ->
-                application.getRoutePath() != null && !application.getRoutePath().isBlank())
+            application -> application.getRoutePath() != null && !application.getRoutePath().isBlank())
         .filter(
-            application ->
-                application.getComponentPath() != null && !application.getComponentPath().isBlank())
+            application -> application.getComponentPath() != null && !application.getComponentPath().isBlank())
         .map(this::toExternalToolPage)
         .filter(Objects::nonNull)
         .sorted(

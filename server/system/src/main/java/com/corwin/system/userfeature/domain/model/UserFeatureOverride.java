@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 用户功能访问特例。
  *
- * <p>表示单个用户对产品应用内某个功能的单独启用、单独禁用或清除特例。
+ * <p>
+ * 表示单个用户对产品应用内某个功能的单独启用、单独禁用或清除特例。
  *
  * @author Corwin
  */
@@ -17,14 +18,14 @@ import lombok.Getter;
 @Table(
     name = "sys_user_feature_override",
     indexes = {
-      @Index(
-          name = "idx_sys_user_feature_override_unique",
-          columnList = "user_id,feature_id",
-          unique = true),
-      @Index(name = "idx_sys_user_feature_override_user_id", columnList = "user_id"),
-      @Index(name = "idx_sys_user_feature_override_application_id", columnList = "application_id"),
-      @Index(name = "idx_sys_user_feature_override_feature_id", columnList = "feature_id"),
-      @Index(name = "idx_sys_user_feature_override_type", columnList = "override_type")
+        @Index(
+            name = "idx_sys_user_feature_override_unique",
+            columnList = "user_id,feature_id",
+            unique = true),
+        @Index(name = "idx_sys_user_feature_override_user_id", columnList = "user_id"),
+        @Index(name = "idx_sys_user_feature_override_application_id", columnList = "application_id"),
+        @Index(name = "idx_sys_user_feature_override_feature_id", columnList = "feature_id"),
+        @Index(name = "idx_sys_user_feature_override_type", columnList = "override_type")
     })
 public class UserFeatureOverride {
 
@@ -36,7 +37,8 @@ public class UserFeatureOverride {
   /**
    * 用户 ID。
    *
-   * <p>逻辑引用用户表主键，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用用户表主键，数据库层面不创建外键。
    */
   @Column(name = "user_id", nullable = false)
   private Long userId;
@@ -44,7 +46,8 @@ public class UserFeatureOverride {
   /**
    * 产品应用 ID。
    *
-   * <p>逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
+   * <p>
+   * 逻辑引用 {@link ProductApplication#getId()}，用于查询和一致性校验。
    */
   @Column(name = "application_id", nullable = false)
   private Long applicationId;
@@ -52,7 +55,8 @@ public class UserFeatureOverride {
   /**
    * 产品功能 ID。
    *
-   * <p>逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link ProductFeature#getId()}，数据库层面不创建外键。
    */
   @Column(name = "feature_id", nullable = false)
   private Long featureId;
@@ -83,7 +87,8 @@ public class UserFeatureOverride {
   private Instant updatedAt;
 
   /** JPA 构造方法。 */
-  protected UserFeatureOverride() {}
+  protected UserFeatureOverride() {
+  }
 
   /**
    * 创建用户功能访问特例。

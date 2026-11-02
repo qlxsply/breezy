@@ -23,4 +23,5 @@ public record DatabaseSourceConnectionInfoView(
     String username,
     String passwordRaw,
     String remarkCustom,
-    String extraParams) {}
+    String extraParams) {
+}

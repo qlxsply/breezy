@@ -19,4 +19,5 @@ public record PreviewMsgPushReq(
     Boolean sseEnabled,
     Boolean webPushEnabled,
     Boolean panelAutoOpen,
-    Boolean osNotificationEnabled) {}
+    Boolean osNotificationEnabled) {
+}

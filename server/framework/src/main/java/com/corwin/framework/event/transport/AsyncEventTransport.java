@@ -6,7 +6,8 @@ import com.corwin.framework.event.subscription.SubscriptionRegistry;
 /**
  * Abstraction for async event transport.
  *
- * <p>Defines a unified lifecycle: bind subscriptions on start, publish events, and gracefully shut
+ * <p>
+ * Defines a unified lifecycle: bind subscriptions on start, publish events, and gracefully shut
  * down. Implementations span in-memory dispatch and external message brokers.
  *
  * @author Corwin 2026/3/31

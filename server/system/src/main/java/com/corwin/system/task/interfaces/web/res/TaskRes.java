@@ -32,4 +32,5 @@ public record TaskRes(
     Instant lastRunAt,
     String lastRunStatus,
     String lastErrorMessage,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

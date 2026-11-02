@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/2/4
  */
 public enum ReminderOutboxStatus implements DictEnumDefinition {
+
   PENDING("待发送", DictTagColor.SLATE, DictTagType.INFO),
   SENT("已发送", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   ACKED("已确认", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),

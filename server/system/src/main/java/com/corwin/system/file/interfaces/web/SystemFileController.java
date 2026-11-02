@@ -68,13 +68,12 @@ public class SystemFileController {
       @RequestParam("file") MultipartFile file)
       throws Exception {
     String effectiveOwnerId = (ownerId == null || ownerId.isBlank()) ? "system" : ownerId;
-    UploadFileCommand cmd =
-        new UploadFileCommand(
-            OwnerType.APPLICATION,
-            effectiveOwnerId,
-            null,
-            file.getOriginalFilename(),
-            file.getContentType());
+    UploadFileCommand cmd = new UploadFileCommand(
+        OwnerType.APPLICATION,
+        effectiveOwnerId,
+        null,
+        file.getOriginalFilename(),
+        file.getContentType());
     try (InputStream is = file.getInputStream()) {
       return ApiResponse.ok(fileService.uploadFile(cmd, is, purpose));
     }
@@ -94,8 +93,7 @@ public class SystemFileController {
       throw new BizException("文件大小超过预览限制", BaseError.ILLEGAL_ARGUMENT);
     }
 
-    String contentType =
-        fileQueryService.resolveContentType(logicalFile.getFileName(), pf.getContentType());
+    String contentType = fileQueryService.resolveContentType(logicalFile.getFileName(), pf.getContentType());
     response.setContentType(
         contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE);
     try (InputStream is = storageProvider.read(pf.getRelativePath(), pf.getFileName());
@@ -122,8 +120,7 @@ public class SystemFileController {
     PhysicalFile pf = fileView.physicalFile();
 
     String originalFileName = logicalFile.getFileName();
-    String encodedFileName =
-        URLEncoder.encode(originalFileName, StandardCharsets.UTF_8).replace("+", "%20");
+    String encodedFileName = URLEncoder.encode(originalFileName, StandardCharsets.UTF_8).replace("+", "%20");
     String asciiFallback = originalFileName.replaceAll("[^\\x20-\\x7E]", "_");
     response.setContentType(
         pf.getContentType() != null
@@ -165,8 +162,7 @@ public class SystemFileController {
     StorageSortBy sortBy = req.sortBy() == null ? StorageSortBy.NAME : req.sortBy();
     StorageSortOrder sortOrder = req.sortOrder() == null ? StorageSortOrder.ASC : req.sortOrder();
     boolean effectiveRecursive = recursive || (keyword != null && !keyword.isBlank());
-    StorageQueryCommand query =
-        new StorageQueryCommand(req.parentId(), keyword, effectiveRecursive, sortBy, sortOrder);
+    StorageQueryCommand query = new StorageQueryCommand(req.parentId(), keyword, effectiveRecursive, sortBy, sortOrder);
     return ApiResponse.ok(fileQueryService.listAdminContent(query));
   }
 
@@ -178,30 +174,28 @@ public class SystemFileController {
     LogicalPhysicalFileView fileView = fileQueryService.getLogicalPhysicalFile(logicalFileId);
     LogicalFile logicalFile = fileView.logicalFile();
     PhysicalFile physicalFile = fileView.physicalFile();
-    String absolutePath =
-        storageProvider
-            .getBasePath()
-            .resolve(physicalFile.getRelativePath())
-            .resolve(physicalFile.getFileName())
-            .toAbsolutePath()
-            .normalize()
-            .toString();
-    PhysicalFileDetailRes detail =
-        new PhysicalFileDetailRes(
-            logicalFile.getId(),
-            logicalFile.getFileName(),
-            logicalFile.getOwnerType(),
-            logicalFile.getOwnerId(),
-            logicalFile.getParentId(),
-            physicalFile.getId(),
-            physicalFile.getHash(),
-            physicalFile.getRelativePath(),
-            absolutePath,
-            physicalFile.getFileName(),
-            physicalFile.getFileSize(),
-            physicalFile.getContentType(),
-            physicalFile.getRefCount(),
-            physicalFile.getCreatedAt());
+    String absolutePath = storageProvider
+        .getBasePath()
+        .resolve(physicalFile.getRelativePath())
+        .resolve(physicalFile.getFileName())
+        .toAbsolutePath()
+        .normalize()
+        .toString();
+    PhysicalFileDetailRes detail = new PhysicalFileDetailRes(
+        logicalFile.getId(),
+        logicalFile.getFileName(),
+        logicalFile.getOwnerType(),
+        logicalFile.getOwnerId(),
+        logicalFile.getParentId(),
+        physicalFile.getId(),
+        physicalFile.getHash(),
+        physicalFile.getRelativePath(),
+        absolutePath,
+        physicalFile.getFileName(),
+        physicalFile.getFileSize(),
+        physicalFile.getContentType(),
+        physicalFile.getRefCount(),
+        physicalFile.getCreatedAt());
     return ApiResponse.ok(detail);
   }
 

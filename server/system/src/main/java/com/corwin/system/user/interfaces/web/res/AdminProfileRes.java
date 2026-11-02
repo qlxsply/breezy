@@ -19,4 +19,5 @@ public record AdminProfileRes(
     Instant lastPasswordChangedAt,
     Instant createdAt,
     Instant updatedAt,
-    List<AdminProfileLoginActivityRes> recentActivities) {}
+    List<AdminProfileLoginActivityRes> recentActivities) {
+}

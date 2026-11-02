@@ -9,7 +9,8 @@ import java.util.Optional;
 /**
  * Repository interface for {@link UserPushSubscription} persistence operations.
  *
- * <p>Provides methods for querying user push subscriptions by user, device, and active status.
+ * <p>
+ * Provides methods for querying user push subscriptions by user, device, and active status.
  *
  * @author Corwin 2026/3/19
  */

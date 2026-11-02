@@ -24,4 +24,5 @@ public record SystemResourceTreeItemView(
     boolean systemBuiltin,
     String remark,
     List<Long> permissionIds,
-    List<SystemResourceTreeItemView> children) {}
+    List<SystemResourceTreeItemView> children) {
+}

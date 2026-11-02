@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA-based adapter implementation of {@link DictItemRepository}.
  *
- * <p>Delegates all persistence operations to the underlying JpaRepository.
+ * <p>
+ * Delegates all persistence operations to the underlying JpaRepository.
  *
  * @author Corwin 2026/3/15
  */

@@ -10,5 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DatabaseSchemaRebindReq {
-  @JsonLongString private Long dataSourceId;
+
+  @JsonLongString
+  private Long dataSourceId;
 }

@@ -31,22 +31,20 @@ public class BootstrapDefaultUserSyncService {
   public BootstrapTaskReport run(boolean dryRun) {
     long startedAt = System.currentTimeMillis();
     List<UserSeed> seeds = buildSeeds();
-    UserSyncSummary summary =
-        dryRun
-            ? BootstrapJdbcTransactionSupport.execute(
-                dataSource, connection -> inspect(connection, seeds))
-            : BootstrapJdbcTransactionSupport.execute(
-                dataSource, connection -> synchronize(connection, seeds));
+    UserSyncSummary summary = dryRun
+        ? BootstrapJdbcTransactionSupport.execute(
+            dataSource, connection -> inspect(connection, seeds))
+        : BootstrapJdbcTransactionSupport.execute(
+            dataSource, connection -> synchronize(connection, seeds));
 
-    String message =
-        "total="
-            + seeds.size()
-            + "; created="
-            + summary.created()
-            + "; skipped="
-            + summary.skipped()
-            + "; adminPassword="
-            + DEFAULT_ADMIN_PASSWORD;
+    String message = "total="
+        + seeds.size()
+        + "; created="
+        + summary.created()
+        + "; skipped="
+        + summary.skipped()
+        + "; adminPassword="
+        + DEFAULT_ADMIN_PASSWORD;
     return new BootstrapTaskReport(
         BootstrapTaskKey.DEFAULT_USER_SYNC,
         dryRun,
@@ -129,8 +127,7 @@ public class BootstrapDefaultUserSyncService {
   private List<UserSeed> buildSeeds() {
     List<UserSeed> result = new ArrayList<>();
     for (DefaultUser defaultUser : DefaultUser.values()) {
-      String rawPassword =
-          defaultUser == DefaultUser.ADMIN ? DEFAULT_ADMIN_PASSWORD : randomSystemPassword();
+      String rawPassword = defaultUser == DefaultUser.ADMIN ? DEFAULT_ADMIN_PASSWORD : randomSystemPassword();
       result.add(
           new UserSeed(
               defaultUser.id(),
@@ -159,7 +156,9 @@ public class BootstrapDefaultUserSyncService {
       String passwordAlgo,
       String userStatus,
       boolean deletedFlag,
-      String operator) {}
+      String operator) {
+  }
 
-  private record UserSyncSummary(int created, int skipped) {}
+  private record UserSyncSummary(int created, int skipped) {
+  }
 }

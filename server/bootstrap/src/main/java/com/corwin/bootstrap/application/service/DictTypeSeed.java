@@ -16,4 +16,5 @@ public record DictTypeSeed(
     DictValueType valueType,
     DictStructureType structureType,
     boolean enabled,
-    List<DictItemSeed> items) {}
+    List<DictItemSeed> items) {
+}

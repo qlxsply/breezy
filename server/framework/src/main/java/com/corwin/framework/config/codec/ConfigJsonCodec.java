@@ -76,5 +76,6 @@ public final class ConfigJsonCodec {
         .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
   }
 
-  private ConfigJsonCodec() {}
+  private ConfigJsonCodec() {
+  }
 }

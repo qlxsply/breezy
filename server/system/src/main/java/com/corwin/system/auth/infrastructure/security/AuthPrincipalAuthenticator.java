@@ -83,10 +83,9 @@ public class AuthPrincipalAuthenticator {
       return cached.get();
     }
 
-    LoginSession session =
-        loginSessionRepository
-            .findByTokenHash(tokenHash)
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    LoginSession session = loginSessionRepository
+        .findByTokenHash(tokenHash)
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     Instant now = HighDate.realInstant();
     if (session.expired(now)) {
       session.markExpired(systemOperator());
@@ -104,22 +103,20 @@ public class AuthPrincipalAuthenticator {
       throw new BizException(AuthError.INVALID_TOKEN);
     }
 
-    User user =
-        userRepository
-            .findById(session.getUserId())
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    User user = userRepository
+        .findById(session.getUserId())
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     if (user.getUserStatus() != UserStatus.ENABLED) {
       throw new BizException(AuthError.USER_DISABLED);
     }
 
-    AuthPrincipal principal =
-        new AuthPrincipal(
-            user.getId(),
-            user.getUsername(),
-            user.getUserType(),
-            DefaultUser.isAdmin(user.getId()),
-            user.isMustChangePassword(),
-            readPermissionSnapshot(session));
+    AuthPrincipal principal = new AuthPrincipal(
+        user.getId(),
+        user.getUsername(),
+        user.getUserType(),
+        DefaultUser.isAdmin(user.getId()),
+        user.isMustChangePassword(),
+        readPermissionSnapshot(session));
     authSessionCacheService.set(tokenHash, principal, cacheTtl(session, now));
     refreshLastAccessIfNecessary(session, now, user.getUsername());
     return principal;
@@ -137,10 +134,9 @@ public class AuthPrincipalAuthenticator {
     if (payload.userId() == null || payload.userType() != UserType.USER) {
       throw new BizException(AuthError.INVALID_TOKEN);
     }
-    WebUser user =
-        webUserRepository
-            .findById(payload.userId())
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    WebUser user = webUserRepository
+        .findById(payload.userId())
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     if (!user.canLogin()) {
       throw new BizException(AuthError.USER_DISABLED);
     }
@@ -155,8 +151,7 @@ public class AuthPrincipalAuthenticator {
     if (webUserRestrictionService.hasLoginRestriction(user.getId())) {
       throw new BizException(AuthError.FORBIDDEN);
     }
-    Set<String> permissionCodes =
-        permissionService.permissionCodesForUser(user.getId(), UserType.USER);
+    Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.USER);
     return new AuthPrincipal(
         user.getId(), payload.account(), UserType.USER, false, permissionCodes);
   }
@@ -176,10 +171,9 @@ public class AuthPrincipalAuthenticator {
       throw new BizException(AuthError.INVALID_TOKEN);
     }
     UserType userType = payload.userType();
-    Set<String> permissionCodes =
-        userType == null || userType == UserType.GUEST
-            ? Set.of()
-            : permissionService.permissionCodesForUser(payload.userId(), userType);
+    Set<String> permissionCodes = userType == null || userType == UserType.GUEST
+        ? Set.of()
+        : permissionService.permissionCodesForUser(payload.userId(), userType);
     return new AuthPrincipal(
         payload.userId(),
         payload.userAccount(),
@@ -221,7 +215,8 @@ public class AuthPrincipalAuthenticator {
     if (raw == null || raw.isBlank()) {
       return Set.of();
     }
-    List<String> values = Json.parse(raw, new TypeReference<>() {});
+    List<String> values = Json.parse(raw, new TypeReference<>() {
+    });
     return new LinkedHashSet<>(values);
   }
 

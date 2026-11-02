@@ -57,5 +57,6 @@ public class IpUtil {
     return ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip);
   }
 
-  private IpUtil() {}
+  private IpUtil() {
+  }
 }

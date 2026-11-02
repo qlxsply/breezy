@@ -11,5 +11,6 @@ public final class UserConfigCodes {
   public static final String DECIMAL_FORMAT = "USER_DECIMAL_FORMAT";
   public static final String ADMIN_TAB_KEEP_ALIVE = "USER_ADMIN_TAB_KEEP_ALIVE";
 
-  private UserConfigCodes() {}
+  private UserConfigCodes() {
+  }
 }

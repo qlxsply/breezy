@@ -5,54 +5,59 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * Short-lived ticket service for SSE (Server-Sent Events) connections.
  *
- * <p>Design background:
+ * <p>
+ * Design background:
  *
  * <ul>
- *   <li>SSE clients typically use the browser-native {@code EventSource} API.
- *   <li>{@code EventSource} has limited support for custom request headers, making it impractical
- *       to carry a standard {@code Authorization: Bearer xxx} header in many real-world scenarios.
- *   <li>A temporary credential mechanism dedicated to the SSE connection phase is needed,
- *       converting the regular login state into a short-lived ticket that can be passed via URL
- *       parameters.
+ * <li>SSE clients typically use the browser-native {@code EventSource} API.
+ * <li>{@code EventSource} has limited support for custom request headers, making it impractical
+ * to carry a standard {@code Authorization: Bearer xxx} header in many real-world scenarios.
+ * <li>A temporary credential mechanism dedicated to the SSE connection phase is needed,
+ * converting the regular login state into a short-lived ticket that can be passed via URL
+ * parameters.
  * </ul>
  *
- * <p>Typical flow:
+ * <p>
+ * Typical flow:
  *
  * <ol>
- *   <li>The frontend calls a ticket-issuing endpoint through a normal protected API (carrying JWT /
- *       Token).
- *   <li>The server issues a short-lived, one-time SSE ticket based on the authenticated user's
- *       identity.
- *   <li>The frontend accesses the SSE stream endpoint using the ticket as a query parameter.
- *   <li>The authentication filter consumes the ticket and restores the user's identity context.
+ * <li>The frontend calls a ticket-issuing endpoint through a normal protected API (carrying JWT /
+ * Token).
+ * <li>The server issues a short-lived, one-time SSE ticket based on the authenticated user's
+ * identity.
+ * <li>The frontend accesses the SSE stream endpoint using the ticket as a query parameter.
+ * <li>The authentication filter consumes the ticket and restores the user's identity context.
  * </ol>
  *
- * <p>Design goals:
+ * <p>
+ * Design goals:
  *
  * <ul>
- *   <li>SSE connection only — does not replace the regular Token mechanism.
- *   <li>The ticket must be short-lived.
- *   <li>The ticket must be one-time consumable to prevent replay.
- *   <li>Successful ticket authentication must recover the full {@link TokenPayload} for downstream
- *       context.
+ * <li>SSE connection only — does not replace the regular Token mechanism.
+ * <li>The ticket must be short-lived.
+ * <li>The ticket must be one-time consumable to prevent replay.
+ * <li>Successful ticket authentication must recover the full {@link TokenPayload} for downstream
+ * context.
  * </ul>
  *
- * <p>Security considerations:
+ * <p>
+ * Security considerations:
  *
  * <ul>
- *   <li>Tickets issued by this service must not be used as long-term credentials.
- *   <li>Tickets are intended for brief transmission via HTTPS query parameters.
- *   <li>Since query parameters may appear in access logs, keep the TTL short and avoid logging the
- *       ticket value in plain text.
+ * <li>Tickets issued by this service must not be used as long-term credentials.
+ * <li>Tickets are intended for brief transmission via HTTPS query parameters.
+ * <li>Since query parameters may appear in access logs, keep the TTL short and avoid logging the
+ * ticket value in plain text.
  * </ul>
  *
- * <p>Implementation notes:
+ * <p>
+ * Implementation notes:
  *
  * <ul>
- *   <li>This interface does not mandate a specific storage backend; in-memory, Redis, or database
- *       implementations are all valid.
- *   <li>An in-memory implementation suffices for single-node deployments; distributed deployments
- *       should use shared storage.
+ * <li>This interface does not mandate a specific storage backend; in-memory, Redis, or database
+ * implementations are all valid.
+ * <li>An in-memory implementation suffices for single-node deployments; distributed deployments
+ * should use shared storage.
  * </ul>
  *
  * @author Corwin 2026/3/30
@@ -63,16 +68,18 @@ public interface SseTicketService {
   /**
    * Issues a new short-lived SSE ticket.
    *
-   * <p>This method is typically called after the user has been authenticated via the normal Token
+   * <p>
+   * This method is typically called after the user has been authenticated via the normal Token
    * mechanism, converting the current user identity into a temporary ticket for SSE connection
    * only.
    *
-   * <p>The returned ticket must satisfy:
+   * <p>
+   * The returned ticket must satisfy:
    *
    * <ul>
-   *   <li>Sufficiently random and hard to guess
-   *   <li>Has a well-defined expiration time
-   *   <li>Can be used later in {@link #consume(String)} to recover the user identity
+   * <li>Sufficiently random and hard to guess
+   * <li>Has a well-defined expiration time
+   * <li>Can be used later in {@link #consume(String)} to recover the user identity
    * </ul>
    *
    * @param payload the current user identity payload, typically from a verified login session
@@ -83,19 +90,22 @@ public interface SseTicketService {
   /**
    * Consumes an SSE ticket and recovers the original identity payload.
    *
-   * <p>"Consume" implies the ticket is typically one-time: once successfully read, it must not be
+   * <p>
+   * "Consume" implies the ticket is typically one-time: once successfully read, it must not be
    * reusable.
    *
-   * <p>Typical validation checks include:
+   * <p>
+   * Typical validation checks include:
    *
    * <ul>
-   *   <li>Ticket is non-null
-   *   <li>Ticket exists in the store
-   *   <li>Ticket has not expired
-   *   <li>Ticket has not been used before
+   * <li>Ticket is non-null
+   * <li>Ticket exists in the store
+   * <li>Ticket has not expired
+   * <li>Ticket has not been used before
    * </ul>
    *
-   * <p>This method is typically called in the authentication filter, effective only for SSE stream
+   * <p>
+   * This method is typically called in the authentication filter, effective only for SSE stream
    * requests.
    *
    * @param ticket the ticket value submitted by the frontend
@@ -107,15 +117,17 @@ public interface SseTicketService {
   /**
    * Determines whether the current request should use SSE ticket authentication.
    *
-   * <p>The purpose of this method is to restrict ticket authentication to specific request paths,
+   * <p>
+   * The purpose of this method is to restrict ticket authentication to specific request paths,
    * preventing normal APIs from inadvertently accepting SSE tickets.
    *
-   * <p>Typical criteria:
+   * <p>
+   * Typical criteria:
    *
    * <ul>
-   *   <li>HTTP method (typically GET)
-   *   <li>Request path matches the SSE stream endpoint
-   *   <li>Optionally, Content-Type or Accept headers for further narrowing
+   * <li>HTTP method (typically GET)
+   * <li>Request path matches the SSE stream endpoint
+   * <li>Optionally, Content-Type or Accept headers for further narrowing
    * </ul>
    *
    * @param request the current HTTP request
@@ -129,5 +141,6 @@ public interface SseTicketService {
    * @param value the ticket value, typically a high-entropy, URL-safe short string
    * @param expiresAtEpochMillis the ticket expiration timestamp in epoch millis
    */
-  record SseTicket(String value, long expiresAtEpochMillis) {}
+  record SseTicket(String value, long expiresAtEpochMillis) {
+  }
 }

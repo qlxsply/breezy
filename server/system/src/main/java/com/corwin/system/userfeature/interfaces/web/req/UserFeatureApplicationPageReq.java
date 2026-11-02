@@ -13,4 +13,5 @@ import com.corwin.framework.web.request.SortRuleRequest;
  * @author Corwin 2026/6/14
  */
 public record UserFeatureApplicationPageReq(
-    String keyword, Boolean enabled, PageRuleRequest page, SortRuleRequest sort) {}
+    String keyword, Boolean enabled, PageRuleRequest page, SortRuleRequest sort) {
+}

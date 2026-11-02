@@ -32,27 +32,21 @@ public class BootstrapApiSyncService {
     List<BootstrapControllerApiScanner.ApiSeed> apis = scanResult.apis();
     List<BootstrapControllerApiScanner.PermissionSeed> permissions = scanResult.permissions();
 
-    Set<String> existingPermissionCodes =
-        BootstrapJdbcTransactionSupport.execute(
-            dataSource,
-            connection ->
-                loadExistingPermissionCodes(
-                    connection, sqlTemplateService.load("api_select_permission_codes.sql")));
-    Map<String, String> existingSortOptions =
-        BootstrapJdbcTransactionSupport.execute(
-            dataSource,
-            connection ->
-                loadExistingSortOptions(
-                    connection, sqlTemplateService.load("api_select_sort_options.sql")));
-    List<String> createdPermissionCodes =
-        permissions.stream()
-            .map(BootstrapControllerApiScanner.PermissionSeed::code)
-            .filter(code -> !existingPermissionCodes.contains(code))
-            .toList();
-    List<String> orphanPermissionCodes =
-        existingPermissionCodes.stream()
-            .filter(code -> permissions.stream().noneMatch(item -> item.code().equals(code)))
-            .toList();
+    Set<String> existingPermissionCodes = BootstrapJdbcTransactionSupport.execute(
+        dataSource,
+        connection -> loadExistingPermissionCodes(
+            connection, sqlTemplateService.load("api_select_permission_codes.sql")));
+    Map<String, String> existingSortOptions = BootstrapJdbcTransactionSupport.execute(
+        dataSource,
+        connection -> loadExistingSortOptions(
+            connection, sqlTemplateService.load("api_select_sort_options.sql")));
+    List<String> createdPermissionCodes = permissions.stream()
+        .map(BootstrapControllerApiScanner.PermissionSeed::code)
+        .filter(code -> !existingPermissionCodes.contains(code))
+        .toList();
+    List<String> orphanPermissionCodes = existingPermissionCodes.stream()
+        .filter(code -> permissions.stream().noneMatch(item -> item.code().equals(code)))
+        .toList();
 
     if (!dryRun) {
       BootstrapJdbcTransactionSupport.executeWithoutResult(
@@ -67,18 +61,17 @@ public class BootstrapApiSyncService {
     }
 
     int permissionLinkCount = apis.stream().mapToInt(api -> api.permissionCodes().size()).sum();
-    String message =
-        "apis="
-            + apis.size()
-            + "; permissions="
-            + permissions.size()
-            + "; permissionLinks="
-            + permissionLinkCount
-            + "; createdPermissions="
-            + createdPermissionCodes.size()
-            + "; orphanPermissions="
-            + orphanPermissionCodes.size()
-            + "; strategy=rebuild-api-and-relink-permissions";
+    String message = "apis="
+        + apis.size()
+        + "; permissions="
+        + permissions.size()
+        + "; permissionLinks="
+        + permissionLinkCount
+        + "; createdPermissions="
+        + createdPermissionCodes.size()
+        + "; orphanPermissions="
+        + orphanPermissionCodes.size()
+        + "; strategy=rebuild-api-and-relink-permissions";
     return new BootstrapTaskReport(
         BootstrapTaskKey.API_SYNC, dryRun, true, System.currentTimeMillis() - startedAt, message);
   }

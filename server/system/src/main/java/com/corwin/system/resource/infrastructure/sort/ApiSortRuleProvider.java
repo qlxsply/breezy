@@ -15,7 +15,8 @@ import org.springframework.web.servlet.HandlerMapping;
 /**
  * {@link SortRuleProvider} that resolves sort rules from API sort options JSON.
  *
- * <p>Matches the current request to an API record by protocol, HTTP method, and path pattern, then
+ * <p>
+ * Matches the current request to an API record by protocol, HTTP method, and path pattern, then
  * parses the {@code sort_options_json} column to produce a {@link SortRule}.
  *
  * @author Corwin 2026/7/29

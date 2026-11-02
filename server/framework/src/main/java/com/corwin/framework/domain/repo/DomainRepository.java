@@ -6,7 +6,8 @@ import java.util.Optional;
 /**
  * Base repository interface for domain-driven CRUD operations.
  *
- * <p>Abstracts common persistence operations (save, find, exists, delete) following the repository
+ * <p>
+ * Abstracts common persistence operations (save, find, exists, delete) following the repository
  * pattern from domain-driven design.
  *
  * @param <T> the entity type

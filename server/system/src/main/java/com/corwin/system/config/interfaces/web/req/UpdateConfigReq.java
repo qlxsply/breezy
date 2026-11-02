@@ -11,4 +11,5 @@ import jakarta.validation.constraints.Size;
 public record UpdateConfigReq(
     @NotNull @PositiveOrZero Long expectedRevision,
     @Size(max = 500) String reason,
-    @NotNull JsonNode value) {}
+    @NotNull JsonNode value) {
+}

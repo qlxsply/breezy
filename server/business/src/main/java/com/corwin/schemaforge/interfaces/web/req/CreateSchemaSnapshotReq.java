@@ -10,4 +10,5 @@ public record CreateSchemaSnapshotReq(
     @JsonLongString Long managedDatabaseId,
     String name,
     String remark,
-    List<Long> selectedObjectIds) {}
+    List<Long> selectedObjectIds) {
+}

@@ -63,20 +63,19 @@ public class JfrCollector {
     }
     recordingStream = stream;
     running.set(true);
-    workerThread =
-        Thread.ofPlatform()
-            .daemon(true)
-            .name("diagnostic-jfr")
-            .start(
-                () -> {
-                  try (RecordingStream ignored = stream) {
-                    stream.start();
-                  } catch (Throwable ex) {
-                    log.warn("Start diagnostic JFR stream failed", ex);
-                  } finally {
-                    running.set(false);
-                  }
-                });
+    workerThread = Thread.ofPlatform()
+        .daemon(true)
+        .name("diagnostic-jfr")
+        .start(
+            () -> {
+              try (RecordingStream ignored = stream) {
+                stream.start();
+              } catch (Throwable ex) {
+                log.warn("Start diagnostic JFR stream failed", ex);
+              } finally {
+                running.set(false);
+              }
+            });
   }
 
   /** Stops the JFR recording stream and releases resources. */

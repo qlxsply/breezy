@@ -76,8 +76,8 @@ public class SchedulerJobExecutionRunner implements Runnable {
 
     boolean locked = executionLock == null || executionLock.tryLock();
     if (!locked) {
-      SchedulerJobExecution skipped =
-          SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime, triggerType);
+      SchedulerJobExecution skipped = SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime,
+          triggerType);
       skipped.finishSkipped(
           HighDate.realInstant(), "Skipped because previous execution is still running");
       executionRepository.save(skipped);
@@ -93,21 +93,19 @@ public class SchedulerJobExecutionRunner implements Runnable {
     }
 
     try {
-      SchedulerJobExecution execution =
-          SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime, triggerType);
+      SchedulerJobExecution execution = SchedulerJobExecution.start(executionId, jobId, scheduledTime, startTime,
+          triggerType);
       executionRepository.save(execution);
 
-      SchedulerJobRuntime runtime =
-          runtimeRepository
-              .findById(jobId)
-              .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
+      SchedulerJobRuntime runtime = runtimeRepository
+          .findById(jobId)
+          .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
       runtime.markRunning(executionId, scheduledTime);
       runtimeRepository.save(runtime);
 
-      JobResult result =
-          handler.execute(
-              new JobExecutionContext<>(
-                  jobId, executionId, scheduledTime, startTime, triggerType, payload));
+      JobResult result = handler.execute(
+          new JobExecutionContext<>(
+              jobId, executionId, scheduledTime, startTime, triggerType, payload));
       Instant endTime = HighDate.realInstant();
       long durationMs = HighDate.realTimestampMillis() - startTime.toEpochMilli();
       execution.finishSuccess(endTime, durationMs, result);
@@ -120,20 +118,17 @@ public class SchedulerJobExecutionRunner implements Runnable {
     } catch (Exception ex) {
       Instant endTime = HighDate.realInstant();
       long durationMs = HighDate.realTimestampMillis() - startTime.toEpochMilli();
-      SchedulerJobExecution execution =
-          executionRepository
-              .findById(executionId)
-              .orElseGet(
-                  () ->
-                      SchedulerJobExecution.start(
-                          executionId, jobId, scheduledTime, startTime, triggerType));
+      SchedulerJobExecution execution = executionRepository
+          .findById(executionId)
+          .orElseGet(
+              () -> SchedulerJobExecution.start(
+                  executionId, jobId, scheduledTime, startTime, triggerType));
       execution.finishFailure(endTime, durationMs, ex.getMessage(), stackTrace(ex));
       executionRepository.save(execution);
 
-      SchedulerJobRuntime runtime =
-          runtimeRepository
-              .findById(jobId)
-              .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
+      SchedulerJobRuntime runtime = runtimeRepository
+          .findById(jobId)
+          .orElseGet(() -> SchedulerJobRuntime.create(jobId, null, null));
       runtime.markFailure(
           ScheduleRuleTrigger.nextExecutionAfter(scheduleRule, scheduledTime, endTime),
           endTime,

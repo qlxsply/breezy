@@ -68,7 +68,7 @@ public class ScheduleRuleTrigger implements Trigger {
     return switch (rule) {
       case OnceRule onceRule -> nextOnce(onceRule, lastScheduledExecution, now);
       case FixedIntervalRule fixedIntervalRule ->
-          nextFixedInterval(fixedIntervalRule, lastScheduledExecution, lastCompletion, now);
+        nextFixedInterval(fixedIntervalRule, lastScheduledExecution, lastCompletion, now);
       case DailyRule dailyRule -> nextDaily(dailyRule, now);
       case WeeklyRule weeklyRule -> nextWeekly(weeklyRule, now);
       case MonthlyRule monthlyRule -> nextMonthly(monthlyRule, now);
@@ -93,10 +93,9 @@ public class ScheduleRuleTrigger implements Trigger {
     if (lastScheduledExecution == null && lastCompletion == null) {
       return base.isAfter(now) ? base : now.plusMillis(1);
     }
-    Instant nextBase =
-        rule.mode() == IntervalMode.FIXED_RATE
-            ? (lastScheduledExecution == null ? base : lastScheduledExecution)
-            : (lastCompletion == null ? now : lastCompletion);
+    Instant nextBase = rule.mode() == IntervalMode.FIXED_RATE
+        ? (lastScheduledExecution == null ? base : lastScheduledExecution)
+        : (lastCompletion == null ? now : lastCompletion);
     return nextBase.plus(rule.interval());
   }
 
@@ -147,15 +146,14 @@ public class ScheduleRuleTrigger implements Trigger {
   private static Instant nextYearly(YearlyRule rule, Instant now) {
     ZoneId zoneId = rule.zoneId();
     LocalDateTime nowAtZone = HighDate.ofDateTime(now, zoneId);
-    LocalDateTime current =
-        LocalDateTime.of(
-            nowAtZone.getYear(),
-            rule.month().getValue(),
-            rule.dayOfMonth(),
-            rule.time().getHour(),
-            rule.time().getMinute(),
-            rule.time().getSecond(),
-            rule.time().getNano());
+    LocalDateTime current = LocalDateTime.of(
+        nowAtZone.getYear(),
+        rule.month().getValue(),
+        rule.dayOfMonth(),
+        rule.time().getHour(),
+        rule.time().getMinute(),
+        rule.time().getSecond(),
+        rule.time().getNano());
     Instant currentInstant = current.atZone(zoneId).toInstant();
     if (currentInstant.isAfter(now)) {
       return currentInstant;
@@ -164,19 +162,17 @@ public class ScheduleRuleTrigger implements Trigger {
   }
 
   private static Instant toMonthlyInstant(MonthlyRule rule, YearMonth yearMonth, ZoneId zoneId) {
-    int day =
-        rule.dayMode() == MonthlyDayMode.LAST_DAY
-            ? yearMonth.lengthOfMonth()
-            : Math.min(rule.dayOfMonth(), yearMonth.lengthOfMonth());
-    LocalDateTime candidate =
-        LocalDateTime.of(
-            yearMonth.getYear(),
-            yearMonth.getMonthValue(),
-            day,
-            rule.time().getHour(),
-            rule.time().getMinute(),
-            rule.time().getSecond(),
-            rule.time().getNano());
+    int day = rule.dayMode() == MonthlyDayMode.LAST_DAY
+        ? yearMonth.lengthOfMonth()
+        : Math.min(rule.dayOfMonth(), yearMonth.lengthOfMonth());
+    LocalDateTime candidate = LocalDateTime.of(
+        yearMonth.getYear(),
+        yearMonth.getMonthValue(),
+        day,
+        rule.time().getHour(),
+        rule.time().getMinute(),
+        rule.time().getSecond(),
+        rule.time().getNano());
     return candidate.atZone(zoneId).toInstant();
   }
 }

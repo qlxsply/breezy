@@ -6,13 +6,15 @@ import lombok.Getter;
 /**
  * Whitelist matching strategy types.
  *
- * <p>Each enum constant represents a different path-matching approach used to determine whether a
+ * <p>
+ * Each enum constant represents a different path-matching approach used to determine whether a
  * request URI is exempt from authentication.
  *
  * @author Corwin 2026/3/23
  */
 @Getter
 public enum WhitelistMatchType implements DictEnumDefinition {
+
   EXACT("精确匹配"),
   ANT("Ant 路径匹配"),
   PATH_PATTERN("PathPattern 匹配");

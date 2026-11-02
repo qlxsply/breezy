@@ -16,11 +16,12 @@ import lombok.Getter;
 @Table(
     name = "sys_user_role",
     indexes = {
-      @Index(name = "idx_sys_user_role_unique", columnList = "user_id,role_id", unique = true),
-      @Index(name = "idx_sys_user_role_user_id", columnList = "user_id"),
-      @Index(name = "idx_sys_user_role_role_id", columnList = "role_id")
+        @Index(name = "idx_sys_user_role_unique", columnList = "user_id,role_id", unique = true),
+        @Index(name = "idx_sys_user_role_user_id", columnList = "user_id"),
+        @Index(name = "idx_sys_user_role_role_id", columnList = "role_id")
     })
 public class UserRole {
+
   /** Primary key, auto-incremented. */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +43,8 @@ public class UserRole {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
-  protected UserRole() {}
+  protected UserRole() {
+  }
 
   public UserRole(Long userId, Long roleId, Long operator) {
     this.userId = userId;

@@ -8,6 +8,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/2/4
  */
 public enum ScheduleEventStatus implements DictEnumDefinition {
+
   ACTIVE("启用", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   PAUSED("暂停", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
   CANCELED("取消", DictTagColor.DANGER_RED, DictTagType.DANGER);

@@ -8,7 +8,8 @@ package com.corwin.framework.mybatis.pagination;
  */
 public final class SqlPlaceholderCounter {
 
-  private SqlPlaceholderCounter() {}
+  private SqlPlaceholderCounter() {
+  }
 
   public static int count(String sql) {
     if (sql == null || sql.isEmpty()) {

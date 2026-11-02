@@ -13,4 +13,5 @@ public record DatabaseSourceSimpleView(
     DatabaseType dbType,
     String username,
     DatabaseSourceStatus status,
-    DatabaseSourceSourceType sourceType) {}
+    DatabaseSourceSourceType sourceType) {
+}

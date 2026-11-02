@@ -5,4 +5,5 @@ package com.corwin.framework.event.durable.store;
  *
  * @author Corwin 2026/4/12
  */
-public record CleanupResult(int deletedDeliveries, int deletedEvents) {}
+public record CleanupResult(int deletedDeliveries, int deletedEvents) {
+}

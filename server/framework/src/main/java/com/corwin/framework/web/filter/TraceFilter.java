@@ -17,15 +17,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Trace filter — entry point for distributed tracing.
  *
- * <p>Responsibilities:
+ * <p>
+ * Responsibilities:
  *
  * <ul>
- *   <li>Generate or propagate traceId from upstream headers
- *   <li>Generate spanId for the current node
- *   <li>Initialise the request context ({@link com.corwin.framework.web.ctx.Ctx})
- *   <li>Bind context data to MDC for log correlation
- *   <li>Write traceId back in the response header
- *   <li>Clean up the context after request completion
+ * <li>Generate or propagate traceId from upstream headers
+ * <li>Generate spanId for the current node
+ * <li>Initialise the request context ({@link com.corwin.framework.web.ctx.Ctx})
+ * <li>Bind context data to MDC for log correlation
+ * <li>Write traceId back in the response header
+ * <li>Clean up the context after request completion
  * </ul>
  *
  * @author Corwin 2026/3/30

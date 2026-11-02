@@ -16,4 +16,5 @@ public record UserToolPageRes(
     int sortNo,
     String level,
     boolean enabled,
-    boolean guestAccess) {}
+    boolean guestAccess) {
+}

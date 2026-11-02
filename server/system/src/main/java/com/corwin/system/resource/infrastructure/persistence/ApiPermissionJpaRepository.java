@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link ApiPermission} entity.
  *
- * <p>Provides database access for API-permission binding operations.
+ * <p>
+ * Provides database access for API-permission binding operations.
  *
  * @author Corwin 2026/4/24
  */

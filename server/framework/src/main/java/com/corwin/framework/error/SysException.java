@@ -3,7 +3,8 @@ package com.corwin.framework.error;
 /**
  * System exception representing an unexpected, unrecoverable failure.
  *
- * <p>Carries an {@link ErrorCode} ({@code outwardCode}) that is safe to expose to API consumers
+ * <p>
+ * Carries an {@link ErrorCode} ({@code outwardCode}) that is safe to expose to API consumers
  * while the full stack trace is logged internally.
  *
  * @author Corwin 2025/5/12

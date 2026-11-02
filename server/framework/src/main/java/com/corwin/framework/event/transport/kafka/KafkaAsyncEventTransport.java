@@ -18,7 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Local-dispatch Kafka transport (simulation mode).
  *
- * <p>Without a real Kafka client dependency, this implementation simulates the cross-boundary
+ * <p>
+ * Without a real Kafka client dependency, this implementation simulates the cross-boundary
  * transport path via serialisation + deserialisation + local executor, validating subscription
  * models, source filtering, context restoration, and error logging. The same abstraction boundary
  * applies when switching to real Kafka.
@@ -69,8 +70,7 @@ public class KafkaAsyncEventTransport implements AsyncEventTransport {
     String topic = topicResolver.resolveTopic(envelope.eventType());
     byte[] bytes = serializer.serialize(envelope);
     AsyncEventEnvelope<?> consumedEnvelope = serializer.deserialize(bytes);
-    List<SubscriptionDescriptor> subscriptions =
-        registry.getByEventType(consumedEnvelope.eventType());
+    List<SubscriptionDescriptor> subscriptions = registry.getByEventType(consumedEnvelope.eventType());
     for (SubscriptionDescriptor subscription : subscriptions) {
       if (!matchesSource(subscription, consumedEnvelope.source())) {
         continue;

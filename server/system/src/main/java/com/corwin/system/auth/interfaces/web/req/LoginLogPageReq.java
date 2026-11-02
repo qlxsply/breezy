@@ -14,4 +14,5 @@ public record LoginLogPageReq(
     SortRuleRequest sort,
     String userAccount,
     Instant startAt,
-    Instant endAt) {}
+    Instant endAt) {
+}

@@ -10,4 +10,5 @@ import com.corwin.framework.constant.UserType;
  * @param userType the user's type (e.g. ADMIN, USER, GUEST)
  * @author Corwin 2026/2/14
  */
-public record TokenPayload(Long userId, String userAccount, UserType userType) {}
+public record TokenPayload(Long userId, String userAccount, UserType userType) {
+}

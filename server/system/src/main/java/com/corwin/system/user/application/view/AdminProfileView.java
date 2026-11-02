@@ -19,4 +19,5 @@ public record AdminProfileView(
     Instant lastPasswordChangedAt,
     Instant createdAt,
     Instant updatedAt,
-    List<AdminProfileLoginActivityView> recentActivities) {}
+    List<AdminProfileLoginActivityView> recentActivities) {
+}

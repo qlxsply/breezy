@@ -74,15 +74,14 @@ public class JdbcMetadataExtractor implements MetadataExtractor {
     try (Connection conn = connectionFactory.openConnection(dataSource)) {
       DatabaseMetaData meta = conn.getMetaData();
 
-      MetadataExtractResult.BaseInfo baseInfo =
-          new MetadataExtractResult.BaseInfo(
-              meta.getDatabaseProductName(),
-              meta.getDatabaseProductVersion(),
-              meta.getDriverName(),
-              meta.getDriverVersion(),
-              meta.getURL(),
-              meta.getUserName(),
-              HighDate.mockInstant());
+      MetadataExtractResult.BaseInfo baseInfo = new MetadataExtractResult.BaseInfo(
+          meta.getDatabaseProductName(),
+          meta.getDatabaseProductVersion(),
+          meta.getDriverName(),
+          meta.getDriverVersion(),
+          meta.getURL(),
+          meta.getUserName(),
+          HighDate.mockInstant());
 
       String catalog = null;
       String schema = null;
@@ -123,7 +122,7 @@ public class JdbcMetadataExtractor implements MetadataExtractor {
 
   private List<MetadataExtractResult.TableInfo> loadTables(
       DatabaseMetaData meta, String catalog, String schema) throws SQLException {
-    String[] types = new String[] {"TABLE", "VIEW"};
+    String[] types = new String[]{"TABLE", "VIEW"};
     List<MetadataExtractResult.TableInfo> list = new ArrayList<>();
     try (ResultSet rs = meta.getTables(catalog, schema, "%", types)) {
       while (rs.next()) {
@@ -155,8 +154,7 @@ public class JdbcMetadataExtractor implements MetadataExtractor {
         Integer columnSize = getIntOrNull(rs, "COLUMN_SIZE");
         Integer decimalDigits = getIntOrNull(rs, "DECIMAL_DIGITS");
         Integer nullableInt = getIntOrNull(rs, "NULLABLE");
-        Boolean nullable =
-            nullableInt == null ? null : (nullableInt != DatabaseMetaData.columnNoNulls);
+        Boolean nullable = nullableInt == null ? null : (nullableInt != DatabaseMetaData.columnNoNulls);
         String remarks = rs.getString("REMARKS");
         String defaultValue = rs.getString("COLUMN_DEF");
         Integer ordinalPosition = getIntOrNull(rs, "ORDINAL_POSITION");

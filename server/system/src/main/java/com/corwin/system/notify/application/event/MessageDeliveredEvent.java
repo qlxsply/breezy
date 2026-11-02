@@ -11,4 +11,5 @@ package com.corwin.system.notify.application.event;
  * @author Corwin 2026/4/7
  */
 public record MessageDeliveredEvent(
-    Long deliveryId, Long userId, String msgType, String bizType, String bizId) {}
+    Long deliveryId, Long userId, String msgType, String bizType, String bizId) {
+}

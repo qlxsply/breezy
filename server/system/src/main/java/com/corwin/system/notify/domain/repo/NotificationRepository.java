@@ -11,14 +11,15 @@ import java.util.Optional;
 /**
  * Repository interface for {@link Notification} persistence operations.
  *
- * <p>Provides methods for querying, counting, and updating notification records, including unread
+ * <p>
+ * Provides methods for querying, counting, and updating notification records, including unread
  * notification lookups and bulk mark-as-read operations.
  *
  * @author Corwin 2026/3/30
  */
 public interface NotificationRepository
     extends DomainRepository<Notification, Long>,
-        DynamicPageQueryRepository<Notification, NotificationPageQuery> {
+    DynamicPageQueryRepository<Notification, NotificationPageQuery> {
 
   /**
    * Finds all unread notifications for a user, ordered by creation time descending.

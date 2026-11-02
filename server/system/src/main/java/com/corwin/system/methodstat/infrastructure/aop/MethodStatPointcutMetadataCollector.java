@@ -96,8 +96,7 @@ public class MethodStatPointcutMetadataCollector implements MethodStatMetadataCo
       Method declaredMethod,
       Class<?> targetClass) {
     try {
-      MethodStatMethodDescriptor descriptor =
-          annotationResolver.resolve(declaredMethod, targetClass);
+      MethodStatMethodDescriptor descriptor = annotationResolver.resolve(declaredMethod, targetClass);
       descriptors.putIfAbsent(descriptor.key().value(), descriptor);
     } catch (RuntimeException ex) {
       log.warn("Method stat metadata collect failed, method={}", declaredMethod, ex);

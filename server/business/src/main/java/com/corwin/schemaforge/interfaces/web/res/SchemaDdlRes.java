@@ -18,4 +18,5 @@ public record SchemaDdlRes(
     String schemaName,
     String logicalFileId,
     String contentHash,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

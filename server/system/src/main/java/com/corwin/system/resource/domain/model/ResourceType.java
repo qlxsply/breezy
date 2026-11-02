@@ -7,10 +7,12 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * Resource type enumeration for the system resource tree.
  *
- * <p>Defines the types of nodes in the admin resource hierarchy. Each type has specific rules about
+ * <p>
+ * Defines the types of nodes in the admin resource hierarchy. Each type has specific rules about
  * which child types it can contain and whether it can bind permission codes.
  *
- * <p>Resource tree structure constraints:
+ * <p>
+ * Resource tree structure constraints:
  *
  * <pre>
  * DIRECTORY
@@ -29,12 +31,13 @@ import com.corwin.framework.dict.DictTagType;
  * └── (no children allowed)
  * </pre>
  *
- * <p>Key notes:
+ * <p>
+ * Key notes:
  *
  * <ul>
- *   <li>Permission codes are not resource tree nodes.
- *   <li>Only BUTTON-type resources can bind permissions.
- *   <li>Permission bindings are managed via {@link ResourcePermission}.
+ * <li>Permission codes are not resource tree nodes.
+ * <li>Only BUTTON-type resources can bind permissions.
+ * <li>Permission bindings are managed via {@link ResourcePermission}.
  * </ul>
  *
  * @author Corwin
@@ -44,28 +47,32 @@ public enum ResourceType implements DictEnumDefinition {
   /**
    * Directory: a navigational grouping node.
    *
-   * <p>Does not correspond to a page. Can only contain sub-directories or menus.
+   * <p>
+   * Does not correspond to a page. Can only contain sub-directories or menus.
    */
   DIRECTORY("目录", DictTagColor.SLATE, DictTagType.INFO),
 
   /**
    * Menu: a navigational entry typically linked to a front-end route.
    *
-   * <p>Can contain sub-menus, functions, or buttons.
+   * <p>
+   * Can contain sub-menus, functions, or buttons.
    */
   MENU("菜单", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
 
   /**
    * Function: a sub-page capability or feature group under a menu.
    *
-   * <p>Can only contain buttons.
+   * <p>
+   * Can only contain buttons.
    */
   FUNCTION("功能", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
 
   /**
    * Button: the leaf-level UI action node.
    *
-   * <p>No children allowed. Only buttons can bind permission codes.
+   * <p>
+   * No children allowed. Only buttons can bind permission codes.
    */
   BUTTON("按钮", DictTagColor.WARNING_ORANGE, DictTagType.WARNING);
 
@@ -112,7 +119,8 @@ public enum ResourceType implements DictEnumDefinition {
   /**
    * Checks whether this resource type can bind permission codes.
    *
-   * <p>In the current model, only BUTTON-type resources can bind permissions.
+   * <p>
+   * In the current model, only BUTTON-type resources can bind permissions.
    *
    * @return true if this type can bind permission codes
    */
@@ -123,7 +131,8 @@ public enum ResourceType implements DictEnumDefinition {
   /**
    * Checks whether this resource type is a navigational resource.
    *
-   * <p>DIRECTORY and MENU typically participate in sidebar or top navigation rendering.
+   * <p>
+   * DIRECTORY and MENU typically participate in sidebar or top navigation rendering.
    *
    * @return true if this type is navigational
    */
@@ -134,7 +143,8 @@ public enum ResourceType implements DictEnumDefinition {
   /**
    * Checks whether this resource type is page-like (menu or function).
    *
-   * <p>MENU represents a page entry point. FUNCTION represents a sub-page or feature group.
+   * <p>
+   * MENU represents a page entry point. FUNCTION represents a sub-page or feature group.
    *
    * @return true if this type is page-like
    */

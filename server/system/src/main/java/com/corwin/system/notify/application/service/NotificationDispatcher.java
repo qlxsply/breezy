@@ -59,8 +59,7 @@ public class NotificationDispatcher implements MessageDispatchPort {
       String bizType,
       String bizId) {
     ResolvedMsgBehavior behavior = resolveBehavior(type, fallbackRoute);
-    DispatchOutcome outcome =
-        dispatchWithBehavior(userId, userType, type, title, content, behavior, bizType, bizId);
+    DispatchOutcome outcome = dispatchWithBehavior(userId, userType, type, title, content, behavior, bizType, bizId);
     return toResult(outcome.delivery(), outcome.notificationId());
   }
 
@@ -77,15 +76,14 @@ public class NotificationDispatcher implements MessageDispatchPort {
       Boolean webPushEnabled,
       Boolean panelAutoOpen,
       Boolean osNotificationEnabled) {
-    ResolvedMsgBehavior behavior =
-        resolvePreviewBehavior(
-            type,
-            route,
-            priority,
-            sseEnabled,
-            webPushEnabled,
-            panelAutoOpen,
-            osNotificationEnabled);
+    ResolvedMsgBehavior behavior = resolvePreviewBehavior(
+        type,
+        route,
+        priority,
+        sseEnabled,
+        webPushEnabled,
+        panelAutoOpen,
+        osNotificationEnabled);
     return dispatchWithBehavior(userId, userType, type, title, content, behavior, null, null)
         .delivery();
   }
@@ -99,31 +97,29 @@ public class NotificationDispatcher implements MessageDispatchPort {
       ResolvedMsgBehavior behavior,
       String bizType,
       String bizId) {
-    Notification notification =
-        new Notification(
-            userId,
-            userType,
-            title,
-            content,
-            type.name(),
-            behavior.priority().name(),
-            behavior.route());
+    Notification notification = new Notification(
+        userId,
+        userType,
+        title,
+        content,
+        type.name(),
+        behavior.priority().name(),
+        behavior.route());
     notification = notificationRepository.save(notification);
 
-    MessageDelivery delivery =
-        MessageDelivery.pending(
-            userId,
-            userType,
-            notification.getId(),
-            type.name(),
-            title,
-            content,
-            behavior.route(),
-            behavior.priority().name(),
-            behavior.panelAutoOpen(),
-            behavior.osNotificationEnabled(),
-            bizType,
-            bizId);
+    MessageDelivery delivery = MessageDelivery.pending(
+        userId,
+        userType,
+        notification.getId(),
+        type.name(),
+        title,
+        content,
+        behavior.route(),
+        behavior.priority().name(),
+        behavior.panelAutoOpen(),
+        behavior.osNotificationEnabled(),
+        bizType,
+        bizId);
     delivery = messageDeliveryRepository.save(delivery);
 
     log.info(
@@ -141,19 +137,17 @@ public class NotificationDispatcher implements MessageDispatchPort {
         behavior.osNotificationEnabled());
 
     if (behavior.sseEnabled()) {
-      MsgPushPayloadView payload =
-          new MsgPushPayloadView(
-              String.valueOf(delivery.getId()),
-              String.valueOf(notification.getId()),
-              type.name(),
-              title,
-              content,
-              behavior.route(),
-              behavior.priority().name(),
-              behavior.panelAutoOpen(),
-              behavior.osNotificationEnabled());
-      boolean delivered =
-          sessionManager.send(userId, userType, type.name(), payload, payload.eventId());
+      MsgPushPayloadView payload = new MsgPushPayloadView(
+          String.valueOf(delivery.getId()),
+          String.valueOf(notification.getId()),
+          type.name(),
+          title,
+          content,
+          behavior.route(),
+          behavior.priority().name(),
+          behavior.panelAutoOpen(),
+          behavior.osNotificationEnabled());
+      boolean delivered = sessionManager.send(userId, userType, type.name(), payload, payload.eventId());
       if (delivered) {
         delivery.markSent();
         messageDeliveryRepository.save(delivery);
@@ -184,8 +178,7 @@ public class NotificationDispatcher implements MessageDispatchPort {
   }
 
   private MessageDispatchResult toResult(MessageDelivery delivery, Long notificationId) {
-    boolean delivered =
-        delivery.getStatus() == com.corwin.system.notify.domain.model.MessageDeliveryStatus.SENT;
+    boolean delivered = delivery.getStatus() == com.corwin.system.notify.domain.model.MessageDeliveryStatus.SENT;
     return new MessageDispatchResult(delivery.getId(), notificationId, delivered);
   }
 
@@ -204,6 +197,7 @@ public class NotificationDispatcher implements MessageDispatchPort {
     }
     TransactionSynchronizationManager.registerSynchronization(
         new TransactionSynchronization() {
+
           @Override
           public void afterCommit() {
             log.info(
@@ -229,24 +223,21 @@ public class NotificationDispatcher implements MessageDispatchPort {
     String resolvedRoute = normalizeRoute(route, baseBehavior.route());
     boolean hasPriorityOverride = priority != null && !priority.isBlank();
     boolean resolvedSseEnabled = sseEnabled != null ? sseEnabled : baseBehavior.sseEnabled();
-    boolean resolvedWebPushEnabled =
-        webPushEnabled != null
-            ? webPushEnabled
-            : (hasPriorityOverride
-                ? resolvedPriority == MsgPriority.HIGH
-                : baseBehavior.webPushEnabled());
-    boolean resolvedPanelAutoOpen =
-        panelAutoOpen != null
-            ? panelAutoOpen
-            : (hasPriorityOverride
-                ? resolvedPriority != MsgPriority.LOW
-                : baseBehavior.panelAutoOpen());
-    boolean resolvedOsNotificationEnabled =
-        osNotificationEnabled != null
-            ? osNotificationEnabled
-            : (hasPriorityOverride
-                ? resolvedPriority == MsgPriority.HIGH
-                : baseBehavior.osNotificationEnabled());
+    boolean resolvedWebPushEnabled = webPushEnabled != null
+        ? webPushEnabled
+        : (hasPriorityOverride
+            ? resolvedPriority == MsgPriority.HIGH
+            : baseBehavior.webPushEnabled());
+    boolean resolvedPanelAutoOpen = panelAutoOpen != null
+        ? panelAutoOpen
+        : (hasPriorityOverride
+            ? resolvedPriority != MsgPriority.LOW
+            : baseBehavior.panelAutoOpen());
+    boolean resolvedOsNotificationEnabled = osNotificationEnabled != null
+        ? osNotificationEnabled
+        : (hasPriorityOverride
+            ? resolvedPriority == MsgPriority.HIGH
+            : baseBehavior.osNotificationEnabled());
     if (resolvedPriority == MsgPriority.HIGH) {
       resolvedWebPushEnabled = true;
       resolvedPanelAutoOpen = true;
@@ -285,11 +276,10 @@ public class NotificationDispatcher implements MessageDispatchPort {
 
   private ResolvedMsgBehavior resolveBehavior(MsgType type, String fallbackRoute) {
     var messageTypes = Configs.snapshot(SystemNotifyConfigSpecs.MESSAGE_TYPES).value();
-    MessageTypeConfig config =
-        messageTypes.items().stream()
-            .filter(item -> item.msgType() == type)
-            .findFirst()
-            .orElseGet(() -> defaultConfig(type));
+    MessageTypeConfig config = messageTypes.items().stream()
+        .filter(item -> item.msgType() == type)
+        .findFirst()
+        .orElseGet(() -> defaultConfig(type));
     MsgPriority priority = config.priority();
     String route = normalizeConfiguredRoute(config.route(), defaultRoute(type));
     if ((route == null || route.isBlank()) && fallbackRoute != null && !fallbackRoute.isBlank()) {
@@ -330,7 +320,8 @@ public class NotificationDispatcher implements MessageDispatchPort {
     return defaultConfig(type).route();
   }
 
-  private record DispatchOutcome(Long notificationId, MessageDelivery delivery) {}
+  private record DispatchOutcome(Long notificationId, MessageDelivery delivery) {
+  }
 
   private record ResolvedMsgBehavior(
       String route,
@@ -338,5 +329,6 @@ public class NotificationDispatcher implements MessageDispatchPort {
       boolean sseEnabled,
       boolean webPushEnabled,
       boolean panelAutoOpen,
-      boolean osNotificationEnabled) {}
+      boolean osNotificationEnabled) {
+  }
 }

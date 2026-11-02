@@ -109,7 +109,8 @@ public class BootstrapUserFeatureDefinitionLoader {
     return normalized.isEmpty() ? null : normalized;
   }
 
-  public record UserFeatureDefinitionSeed(List<ApplicationSeed> applications) {}
+  public record UserFeatureDefinitionSeed(List<ApplicationSeed> applications) {
+  }
 
   public record ApplicationSeed(
       String code,
@@ -120,7 +121,8 @@ public class BootstrapUserFeatureDefinitionLoader {
       String componentPath,
       boolean enabled,
       int sortNo,
-      List<FeatureSeed> features) {}
+      List<FeatureSeed> features) {
+  }
 
   public record FeatureSeed(
       String code,
@@ -128,12 +130,14 @@ public class BootstrapUserFeatureDefinitionLoader {
       String description,
       boolean enabled,
       List<String> permissionCodes,
-      int sortNo) {}
+      int sortNo) {
+  }
 
   @Getter
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class UserFeatureRoot {
+
     @JacksonXmlProperty(localName = "application")
     @JacksonXmlElementWrapper(localName = "applications")
     private List<ApplicationNode> applications;
@@ -143,6 +147,7 @@ public class BootstrapUserFeatureDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class ApplicationNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
 
@@ -176,6 +181,7 @@ public class BootstrapUserFeatureDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class FeatureNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
 
@@ -200,6 +206,7 @@ public class BootstrapUserFeatureDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class PermissionNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
   }

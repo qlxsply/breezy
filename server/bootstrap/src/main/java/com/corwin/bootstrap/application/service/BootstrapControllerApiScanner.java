@@ -67,8 +67,7 @@ public class BootstrapControllerApiScanner {
   }
 
   private List<Class<?>> scanControllerClasses() {
-    ClassPathScanningCandidateComponentProvider scanner =
-        new ClassPathScanningCandidateComponentProvider(false);
+    ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
     scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
 
     List<Class<?>> result = new ArrayList<>();
@@ -103,13 +102,12 @@ public class BootstrapControllerApiScanner {
     String module = apiMeta.module().code();
 
     List<ApiSeed> result = new ArrayList<>();
-    List<Method> methods =
-        Arrays.stream(controllerClass.getDeclaredMethods())
-            .filter(this::isHandlerMethod)
-            .sorted(
-                Comparator.comparing(Method::getName)
-                    .thenComparing(method -> Arrays.toString(method.getParameterTypes())))
-            .toList();
+    List<Method> methods = Arrays.stream(controllerClass.getDeclaredMethods())
+        .filter(this::isHandlerMethod)
+        .sorted(
+            Comparator.comparing(Method::getName)
+                .thenComparing(method -> Arrays.toString(method.getParameterTypes())))
+        .toList();
     for (Method method : methods) {
       RequestMeta requestMeta = parseRequestMeta(method);
       if (requestMeta == null) {
@@ -117,8 +115,7 @@ public class BootstrapControllerApiScanner {
       }
       SecurityMeta securityMeta = resolveSecurity(method, controllerClass, typeSecurity);
       Audit audit = AnnotatedElementUtils.findMergedAnnotation(method, Audit.class);
-      AuditMeta auditMeta =
-          audit == null ? AuditMeta.none() : AuditMeta.of(audit, controllerClass, method);
+      AuditMeta auditMeta = audit == null ? AuditMeta.none() : AuditMeta.of(audit, controllerClass, method);
       if (audit == null && typeAudit != null) {
         auditMeta = AuditMeta.of(typeAudit, controllerClass, method);
       }
@@ -159,14 +156,13 @@ public class BootstrapControllerApiScanner {
   private void validateNoDuplicateApis(List<ApiSeed> apis) {
     LinkedHashSet<String> seen = new LinkedHashSet<>();
     for (ApiSeed api : apis) {
-      String uniqueKey =
-          api.module()
-              + "|"
-              + api.protocol().name()
-              + "|"
-              + api.httpMethod().name()
-              + "|"
-              + api.pathPattern();
+      String uniqueKey = api.module()
+          + "|"
+          + api.protocol().name()
+          + "|"
+          + api.httpMethod().name()
+          + "|"
+          + api.pathPattern();
       if (!seen.add(uniqueKey)) {
         throw new IllegalStateException("Duplicate api mapping found: " + uniqueKey);
       }
@@ -174,8 +170,7 @@ public class BootstrapControllerApiScanner {
   }
 
   private List<String> resolveTypePaths(Class<?> controllerClass) {
-    RequestMapping requestMapping =
-        AnnotatedElementUtils.findMergedAnnotation(controllerClass, RequestMapping.class);
+    RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(controllerClass, RequestMapping.class);
     if (requestMapping == null) {
       return List.of("");
     }
@@ -198,21 +193,18 @@ public class BootstrapControllerApiScanner {
       return new RequestMeta(
           resolvePaths(putMapping.value(), putMapping.path()), List.of(ApiMethod.PUT));
     }
-    DeleteMapping deleteMapping =
-        AnnotatedElementUtils.findMergedAnnotation(method, DeleteMapping.class);
+    DeleteMapping deleteMapping = AnnotatedElementUtils.findMergedAnnotation(method, DeleteMapping.class);
     if (deleteMapping != null) {
       return new RequestMeta(
           resolvePaths(deleteMapping.value(), deleteMapping.path()), List.of(ApiMethod.DELETE));
     }
-    PatchMapping patchMapping =
-        AnnotatedElementUtils.findMergedAnnotation(method, PatchMapping.class);
+    PatchMapping patchMapping = AnnotatedElementUtils.findMergedAnnotation(method, PatchMapping.class);
     if (patchMapping != null) {
       return new RequestMeta(
           resolvePaths(patchMapping.value(), patchMapping.path()), List.of(ApiMethod.PATCH));
     }
 
-    RequestMapping requestMapping =
-        AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
+    RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
     if (requestMapping == null) {
       return null;
     }
@@ -263,13 +255,11 @@ public class BootstrapControllerApiScanner {
     if (AnnotatedElementUtils.findMergedAnnotation(controllerClass, PermitAll.class) != null) {
       return SecurityMeta.permitAll();
     }
-    Authorize authorize =
-        AnnotatedElementUtils.findMergedAnnotation(controllerClass, Authorize.class);
+    Authorize authorize = AnnotatedElementUtils.findMergedAnnotation(controllerClass, Authorize.class);
     if (authorize != null) {
       return SecurityMeta.authorize(authorize);
     }
-    Authenticated authenticated =
-        AnnotatedElementUtils.findMergedAnnotation(controllerClass, Authenticated.class);
+    Authenticated authenticated = AnnotatedElementUtils.findMergedAnnotation(controllerClass, Authenticated.class);
     if (authenticated != null) {
       return SecurityMeta.authenticated(authenticated);
     }
@@ -285,8 +275,7 @@ public class BootstrapControllerApiScanner {
     if (authorize != null) {
       return SecurityMeta.authorize(authorize);
     }
-    Authenticated authenticated =
-        AnnotatedElementUtils.findMergedAnnotation(method, Authenticated.class);
+    Authenticated authenticated = AnnotatedElementUtils.findMergedAnnotation(method, Authenticated.class);
     if (authenticated != null) {
       return SecurityMeta.authenticated(authenticated);
     }
@@ -310,10 +299,9 @@ public class BootstrapControllerApiScanner {
       UserType permissionUserType = UserType.valueOf(api.userType());
       for (String permissionCode : api.permissionCodes()) {
         String permissionName = permissionNames.getOrDefault(permissionCode, permissionCode);
-        PermissionSeed existing =
-            result.putIfAbsent(
-                permissionCode,
-                new PermissionSeed(permissionCode, permissionName, permissionUserType));
+        PermissionSeed existing = result.putIfAbsent(
+            permissionCode,
+            new PermissionSeed(permissionCode, permissionName, permissionUserType));
         if (existing != null && existing.userScope() != permissionUserType) {
           throw new IllegalStateException(
               "Permission userType conflict detected: code="
@@ -369,134 +357,134 @@ public class BootstrapControllerApiScanner {
     }
     return switch (pathPattern) {
       case "/api/apis/page" ->
-          sortOptions(
-              null,
-              null,
-              "module",
-              "module",
-              "pathPattern",
-              "path_pattern",
-              "handlerClass",
-              "handler_class",
-              "handlerMethod",
-              "handler_method",
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at");
+        sortOptions(
+            null,
+            null,
+            "module",
+            "module",
+            "pathPattern",
+            "path_pattern",
+            "handlerClass",
+            "handler_class",
+            "handlerMethod",
+            "handler_method",
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at");
       case "/api/sys/audit-logs/page" ->
-          sortOptions(
-              "createdAt",
-              "DESC",
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at",
-              "startedAt",
-              "started_at",
-              "endedAt",
-              "ended_at",
-              "durationMs",
-              "duration_ms");
+        sortOptions(
+            "createdAt",
+            "DESC",
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at",
+            "startedAt",
+            "started_at",
+            "endedAt",
+            "ended_at",
+            "durationMs",
+            "duration_ms");
       case "/api/sys/login-logs/page" ->
-          sortOptions(
-              "occurredAt", "DESC", "occurredAt", "occurred_at", "occurred_at", "occurred_at");
+        sortOptions(
+            "occurredAt", "DESC", "occurredAt", "occurred_at", "occurred_at", "occurred_at");
       case "/api/sys/dicts/types/page" ->
-          sortOptions("name", "ASC", "name", "name", "code", "code", "createdAt", "created_at");
+        sortOptions("name", "ASC", "name", "name", "code", "code", "createdAt", "created_at");
       case "/api/users/page" ->
-          sortOptions(
-              null,
-              null,
-              "username",
-              "username",
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at");
+        sortOptions(
+            null,
+            null,
+            "username",
+            "username",
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at");
       case "/api/web-users/page" ->
-          sortOptions(
-              null,
-              null,
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at",
-              "displayName",
-              "display_name",
-              "nickname",
-              "nickname");
+        sortOptions(
+            null,
+            null,
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at",
+            "displayName",
+            "display_name",
+            "nickname",
+            "nickname");
       case "/api/roles/page" ->
-          sortOptions(
-              null, null, "id", "id", "code", "code", "name", "name", "createdAt", "created_at");
+        sortOptions(
+            null, null, "id", "id", "code", "code", "name", "name", "createdAt", "created_at");
       case "/api/user-features/applications/page" ->
-          sortOptions(
-              null,
-              null,
-              "displayOrder",
-              "display_order",
-              "applicationCode",
-              "application_code",
-              "applicationName",
-              "application_name",
-              "createdAt",
-              "created_at");
+        sortOptions(
+            null,
+            null,
+            "displayOrder",
+            "display_order",
+            "applicationCode",
+            "application_code",
+            "applicationName",
+            "application_name",
+            "createdAt",
+            "created_at");
       case "/api/user-features/packages/page" ->
-          sortOptions(
-              null,
-              null,
-              "displayOrder",
-              "display_order",
-              "packageCode",
-              "package_code",
-              "packageName",
-              "package_name",
-              "createdAt",
-              "created_at");
+        sortOptions(
+            null,
+            null,
+            "displayOrder",
+            "display_order",
+            "packageCode",
+            "package_code",
+            "packageName",
+            "package_name",
+            "createdAt",
+            "created_at");
       case "/api/database-sources/page" ->
-          sortOptions(
-              null, null, "name", "name", "createdAt", "created_at", "created_at", "created_at");
+        sortOptions(
+            null, null, "name", "name", "createdAt", "created_at", "created_at", "created_at");
       case "/api/database-sources/tables/page" ->
-          sortOptions(
-              null,
-              null,
-              "tableName",
-              "table_name",
-              "table_name",
-              "table_name",
-              "tableSchema",
-              "table_schema");
+        sortOptions(
+            null,
+            null,
+            "tableName",
+            "table_name",
+            "table_name",
+            "table_name",
+            "tableSchema",
+            "table_schema");
       case "/api/database-sources/columns/page" ->
-          sortOptions(
-              null,
-              null,
-              "columnName",
-              "column_name",
-              "column_name",
-              "column_name",
-              "ordinalPosition",
-              "ordinal_position");
+        sortOptions(
+            null,
+            null,
+            "columnName",
+            "column_name",
+            "column_name",
+            "column_name",
+            "ordinalPosition",
+            "ordinal_position");
       case "/api/todo/page" ->
-          sortOptions(
-              "sortNo",
-              "ASC",
-              "sortNo",
-              "sort_no",
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at");
+        sortOptions(
+            "sortNo",
+            "ASC",
+            "sortNo",
+            "sort_no",
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at");
       case "/api/schedule/page" ->
-          sortOptions("startTime", "DESC", "startTime", "start_time", "endTime", "end_time");
+        sortOptions("startTime", "DESC", "startTime", "start_time", "endTime", "end_time");
       case "/api/sf/snapshots/page", "/api/sf/ddls/page" ->
-          sortOptions(
-              "createdAt",
-              "DESC",
-              "createdAt",
-              "created_at",
-              "created_at",
-              "created_at",
-              "name",
-              "name");
+        sortOptions(
+            "createdAt",
+            "DESC",
+            "createdAt",
+            "created_at",
+            "created_at",
+            "created_at",
+            "name",
+            "name");
       default -> null;
     };
   }
@@ -525,7 +513,8 @@ public class BootstrapControllerApiScanner {
     return json.toString();
   }
 
-  public record ScanResult(List<ApiSeed> apis, List<PermissionSeed> permissions) {}
+  public record ScanResult(List<ApiSeed> apis, List<PermissionSeed> permissions) {
+  }
 
   public record ApiSeed(
       String module,
@@ -542,40 +531,43 @@ public class BootstrapControllerApiScanner {
       String auditResource,
       String auditAction,
       String auditDescription,
-      String sortOptionsJson) {}
+      String sortOptionsJson) {
+  }
 
-  public record PermissionSeed(String code, String name, UserType userScope) {}
+  public record PermissionSeed(String code, String name, UserType userScope) {
+  }
 
-  private record RequestMeta(List<String> paths, List<ApiMethod> httpMethods) {}
+  private record RequestMeta(List<String> paths, List<ApiMethod> httpMethods) {
+  }
 
   private record SecurityMeta(
       boolean permissionDeclared,
       ApiAccessType accessType,
       String userType,
       List<String> permissionCodes) {
+
     static SecurityMeta permitAll() {
       return new SecurityMeta(false, ApiAccessType.PERMIT_ALL, null, List.of());
     }
 
     static SecurityMeta authenticated(Authenticated authenticated) {
-      String userType =
-          authenticated.userType() == UserType.GUEST ? null : authenticated.userType().name();
+      String userType = authenticated.userType() == UserType.GUEST ? null : authenticated.userType().name();
       return new SecurityMeta(false, ApiAccessType.AUTHENTICATED, userType, List.of());
     }
 
     static SecurityMeta authorize(Authorize authorize) {
-      List<String> permissionCodes =
-          Arrays.stream(authorize.permissions())
-              .map(String::trim)
-              .filter(code -> !code.isBlank())
-              .distinct()
-              .toList();
+      List<String> permissionCodes = Arrays.stream(authorize.permissions())
+          .map(String::trim)
+          .filter(code -> !code.isBlank())
+          .distinct()
+          .toList();
       return new SecurityMeta(
           true, ApiAccessType.AUTHORIZED, authorize.userType().name(), permissionCodes);
     }
   }
 
   private record AuditMeta(boolean declared, String resource, String action, String description) {
+
     static AuditMeta none() {
       return new AuditMeta(false, null, null, null);
     }
@@ -583,10 +575,9 @@ public class BootstrapControllerApiScanner {
     static AuditMeta of(Audit audit, Class<?> controllerClass, Method method) {
       String resource = audit.resource().itemCode();
       String action = audit.action().itemCode();
-      String description =
-          audit.description().isBlank()
-              ? audit.resource().label() + audit.action().label()
-              : audit.description().trim();
+      String description = audit.description().isBlank()
+          ? audit.resource().label() + audit.action().label()
+          : audit.description().trim();
       return new AuditMeta(true, resource, action, description);
     }
   }

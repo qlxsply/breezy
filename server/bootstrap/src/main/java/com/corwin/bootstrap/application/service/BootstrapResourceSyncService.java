@@ -30,30 +30,28 @@ public class BootstrapResourceSyncService {
     xmlValidationService.validate(
         definitionResources.userFeaturesXml(), definitionResources.userFeaturesXsd());
 
-    List<BootstrapResourceDefinitionLoader.ResourceSeed> resources =
-        resourceDefinitionLoader.loadDefinitions(definitionResources.resourcesXml());
-    BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures =
-        userFeatureDefinitionLoader.loadDefinitions(definitionResources.userFeaturesXml());
+    List<BootstrapResourceDefinitionLoader.ResourceSeed> resources = resourceDefinitionLoader
+        .loadDefinitions(definitionResources.resourcesXml());
+    BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures = userFeatureDefinitionLoader
+        .loadDefinitions(definitionResources.userFeaturesXml());
     ResourceStats expectedStats = summarize(resources, userFeatures);
 
-    ResourceStats stats =
-        dryRun
-            ? validateOnly(resources, userFeatures, expectedStats)
-            : BootstrapJdbcTransactionSupport.execute(
-                dataSource, connection -> rebuild(connection, resources, userFeatures));
+    ResourceStats stats = dryRun
+        ? validateOnly(resources, userFeatures, expectedStats)
+        : BootstrapJdbcTransactionSupport.execute(
+            dataSource, connection -> rebuild(connection, resources, userFeatures));
 
-    String message =
-        "resources="
-            + stats.resourceCount
-            + "; resourcePermissions="
-            + stats.resourcePermissionCount
-            + "; applications="
-            + stats.applicationCount
-            + "; features="
-            + stats.featureCount
-            + "; featurePermissions="
-            + stats.featurePermissionCount
-            + "; strategy=resource-rebuild+userfeature-rebuild";
+    String message = "resources="
+        + stats.resourceCount
+        + "; resourcePermissions="
+        + stats.resourcePermissionCount
+        + "; applications="
+        + stats.applicationCount
+        + "; features="
+        + stats.featureCount
+        + "; featurePermissions="
+        + stats.featurePermissionCount
+        + "; strategy=resource-rebuild+userfeature-rebuild";
     return new BootstrapTaskReport(
         BootstrapTaskKey.RESOURCE_SYNC,
         dryRun,
@@ -69,9 +67,8 @@ public class BootstrapResourceSyncService {
     return BootstrapJdbcTransactionSupport.execute(
         dataSource,
         connection -> {
-          Map<String, PermissionRef> permissionByCode =
-              loadPermissionByCode(
-                  connection, sqlTemplateService.load("resource_select_permission_code_id.sql"));
+          Map<String, PermissionRef> permissionByCode = loadPermissionByCode(
+              connection, sqlTemplateService.load("resource_select_permission_code_id.sql"));
           validatePermissionReferences(permissionByCode, resources, userFeatures);
           return expectedStats;
         });
@@ -82,9 +79,8 @@ public class BootstrapResourceSyncService {
       List<BootstrapResourceDefinitionLoader.ResourceSeed> resources,
       BootstrapUserFeatureDefinitionLoader.UserFeatureDefinitionSeed userFeatures)
       throws SQLException {
-    Map<String, PermissionRef> permissionByCode =
-        loadPermissionByCode(
-            connection, sqlTemplateService.load("resource_select_permission_code_id.sql"));
+    Map<String, PermissionRef> permissionByCode = loadPermissionByCode(
+        connection, sqlTemplateService.load("resource_select_permission_code_id.sql"));
     validatePermissionReferences(permissionByCode, resources, userFeatures);
 
     executeDelete(connection, "resource_delete_role_resources.sql");
@@ -108,8 +104,7 @@ public class BootstrapResourceSyncService {
       collectInternalPermissionCodes(resource, internalPermissionCodes);
     }
     LinkedHashSet<String> webUserPermissionCodes = new LinkedHashSet<>();
-    for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application :
-        userFeatures.applications()) {
+    for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : userFeatures.applications()) {
       for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
         webUserPermissionCodes.addAll(feature.permissionCodes());
       }
@@ -241,9 +236,8 @@ public class BootstrapResourceSyncService {
   private Long upsertApplication(
       Connection connection, BootstrapUserFeatureDefinitionLoader.ApplicationSeed seed)
       throws SQLException {
-    try (PreparedStatement ps =
-        connection.prepareStatement(
-            sqlTemplateService.load("user_feature_update_application_by_code.sql"))) {
+    try (PreparedStatement ps = connection.prepareStatement(
+        sqlTemplateService.load("user_feature_update_application_by_code.sql"))) {
       ps.setString(1, seed.name());
       ps.setString(2, seed.description());
       ps.setString(3, seed.icon());
@@ -256,9 +250,8 @@ public class BootstrapResourceSyncService {
       ps.setTimestamp(10, new Timestamp(System.currentTimeMillis()));
       ps.setString(11, seed.code());
       if (ps.executeUpdate() == 0) {
-        try (PreparedStatement insertPs =
-            connection.prepareStatement(
-                sqlTemplateService.load("user_feature_insert_application.sql"))) {
+        try (PreparedStatement insertPs = connection.prepareStatement(
+            sqlTemplateService.load("user_feature_insert_application.sql"))) {
           insertPs.setString(1, seed.code());
           insertPs.setString(2, seed.name());
           insertPs.setString(3, seed.description());
@@ -285,9 +278,8 @@ public class BootstrapResourceSyncService {
       Long applicationId,
       BootstrapUserFeatureDefinitionLoader.FeatureSeed seed)
       throws SQLException {
-    try (PreparedStatement ps =
-        connection.prepareStatement(
-            sqlTemplateService.load("user_feature_update_feature_by_application_and_code.sql"))) {
+    try (PreparedStatement ps = connection.prepareStatement(
+        sqlTemplateService.load("user_feature_update_feature_by_application_and_code.sql"))) {
       ps.setString(1, seed.name());
       ps.setString(2, seed.description());
       ps.setBoolean(3, seed.enabled());
@@ -298,9 +290,8 @@ public class BootstrapResourceSyncService {
       ps.setLong(8, applicationId);
       ps.setString(9, seed.code());
       if (ps.executeUpdate() == 0) {
-        try (PreparedStatement insertPs =
-            connection.prepareStatement(
-                sqlTemplateService.load("user_feature_insert_feature.sql"))) {
+        try (PreparedStatement insertPs = connection.prepareStatement(
+            sqlTemplateService.load("user_feature_insert_feature.sql"))) {
           insertPs.setLong(1, applicationId);
           insertPs.setString(2, seed.code());
           insertPs.setString(3, seed.name());
@@ -335,10 +326,9 @@ public class BootstrapResourceSyncService {
 
   private Long selectFeatureId(Connection connection, Long applicationId, String code)
       throws SQLException {
-    try (PreparedStatement ps =
-        connection.prepareStatement(
-            sqlTemplateService.load(
-                "user_feature_select_feature_id_by_application_and_code.sql"))) {
+    try (PreparedStatement ps = connection.prepareStatement(
+        sqlTemplateService.load(
+            "user_feature_select_feature_id_by_application_and_code.sql"))) {
       ps.setLong(1, applicationId);
       ps.setString(2, code);
       try (ResultSet rs = ps.executeQuery()) {
@@ -353,9 +343,8 @@ public class BootstrapResourceSyncService {
   private void insertFeaturePermissionBinding(
       Connection connection, Long applicationId, Long featureId, Long permissionId)
       throws SQLException {
-    try (PreparedStatement ps =
-        connection.prepareStatement(
-            sqlTemplateService.load("user_feature_insert_feature_permission_binding.sql"))) {
+    try (PreparedStatement ps = connection.prepareStatement(
+        sqlTemplateService.load("user_feature_insert_feature_permission_binding.sql"))) {
       ps.setLong(1, applicationId);
       ps.setLong(2, featureId);
       ps.setLong(3, permissionId);
@@ -417,8 +406,7 @@ public class BootstrapResourceSyncService {
       summarizeResource(resource, stats);
     }
     stats.applicationCount = userFeatures.applications().size();
-    for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application :
-        userFeatures.applications()) {
+    for (BootstrapUserFeatureDefinitionLoader.ApplicationSeed application : userFeatures.applications()) {
       stats.featureCount += application.features().size();
       for (BootstrapUserFeatureDefinitionLoader.FeatureSeed feature : application.features()) {
         stats.featurePermissionCount += feature.permissionCodes().size();
@@ -438,9 +426,11 @@ public class BootstrapResourceSyncService {
     }
   }
 
-  private record PermissionRef(Long id, UserType userScope) {}
+  private record PermissionRef(Long id, UserType userScope) {
+  }
 
   private static final class ResourceStats {
+
     private int resourceCount;
     private int resourcePermissionCount;
     private int applicationCount;

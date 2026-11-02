@@ -12,7 +12,8 @@ import org.apache.ibatis.io.Resources;
 /**
  * Resolves whether a MyBatis mapper method requires automatic {@link PageData} pagination.
  *
- * <p>A method qualifies if its return type is {@link PageData} and it accepts a {@link
+ * <p>
+ * A method qualifies if its return type is {@link PageData} and it accepts a {@link
  * com.corwin.framework.domain.page.PageSpec PageSpec} parameter. Results are cached by statement
  * ID.
  *
@@ -39,12 +40,11 @@ public final class PageMethodResolver {
     try {
       Class<?> mapperClass = Resources.classForName(mapperClassName);
 
-      List<Method> methods =
-          Arrays.stream(mapperClass.getMethods())
-              .filter(method -> method.getName().equals(methodName))
-              .filter(method -> !method.isBridge())
-              .filter(method -> !method.isSynthetic())
-              .toList();
+      List<Method> methods = Arrays.stream(mapperClass.getMethods())
+          .filter(method -> method.getName().equals(methodName))
+          .filter(method -> !method.isBridge())
+          .filter(method -> !method.isSynthetic())
+          .toList();
 
       /*
        * Method overloading is not permitted per project convention.
@@ -56,8 +56,7 @@ public final class PageMethodResolver {
 
       Method method = methods.getFirst();
 
-      long pageSpecCount =
-          Arrays.stream(method.getParameterTypes()).filter(PageSpec.class::equals).count();
+      long pageSpecCount = Arrays.stream(method.getParameterTypes()).filter(PageSpec.class::equals).count();
 
       boolean returnsPageData = PageData.class.equals(method.getReturnType());
 

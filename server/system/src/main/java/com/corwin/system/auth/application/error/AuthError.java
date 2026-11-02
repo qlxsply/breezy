@@ -11,6 +11,7 @@ import com.corwin.framework.error.ErrorCodes;
  * @author Corwin 2026/4/19
  */
 public enum AuthError implements ErrorCode {
+
   UNAUTHENTICATED("100000", "Unauthenticated"),
   FORBIDDEN("100001", "Forbidden"),
   INVALID_TOKEN("100002", "Invalid token"),

@@ -4,7 +4,8 @@ package com.corwin.framework.event.transport.inmemory.executor;
  * Interface for in-memory event dispatch — delivering events to all consumers within a single
  * process.
  *
- * <p>Allows implementations (sync/async/bounded/unbounded) to be swapped seamlessly.
+ * <p>
+ * Allows implementations (sync/async/bounded/unbounded) to be swapped seamlessly.
  *
  * @author Corwin 2026/4/9
  */

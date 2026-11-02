@@ -38,4 +38,5 @@ public record AuditRecordCommand(
     Instant startedAt,
     Instant endedAt,
     Long durationMs,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

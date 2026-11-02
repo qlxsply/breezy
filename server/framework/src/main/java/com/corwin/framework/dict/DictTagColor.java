@@ -3,12 +3,14 @@ package com.corwin.framework.dict;
 /**
  * Predefined tag color palette with corresponding hex values and tag types.
  *
- * <p>Used to render consistent colored badges and indicators in the UI. Each constant maps a
+ * <p>
+ * Used to render consistent colored badges and indicators in the UI. Each constant maps a
  * semantic color name to a concrete hex value.
  *
  * @author Corwin 2026/3/15
  */
 public enum DictTagColor implements DictEnumDefinition {
+
   PRIMARY_BLUE("主题蓝", "#3B82F6", DictTagType.INFO),
   SUCCESS_GREEN("成功绿", "#10B981", DictTagType.SUCCESS),
   WARNING_ORANGE("警示橙", "#F59E0B", DictTagType.WARNING),

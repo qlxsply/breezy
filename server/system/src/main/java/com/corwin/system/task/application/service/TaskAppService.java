@@ -65,23 +65,21 @@ public class TaskAppService {
     }
 
     List<TaskDefinition> existingDefs = taskDefinitionRepository.findAllByRemovedFalse();
-    Map<String, TaskDefinition> defMap =
-        existingDefs.stream().collect(Collectors.toMap(TaskDefinition::getCode, d -> d));
+    Map<String, TaskDefinition> defMap = existingDefs.stream()
+        .collect(Collectors.toMap(TaskDefinition::getCode, d -> d));
 
-    Set<String> scannedCodes =
-        scannedTasks.stream().map(ScannedTask::code).collect(Collectors.toSet());
+    Set<String> scannedCodes = scannedTasks.stream().map(ScannedTask::code).collect(Collectors.toSet());
 
     for (ScannedTask scanned : scannedTasks) {
       TaskDefinition def = defMap.get(scanned.code());
       if (def == null) {
         log.info("[task-sync] detected new task: {}", scanned.code());
-        TaskDefinition newDef =
-            TaskDefinition.create(
-                scanned.code(),
-                scanned.name(),
-                scanned.description(),
-                scanned.beanName(),
-                scanned.methodName());
+        TaskDefinition newDef = TaskDefinition.create(
+            scanned.code(),
+            scanned.name(),
+            scanned.description(),
+            scanned.beanName(),
+            scanned.methodName());
         taskDefinitionRepository.save(newDef);
 
         if (!taskConfigRepository.existsById(scanned.code())) {
@@ -120,8 +118,7 @@ public class TaskAppService {
   /** Loads all published task configurations and schedules them for periodic execution. */
   public void startupAllTasks() {
     log.info("[task-startup] loading published tasks...");
-    List<TaskConfig> publishedConfigs =
-        taskConfigRepository.findAllByTaskStatus(TaskStatus.PUBLISHED);
+    List<TaskConfig> publishedConfigs = taskConfigRepository.findAllByTaskStatus(TaskStatus.PUBLISHED);
 
     int count = 0;
     for (TaskConfig config : publishedConfigs) {
@@ -148,10 +145,9 @@ public class TaskAppService {
     return defs.stream()
         .map(
             def -> {
-              TaskConfig config =
-                  taskConfigRepository
-                      .findById(def.getCode())
-                      .orElseGet(() -> TaskConfig.createDefault(def.getCode()));
+              TaskConfig config = taskConfigRepository
+                  .findById(def.getCode())
+                  .orElseGet(() -> TaskConfig.createDefault(def.getCode()));
               return new TaskView(
                   def.getCode(),
                   def.getName(),
@@ -177,10 +173,9 @@ public class TaskAppService {
    */
   @Transactional
   public void updateTaskConfig(String code, String cronExpr) {
-    TaskConfig config =
-        taskConfigRepository
-            .findById(code)
-            .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
+    TaskConfig config = taskConfigRepository
+        .findById(code)
+        .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
     config.updateCronExpr(cronExpr);
     taskConfigRepository.save(config);
 
@@ -196,14 +191,12 @@ public class TaskAppService {
    */
   @Transactional
   public void publishTask(String code) {
-    TaskConfig config =
-        taskConfigRepository
-            .findById(code)
-            .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
-    TaskDefinition def =
-        taskDefinitionRepository
-            .findById(code)
-            .orElseThrow(() -> new RuntimeException("Task definition not found: " + code));
+    TaskConfig config = taskConfigRepository
+        .findById(code)
+        .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
+    TaskDefinition def = taskDefinitionRepository
+        .findById(code)
+        .orElseThrow(() -> new RuntimeException("Task definition not found: " + code));
 
     if (config.getCronExpr() == null || config.getCronExpr().isEmpty()) {
       throw new RuntimeException("CRON expression is required for publishing");
@@ -223,10 +216,9 @@ public class TaskAppService {
    */
   @Transactional
   public void stopTask(String code) {
-    TaskConfig config =
-        taskConfigRepository
-            .findById(code)
-            .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
+    TaskConfig config = taskConfigRepository
+        .findById(code)
+        .orElseThrow(() -> new RuntimeException("Task config not found: " + code));
     config.markDisabled();
     taskConfigRepository.save(config);
 
@@ -239,14 +231,14 @@ public class TaskAppService {
    * @param code the task code
    */
   public void runTask(String code) {
-    TaskDefinition def =
-        taskDefinitionRepository
-            .findById(code)
-            .orElseThrow(() -> new RuntimeException("Task definition not found: " + code));
+    TaskDefinition def = taskDefinitionRepository
+        .findById(code)
+        .orElseThrow(() -> new RuntimeException("Task definition not found: " + code));
 
     taskSchedulerManager.executeNow(code, def.getBeanName(), def.getMethodName());
   }
 
   private record ScannedTask(
-      String code, String name, String description, String beanName, String methodName) {}
+      String code, String name, String description, String beanName, String methodName) {
+  }
 }

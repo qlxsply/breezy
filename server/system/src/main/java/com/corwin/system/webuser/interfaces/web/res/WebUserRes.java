@@ -16,4 +16,5 @@ public record WebUserRes(
     String status,
     Instant lastLoginAt,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

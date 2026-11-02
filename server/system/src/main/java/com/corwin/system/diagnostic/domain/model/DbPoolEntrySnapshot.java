@@ -11,4 +11,5 @@ public record DbPoolEntrySnapshot(
     int activeConnections,
     int idleConnections,
     int totalConnections,
-    int waitingThreads) {}
+    int waitingThreads) {
+}

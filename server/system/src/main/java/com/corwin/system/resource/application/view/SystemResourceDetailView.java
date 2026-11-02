@@ -23,4 +23,5 @@ public record SystemResourceDetailView(
     boolean defaultEntry,
     boolean systemBuiltin,
     String remark,
-    List<Long> permissionIds) {}
+    List<Long> permissionIds) {
+}

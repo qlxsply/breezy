@@ -16,4 +16,5 @@ public record UpdateDictTypeReq(
     DictValueType valueType,
     DictStructureType structureType,
     boolean enabled,
-    List<SaveDictTypeItemReq> items) {}
+    List<SaveDictTypeItemReq> items) {
+}

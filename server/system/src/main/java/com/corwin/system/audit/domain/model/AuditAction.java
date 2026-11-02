@@ -9,6 +9,7 @@ import com.corwin.framework.dict.DictEnumDefinition;
  * @author Corwin 2026/5/21
  */
 public enum AuditAction implements DictEnumDefinition {
+
   VIEW("查看"),
   CREATE("创建"),
   UPDATE("更新"),

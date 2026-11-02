@@ -43,20 +43,18 @@ public class ScheduleAppService {
 
     ScheduleEvent event;
     if (cmd.id() == null) {
-      event =
-          ScheduleEvent.create(
-              cmd.title(),
-              cmd.startTime(),
-              cmd.endTime(),
-              tz,
-              rule,
-              cmd.advanceSecondsList(),
-              cmd.note());
+      event = ScheduleEvent.create(
+          cmd.title(),
+          cmd.startTime(),
+          cmd.endTime(),
+          tz,
+          rule,
+          cmd.advanceSecondsList(),
+          cmd.note());
       event.assignOwner(currentUserId());
     } else {
-      event =
-          repo.findById(cmd.id())
-              .orElseThrow(() -> new IllegalArgumentException("schedule not found: " + cmd.id()));
+      event = repo.findById(cmd.id())
+          .orElseThrow(() -> new IllegalArgumentException("schedule not found: " + cmd.id()));
       event.update(
           cmd.title(),
           cmd.startTime(),
@@ -106,27 +104,26 @@ public class ScheduleAppService {
 
   private RecurrenceRule toRule(UpsertScheduleCommand.RuleCommand rule) {
     Objects.requireNonNull(rule, "rule required");
-    RecurrenceRuleFrequency frequency =
-        Objects.requireNonNull(rule.frequency(), "frequency required");
+    RecurrenceRuleFrequency frequency = Objects.requireNonNull(rule.frequency(), "frequency required");
     return switch (frequency) {
       case ONCE -> RecurrenceRule.once();
       case DAILY -> RecurrenceRule.daily(nvl(rule.interval()), rule.until());
       case WEEKLY ->
-          RecurrenceRule.weekly(
-              nvl(rule.interval()),
-              Objects.requireNonNull(rule.daysOfWeek(), "daysOfWeek required"),
-              rule.until());
+        RecurrenceRule.weekly(
+            nvl(rule.interval()),
+            Objects.requireNonNull(rule.daysOfWeek(), "daysOfWeek required"),
+            rule.until());
       case MONTHLY ->
-          RecurrenceRule.monthly(
-              nvl(rule.interval()),
-              Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"),
-              rule.until());
+        RecurrenceRule.monthly(
+            nvl(rule.interval()),
+            Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"),
+            rule.until());
       case YEARLY ->
-          RecurrenceRule.yearly(
-              nvl(rule.interval()),
-              Objects.requireNonNull(rule.monthOfYear(), "monthOfYear required"),
-              Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"),
-              rule.until());
+        RecurrenceRule.yearly(
+            nvl(rule.interval()),
+            Objects.requireNonNull(rule.monthOfYear(), "monthOfYear required"),
+            Objects.requireNonNull(rule.dayOfMonth(), "dayOfMonth required"),
+            rule.until());
     };
   }
 

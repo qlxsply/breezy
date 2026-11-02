@@ -39,13 +39,13 @@ public class ThreadStateCollector {
         case BLOCKED -> blocked++;
         case WAITING -> waiting++;
         case TIMED_WAITING -> timedWaiting++;
-        default -> {}
+        default -> {
+        }
       }
     }
 
     long[] deadlocked = threadBean.findDeadlockedThreads();
-    List<Long> deadlockedThreadIds =
-        deadlocked == null ? List.of() : Arrays.stream(deadlocked).boxed().toList();
+    List<Long> deadlockedThreadIds = deadlocked == null ? List.of() : Arrays.stream(deadlocked).boxed().toList();
 
     return new ThreadSnapshot(
         threadBean.getThreadCount(),

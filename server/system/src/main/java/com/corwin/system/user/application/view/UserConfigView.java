@@ -6,4 +6,5 @@ package com.corwin.system.user.application.view;
  *
  * @author Corwin 2026/3/30
  */
-public record UserConfigView(String code, String description, String valueType, String value) {}
+public record UserConfigView(String code, String description, String valueType, String value) {
+}

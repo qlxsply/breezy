@@ -39,10 +39,8 @@ public final class ConfigBootstrapEnvironmentPostProcessor
     Map<String, ConfigSnapshot<?>> snapshots = createSnapshots(specs, storedValues);
     ConfigRegistry.initialize(snapshots);
 
-    long overrideCount =
-        snapshots.values().stream().filter(snapshot -> snapshot.revision() > 0).count();
-    long orphanCount =
-        storedValues.keySet().stream().filter(key -> !specs.containsKey(key)).count();
+    long overrideCount = snapshots.values().stream().filter(snapshot -> snapshot.revision() > 0).count();
+    long orphanCount = storedValues.keySet().stream().filter(key -> !specs.containsKey(key)).count();
     log.info(
         "Unified config registry initialized: definitions={}, persisted={}, orphaned={}",
         snapshots.size(),
@@ -56,8 +54,7 @@ public final class ConfigBootstrapEnvironmentPostProcessor
   }
 
   private ConfigBootstrapValueLoader discoverLoader(ClassLoader classLoader) {
-    var providers =
-        ServiceLoader.load(ConfigBootstrapValueLoader.class, classLoader).stream().toList();
+    var providers = ServiceLoader.load(ConfigBootstrapValueLoader.class, classLoader).stream().toList();
     if (providers.size() != 1) {
       throw new ConfigLoadException(
           "Exactly one ConfigBootstrapValueLoader is required, discovered: " + providers.size());

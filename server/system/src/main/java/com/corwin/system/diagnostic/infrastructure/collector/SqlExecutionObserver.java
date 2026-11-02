@@ -57,10 +57,9 @@ public class SqlExecutionObserver {
     totalExecutions.increment();
     totalDurationMs.add(Math.max(0L, durationMs));
 
-    SqlAggregate aggregate =
-        sqlStats.computeIfAbsent(
-            normalizedDataSourceName + "|" + normalizedSql,
-            _key -> new SqlAggregate(normalizedDataSourceName, normalizedSql));
+    SqlAggregate aggregate = sqlStats.computeIfAbsent(
+        normalizedDataSourceName + "|" + normalizedSql,
+        _key -> new SqlAggregate(normalizedDataSourceName, normalizedSql));
     aggregate.totalExecutions.increment();
     aggregate.totalDurationMs.add(Math.max(0L, durationMs));
     aggregate.maxDurationMs.accumulate(Math.max(0L, durationMs));
@@ -166,8 +165,8 @@ public class SqlExecutionObserver {
     private final LongAdder totalDurationMs = new LongAdder();
     private final LongAdder slowExecutions = new LongAdder();
     private final LongAdder errorExecutions = new LongAdder();
-    private final java.util.concurrent.atomic.LongAccumulator maxDurationMs =
-        new java.util.concurrent.atomic.LongAccumulator(Long::max, 0L);
+    private final java.util.concurrent.atomic.LongAccumulator maxDurationMs = new java.util.concurrent.atomic.LongAccumulator(
+        Long::max, 0L);
 
     private SqlAggregate(String dataSourceName, String sql) {
       this.dataSourceName = dataSourceName;

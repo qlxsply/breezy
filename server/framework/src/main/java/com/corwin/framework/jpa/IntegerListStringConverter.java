@@ -10,7 +10,8 @@ import java.util.stream.Collectors;
 /**
  * JPA {@link AttributeConverter} that persists {@code List<Integer>} as a comma-separated string.
  *
- * <p>Example: {@code [1,2,3]} is stored as {@code "1,2,3"}.
+ * <p>
+ * Example: {@code [1,2,3]} is stored as {@code "1,2,3"}.
  */
 @Converter
 public class IntegerListStringConverter implements AttributeConverter<List<Integer>, String> {

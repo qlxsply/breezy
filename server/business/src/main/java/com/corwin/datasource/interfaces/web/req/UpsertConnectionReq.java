@@ -13,7 +13,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpsertConnectionReq {
-  @JsonLongString private Long id;
+
+  @JsonLongString
+  private Long id;
   private String name;
   private DatabaseType dbType;
   private AuthMode authMode;

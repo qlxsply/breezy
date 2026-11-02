@@ -36,9 +36,8 @@ public class TodoAttachmentAppService {
     BizAssert.notBlank(file.getOriginalFilename(), BaseError.MISSING_PARAMETER);
     BizAssert.state(isImage(file.getContentType()), ReminderError.TODO_ATTACHMENT_IMAGE_ONLY);
 
-    UploadFileCommand command =
-        new UploadFileCommand(
-            OwnerType.APPLICATION, "todo", null, file.getOriginalFilename(), file.getContentType());
+    UploadFileCommand command = new UploadFileCommand(
+        OwnerType.APPLICATION, "todo", null, file.getOriginalFilename(), file.getContentType());
     try (InputStream inputStream = file.getInputStream()) {
       return fileCommandPort.uploadFile(command, inputStream, FilePurpose.ATTACHMENT);
     } catch (IOException ex) {

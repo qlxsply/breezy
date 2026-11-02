@@ -6,7 +6,8 @@ import lombok.Setter;
 /**
  * Base request DTO carrying common metadata fields.
  *
- * <p>Fields such as API version, timestamp, client ID, and idempotency key are shared across many
+ * <p>
+ * Fields such as API version, timestamp, client ID, and idempotency key are shared across many
  * API requests.
  *
  * @author Corwin 2026/1/8
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BaseRequest {
+
   /** API version identifier for backward compatibility */
   private String apiVersion;
 

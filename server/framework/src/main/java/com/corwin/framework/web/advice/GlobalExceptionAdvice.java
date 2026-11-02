@@ -52,12 +52,11 @@ public class GlobalExceptionAdvice {
   @ExceptionHandler(BizException.class)
   public ResponseEntity<ApiResponse<Object>> handleBizException(BizException ex) {
     log.warn("BizException code={} msg={}", ex.getCode(), ex.getMessage());
-    HttpStatusCode status =
-        errorHttpStatusResolvers.stream()
-            .map(resolver -> resolver.resolve(ex.getErrorCode()))
-            .flatMap(Optional::stream)
-            .findFirst()
-            .orElse(HttpStatus.OK);
+    HttpStatusCode status = errorHttpStatusResolvers.stream()
+        .map(resolver -> resolver.resolve(ex.getErrorCode()))
+        .flatMap(Optional::stream)
+        .findFirst()
+        .orElse(HttpStatus.OK);
     return ResponseEntity.status(status).body(ApiResponse.fail(ex.getErrorCode()));
   }
 
@@ -76,33 +75,30 @@ public class GlobalExceptionAdvice {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ApiResponse<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-    String msg =
-        ex.getBindingResult().getAllErrors().stream()
-            .findFirst()
-            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .orElse(BaseError.INVALID_PARAMETER.getMsg());
+    String msg = ex.getBindingResult().getAllErrors().stream()
+        .findFirst()
+        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+        .orElse(BaseError.INVALID_PARAMETER.getMsg());
     log.warn("ParamInvalid msg={}", msg);
     return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);
   }
 
   @ExceptionHandler(BindException.class)
   public ApiResponse<Object> handleBindException(BindException ex) {
-    String msg =
-        ex.getAllErrors().stream()
-            .findFirst()
-            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .orElse(BaseError.INVALID_PARAMETER.getMsg());
+    String msg = ex.getAllErrors().stream()
+        .findFirst()
+        .map(DefaultMessageSourceResolvable::getDefaultMessage)
+        .orElse(BaseError.INVALID_PARAMETER.getMsg());
     log.warn("ParamBindFail msg={}", msg);
     return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
   public ApiResponse<Object> handleConstraintViolation(ConstraintViolationException ex) {
-    String msg =
-        ex.getConstraintViolations().stream()
-            .findFirst()
-            .map(ConstraintViolation::getMessage)
-            .orElse(BaseError.INVALID_PARAMETER.getMsg());
+    String msg = ex.getConstraintViolations().stream()
+        .findFirst()
+        .map(ConstraintViolation::getMessage)
+        .orElse(BaseError.INVALID_PARAMETER.getMsg());
     log.warn("ConstraintViolation msg={}", msg);
     return ApiResponse.fail(BaseError.INVALID_PARAMETER.getCode(), msg);
   }

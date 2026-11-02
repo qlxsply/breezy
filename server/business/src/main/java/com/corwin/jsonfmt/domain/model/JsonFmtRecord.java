@@ -24,8 +24,8 @@ import org.hibernate.type.SqlTypes;
 @Table(
     name = "jsonfmt_record",
     indexes = {
-      @Index(name = "idx_jsonfmt_record_user_order", columnList = "user_id,order_no"),
-      @Index(name = "idx_jsonfmt_record_user_updated_at", columnList = "user_id,updated_at")
+        @Index(name = "idx_jsonfmt_record_user_order", columnList = "user_id,order_no"),
+        @Index(name = "idx_jsonfmt_record_user_updated_at", columnList = "user_id,updated_at")
     })
 public class JsonFmtRecord {
 
@@ -57,7 +57,8 @@ public class JsonFmtRecord {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected JsonFmtRecord() {}
+  protected JsonFmtRecord() {
+  }
 
   public static JsonFmtRecord createInline(
       Long userId, String name, String content, Integer orderNo) {

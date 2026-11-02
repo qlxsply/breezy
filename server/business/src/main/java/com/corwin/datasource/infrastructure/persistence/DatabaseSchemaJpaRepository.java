@@ -21,7 +21,6 @@ public interface DatabaseSchemaJpaRepository extends JpaRepository<DatabaseSchem
       Long dataSourceId, String databaseName);
 
   @Modifying
-  @Query(
-      "update DatabaseSchema db set db.dataSourceId = null where db.dataSourceId = :dataSourceId")
+  @Query("update DatabaseSchema db set db.dataSourceId = null where db.dataSourceId = :dataSourceId")
   int clearDataSourceIdByDataSourceId(@Param("dataSourceId") Long dataSourceId);
 }

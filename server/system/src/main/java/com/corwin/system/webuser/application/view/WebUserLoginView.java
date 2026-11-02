@@ -15,4 +15,5 @@ public record WebUserLoginView(
     String refreshToken,
     String accessTokenExpiresAt,
     String refreshTokenExpiresAt,
-    WebUserAuthView user) {}
+    WebUserAuthView user) {
+}

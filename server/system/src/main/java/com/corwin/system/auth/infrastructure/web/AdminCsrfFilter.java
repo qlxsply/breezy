@@ -28,8 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class AdminCsrfFilter extends OncePerRequestFilter implements Ordered {
 
   private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS");
-  private static final Set<String> PUBLIC_PROTECTED_PATHS =
-      Set.of("/api/admin/auth/login", "/api/admin/auth/logout");
+  private static final Set<String> PUBLIC_PROTECTED_PATHS = Set.of("/api/admin/auth/login", "/api/admin/auth/logout");
 
   private final AdminAuthCookieService cookieService;
 
@@ -92,5 +91,6 @@ public class AdminCsrfFilter extends OncePerRequestFilter implements Ordered {
   }
 
   private record CsrfErrorResponse(
-      boolean success, String code, String msg, Instant timestamp, Object data) {}
+      boolean success, String code, String msg, Instant timestamp, Object data) {
+  }
 }

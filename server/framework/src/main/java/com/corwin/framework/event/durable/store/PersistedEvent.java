@@ -20,4 +20,5 @@ public record PersistedEvent(
     long createdAt,
     long updatedAt,
     Long completedAt,
-    long version) {}
+    long version) {
+}

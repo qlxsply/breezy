@@ -39,25 +39,24 @@ public class DatabaseSourceAdminController {
 
   @PostMapping
   public ApiResponse<String> upsertDatabaseSource(@RequestBody UpsertConnectionReq req) {
-    UpsertConnectionCommand cmd =
-        new UpsertConnectionCommand(
-            req.getId(),
-            req.getName(),
-            req.getDbType(),
-            req.getAuthMode(),
-            req.getConnectMode(),
-            req.getHost(),
-            req.getPort(),
-            req.getDatabaseName(),
-            req.getServiceName(),
-            req.getSid(),
-            req.getDriverClassName(),
-            req.getJdbcUrl(),
-            req.getUsername(),
-            req.getPasswordRaw(),
-            req.getDefaultSchema(),
-            req.getRemarkCustom(),
-            req.getExtraParams());
+    UpsertConnectionCommand cmd = new UpsertConnectionCommand(
+        req.getId(),
+        req.getName(),
+        req.getDbType(),
+        req.getAuthMode(),
+        req.getConnectMode(),
+        req.getHost(),
+        req.getPort(),
+        req.getDatabaseName(),
+        req.getServiceName(),
+        req.getSid(),
+        req.getDriverClassName(),
+        req.getJdbcUrl(),
+        req.getUsername(),
+        req.getPasswordRaw(),
+        req.getDefaultSchema(),
+        req.getRemarkCustom(),
+        req.getExtraParams());
     return ApiResponse.ok(String.valueOf(service.upsertDatabaseSource(cmd)));
   }
 
@@ -75,25 +74,24 @@ public class DatabaseSourceAdminController {
 
   @PostMapping("/test-config")
   public ApiResponse<TestConnectionRes> testConfig(@RequestBody UpsertConnectionReq req) {
-    UpsertConnectionCommand cmd =
-        new UpsertConnectionCommand(
-            req.getId(),
-            req.getName(),
-            req.getDbType(),
-            req.getAuthMode(),
-            req.getConnectMode(),
-            req.getHost(),
-            req.getPort(),
-            req.getDatabaseName(),
-            req.getServiceName(),
-            req.getSid(),
-            req.getDriverClassName(),
-            req.getJdbcUrl(),
-            req.getUsername(),
-            req.getPasswordRaw(),
-            req.getDefaultSchema(),
-            req.getRemarkCustom(),
-            req.getExtraParams());
+    UpsertConnectionCommand cmd = new UpsertConnectionCommand(
+        req.getId(),
+        req.getName(),
+        req.getDbType(),
+        req.getAuthMode(),
+        req.getConnectMode(),
+        req.getHost(),
+        req.getPort(),
+        req.getDatabaseName(),
+        req.getServiceName(),
+        req.getSid(),
+        req.getDriverClassName(),
+        req.getJdbcUrl(),
+        req.getUsername(),
+        req.getPasswordRaw(),
+        req.getDefaultSchema(),
+        req.getRemarkCustom(),
+        req.getExtraParams());
     TestConnectionView view = service.testDatabaseSourceConfig(cmd);
     return ApiResponse.ok(new TestConnectionRes(view.success(), view.message()));
   }
@@ -101,9 +99,8 @@ public class DatabaseSourceAdminController {
   @PostMapping("/page")
   public ApiResponse<PageResult<ConnectionRes>> pageDatabaseSources(
       @RequestBody ConnectionPageReq req) {
-    var page =
-        service.pageDatabaseSources(
-            req.dbType(), req.nameLike(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = service.pageDatabaseSources(
+        req.dbType(), req.nameLike(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, DatabaseSourceAdminController::toDto));
   }
 
@@ -152,17 +149,14 @@ public class DatabaseSourceAdminController {
 
   @PostMapping("/database-schemas/list")
   public ApiResponse<List<CatalogRes>> listDatabaseSchemas(@RequestBody DatabaseSchemaListReq req) {
-    DatabaseSchemaListReq resolved =
-        req == null ? new DatabaseSchemaListReq(null, null, null, null) : req;
+    DatabaseSchemaListReq resolved = req == null ? new DatabaseSchemaListReq(null, null, null, null) : req;
     boolean unboundOnly = Boolean.TRUE.equals(resolved.unboundOnly());
-    String sortBy =
-        resolved.sortBy() == null || resolved.sortBy().isBlank()
-            ? "DATA_SOURCE"
-            : resolved.sortBy();
-    String sortDirection =
-        resolved.sortDirection() == null || resolved.sortDirection().isBlank()
-            ? "ASC"
-            : resolved.sortDirection();
+    String sortBy = resolved.sortBy() == null || resolved.sortBy().isBlank()
+        ? "DATA_SOURCE"
+        : resolved.sortBy();
+    String sortDirection = resolved.sortDirection() == null || resolved.sortDirection().isBlank()
+        ? "ASC"
+        : resolved.sortDirection();
     return ApiResponse.ok(
         service
             .listDatabaseSchemas(resolved.dataSourceId(), unboundOnly, sortBy, sortDirection)
@@ -225,21 +219,19 @@ public class DatabaseSourceAdminController {
 
   @PostMapping("/tables/page")
   public ApiResponse<PageResult<TableRes>> pageTables(@RequestBody TablePageReq req) {
-    var page =
-        service.pageTables(
-            req.databaseId(),
-            req.schema(),
-            req.nameLike(),
-            req.tableType(),
-            PageSpecFactory.of(req.page(), req.sort()));
+    var page = service.pageTables(
+        req.databaseId(),
+        req.schema(),
+        req.nameLike(),
+        req.tableType(),
+        PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, DatabaseSourceAdminController::toDto));
   }
 
   @PostMapping("/columns/page")
   public ApiResponse<PageResult<ColumnRes>> pageColumns(@RequestBody ColumnPageReq req) {
-    var page =
-        service.pageColumns(
-            req.tableId(), req.nameLike(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = service.pageColumns(
+        req.tableId(), req.nameLike(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, DatabaseSourceAdminController::toDto));
   }
 

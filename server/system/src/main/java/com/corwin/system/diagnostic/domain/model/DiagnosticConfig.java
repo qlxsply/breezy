@@ -40,20 +40,16 @@ public record DiagnosticConfig(
    */
   public DiagnosticConfig {
     intervalMs = clamp(intervalMs, MIN_INTERVAL_MS, MAX_INTERVAL_MS, DEFAULT_INTERVAL_MS);
-    historyCapacity =
-        clamp(
-            historyCapacity, MIN_HISTORY_CAPACITY, MAX_HISTORY_CAPACITY, DEFAULT_HISTORY_CAPACITY);
-    eventCapacity =
-        clamp(eventCapacity, MIN_EVENT_CAPACITY, MAX_EVENT_CAPACITY, DEFAULT_EVENT_CAPACITY);
+    historyCapacity = clamp(
+        historyCapacity, MIN_HISTORY_CAPACITY, MAX_HISTORY_CAPACITY, DEFAULT_HISTORY_CAPACITY);
+    eventCapacity = clamp(eventCapacity, MIN_EVENT_CAPACITY, MAX_EVENT_CAPACITY, DEFAULT_EVENT_CAPACITY);
     items = normalizeItems(items);
-    slowRequestThresholdMs =
-        clamp(
-            slowRequestThresholdMs,
-            MIN_THRESHOLD_MS,
-            Long.MAX_VALUE,
-            DEFAULT_SLOW_REQUEST_THRESHOLD_MS);
-    slowSqlThresholdMs =
-        clamp(slowSqlThresholdMs, MIN_THRESHOLD_MS, Long.MAX_VALUE, DEFAULT_SLOW_SQL_THRESHOLD_MS);
+    slowRequestThresholdMs = clamp(
+        slowRequestThresholdMs,
+        MIN_THRESHOLD_MS,
+        Long.MAX_VALUE,
+        DEFAULT_SLOW_REQUEST_THRESHOLD_MS);
+    slowSqlThresholdMs = clamp(slowSqlThresholdMs, MIN_THRESHOLD_MS, Long.MAX_VALUE, DEFAULT_SLOW_SQL_THRESHOLD_MS);
     ttlSeconds = clamp(ttlSeconds, 60L, MAX_TTL_SECONDS, DEFAULT_TTL_SECONDS);
   }
 

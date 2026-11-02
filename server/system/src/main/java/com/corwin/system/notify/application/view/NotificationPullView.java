@@ -9,4 +9,5 @@ import java.util.List;
  * @param lastPullAt the timestamp (epoch millis) for the last pull
  * @author Corwin 2026/3/30
  */
-public record NotificationPullView(List<NotificationView> items, long lastPullAt) {}
+public record NotificationPullView(List<NotificationView> items, long lastPullAt) {
+}

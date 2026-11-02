@@ -63,23 +63,21 @@ public class ConfigCommandService {
     Instant updatedAt = HighDate.realInstant();
     ConfigValue savedValue;
     if (current == null) {
-      savedValue =
-          ConfigValue.createOverride(
-              spec.key().value(),
-              prepared.content(),
-              spec.schemaVersion(),
-              updatedBy,
-              updatedAt,
-              command.reason());
+      savedValue = ConfigValue.createOverride(
+          spec.key().value(),
+          prepared.content(),
+          spec.schemaVersion(),
+          updatedBy,
+          updatedAt,
+          command.reason());
       try {
         configValueRepository.insert(savedValue);
       } catch (DataIntegrityViolationException ex) {
         throw versionConflict(spec.key().value());
       }
     } else {
-      savedValue =
-          current.updateOverride(
-              prepared.content(), spec.schemaVersion(), updatedBy, updatedAt, command.reason());
+      savedValue = current.updateOverride(
+          prepared.content(), spec.schemaVersion(), updatedBy, updatedAt, command.reason());
       if (!configValueRepository.update(savedValue, command.expectedRevision())) {
         throw versionConflict(spec.key().value());
       }
@@ -120,13 +118,12 @@ public class ConfigCommandService {
       return new ConfigChangeView(spec.key().value(), 0, false);
     }
 
-    ConfigValue resetValue =
-        current.resetToDefault(
-            ConfigJsonCodec.serialize(spec.defaultValue()),
-            spec.schemaVersion(),
-            currentUserId(),
-            HighDate.realInstant(),
-            command.reason());
+    ConfigValue resetValue = current.resetToDefault(
+        ConfigJsonCodec.serialize(spec.defaultValue()),
+        spec.schemaVersion(),
+        currentUserId(),
+        HighDate.realInstant(),
+        command.reason());
     if (!configValueRepository.update(resetValue, command.expectedRevision())) {
       throw versionConflict(spec.key().value());
     }
@@ -146,9 +143,8 @@ public class ConfigCommandService {
     }
 
     CurrentTree currentTree = currentTree(spec, current);
-    ConfigValueTreeSupport.MergeResult merged =
-        ConfigValueTreeSupport.mergeSensitive(
-            submitted, currentTree.value(), currentTree.readable(), spec.fields());
+    ConfigValueTreeSupport.MergeResult merged = ConfigValueTreeSupport.mergeSensitive(
+        submitted, currentTree.value(), currentTree.readable(), spec.fields());
     var violations = new ArrayList<>(merged.violations());
     T typedValue;
     try {
@@ -197,12 +193,10 @@ public class ConfigCommandService {
   }
 
   private ConfigSpec<?> requireEditableSpec(String configKey) {
-    ConfigSpec<?> spec =
-        ConfigSpecCatalog.find(configKey)
-            .orElseThrow(
-                () ->
-                    new BizException(
-                        "Config definition not found: " + configKey, BaseError.NOT_FOUND));
+    ConfigSpec<?> spec = ConfigSpecCatalog.find(configKey)
+        .orElseThrow(
+            () -> new BizException(
+                "Config definition not found: " + configKey, BaseError.NOT_FOUND));
     if (spec.editPolicy() != ConfigEditPolicy.ADMIN_EDITABLE) {
       throw new BizException("Config is read-only: " + configKey, BaseError.FORBIDDEN);
     }
@@ -217,13 +211,12 @@ public class ConfigCommandService {
     if (spec.activationPolicy() != ConfigActivationPolicy.DYNAMIC) {
       return;
     }
-    ConfigSnapshot<T> snapshot =
-        ConfigSnapshotFactory.createStored(
-            spec,
-            savedValue.content(),
-            savedValue.schemaVersion(),
-            savedValue.revision(),
-            savedValue.configured());
+    ConfigSnapshot<T> snapshot = ConfigSnapshotFactory.createStored(
+        spec,
+        savedValue.content(),
+        savedValue.schemaVersion(),
+        savedValue.revision(),
+        savedValue.configured());
     afterCommit(() -> ConfigRegistry.replaceIfNewer(snapshot));
   }
 
@@ -231,6 +224,7 @@ public class ConfigCommandService {
     if (TransactionSynchronizationManager.isSynchronizationActive()) {
       TransactionSynchronizationManager.registerSynchronization(
           new TransactionSynchronization() {
+
             @Override
             public void afterCommit() {
               action.run();
@@ -256,5 +250,6 @@ public class ConfigCommandService {
     }
   }
 
-  private record CurrentTree(JsonNode value, boolean readable) {}
+  private record CurrentTree(JsonNode value, boolean readable) {
+  }
 }

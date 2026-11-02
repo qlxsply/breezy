@@ -122,9 +122,12 @@ public class SseSessionManager {
         });
   }
 
-  private record UserSessionKey(Long userId, UserType userType) {}
+  private record UserSessionKey(Long userId, UserType userType) {
+  }
 
-  private record UserSession(String sessionId, SseEmitter emitter) {}
+  private record UserSession(String sessionId, SseEmitter emitter) {
+  }
 
-  public record SseMessage(String id, String name, Object data) {}
+  public record SseMessage(String id, String name, Object data) {
+  }
 }

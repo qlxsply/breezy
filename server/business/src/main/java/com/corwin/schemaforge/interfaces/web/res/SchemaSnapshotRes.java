@@ -17,4 +17,5 @@ public record SchemaSnapshotRes(
     String logicalFileId,
     String sqlLogicalFileId,
     String contentHash,
-    Instant createdAt) {}
+    Instant createdAt) {
+}

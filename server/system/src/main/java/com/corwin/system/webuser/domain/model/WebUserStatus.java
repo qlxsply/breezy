@@ -10,6 +10,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/5/11
  */
 public enum WebUserStatus implements DictEnumDefinition {
+
   ACTIVE("启用", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   DISABLED("停用", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),
   CANCELLED("已注销", DictTagColor.DANGER_RED, DictTagType.DANGER);

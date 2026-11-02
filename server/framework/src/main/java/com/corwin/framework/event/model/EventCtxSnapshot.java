@@ -6,11 +6,13 @@ import com.corwin.framework.web.ctx.Ctx;
 /**
  * Frozen snapshot of the request context captured at publish time.
  *
- * <p>Key fields (trace ID, user principal, client info) are stored so that {@code
+ * <p>
+ * Key fields (trace ID, user principal, client info) are stored so that {@code
  * ConsumeContextBinder} can restore them in the consumer thread, enabling cross-async-boundary
  * traceability.
  *
- * <p>Uses a fixed-field whitelist strategy — no dynamic properties are propagated — to control
+ * <p>
+ * Uses a fixed-field whitelist strategy — no dynamic properties are propagated — to control
  * serialisation size and evolution risk.
  *
  * @author Corwin 2026/3/31
@@ -60,7 +62,8 @@ public record EventCtxSnapshot(
   /**
    * 将快照还原为运行时上下文对象。
    *
-   * <p>该方法仅负责字段映射，不直接绑定到线程，真正绑定动作由上下文绑定器完成。
+   * <p>
+   * 该方法仅负责字段映射，不直接绑定到线程，真正绑定动作由上下文绑定器完成。
    *
    * @return 可用于恢复线程上下文的 {@link Ctx} 实例
    */

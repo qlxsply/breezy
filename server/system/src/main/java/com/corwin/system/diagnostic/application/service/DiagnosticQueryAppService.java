@@ -56,17 +56,15 @@ public class DiagnosticQueryAppService {
     return runtimeManager
         .currentSession()
         .map(
-            session ->
-                new DiagnosticSessionView(
-                    session.status(),
-                    session.config(),
-                    session.startedAt(),
-                    session.expireAt(),
-                    session.remainingTtlSeconds(now)))
+            session -> new DiagnosticSessionView(
+                session.status(),
+                session.config(),
+                session.startedAt(),
+                session.expireAt(),
+                session.remainingTtlSeconds(now)))
         .orElseGet(
-            () ->
-                new DiagnosticSessionView(
-                    DiagnosticStatus.INACTIVE, DiagnosticConfig.defaultConfig(), null, null, 0L));
+            () -> new DiagnosticSessionView(
+                DiagnosticStatus.INACTIVE, DiagnosticConfig.defaultConfig(), null, null, 0L));
   }
 
   /**

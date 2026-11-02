@@ -7,4 +7,5 @@ package com.corwin.framework.web.sort;
  * @param column the corresponding SQL column name
  * @author Corwin 2026/7/29
  */
-public record SortableField(String field, String column) {}
+public record SortableField(String field, String column) {
+}

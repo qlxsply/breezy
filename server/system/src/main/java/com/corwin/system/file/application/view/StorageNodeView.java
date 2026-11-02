@@ -21,4 +21,5 @@ public record StorageNodeView(
     String contentType,
     // 仅文件有值
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt) {
+}

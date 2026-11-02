@@ -6,6 +6,7 @@ package com.corwin.framework.error;
  * @author Corwin 2026/3/30
  */
 public enum ErrorCodeRanges implements ErrorCodeRange {
+
   FRAMEWORK_BASE("000000", "009999"),
   FRAMEWORK_XSQL("010000", "019999"),
   FRAMEWORK_CACHE("020000", "029999"),

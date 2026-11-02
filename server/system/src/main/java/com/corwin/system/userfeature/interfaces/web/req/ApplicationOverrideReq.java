@@ -14,4 +14,5 @@ import com.corwin.system.userfeature.domain.model.UserAccessOverrideType;
 public record ApplicationOverrideReq(
     String applicationId,
     UserAccessOverrideType overrideType,
-    ApplicationFeatureAccessScope featureAccessScope) {}
+    ApplicationFeatureAccessScope featureAccessScope) {
+}

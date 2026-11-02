@@ -9,4 +9,5 @@ package com.corwin.framework.mybatis.pagination.dialect;
  * @param value the parameter value
  * @author Corwin 2026/7/28
  */
-public record PageParameter(String name, Class<?> javaType, Object value) {}
+public record PageParameter(String name, Class<?> javaType, Object value) {
+}

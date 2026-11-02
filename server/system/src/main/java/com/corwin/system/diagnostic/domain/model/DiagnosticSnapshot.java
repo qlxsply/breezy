@@ -15,4 +15,5 @@ public record DiagnosticSnapshot(
     HttpSnapshot http,
     DbPoolSnapshot dbPool,
     SqlSnapshot sql,
-    JfrSnapshot jfr) {}
+    JfrSnapshot jfr) {
+}

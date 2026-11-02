@@ -16,16 +16,17 @@ import lombok.Getter;
 @Table(
     name = "sys_refresh_token",
     indexes = {
-      @Index(name = "idx_sys_refresh_token_user_id", columnList = "user_id"),
-      @Index(name = "idx_sys_refresh_token_user_status", columnList = "user_id,status"),
-      @Index(
-          name = "idx_sys_refresh_token_token_id",
-          columnList = "refresh_token_id",
-          unique = true),
-      @Index(name = "idx_sys_refresh_token_hash", columnList = "refresh_token_hash", unique = true),
-      @Index(name = "idx_sys_refresh_token_expires_at", columnList = "expires_at")
+        @Index(name = "idx_sys_refresh_token_user_id", columnList = "user_id"),
+        @Index(name = "idx_sys_refresh_token_user_status", columnList = "user_id,status"),
+        @Index(
+            name = "idx_sys_refresh_token_token_id",
+            columnList = "refresh_token_id",
+            unique = true),
+        @Index(name = "idx_sys_refresh_token_hash", columnList = "refresh_token_hash", unique = true),
+        @Index(name = "idx_sys_refresh_token_expires_at", columnList = "expires_at")
     })
 public class RefreshToken {
+
   /** Unique identifier for this refresh token record. */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,7 +77,8 @@ public class RefreshToken {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected RefreshToken() {}
+  protected RefreshToken() {
+  }
 
   /** Creates a new active refresh token. */
   public RefreshToken(

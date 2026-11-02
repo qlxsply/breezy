@@ -11,4 +11,5 @@ public record StorageListReq(
     String keyword,
     Boolean recursive,
     StorageSortBy sortBy,
-    StorageSortOrder sortOrder) {}
+    StorageSortOrder sortOrder) {
+}

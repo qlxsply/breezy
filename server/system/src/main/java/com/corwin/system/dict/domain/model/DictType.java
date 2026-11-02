@@ -15,7 +15,8 @@ import lombok.Getter;
 /**
  * JPA entity representing a dictionary type.
  *
- * <p>A dictionary type defines a logical group of dictionary items, including its value type,
+ * <p>
+ * A dictionary type defines a logical group of dictionary items, including its value type,
  * structure type, source type, and enabled status.
  *
  * @author Corwin 2026/3/15
@@ -25,13 +26,13 @@ import lombok.Getter;
 @Table(
     name = "sys_dict_type",
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_sys_dict_type_code",
-          columnNames = {"code"})
+        @UniqueConstraint(
+            name = "uk_sys_dict_type_code",
+            columnNames = {"code"})
     },
     indexes = {
-      @Index(name = "idx_sys_dict_type_enabled", columnList = "enabled"),
-      @Index(name = "idx_sys_dict_type_source", columnList = "source_type")
+        @Index(name = "idx_sys_dict_type_enabled", columnList = "enabled"),
+        @Index(name = "idx_sys_dict_type_source", columnList = "source_type")
     })
 public class DictType {
 
@@ -78,7 +79,8 @@ public class DictType {
   @Column(nullable = false, length = 64)
   private String updatedBy;
 
-  protected DictType() {}
+  protected DictType() {
+  }
 
   /** Constructs a new DictType entity with the given attributes. */
   public DictType(

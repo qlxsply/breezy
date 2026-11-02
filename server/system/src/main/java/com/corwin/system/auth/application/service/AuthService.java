@@ -69,10 +69,9 @@ public class AuthService {
       BizAssert.notBlank(cmd.password(), AuthError.BAD_CREDENTIALS);
 
       account = cmd.account().trim();
-      User user =
-          userRepository
-              .findByUsername(account)
-              .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
+      User user = userRepository
+          .findByUsername(account)
+          .orElseThrow(() -> new BizException(AuthError.BAD_CREDENTIALS));
       BizAssert.state(!DefaultUser.isSystemUser(user.getId()), AuthError.FORBIDDEN);
       BizAssert.state(user.getUserType() == UserType.ADMIN, AuthError.FORBIDDEN);
       BizAssert.state(user.getUserStatus() == UserStatus.ENABLED, AuthError.USER_DISABLED);
@@ -84,39 +83,35 @@ public class AuthService {
         kickOutActiveSessions(user);
       }
 
-      Set<String> permissionCodes =
-          permissionService.permissionCodesForUser(user.getId(), UserType.ADMIN);
+      Set<String> permissionCodes = permissionService.permissionCodesForUser(user.getId(), UserType.ADMIN);
       String rawToken = opaqueTokenService.generateToken();
       String tokenHash = opaqueTokenService.hash(rawToken);
       Instant now = HighDate.realInstant();
       Instant expiresAt = now.plus(authConfigService.adminSessionTtl());
 
-      LoginSession session =
-          new LoginSession(
-              user.getId(),
-              newTokenId(),
-              tokenHash,
-              com.corwin.framework.web.ctx.CtxUtil.getClientIp(),
-              currentUserAgent(),
-              Json.toStr(permissionCodes.stream().toList()),
-              "[]",
-              "[]",
-              expiresAt,
-              user.getUsername());
+      LoginSession session = new LoginSession(
+          user.getId(),
+          newTokenId(),
+          tokenHash,
+          com.corwin.framework.web.ctx.CtxUtil.getClientIp(),
+          currentUserAgent(),
+          Json.toStr(permissionCodes.stream().toList()),
+          "[]",
+          "[]",
+          expiresAt,
+          user.getUsername());
       loginSessionRepository.save(session);
 
-      AuthPrincipal principal =
-          new AuthPrincipal(
-              user.getId(),
-              user.getUsername(),
-              user.getUserType(),
-              DefaultUser.isAdmin(user.getId()),
-              user.isMustChangePassword(),
-              permissionCodes);
-      Duration cacheTtl =
-          Duration.between(now, expiresAt).compareTo(authConfigService.sessionCacheTtl()) < 0
-              ? Duration.between(now, expiresAt)
-              : authConfigService.sessionCacheTtl();
+      AuthPrincipal principal = new AuthPrincipal(
+          user.getId(),
+          user.getUsername(),
+          user.getUserType(),
+          DefaultUser.isAdmin(user.getId()),
+          user.isMustChangePassword(),
+          permissionCodes);
+      Duration cacheTtl = Duration.between(now, expiresAt).compareTo(authConfigService.sessionCacheTtl()) < 0
+          ? Duration.between(now, expiresAt)
+          : authConfigService.sessionCacheTtl();
       authPrincipalAuthenticator.cacheSession(tokenHash, principal, cacheTtl);
 
       loginLogService.logLoginSuccess(user);
@@ -137,10 +132,9 @@ public class AuthService {
     return securityContextService
         .currentOptional()
         .flatMap(
-            principal ->
-                userRepository
-                    .findById(principal.userId())
-                    .map(user -> toAuthView(user, principal.userType())))
+            principal -> userRepository
+                .findById(principal.userId())
+                .map(user -> toAuthView(user, principal.userType())))
         .orElse(null);
   }
 
@@ -155,10 +149,9 @@ public class AuthService {
     passwordPolicyService.validate(cmd.newPassword());
 
     AuthPrincipal principal = securityContextService.current();
-    User user =
-        userRepository
-            .findById(principal.userId())
-            .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
+    User user = userRepository
+        .findById(principal.userId())
+        .orElseThrow(() -> new BizException(AuthError.INVALID_TOKEN));
     if (!BCrypt.checkpw(cmd.oldPassword(), user.getPasswordHash())) {
       BizAssert.fail(AuthError.BAD_CREDENTIALS);
     }
@@ -198,8 +191,8 @@ public class AuthService {
   }
 
   private void kickOutActiveSessions(User user) {
-    List<LoginSession> activeSessions =
-        loginSessionRepository.findByUserIdAndSessionStatus(user.getId(), SessionStatus.ACTIVE);
+    List<LoginSession> activeSessions = loginSessionRepository.findByUserIdAndSessionStatus(user.getId(),
+        SessionStatus.ACTIVE);
     for (LoginSession session : activeSessions) {
       session.kickOut(user.getUsername());
       loginSessionRepository.save(session);

@@ -232,12 +232,14 @@ public class BootstrapResourceDefinitionLoader {
       boolean defaultEntry,
       String remark,
       List<String> permissionCodes,
-      List<ResourceSeed> children) {}
+      List<ResourceSeed> children) {
+  }
 
   @Getter
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class ResourceRoot {
+
     @JacksonXmlProperty(localName = "menu")
     @JacksonXmlElementWrapper(useWrapping = false)
     private List<NavNode> menus;
@@ -251,6 +253,7 @@ public class BootstrapResourceDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class NavNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
 
@@ -299,6 +302,7 @@ public class BootstrapResourceDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class FunctionNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
 
@@ -317,6 +321,7 @@ public class BootstrapResourceDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class ButtonNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
 
@@ -341,6 +346,7 @@ public class BootstrapResourceDefinitionLoader {
   @Setter
   @JsonIgnoreProperties(ignoreUnknown = true)
   private static class PermissionNode {
+
     @JacksonXmlProperty(isAttribute = true)
     private String code;
   }

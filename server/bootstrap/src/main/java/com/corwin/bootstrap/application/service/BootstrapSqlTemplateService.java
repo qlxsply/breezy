@@ -17,14 +17,12 @@ public class BootstrapSqlTemplateService {
 
   public String load(String relativePath) {
     DatabaseType databaseType = databaseTypeResolver.resolveCurrentDatabaseType();
-    String path =
-        "bootstarp/sql/" + BootstrapJdbcUrlSupport.toFolder(databaseType) + "/" + relativePath;
+    String path = "bootstarp/sql/" + BootstrapJdbcUrlSupport.toFolder(databaseType) + "/" + relativePath;
     return loadClasspathResource(path);
   }
 
   private String loadClasspathResource(String path) {
-    try (var inputStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
+    try (var inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
       if (inputStream == null) {
         throw new IllegalStateException("SQL resource not found: " + path);
       }
@@ -40,5 +38,6 @@ public class BootstrapSqlTemplateService {
         new ScriptResource("business_schema.sql", load("business_schema.sql")));
   }
 
-  public record ScriptResource(String name, String content) {}
+  public record ScriptResource(String name, String content) {
+  }
 }

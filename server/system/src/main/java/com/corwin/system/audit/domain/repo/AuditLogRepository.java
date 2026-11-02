@@ -12,4 +12,5 @@ import com.corwin.system.audit.domain.model.AuditLog;
  */
 public interface AuditLogRepository
     extends DomainRepository<AuditLog, Long>,
-        DynamicPageQueryRepository<AuditLog, AuditLogPageQuery> {}
+    DynamicPageQueryRepository<AuditLog, AuditLogPageQuery> {
+}

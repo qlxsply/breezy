@@ -20,4 +20,5 @@ public record UserFeatureUserFeatureView(
     List<String> permissionCodes,
     boolean inheritedEnabled,
     boolean effectiveEnabled,
-    UserAccessOverrideType overrideType) {}
+    UserAccessOverrideType overrideType) {
+}

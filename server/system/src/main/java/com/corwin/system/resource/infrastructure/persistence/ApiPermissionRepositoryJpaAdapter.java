@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA adapter implementation of {@link ApiPermissionRepository}.
  *
- * <p>Delegates all CRUD operations to the underlying {@link ApiPermissionJpaRepository}.
+ * <p>
+ * Delegates all CRUD operations to the underlying {@link ApiPermissionJpaRepository}.
  *
  * @author Corwin 2026/4/24
  */

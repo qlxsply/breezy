@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * @author Corwin 2026/5/5
  */
 public enum UserTimeZoneOption implements DictEnumDefinition {
+
   ASIA_SHANGHAI("中国上海 Asia/Shanghai (UTC+08:00)", "Asia/Shanghai"),
   UTC("协调世界时 UTC (UTC+00:00)", "UTC"),
   ETC_GMT_PLUS_12("国际日期变更线西侧 Etc/GMT+12 (UTC-12:00)", "Etc/GMT+12"),

@@ -75,8 +75,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
       return true;
     }
 
-    Authenticated typeAuthenticated =
-        handlerMethod.getBeanType().getAnnotation(Authenticated.class);
+    Authenticated typeAuthenticated = handlerMethod.getBeanType().getAnnotation(Authenticated.class);
     if (typeAuthenticated != null) {
       authorizationService.checkAuthenticated(
           typeAuthenticated.userType(),

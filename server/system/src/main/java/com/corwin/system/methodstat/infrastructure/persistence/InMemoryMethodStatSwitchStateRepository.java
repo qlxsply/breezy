@@ -20,8 +20,7 @@ import org.springframework.stereotype.Repository;
 public class InMemoryMethodStatSwitchStateRepository implements MethodStatSwitchStateRepository {
 
   private final AtomicBoolean globalEnabled = new AtomicBoolean(false);
-  private final Map<String, MethodStatMethodSwitchState> methodSwitchStore =
-      new ConcurrentHashMap<>();
+  private final Map<String, MethodStatMethodSwitchState> methodSwitchStore = new ConcurrentHashMap<>();
 
   @Override
   public MethodStatGlobalSwitchState getGlobalSwitchState() {

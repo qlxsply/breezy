@@ -8,4 +8,5 @@ import com.corwin.reminder.domain.model.ScheduleEventStatus;
  * @author Corwin 2026/1/12
  */
 public record SchedulePageReq(
-    PageRuleRequest page, SortRuleRequest sort, ScheduleEventStatus status, String titleLike) {}
+    PageRuleRequest page, SortRuleRequest sort, ScheduleEventStatus status, String titleLike) {
+}

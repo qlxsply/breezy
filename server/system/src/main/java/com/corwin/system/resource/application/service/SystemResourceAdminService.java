@@ -31,7 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Application service for managing the system resource tree (directories, menus, functions,
  * buttons) and their permission bindings.
  *
- * <p>Provides use-case orchestration for CRUD operations on resources, tree building, permission
+ * <p>
+ * Provides use-case orchestration for CRUD operations on resources, tree building, permission
  * assignment, and subtree deletion with integrity checks.
  *
  * @author Corwin 2026/6/29
@@ -82,8 +83,7 @@ public class SystemResourceAdminService {
   public SystemResourcePermissionSelectionView permissions(Long resourceId) {
     Resource resource = requireResource(resourceId);
     BizAssert.state(resource.canBindPermission(), BaseError.INVALID_PARAMETER);
-    List<Long> permissionIds =
-        permissionIdsByResourceId(List.of(resource)).getOrDefault(resource.getId(), List.of());
+    List<Long> permissionIds = permissionIdsByResourceId(List.of(resource)).getOrDefault(resource.getId(), List.of());
     return new SystemResourcePermissionSelectionView(permissionIds);
   }
 
@@ -122,20 +122,19 @@ public class SystemResourceAdminService {
       String remark) {
     Resource parent = parentId == null ? null : requireResource(parentId);
     validateNewResource(parent, code, name, resourceType, sortNo, path, component);
-    Resource resource =
-        new Resource(
-            code,
-            parentId,
-            name,
-            resourceType,
-            normalizePath(resourceType, path),
-            normalizeComponent(resourceType, component),
-            normalizeIcon(resourceType, icon),
-            sortNo,
-            defaultVisible(visible),
-            defaultEntryAllowed(resourceType, defaultEntry),
-            systemBuiltin,
-            remark);
+    Resource resource = new Resource(
+        code,
+        parentId,
+        name,
+        resourceType,
+        normalizePath(resourceType, path),
+        normalizeComponent(resourceType, component),
+        normalizeIcon(resourceType, icon),
+        sortNo,
+        defaultVisible(visible),
+        defaultEntryAllowed(resourceType, defaultEntry),
+        systemBuiltin,
+        remark);
     applyStatus(resource, visible, enabled, defaultEntry, systemBuiltin);
     return toDetailView(resourceRepository.save(resource), List.of());
   }
@@ -193,15 +192,15 @@ public class SystemResourceAdminService {
     if (!resourceType.canBindPermission()) {
       resourcePermissionRepository.deleteByResourceIdIn(List.of(id));
     }
-    List<Long> permissionIds =
-        permissionIdsByResourceId(List.of(saved)).getOrDefault(saved.getId(), List.of());
+    List<Long> permissionIds = permissionIdsByResourceId(List.of(saved)).getOrDefault(saved.getId(), List.of());
     return toDetailView(saved, permissionIds);
   }
 
   /**
    * Deletes a resource and its entire subtree.
    *
-   * <p>Also removes associated role-resource and resource-permission bindings. System-built
+   * <p>
+   * Also removes associated role-resource and resource-permission bindings. System-built
    * resources cannot be deleted.
    *
    * @param id the root resource ID of the subtree to delete
@@ -212,8 +211,8 @@ public class SystemResourceAdminService {
     Resource target = requireResource(id);
     List<Resource> allResources = resourceRepository.findAll();
     LinkedHashSet<Long> subtreeIds = collectSubtreeIds(id, allResources);
-    List<Resource> subtreeResources =
-        allResources.stream().filter(resource -> subtreeIds.contains(resource.getId())).toList();
+    List<Resource> subtreeResources = allResources.stream().filter(resource -> subtreeIds.contains(resource.getId()))
+        .toList();
     BizAssert.state(
         subtreeResources.stream()
             .noneMatch(resource -> Boolean.TRUE.equals(resource.getSystemBuiltin())),
@@ -221,15 +220,14 @@ public class SystemResourceAdminService {
 
     roleResourceRepository.deleteByResourceIdIn(subtreeIds);
     resourcePermissionRepository.deleteByResourceIdIn(subtreeIds);
-    Map<Long, Resource> resourceById =
-        allResources.stream()
-            .filter(resource -> resource.getId() != null)
-            .collect(
-                Collectors.toMap(
-                    Resource::getId,
-                    Function.identity(),
-                    (left, right) -> left,
-                    LinkedHashMap::new));
+    Map<Long, Resource> resourceById = allResources.stream()
+        .filter(resource -> resource.getId() != null)
+        .collect(
+            Collectors.toMap(
+                Resource::getId,
+                Function.identity(),
+                (left, right) -> left,
+                LinkedHashMap::new));
     subtreeResources.stream()
         .sorted(
             Comparator.<Resource, Integer>comparing(resource -> depthOf(resource, resourceById))
@@ -267,10 +265,9 @@ public class SystemResourceAdminService {
       Resource resource,
       Map<Long, List<Resource>> childrenByParentId,
       Map<Long, List<Long>> permissionIdsByResourceId) {
-    List<SystemResourceTreeItemView> children =
-        childrenByParentId.getOrDefault(resource.getId(), List.of()).stream()
-            .map(child -> buildTree(child, childrenByParentId, permissionIdsByResourceId))
-            .toList();
+    List<SystemResourceTreeItemView> children = childrenByParentId.getOrDefault(resource.getId(), List.of()).stream()
+        .map(child -> buildTree(child, childrenByParentId, permissionIdsByResourceId))
+        .toList();
     return new SystemResourceTreeItemView(
         resource.getId(),
         resource.getParentId(),
@@ -371,10 +368,9 @@ public class SystemResourceAdminService {
 
   private void validateChildrenRule(
       Resource resource, ResourceType nextType, List<Resource> allResources) {
-    List<Resource> children =
-        allResources.stream()
-            .filter(item -> Objects.equals(item.getParentId(), resource.getId()))
-            .toList();
+    List<Resource> children = allResources.stream()
+        .filter(item -> Objects.equals(item.getParentId(), resource.getId()))
+        .toList();
     if (children.isEmpty()) {
       return;
     }
@@ -392,11 +388,10 @@ public class SystemResourceAdminService {
   }
 
   private LinkedHashSet<Long> normalizePermissionIds(List<Long> permissionIds) {
-    LinkedHashSet<Long> allowedPermissionIds =
-        permissionService.assignablePermissionsForInternal().stream()
-            .map(Permission::getId)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    LinkedHashSet<Long> allowedPermissionIds = permissionService.assignablePermissionsForInternal().stream()
+        .map(Permission::getId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     LinkedHashSet<Long> normalized = new LinkedHashSet<>();
     if (permissionIds == null) {
       return normalized;
@@ -413,15 +408,14 @@ public class SystemResourceAdminService {
 
   private Map<Long, List<Resource>> childrenByParentId(List<Resource> resources) {
     Map<Long, List<Resource>> map = new LinkedHashMap<>();
-    Map<Long, Resource> resourceById =
-        resources.stream()
-            .filter(resource -> resource.getId() != null)
-            .collect(
-                Collectors.toMap(
-                    Resource::getId,
-                    Function.identity(),
-                    (left, right) -> left,
-                    LinkedHashMap::new));
+    Map<Long, Resource> resourceById = resources.stream()
+        .filter(resource -> resource.getId() != null)
+        .collect(
+            Collectors.toMap(
+                Resource::getId,
+                Function.identity(),
+                (left, right) -> left,
+                LinkedHashMap::new));
     for (Resource resource : resources) {
       Long parentId = resource.getParentId();
       if (parentId != null && !resourceById.containsKey(parentId)) {
@@ -434,11 +428,10 @@ public class SystemResourceAdminService {
   }
 
   private Map<Long, List<Long>> permissionIdsByResourceId(Collection<Resource> resources) {
-    LinkedHashSet<Long> resourceIds =
-        resources.stream()
-            .map(Resource::getId)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    LinkedHashSet<Long> resourceIds = resources.stream()
+        .map(Resource::getId)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     Map<Long, List<Long>> permissionIdsByResourceId = new LinkedHashMap<>();
     if (resourceIds.isEmpty()) {
       return permissionIdsByResourceId;
@@ -460,10 +453,9 @@ public class SystemResourceAdminService {
     allResources.stream()
         .filter(resource -> resource.getId() != null)
         .forEach(
-            resource ->
-                childrenByParentId
-                    .computeIfAbsent(resource.getParentId(), key -> new ArrayList<>())
-                    .add(resource.getId()));
+            resource -> childrenByParentId
+                .computeIfAbsent(resource.getParentId(), key -> new ArrayList<>())
+                .add(resource.getId()));
     LinkedHashSet<Long> ids = new LinkedHashSet<>();
     ArrayList<Long> queue = new ArrayList<>();
     queue.add(rootId);

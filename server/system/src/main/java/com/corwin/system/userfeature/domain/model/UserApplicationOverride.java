@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 用户应用访问特例。
  *
- * <p>表示单个用户对某个产品应用的访问特例，并定义单独启用时覆盖完整功能或部分功能。
+ * <p>
+ * 表示单个用户对某个产品应用的访问特例，并定义单独启用时覆盖完整功能或部分功能。
  *
  * @author Corwin
  */
@@ -17,16 +18,16 @@ import lombok.Getter;
 @Table(
     name = "sys_user_application_override",
     indexes = {
-      @Index(
-          name = "idx_sys_user_application_override_unique",
-          columnList = "user_id,application_id",
-          unique = true),
-      @Index(name = "idx_sys_user_application_override_user_id", columnList = "user_id"),
-      @Index(
-          name = "idx_sys_user_application_override_application_id",
-          columnList = "application_id"),
-      @Index(name = "idx_sys_user_application_override_type", columnList = "override_type"),
-      @Index(name = "idx_sys_user_application_override_scope", columnList = "feature_access_scope")
+        @Index(
+            name = "idx_sys_user_application_override_unique",
+            columnList = "user_id,application_id",
+            unique = true),
+        @Index(name = "idx_sys_user_application_override_user_id", columnList = "user_id"),
+        @Index(
+            name = "idx_sys_user_application_override_application_id",
+            columnList = "application_id"),
+        @Index(name = "idx_sys_user_application_override_type", columnList = "override_type"),
+        @Index(name = "idx_sys_user_application_override_scope", columnList = "feature_access_scope")
     })
 public class UserApplicationOverride {
 
@@ -38,7 +39,8 @@ public class UserApplicationOverride {
   /**
    * 用户 ID。
    *
-   * <p>逻辑引用用户表主键，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用用户表主键，数据库层面不创建外键。
    */
   @Column(name = "user_id", nullable = false)
   private Long userId;
@@ -46,7 +48,8 @@ public class UserApplicationOverride {
   /**
    * 产品应用 ID。
    *
-   * <p>逻辑引用 {@link ProductApplication#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link ProductApplication#getId()}，数据库层面不创建外键。
    */
   @Column(name = "application_id", nullable = false)
   private Long applicationId;
@@ -59,7 +62,8 @@ public class UserApplicationOverride {
   /**
    * 应用功能访问范围。
    *
-   * <p>当 overrideType 为 ENABLE 时生效。 FULL 表示用户拥有应用下全部已启用功能，后续新增功能自动可用。 PARTIAL
+   * <p>
+   * 当 overrideType 为 ENABLE 时生效。 FULL 表示用户拥有应用下全部已启用功能，后续新增功能自动可用。 PARTIAL
    * 表示用户仅拥有显式开启的功能，后续新增功能默认不可用。
    */
   @Enumerated(EnumType.STRING)
@@ -87,7 +91,8 @@ public class UserApplicationOverride {
   private Instant updatedAt;
 
   /** JPA 构造方法。 */
-  protected UserApplicationOverride() {}
+  protected UserApplicationOverride() {
+  }
 
   /**
    * 创建用户应用访问特例。

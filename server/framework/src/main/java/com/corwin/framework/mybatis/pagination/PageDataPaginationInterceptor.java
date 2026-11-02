@@ -32,21 +32,21 @@ import org.springframework.core.annotation.Order;
  */
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Intercepts({
-  @Signature(
-      type = Executor.class,
-      method = "query",
-      args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
-  @Signature(
-      type = Executor.class,
-      method = "query",
-      args = {
-        MappedStatement.class,
-        Object.class,
-        RowBounds.class,
-        ResultHandler.class,
-        CacheKey.class,
-        BoundSql.class
-      })
+    @Signature(
+        type = Executor.class,
+        method = "query",
+        args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+    @Signature(
+        type = Executor.class,
+        method = "query",
+        args = {
+            MappedStatement.class,
+            Object.class,
+            RowBounds.class,
+            ResultHandler.class,
+            CacheKey.class,
+            BoundSql.class
+        })
 })
 public final class PageDataPaginationInterceptor implements Interceptor {
 
@@ -110,8 +110,7 @@ public final class PageDataPaginationInterceptor implements Interceptor {
 
     long offset = calculateOffset(pageSpec);
 
-    BoundSql originalBoundSql =
-        args.length == 6 ? (BoundSql) args[5] : mappedStatement.getBoundSql(parameterObject);
+    BoundSql originalBoundSql = args.length == 6 ? (BoundSql) args[5] : mappedStatement.getBoundSql(parameterObject);
 
     validateResultMapping(mappedStatement);
 
@@ -119,13 +118,11 @@ public final class PageDataPaginationInterceptor implements Interceptor {
 
     Executor executor = (Executor) invocation.getTarget();
 
-    String countSql =
-        countSqlOptimizer.buildCountSql(
-            originalBoundSql.getSql(), originalBoundSql.getParameterMappings().size());
+    String countSql = countSqlOptimizer.buildCountSql(
+        originalBoundSql.getSql(), originalBoundSql.getParameterMappings().size());
 
-    long total =
-        executeCountQuery(
-            executor, mappedStatement, parameterObject, originalBoundSql, countSql, configuration);
+    long total = executeCountQuery(
+        executor, mappedStatement, parameterObject, originalBoundSql, countSql, configuration);
 
     /*
      * Short-circuit: no data to fetch, return an empty page immediately.
@@ -139,12 +136,11 @@ public final class PageDataPaginationInterceptor implements Interceptor {
 
     BoundSql pageBoundSql = BoundSqlFactory.forPage(configuration, originalBoundSql, pageSql);
 
-    MappedStatement pageMappedStatement =
-        MappedStatementFactory.copy(
-            mappedStatement,
-            mappedStatement.getId() + PAGE_SUFFIX,
-            new FixedBoundSqlSource(pageBoundSql),
-            mappedStatement.getResultMaps());
+    MappedStatement pageMappedStatement = MappedStatementFactory.copy(
+        mappedStatement,
+        mappedStatement.getId() + PAGE_SUFFIX,
+        new FixedBoundSqlSource(pageBoundSql),
+        mappedStatement.getResultMaps());
 
     /*
      * Replace the current invocation arguments with the paginated query equivalents.
@@ -153,9 +149,8 @@ public final class PageDataPaginationInterceptor implements Interceptor {
     args[2] = RowBounds.DEFAULT;
 
     if (args.length == 6) {
-      CacheKey pageCacheKey =
-          executor.createCacheKey(
-              pageMappedStatement, parameterObject, RowBounds.DEFAULT, pageBoundSql);
+      CacheKey pageCacheKey = executor.createCacheKey(
+          pageMappedStatement, parameterObject, RowBounds.DEFAULT, pageBoundSql);
 
       args[4] = pageCacheKey;
       args[5] = pageBoundSql;
@@ -188,34 +183,30 @@ public final class PageDataPaginationInterceptor implements Interceptor {
 
     String countStatementId = originalStatement.getId() + COUNT_SUFFIX;
 
-    ResultMap countResultMap =
-        new ResultMap.Builder(
-                configuration, countStatementId + "!result-map", Long.class, List.of())
-            .build();
+    ResultMap countResultMap = new ResultMap.Builder(
+        configuration, countStatementId + "!result-map", Long.class, List.of())
+        .build();
 
-    MappedStatement countStatement =
-        MappedStatementFactory.copy(
-            originalStatement,
-            countStatementId,
-            new FixedBoundSqlSource(countBoundSql),
-            List.of(countResultMap));
+    MappedStatement countStatement = MappedStatementFactory.copy(
+        originalStatement,
+        countStatementId,
+        new FixedBoundSqlSource(countBoundSql),
+        List.of(countResultMap));
 
-    CacheKey countCacheKey =
-        executor.createCacheKey(countStatement, parameterObject, RowBounds.DEFAULT, countBoundSql);
+    CacheKey countCacheKey = executor.createCacheKey(countStatement, parameterObject, RowBounds.DEFAULT, countBoundSql);
 
     /*
      * invocation.getTarget() is the Executor inside the plugin proxy.
      * Calling it directly does not re-enter this interceptor,
      * so no ThreadLocal recursion guard is needed.
      */
-    List<?> countResult =
-        executor.query(
-            countStatement,
-            parameterObject,
-            RowBounds.DEFAULT,
-            Executor.NO_RESULT_HANDLER,
-            countCacheKey,
-            countBoundSql);
+    List<?> countResult = executor.query(
+        countStatement,
+        parameterObject,
+        RowBounds.DEFAULT,
+        Executor.NO_RESULT_HANDLER,
+        countCacheKey,
+        countBoundSql);
 
     if (countResult == null || countResult.isEmpty() || countResult.getFirst() == null) {
       return 0L;
@@ -297,9 +288,8 @@ public final class PageDataPaginationInterceptor implements Interceptor {
   }
 
   private void validateResultMapping(MappedStatement statement) {
-    boolean mapsDirectlyToPageData =
-        statement.getResultMaps().stream()
-            .anyMatch(resultMap -> PageData.class.equals(resultMap.getType()));
+    boolean mapsDirectlyToPageData = statement.getResultMaps().stream()
+        .anyMatch(resultMap -> PageData.class.equals(resultMap.getType()));
 
     if (mapsDirectlyToPageData) {
       throw new PaginationException(

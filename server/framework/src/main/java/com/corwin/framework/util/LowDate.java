@@ -9,20 +9,23 @@ import java.util.TimeZone;
 /**
  * {@link Date}-based compatibility date/time utility.
  *
- * <p>This class mainly serves legacy interfaces, entities, and third-party libraries that still
+ * <p>
+ * This class mainly serves legacy interfaces, entities, and third-party libraries that still
  * require {@link Date}. New code should prefer {@link HighDate}; this class acts as a bridge.
  *
- * <p>Core conventions:
+ * <p>
+ * Core conventions:
  *
  * <ul>
- *   <li>{@link Date} represents an instant on the timeline; it carries no time zone information
- *   <li>Display and parsing of "year-month-day hour:minute:second" are always handled in the system
- *       default time zone
- *   <li>Day-range queries should use {@link #toStartOfDay(Date)} and {@link
- *       #toStartOfNextDay(Date)} with a half-open interval
+ * <li>{@link Date} represents an instant on the timeline; it carries no time zone information
+ * <li>Display and parsing of "year-month-day hour:minute:second" are always handled in the system
+ * default time zone
+ * <li>Day-range queries should use {@link #toStartOfDay(Date)} and {@link
+ * #toStartOfNextDay(Date)} with a half-open interval
  * </ul>
  *
  * <pre>{@code
+ *
  * Date start = LowDate.toStartOfDay(new Date());
  * Date endExclusive = LowDate.toStartOfNextDay(new Date());
  * // Query: createdAt >= start && createdAt < endExclusive
@@ -54,7 +57,8 @@ public final class LowDate {
   /**
    * Returns the local time-of-day portion of the current instant, carried on the epoch-day-0 date.
    *
-   * <p>Note: {@link Date} is not suitable for representing "pure time"; this method exists only for
+   * <p>
+   * Note: {@link Date} is not suitable for representing "pure time"; this method exists only for
    * legacy API compatibility.
    */
   public static Date realTime() {
@@ -143,7 +147,8 @@ public final class LowDate {
   /**
    * Parses a {@code HH:mm:ss} string into a {@link Date} carried on the epoch-day-0 date.
    *
-   * <p>Note: This is a compatibility wrapper for "pure time"; new code should use {@link LocalTime}
+   * <p>
+   * Note: This is a compatibility wrapper for "pure time"; new code should use {@link LocalTime}
    * directly.
    *
    * @param str the time string to parse
@@ -222,7 +227,8 @@ public final class LowDate {
   /**
    * Returns the start of the next day (00:00:00) in the system default time zone.
    *
-   * <p>Recommended for day-range queries using the half-open interval {@code [startOfDay,
+   * <p>
+   * Recommended for day-range queries using the half-open interval {@code [startOfDay,
    * startOfNextDay)} to avoid precision ambiguity with end-of-day.
    *
    * @param dateTime the source date-time
@@ -276,7 +282,8 @@ public final class LowDate {
    * Extracts the local time-of-day portion (hour:minute:second:nanos) and returns it as a {@link
    * Date} on the epoch-day-0 base date.
    *
-   * <p>Note: {@link Date} is not suited for "pure time"; this exists only for legacy API
+   * <p>
+   * Note: {@link Date} is not suited for "pure time"; this exists only for legacy API
    * compatibility.
    *
    * @param dateTime the source date-time
@@ -293,10 +300,12 @@ public final class LowDate {
   /**
    * Parses a time zone ID string into a {@link TimeZone}.
    *
-   * <p>Unlike {@link TimeZone#getTimeZone(String)}, this method throws an exception for invalid IDs
+   * <p>
+   * Unlike {@link TimeZone#getTimeZone(String)}, this method throws an exception for invalid IDs
    * instead of silently falling back to GMT.
    *
-   * <p>Example: {@code LowDate.parseTimeZone("Asia/Shanghai")}.
+   * <p>
+   * Example: {@code LowDate.parseTimeZone("Asia/Shanghai")}.
    *
    * @param timeZoneId the time zone ID (e.g. "Asia/Shanghai")
    * @return the resolved {@link TimeZone}
@@ -486,5 +495,6 @@ public final class LowDate {
     return HighDate.zone();
   }
 
-  private LowDate() {}
+  private LowDate() {
+  }
 }

@@ -14,34 +14,34 @@ import java.util.List;
  */
 public final class FrameworkFormatConfigSpecs {
 
-  public static final ConfigSpec<DecimalPolicyConfig> DECIMAL_POLICY =
-      new SimpleConfigSpec<>(
-          new ConfigKey("framework.format.decimal-policy"),
-          "framework",
-          "format",
-          "通用数字策略",
-          "系统通用数字展示的小数位数与舍入模式",
-          DecimalPolicyConfig.class,
-          new DecimalPolicyConfig(2, DecimalRoundingMode.HALF_UP),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.USE_DEFAULT,
-          List.of(
-              requiredRange(
-                  "scale",
-                  "小数位数",
-                  ConfigFieldType.INTEGER,
-                  10,
-                  BigDecimal.ZERO,
-                  BigDecimal.valueOf(20)),
-              requiredEnum("roundingMode", "舍入模式", DecimalRoundingMode.values(), 20)),
-          "decimal-policy",
-          FrameworkFormatConfigSpecs::validateDecimalPolicy,
-          FrameworkFormatConfigSpecs::validateDecimalPolicy);
+  public static final ConfigSpec<DecimalPolicyConfig> DECIMAL_POLICY = new SimpleConfigSpec<>(
+      new ConfigKey("framework.format.decimal-policy"),
+      "framework",
+      "format",
+      "通用数字策略",
+      "系统通用数字展示的小数位数与舍入模式",
+      DecimalPolicyConfig.class,
+      new DecimalPolicyConfig(2, DecimalRoundingMode.HALF_UP),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.USE_DEFAULT,
+      List.of(
+          requiredRange(
+              "scale",
+              "小数位数",
+              ConfigFieldType.INTEGER,
+              10,
+              BigDecimal.ZERO,
+              BigDecimal.valueOf(20)),
+          requiredEnum("roundingMode", "舍入模式", DecimalRoundingMode.values(), 20)),
+      "decimal-policy",
+      FrameworkFormatConfigSpecs::validateDecimalPolicy,
+      FrameworkFormatConfigSpecs::validateDecimalPolicy);
 
-  public record DecimalPolicyConfig(int scale, DecimalRoundingMode roundingMode) {}
+  public record DecimalPolicyConfig(int scale, DecimalRoundingMode roundingMode) {
+  }
 
   private static List<ConfigViolation> validateDecimalPolicy(DecimalPolicyConfig value) {
     if (value == null || value.roundingMode() == null) {
@@ -53,5 +53,6 @@ public final class FrameworkFormatConfigSpecs {
     return List.of();
   }
 
-  private FrameworkFormatConfigSpecs() {}
+  private FrameworkFormatConfigSpecs() {
+  }
 }

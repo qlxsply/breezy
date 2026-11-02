@@ -14,15 +14,17 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * Utility for computing message digests and HMACs.
  *
- * <p>Provides convenient methods for:
+ * <p>
+ * Provides convenient methods for:
  *
  * <ul>
- *   <li>Digest algorithms: MD5, SHA-1, SHA-256, SHA-512
- *   <li>HMAC algorithms: HmacSHA256, HmacSHA512
- *   <li>Stream-based and string-based digest computation
+ * <li>Digest algorithms: MD5, SHA-1, SHA-256, SHA-512
+ * <li>HMAC algorithms: HmacSHA256, HmacSHA512
+ * <li>Stream-based and string-based digest computation
  * </ul>
  *
- * <p>Digest and MAC instances are cached per-thread via {@link ThreadLocal} for reuse, avoiding
+ * <p>
+ * Digest and MAC instances are cached per-thread via {@link ThreadLocal} for reuse, avoiding
  * repeated allocation overhead.
  *
  * @author Corwin 2026/3/30
@@ -158,22 +160,20 @@ public class SignUtil {
 
   // ------------------------ Internal utilities ------------------------
 
-  private static final Map<String, ThreadLocal<MessageDigest>> DIGEST_CACHE =
-      new ConcurrentHashMap<>();
+  private static final Map<String, ThreadLocal<MessageDigest>> DIGEST_CACHE = new ConcurrentHashMap<>();
 
   private static MessageDigest getDigest(String algorithm) {
     return DIGEST_CACHE
         .computeIfAbsent(
             algorithm,
-            alg ->
-                ThreadLocal.withInitial(
-                    () -> {
-                      try {
-                        return MessageDigest.getInstance(alg);
-                      } catch (NoSuchAlgorithmException e) {
-                        throw new IllegalArgumentException("Unsupported algorithm: " + alg, e);
-                      }
-                    }))
+            alg -> ThreadLocal.withInitial(
+                () -> {
+                  try {
+                    return MessageDigest.getInstance(alg);
+                  } catch (NoSuchAlgorithmException e) {
+                    throw new IllegalArgumentException("Unsupported algorithm: " + alg, e);
+                  }
+                }))
         .get();
   }
 
@@ -183,19 +183,19 @@ public class SignUtil {
     return MAC_CACHE
         .computeIfAbsent(
             algorithm,
-            alg ->
-                ThreadLocal.withInitial(
-                    () -> {
-                      try {
-                        return Mac.getInstance(alg);
-                      } catch (Exception e) {
-                        throw new IllegalArgumentException("Unsupported algorithm: " + alg, e);
-                      }
-                    }))
+            alg -> ThreadLocal.withInitial(
+                () -> {
+                  try {
+                    return Mac.getInstance(alg);
+                  } catch (Exception e) {
+                    throw new IllegalArgumentException("Unsupported algorithm: " + alg, e);
+                  }
+                }))
         .get();
   }
 
   private static final HexFormat HEX = HexFormat.of();
 
-  private SignUtil() {}
+  private SignUtil() {
+  }
 }

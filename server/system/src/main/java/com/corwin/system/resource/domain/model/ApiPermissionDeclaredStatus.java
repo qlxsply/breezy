@@ -7,12 +7,14 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * API permission declaration status enumeration.
  *
- * <p>Indicates whether an API endpoint has a permission declaration (DECLARED) or does not
+ * <p>
+ * Indicates whether an API endpoint has a permission declaration (DECLARED) or does not
  * (UNDECLARED).
  *
  * @author Corwin 2026/6/21
  */
 public enum ApiPermissionDeclaredStatus implements DictEnumDefinition {
+
   DECLARED("已声明", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   UNDECLARED("未声明", DictTagColor.WARNING_ORANGE, DictTagType.WARNING);
 

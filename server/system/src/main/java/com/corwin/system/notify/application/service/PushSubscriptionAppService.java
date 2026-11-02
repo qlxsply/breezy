@@ -65,14 +65,13 @@ public class PushSubscriptionAppService {
                   command.deviceId());
             },
             () -> {
-              UserPushSubscription subscription =
-                  UserPushSubscription.register(
-                      userId,
-                      userType,
-                      command.deviceId(),
-                      command.endpoint(),
-                      command.p256dh(),
-                      command.auth());
+              UserPushSubscription subscription = UserPushSubscription.register(
+                  userId,
+                  userType,
+                  command.deviceId(),
+                  command.endpoint(),
+                  command.p256dh(),
+                  command.auth());
               userPushSubscriptionRepository.save(subscription);
               log.info(
                   "Push subscription created: userType={}, userId={}, deviceId={}",

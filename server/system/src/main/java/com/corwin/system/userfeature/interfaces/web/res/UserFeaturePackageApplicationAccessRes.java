@@ -20,4 +20,5 @@ public record UserFeaturePackageApplicationAccessRes(
     String applicationName,
     ApplicationFeatureAccessScope featureAccessScope,
     List<String> featureIds,
-    List<UserFeatureItemRes> features) {}
+    List<UserFeatureItemRes> features) {
+}

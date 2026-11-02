@@ -54,16 +54,14 @@ public class AppDatabaseSourceSyncService {
       return;
     }
 
-    DatabaseSource existing =
-        databaseSourceRepo
-            .findByAppDsKey(beanName)
-            .orElseGet(
-                () ->
-                    databaseSourceRepo
-                        .findByDbTypeAndJdbcUrlAndUsername(
-                            spec.dbType(), spec.jdbcUrl(), spec.username())
-                        .filter(DatabaseSource::isAppSource)
-                        .orElse(null));
+    DatabaseSource existing = databaseSourceRepo
+        .findByAppDsKey(beanName)
+        .orElseGet(
+            () -> databaseSourceRepo
+                .findByDbTypeAndJdbcUrlAndUsername(
+                    spec.dbType(), spec.jdbcUrl(), spec.username())
+                .filter(DatabaseSource::isAppSource)
+                .orElse(null));
     if (existing != null && isSameConnection(existing, spec)) {
       existing.updateAppConfig(
           existing.getName(), spec.dbType(), spec.jdbcUrl(), spec.username(), beanName);
@@ -78,9 +76,8 @@ public class AppDatabaseSourceSyncService {
 
     String name = existing != null ? existing.getName() : buildName(spec);
     name = ensureUniqueName(name, existing != null ? existing.getId() : null);
-    DatabaseSource created =
-        DatabaseSource.createApp(
-            name, spec.dbType(), spec.jdbcUrl(), spec.username(), beanName, null);
+    DatabaseSource created = DatabaseSource.createApp(
+        name, spec.dbType(), spec.jdbcUrl(), spec.username(), beanName, null);
     testAppDataSource(created, startupTime);
     databaseSourceRepo.save(created);
   }
@@ -90,13 +87,12 @@ public class AppDatabaseSourceSyncService {
       metadataExtractor.testConnection(source);
       source.markTestOk(startupTime);
     } catch (RuntimeException ex) {
-      String msg =
-          "应用数据源连接失败: name="
-              + source.getName()
-              + ", jdbcUrl="
-              + source.getJdbcUrl()
-              + ", error="
-              + ex.getMessage();
+      String msg = "应用数据源连接失败: name="
+          + source.getName()
+          + ", jdbcUrl="
+          + source.getJdbcUrl()
+          + ", error="
+          + ex.getMessage();
       throw new RuntimeException(msg, ex);
     }
   }
@@ -107,8 +103,8 @@ public class AppDatabaseSourceSyncService {
   }
 
   private void cleanupMissingAppSources(Set<String> beanKeys) {
-    List<DatabaseSource> appSources =
-        databaseSourceRepo.findAll().stream().filter(DatabaseSource::isAppSource).toList();
+    List<DatabaseSource> appSources = databaseSourceRepo.findAll().stream().filter(DatabaseSource::isAppSource)
+        .toList();
     for (DatabaseSource source : appSources) {
       String key = source.getAppDsKey();
       if (StrUtil.isBlank(key) || !beanKeys.contains(key)) {
@@ -263,7 +259,9 @@ public class AppDatabaseSourceSyncService {
   }
 
   private record AppDataSourceSpec(
-      String beanName, String jdbcUrl, String username, DatabaseType dbType) {}
+      String beanName, String jdbcUrl, String username, DatabaseType dbType) {
+  }
 
-  private record UnwrapResult(DataSource dataSource, String chain) {}
+  private record UnwrapResult(DataSource dataSource, String chain) {
+  }
 }

@@ -60,16 +60,14 @@ public class MethodStatQueryAppService {
       metadataCollector.collectAllPointcutMetadata();
       metadata = metadataRepository.findAll();
     }
-    List<MethodStatStatsView> all =
-        metadata.stream()
-            .filter(item -> matchesMethod(item, methodName))
-            .map(item -> toStatsView(item, nowMillis))
-            .filter(
-                item ->
-                    collectEnabled == null
-                        || item.collectEnabled() == collectEnabled.booleanValue())
-            .sorted(buildStatsComparator(sortBy, sortDirection))
-            .toList();
+    List<MethodStatStatsView> all = metadata.stream()
+        .filter(item -> matchesMethod(item, methodName))
+        .map(item -> toStatsView(item, nowMillis))
+        .filter(
+            item -> collectEnabled == null
+                || item.collectEnabled() == collectEnabled.booleanValue())
+        .sorted(buildStatsComparator(sortBy, sortDirection))
+        .toList();
     return page(all, pageNo, pageSize);
   }
 
@@ -83,14 +81,12 @@ public class MethodStatQueryAppService {
   public MethodStatStatsView getMethodStats(String key) {
     BizAssert.notBlank(key, BaseError.MISSING_PARAMETER);
     MethodStatKey methodStatKey = MethodStatKey.of(key.trim());
-    MethodStatMetadata metadata =
-        metadataRepository
-            .findByKey(methodStatKey)
-            .orElseThrow(
-                () ->
-                    new BizException(
-                        "Method metadata not found: " + methodStatKey.value(),
-                        BaseError.NOT_FOUND));
+    MethodStatMetadata metadata = metadataRepository
+        .findByKey(methodStatKey)
+        .orElseThrow(
+            () -> new BizException(
+                "Method metadata not found: " + methodStatKey.value(),
+                BaseError.NOT_FOUND));
     return toStatsView(metadata, HighDate.realTimestampMillis());
   }
 
@@ -102,11 +98,10 @@ public class MethodStatQueryAppService {
    * @return the stats view
    */
   private MethodStatStatsView toStatsView(MethodStatMetadata metadata, long nowMillis) {
-    MethodStatAggregateSnapshot snapshot =
-        aggregateRepository
-            .findByKey(metadata.key())
-            .map(item -> item.snapshot(nowMillis))
-            .orElseGet(() -> emptySnapshot(metadata.key()));
+    MethodStatAggregateSnapshot snapshot = aggregateRepository
+        .findByKey(metadata.key())
+        .map(item -> item.snapshot(nowMillis))
+        .orElseGet(() -> emptySnapshot(metadata.key()));
 
     MethodStatDurationMetrics metrics = snapshot.durationMetrics();
     boolean globalSwitchEnabled = switchAppService.isGlobalEnabled();
@@ -192,40 +187,39 @@ public class MethodStatQueryAppService {
     if (normalizedSortBy == null) {
       normalizedSortBy = SORT_BY_METHOD_NAME;
     }
-    Comparator<MethodStatStatsView> comparator =
-        switch (normalizedSortBy.toUpperCase(Locale.ROOT)) {
-          case "TOTAL_SUCCESS" -> Comparator.comparingLong(MethodStatStatsView::totalSuccess);
-          case "TOTAL_FAILURE" -> Comparator.comparingLong(MethodStatStatsView::totalFailure);
-          case "RECENT_1M_CALLS" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1MinuteCalls);
-          case "RECENT_1H_CALLS" -> Comparator.comparingLong(MethodStatStatsView::recent1HourCalls);
-          case "RECENT_1D_CALLS" -> Comparator.comparingLong(MethodStatStatsView::recent1DayCalls);
-          case "RECENT_1M_SUCCESS" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1MinuteSuccess);
-          case "RECENT_1M_FAILURE" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1MinuteFailure);
-          case "RECENT_1H_SUCCESS" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1HourSuccess);
-          case "RECENT_1H_FAILURE" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1HourFailure);
-          case "RECENT_1D_SUCCESS" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1DaySuccess);
-          case "RECENT_1D_FAILURE" ->
-              Comparator.comparingLong(MethodStatStatsView::recent1DayFailure);
-          case "DURATION_MAX" -> Comparator.comparingLong(MethodStatStatsView::durationMax);
-          case "DURATION_MIN" -> Comparator.comparingLong(MethodStatStatsView::durationMin);
-          case "DURATION_AVG" -> Comparator.comparingDouble(MethodStatStatsView::durationAvg);
-          case "DURATION_P50" -> Comparator.comparingLong(MethodStatStatsView::durationP50);
-          case "DURATION_P90" -> Comparator.comparingLong(MethodStatStatsView::durationP90);
-          case "DURATION_P95" -> Comparator.comparingLong(MethodStatStatsView::durationP95);
-          case "DURATION_P99" -> Comparator.comparingLong(MethodStatStatsView::durationP99);
-          case "METHOD_NAME" ->
-              Comparator.comparing(
-                  MethodStatStatsView::methodName,
-                  Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
-          case "KEY" -> Comparator.comparing(MethodStatStatsView::key);
-          default -> Comparator.comparingLong(MethodStatStatsView::totalCalls);
-        };
+    Comparator<MethodStatStatsView> comparator = switch (normalizedSortBy.toUpperCase(Locale.ROOT)) {
+      case "TOTAL_SUCCESS" -> Comparator.comparingLong(MethodStatStatsView::totalSuccess);
+      case "TOTAL_FAILURE" -> Comparator.comparingLong(MethodStatStatsView::totalFailure);
+      case "RECENT_1M_CALLS" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1MinuteCalls);
+      case "RECENT_1H_CALLS" -> Comparator.comparingLong(MethodStatStatsView::recent1HourCalls);
+      case "RECENT_1D_CALLS" -> Comparator.comparingLong(MethodStatStatsView::recent1DayCalls);
+      case "RECENT_1M_SUCCESS" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1MinuteSuccess);
+      case "RECENT_1M_FAILURE" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1MinuteFailure);
+      case "RECENT_1H_SUCCESS" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1HourSuccess);
+      case "RECENT_1H_FAILURE" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1HourFailure);
+      case "RECENT_1D_SUCCESS" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1DaySuccess);
+      case "RECENT_1D_FAILURE" ->
+        Comparator.comparingLong(MethodStatStatsView::recent1DayFailure);
+      case "DURATION_MAX" -> Comparator.comparingLong(MethodStatStatsView::durationMax);
+      case "DURATION_MIN" -> Comparator.comparingLong(MethodStatStatsView::durationMin);
+      case "DURATION_AVG" -> Comparator.comparingDouble(MethodStatStatsView::durationAvg);
+      case "DURATION_P50" -> Comparator.comparingLong(MethodStatStatsView::durationP50);
+      case "DURATION_P90" -> Comparator.comparingLong(MethodStatStatsView::durationP90);
+      case "DURATION_P95" -> Comparator.comparingLong(MethodStatStatsView::durationP95);
+      case "DURATION_P99" -> Comparator.comparingLong(MethodStatStatsView::durationP99);
+      case "METHOD_NAME" ->
+        Comparator.comparing(
+            MethodStatStatsView::methodName,
+            Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+      case "KEY" -> Comparator.comparing(MethodStatStatsView::key);
+      default -> Comparator.comparingLong(MethodStatStatsView::totalCalls);
+    };
 
     String normalizedSortDirection = normalize(sortDirection);
     if (SORT_DIRECTION_DESC.equalsIgnoreCase(normalizedSortDirection)) {

@@ -62,9 +62,8 @@ public class UserAdminController {
       permissions = {"usr.add"})
   @Audit(resource = AuditResource.USER, action = AuditAction.CREATE, level = AuditLevel.HIGH)
   public ApiResponse<UserRes> create(@RequestBody CreateUserReq req) {
-    CreateUserCommand cmd =
-        new CreateUserCommand(
-            req.getUsername(), req.getNickname(), req.getPassword(), req.getRoleIds());
+    CreateUserCommand cmd = new CreateUserCommand(
+        req.getUsername(), req.getNickname(), req.getPassword(), req.getRoleIds());
     return ApiResponse.ok(toDto(userAdminService.create(cmd)));
   }
 
@@ -93,9 +92,8 @@ public class UserAdminController {
       userType = UserType.ADMIN,
       permissions = {"usr.view"})
   public ApiResponse<PageResult<UserRes>> page(@RequestBody UserPageReq req) {
-    var page =
-        userAdminService.page(
-            req.status(), req.usernameLike(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = userAdminService.page(
+        req.status(), req.usernameLike(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, UserAdminController::toDto));
   }
 
@@ -128,8 +126,7 @@ public class UserAdminController {
       permissions = {"usr.edit"})
   @Audit(resource = AuditResource.USER, action = AuditAction.UPDATE, level = AuditLevel.HIGH)
   public ApiResponse<Boolean> batchUpdateStatus(@RequestBody BatchUpdateUserStatusReq req) {
-    BatchUpdateUserStatusCommand cmd =
-        new BatchUpdateUserStatusCommand(req.userIds(), req.status());
+    BatchUpdateUserStatusCommand cmd = new BatchUpdateUserStatusCommand(req.userIds(), req.status());
     userAdminService.batchUpdateStatus(cmd);
     return ApiResponse.ok(true);
   }

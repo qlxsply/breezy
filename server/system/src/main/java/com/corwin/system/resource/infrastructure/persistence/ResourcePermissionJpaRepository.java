@@ -8,7 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link ResourcePermission} entity.
  *
- * <p>Provides database access for resource-permission binding operations.
+ * <p>
+ * Provides database access for resource-permission binding operations.
  *
  * @author Corwin 2026/6/29
  */

@@ -12,7 +12,8 @@ import org.springframework.lang.NonNull;
 /**
  * {@link TaskDecorator} that initializes a fresh system context for {@code @Scheduled} tasks.
  *
- * <p>Unlike {@link com.corwin.framework.concurrency.ContextCopyingTaskDecorator}, this decorator
+ * <p>
+ * Unlike {@link com.corwin.framework.concurrency.ContextCopyingTaskDecorator}, this decorator
  * does <b>not</b> copy the HTTP request context. Instead it creates a new trace, resolves the
  * scheduler execution identity, and binds MDC — treating every scheduled execution as its own
  * system-level entry point. Context is cleaned up after execution to prevent thread-pool pollution.
@@ -38,9 +39,8 @@ public class SchedulerTaskDecorator implements TaskDecorator {
         // 1. Initialize the scheduled-task context
         CtxUtil.schedulerInitTrace(traceId);
         CtxUtil.setSpanInfo(spanId, null);
-        SchedulerExecutionIdentity identity =
-            Objects.requireNonNull(
-                identityProvider.identity(), "scheduler execution identity required");
+        SchedulerExecutionIdentity identity = Objects.requireNonNull(
+            identityProvider.identity(), "scheduler execution identity required");
         Long userId = identity.userId();
         String username = identity.username();
         UserType userType = identity.userType();

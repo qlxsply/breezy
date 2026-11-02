@@ -28,10 +28,11 @@ public class OsStateCollector {
    * @return an OsSnapshot with current OS metrics
    */
   public OsSnapshot collect() {
-    java.lang.management.OperatingSystemMXBean baseBean =
-        java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-    com.sun.management.OperatingSystemMXBean osBean =
-        baseBean instanceof com.sun.management.OperatingSystemMXBean item ? item : null;
+    java.lang.management.OperatingSystemMXBean baseBean = java.lang.management.ManagementFactory
+        .getOperatingSystemMXBean();
+    com.sun.management.OperatingSystemMXBean osBean = baseBean instanceof com.sun.management.OperatingSystemMXBean item
+        ? item
+        : null;
 
     String hostName = null;
     List<String> ipAddresses = List.of();
@@ -73,10 +74,9 @@ public class OsStateCollector {
   }
 
   private NetworkInterfaceSnapshot toNetworkInterfaceSnapshot(NetworkInterface networkInterface) {
-    List<String> addresses =
-        Collections.list(networkInterface.getInetAddresses()).stream()
-            .map(InetAddress::getHostAddress)
-            .toList();
+    List<String> addresses = Collections.list(networkInterface.getInetAddresses()).stream()
+        .map(InetAddress::getHostAddress)
+        .toList();
     try {
       return new NetworkInterfaceSnapshot(
           networkInterface.getName(),

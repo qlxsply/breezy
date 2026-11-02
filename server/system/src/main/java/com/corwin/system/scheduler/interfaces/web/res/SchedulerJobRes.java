@@ -25,4 +25,5 @@ public record SchedulerJobRes(
     Instant lastSuccessTime,
     Instant lastFailureTime,
     String lastErrorMessage,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

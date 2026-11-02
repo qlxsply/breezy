@@ -9,7 +9,8 @@ import lombok.Getter;
 /**
  * Permission code entity.
  *
- * <p>Represents a granular permission code that can be assigned to roles and bound to resources.
+ * <p>
+ * Represents a granular permission code that can be assigned to roles and bound to resources.
  * Each permission has a unique code, a display name, and a user scope that determines which user
  * types can be granted this permission.
  *
@@ -20,10 +21,11 @@ import lombok.Getter;
 @Table(
     name = "sys_permission",
     indexes = {
-      @Index(name = "idx_sys_permission_code", columnList = "code", unique = true),
-      @Index(name = "idx_sys_permission_user_scope", columnList = "user_scope")
+        @Index(name = "idx_sys_permission_code", columnList = "code", unique = true),
+        @Index(name = "idx_sys_permission_user_scope", columnList = "user_scope")
     })
 public class Permission {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -49,7 +51,8 @@ public class Permission {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  protected Permission() {}
+  protected Permission() {
+  }
 
   /**
    * Creates a new permission.

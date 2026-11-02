@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 /**
  * JPA-based adapter implementation of {@link DictTypeRepository}.
  *
- * <p>Delegates persistence operations to JpaRepository and MyBatis mapper for complex queries.
+ * <p>
+ * Delegates persistence operations to JpaRepository and MyBatis mapper for complex queries.
  *
  * @author Corwin 2026/3/15
  */

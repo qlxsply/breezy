@@ -23,7 +23,6 @@ public record ThreadSnapshot(
    * list.
    */
   public ThreadSnapshot {
-    deadlockedThreadIds =
-        deadlockedThreadIds == null ? List.of() : List.copyOf(deadlockedThreadIds);
+    deadlockedThreadIds = deadlockedThreadIds == null ? List.of() : List.copyOf(deadlockedThreadIds);
   }
 }

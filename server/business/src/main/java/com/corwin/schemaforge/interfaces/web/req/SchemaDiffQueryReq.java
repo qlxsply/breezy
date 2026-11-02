@@ -11,7 +11,9 @@ import lombok.Setter;
 @Setter
 public class SchemaDiffQueryReq {
 
-  @JsonLongString private Long refDbId;
+  @JsonLongString
+  private Long refDbId;
 
-  @JsonLongString private Long targetDbId;
+  @JsonLongString
+  private Long targetDbId;
 }

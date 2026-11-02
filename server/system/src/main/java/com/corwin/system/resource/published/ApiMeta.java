@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 /**
  * Annotation to associate a REST controller with a specific API module.
  *
- * <p>Used at the type level to declare which {@link ApiModuleCode} a controller belongs to,
+ * <p>
+ * Used at the type level to declare which {@link ApiModuleCode} a controller belongs to,
  * enabling module-based API grouping and filtering.
  *
  * @author Corwin 2026/4/16
@@ -16,6 +17,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiMeta {
+
   /**
    * The module code that this annotated controller belongs to.
    *

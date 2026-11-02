@@ -9,7 +9,8 @@ import lombok.Getter;
 /**
  * Generic list response wrapper.
  *
- * <p>Carries the element list along with total and current count metadata.
+ * <p>
+ * Carries the element list along with total and current count metadata.
  *
  * @param <T> the element type
  * @author Corwin 2026/1/8
@@ -17,6 +18,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ListResult<T> {
+
   /** Total number of elements (across all pages) */
   private final Integer count;
 

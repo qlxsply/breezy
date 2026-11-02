@@ -39,8 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class JsonFmtRecordAppService {
 
   private static final int NAME_MAX_LENGTH = 128;
-  private static final DateTimeFormatter DEFAULT_NAME_DATE =
-      DateTimeFormatter.ofPattern("yyyyMMdd");
+  private static final DateTimeFormatter DEFAULT_NAME_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
   private final JsonFmtRecordRepository recordRepository;
   private final FileCommandPort fileService;
@@ -48,21 +47,19 @@ public class JsonFmtRecordAppService {
   public List<JsonFmtRecordListItemView> list(Long userId, String keyword) {
     BizAssert.notNull(userId, BaseError.FORBIDDEN);
     String normalizedKeyword = StrUtil.trimToNull(keyword);
-    List<JsonFmtRecord> records =
-        normalizedKeyword == null
-            ? recordRepository.findByUserIdOrderByOrderNoAsc(userId)
-            : recordRepository.findByUserIdAndNameContainingIgnoreCaseOrderByOrderNoAsc(
-                userId, normalizedKeyword);
+    List<JsonFmtRecord> records = normalizedKeyword == null
+        ? recordRepository.findByUserIdOrderByOrderNoAsc(userId)
+        : recordRepository.findByUserIdAndNameContainingIgnoreCaseOrderByOrderNoAsc(
+            userId, normalizedKeyword);
     return records.stream().map(this::toListItemView).toList();
   }
 
   public JsonFmtRecordDetailView detail(Long userId, String recordId) {
     BizAssert.notNull(userId, BaseError.FORBIDDEN);
     BizAssert.notBlank(recordId, BaseError.MISSING_PARAMETER);
-    JsonFmtRecord record =
-        recordRepository
-            .findByIdAndUserId(recordId, userId)
-            .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
+    JsonFmtRecord record = recordRepository
+        .findByIdAndUserId(recordId, userId)
+        .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
     return toDetailView(record);
   }
 
@@ -90,10 +87,9 @@ public class JsonFmtRecordAppService {
       return toDetailView(createAsTop(JsonFmtRecord.createInline(userId, name, content, 0)));
     }
 
-    JsonFmtRecord record =
-        recordRepository
-            .findByIdAndUserId(recordId, userId)
-            .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
+    JsonFmtRecord record = recordRepository
+        .findByIdAndUserId(recordId, userId)
+        .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
     String trimmedName = trimToNull(command.name());
     if (command.name() != null) {
       if (trimmedName == null) {
@@ -130,10 +126,9 @@ public class JsonFmtRecordAppService {
       BizAssert.fail(JsonFmtError.JSONFMT_RECORD_NAME_REQUIRED);
     }
     validateName(name);
-    JsonFmtRecord record =
-        recordRepository
-            .findByIdAndUserId(command.id(), userId)
-            .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
+    JsonFmtRecord record = recordRepository
+        .findByIdAndUserId(command.id(), userId)
+        .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
     record.rename(name);
     recordRepository.save(record);
   }
@@ -180,10 +175,9 @@ public class JsonFmtRecordAppService {
   public void delete(Long userId, String recordId) {
     BizAssert.notNull(userId, BaseError.FORBIDDEN);
     BizAssert.notBlank(recordId, BaseError.MISSING_PARAMETER);
-    JsonFmtRecord record =
-        recordRepository
-            .findByIdAndUserId(recordId, userId)
-            .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
+    JsonFmtRecord record = recordRepository
+        .findByIdAndUserId(recordId, userId)
+        .orElseThrow(() -> new BizException(JsonFmtError.JSONFMT_RECORD_NOT_FOUND));
     deleteRecord(record);
     reorderAfterDelete(userId);
   }
@@ -211,8 +205,7 @@ public class JsonFmtRecordAppService {
   }
 
   private JsonFmtRecord createAsTop(JsonFmtRecord record) {
-    List<JsonFmtRecord> existing =
-        recordRepository.findByUserIdOrderByOrderNoAsc(record.getUserId());
+    List<JsonFmtRecord> existing = recordRepository.findByUserIdOrderByOrderNoAsc(record.getUserId());
     if (!existing.isEmpty()) {
       for (int i = 0; i < existing.size(); i++) {
         existing.get(i).reorderTo(i + 1);
@@ -259,10 +252,9 @@ public class JsonFmtRecordAppService {
     LocalDate today = HighDate.mockDate();
     Instant startAt = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
     Instant endAt = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-    long sequence =
-        recordRepository.countByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
-                userId, startAt, endAt)
-            + 1;
+    long sequence = recordRepository.countByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+        userId, startAt, endAt)
+        + 1;
     return today.format(DEFAULT_NAME_DATE) + "_" + sequence;
   }
 

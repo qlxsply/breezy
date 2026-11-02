@@ -16,15 +16,15 @@ import lombok.Getter;
 @Table(
     name = "tb_current_identity",
     indexes = {
-      @Index(
-          name = "idx_tb_current_identity_hash",
-          columnList = "identity_type,identity_hash",
-          unique = true),
-      @Index(
-          name = "idx_tb_current_identity_provider",
-          columnList = "provider_code,provider_subject",
-          unique = true),
-      @Index(name = "idx_tb_current_identity_user", columnList = "user_id")
+        @Index(
+            name = "idx_tb_current_identity_hash",
+            columnList = "identity_type,identity_hash",
+            unique = true),
+        @Index(
+            name = "idx_tb_current_identity_provider",
+            columnList = "provider_code,provider_subject",
+            unique = true),
+        @Index(name = "idx_tb_current_identity_user", columnList = "user_id")
     })
 public class WebUserCurrentIdentity {
 
@@ -67,7 +67,8 @@ public class WebUserCurrentIdentity {
   private Instant updatedAt;
 
   /** JPA required no-arg constructor. */
-  protected WebUserCurrentIdentity() {}
+  protected WebUserCurrentIdentity() {
+  }
 
   /** Construct a new current identity lookup entry. */
   public WebUserCurrentIdentity(

@@ -50,8 +50,7 @@ public class WebUserAdminService {
    */
   public PageData<WebUserAdminView> page(String keyword, String status, PageSpec spec) {
     WebUserStatus normalizedStatus = parseStatus(status);
-    PageData<WebUser> page =
-        webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
+    PageData<WebUser> page = webUserRepository.page(keyword, normalizedStatus, PageSpecSorts.apply(spec));
     return new PageData<>(
         page.pageNo(),
         page.pageSize(),

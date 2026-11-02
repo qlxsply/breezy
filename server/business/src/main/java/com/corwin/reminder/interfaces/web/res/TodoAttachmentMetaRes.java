@@ -11,4 +11,5 @@ public record TodoAttachmentMetaRes(
     Long size,
     String contentType,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {}
+    LocalDateTime updatedAt) {
+}

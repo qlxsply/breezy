@@ -24,6 +24,7 @@ public record SaveUserFeaturePackageCommand(
     boolean enabled,
     boolean defaultPackage,
     List<ApplicationAccessCommand> applicationAccesses) {
+
   /**
    * Command object for an application access entry within a package.
    *
@@ -34,5 +35,6 @@ public record SaveUserFeaturePackageCommand(
   public record ApplicationAccessCommand(
       String applicationId,
       ApplicationFeatureAccessScope featureAccessScope,
-      List<String> featureIds) {}
+      List<String> featureIds) {
+  }
 }

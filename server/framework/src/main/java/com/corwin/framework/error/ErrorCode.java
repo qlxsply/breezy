@@ -3,7 +3,8 @@ package com.corwin.framework.error;
 /**
  * Unified error-code contract for API responses.
  *
- * <p>The framework provides {@link BaseError}; business modules may implement this interface with
+ * <p>
+ * The framework provides {@link BaseError}; business modules may implement this interface with
  * their own enums.
  *
  * @author Corwin 2026/3/30

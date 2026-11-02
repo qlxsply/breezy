@@ -67,8 +67,8 @@ public class ReminderEngine {
     int pageNo = 1;
     while (true) {
       PageSpec spec = PageSpec.of(pageNo, 500, List.of());
-      PageData<TodoTask> page =
-          todoRepo.findByStatusInAndRemindAtLessThanEqual(List.of(TodoTaskStatus.TODO), end, spec);
+      PageData<TodoTask> page = todoRepo.findByStatusInAndRemindAtLessThanEqual(List.of(TodoTaskStatus.TODO), end,
+          spec);
 
       for (TodoTask task : page.elements()) {
         submitTodoToProcessor(task);
@@ -139,19 +139,17 @@ public class ReminderEngine {
     }
 
     String dedupeKey = "TODO|" + t.getId() + "|" + t.getRemindAt();
-    ReminderOutbox outbox =
-        createOutboxIfAbsent(
-            dedupeKey,
-            SourceType.TODO,
-            t.getId(),
-            t.getRemindAt(),
-            t.getOwnerId(),
-            t.getContent(),
-            t.getNote());
+    ReminderOutbox outbox = createOutboxIfAbsent(
+        dedupeKey,
+        SourceType.TODO,
+        t.getId(),
+        t.getRemindAt(),
+        t.getOwnerId(),
+        t.getContent(),
+        t.getNote());
     if (outbox != null) {
-      ReminderDispatchResult dispatchResult =
-          reminderInternalService.sendReminder(
-              t.getOwnerId(), "待办提醒: " + t.getContent(), t.getNote(), "/todo", outbox.getId());
+      ReminderDispatchResult dispatchResult = reminderInternalService.sendReminder(
+          t.getOwnerId(), "待办提醒: " + t.getContent(), t.getNote(), "/todo", outbox.getId());
       linkOutboxDelivery(outbox, dispatchResult);
     }
   }
@@ -165,8 +163,7 @@ public class ReminderEngine {
 
     Instant now = HighDate.realInstant();
     // 处理当前到点的提醒（可能由于 take 延迟，此时可能已经有多个点到期，但 DelayQueue 保证了按序触发）
-    Instant nextStart =
-        nextOccurrenceCalculator.nextStart(e, now.minusSeconds(1)); // 稍微往前偏一点点确保能算到当前的 occurrence
+    Instant nextStart = nextOccurrenceCalculator.nextStart(e, now.minusSeconds(1)); // 稍微往前偏一点点确保能算到当前的 occurrence
     if (nextStart != null) {
       List<Integer> advanceList = e.getAdvanceSecondsList();
       if (advanceList != null) {
@@ -175,19 +172,17 @@ public class ReminderEngine {
           // 如果这个点已经到期了（且在 1 分钟内的，避免陈旧提醒），则尝试发送
           if (!due.isAfter(now) && due.isAfter(now.minusSeconds(60))) {
             String dedupeKey = "SCHEDULE|" + e.getId() + "|" + nextStart + "|" + adv;
-            ReminderOutbox outbox =
-                createOutboxIfAbsent(
-                    dedupeKey,
-                    SourceType.SCHEDULE,
-                    e.getId(),
-                    due,
-                    e.getOwnerId(),
-                    e.getTitle(),
-                    e.getNote());
+            ReminderOutbox outbox = createOutboxIfAbsent(
+                dedupeKey,
+                SourceType.SCHEDULE,
+                e.getId(),
+                due,
+                e.getOwnerId(),
+                e.getTitle(),
+                e.getNote());
             if (outbox != null) {
-              ReminderDispatchResult dispatchResult =
-                  reminderInternalService.sendReminder(
-                      e.getOwnerId(), "日程提醒: " + e.getTitle(), e.getNote(), null, outbox.getId());
+              ReminderDispatchResult dispatchResult = reminderInternalService.sendReminder(
+                  e.getOwnerId(), "日程提醒: " + e.getTitle(), e.getNote(), null, outbox.getId());
               linkOutboxDelivery(outbox, dispatchResult);
             }
           }
@@ -210,8 +205,7 @@ public class ReminderEngine {
     if (outboxRepo.findByDedupeKey(dedupeKey).isPresent()) {
       return null;
     }
-    ReminderOutbox r =
-        ReminderOutbox.pending(ownerId, dedupeKey, type, sourceId, dueTime, title, body);
+    ReminderOutbox r = ReminderOutbox.pending(ownerId, dedupeKey, type, sourceId, dueTime, title, body);
     return outboxRepo.save(r);
   }
 
@@ -266,8 +260,7 @@ public class ReminderEngine {
 
   private void generateTodoOutbox(Instant now) {
     PageSpec spec = PageSpec.of(1, 100, List.of());
-    var page =
-        todoRepo.findByStatusInAndRemindAtLessThanEqual(List.of(TodoTaskStatus.TODO), now, spec);
+    var page = todoRepo.findByStatusInAndRemindAtLessThanEqual(List.of(TodoTaskStatus.TODO), now, spec);
     for (TodoTask t : page.elements()) {
       fireTodoReminder(t);
     }

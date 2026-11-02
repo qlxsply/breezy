@@ -6,6 +6,7 @@ package com.corwin.framework.error;
  * @author Corwin 2026/4/19
  */
 public enum CacheError implements ErrorCode {
+
   CACHE_MODE_REQUIRED("020000", "Cache mode is required"),
   CACHE_MODE_NOT_IMPLEMENTED("020001", "Cache mode is not implemented yet"),
   CACHE_KEY_REQUIRED("020002", "Cache key is required"),

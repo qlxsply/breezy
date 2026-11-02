@@ -13,4 +13,5 @@ public record SqlStatementStatSnapshot(
     long averageDurationMs,
     long slowExecutions,
     long errorExecutions,
-    long maxDurationMs) {}
+    long maxDurationMs) {
+}

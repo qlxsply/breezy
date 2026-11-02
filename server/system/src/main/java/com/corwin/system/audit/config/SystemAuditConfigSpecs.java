@@ -11,34 +11,34 @@ import java.util.List;
  */
 public final class SystemAuditConfigSpecs {
 
-  public static final ConfigSpec<AuditPolicyConfig> AUDIT_POLICY =
-      new SimpleConfigSpec<>(
-          new ConfigKey("system.audit.policy"),
-          "system",
-          "audit",
-          "审计策略",
-          "审计开关、异步记录和摘要长度",
-          AuditPolicyConfig.class,
-          new AuditPolicyConfig(true, true, 4096, 4096),
-          1,
-          10,
-          ConfigActivationPolicy.DYNAMIC,
-          ConfigEditPolicy.ADMIN_EDITABLE,
-          ConfigInvalidValuePolicy.USE_DEFAULT,
-          List.of(
-              required("enabled", "启用审计", ConfigFieldType.BOOLEAN, 10),
-              required("asyncEnabled", "异步记录", ConfigFieldType.BOOLEAN, 20),
-              required("requestSummaryMaxLength", "请求摘要最大长度", ConfigFieldType.INTEGER, 30),
-              required("responseSummaryMaxLength", "响应摘要最大长度", ConfigFieldType.INTEGER, 40)),
-          "default",
-          SystemAuditConfigSpecs::validate,
-          SystemAuditConfigSpecs::validate);
+  public static final ConfigSpec<AuditPolicyConfig> AUDIT_POLICY = new SimpleConfigSpec<>(
+      new ConfigKey("system.audit.policy"),
+      "system",
+      "audit",
+      "审计策略",
+      "审计开关、异步记录和摘要长度",
+      AuditPolicyConfig.class,
+      new AuditPolicyConfig(true, true, 4096, 4096),
+      1,
+      10,
+      ConfigActivationPolicy.DYNAMIC,
+      ConfigEditPolicy.ADMIN_EDITABLE,
+      ConfigInvalidValuePolicy.USE_DEFAULT,
+      List.of(
+          required("enabled", "启用审计", ConfigFieldType.BOOLEAN, 10),
+          required("asyncEnabled", "异步记录", ConfigFieldType.BOOLEAN, 20),
+          required("requestSummaryMaxLength", "请求摘要最大长度", ConfigFieldType.INTEGER, 30),
+          required("responseSummaryMaxLength", "响应摘要最大长度", ConfigFieldType.INTEGER, 40)),
+      "default",
+      SystemAuditConfigSpecs::validate,
+      SystemAuditConfigSpecs::validate);
 
   public record AuditPolicyConfig(
       boolean enabled,
       boolean asyncEnabled,
       int requestSummaryMaxLength,
-      int responseSummaryMaxLength) {}
+      int responseSummaryMaxLength) {
+  }
 
   private static List<ConfigViolation> validate(AuditPolicyConfig value) {
     var violations = new ArrayList<ConfigViolation>();
@@ -52,5 +52,6 @@ public final class SystemAuditConfigSpecs {
     return violations;
   }
 
-  private SystemAuditConfigSpecs() {}
+  private SystemAuditConfigSpecs() {
+  }
 }

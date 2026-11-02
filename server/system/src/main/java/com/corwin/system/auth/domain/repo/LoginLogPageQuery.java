@@ -14,4 +14,5 @@ public record LoginLogPageQuery(
     Instant startAt,
     boolean startInclusive,
     Instant endAt,
-    List<LoginEventType> eventTypes) {}
+    List<LoginEventType> eventTypes) {
+}

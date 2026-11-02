@@ -13,16 +13,17 @@ import lombok.Getter;
 @Table(
     name = "db_column",
     indexes = {
-      @Index(name = "idx_db_column_db", columnList = "database_id"),
-      @Index(name = "idx_db_column_table", columnList = "table_id"),
-      @Index(name = "idx_db_column_name", columnList = "column_name")
+        @Index(name = "idx_db_column_db", columnList = "database_id"),
+        @Index(name = "idx_db_column_table", columnList = "table_id"),
+        @Index(name = "idx_db_column_name", columnList = "column_name")
     },
     uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_db_column",
-          columnNames = {"table_id", "column_name"})
+        @UniqueConstraint(
+            name = "uk_db_column",
+            columnNames = {"table_id", "column_name"})
     })
 public class DatabaseColumn {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -76,7 +77,8 @@ public class DatabaseColumn {
   @Column(name = "remark_custom", length = 1000)
   private String remarkCustom;
 
-  protected DatabaseColumn() {}
+  protected DatabaseColumn() {
+  }
 
   public static DatabaseColumn create(
       Long dataSourceId,

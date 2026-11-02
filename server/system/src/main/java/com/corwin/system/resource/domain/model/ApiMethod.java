@@ -7,11 +7,13 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * HTTP method enumeration for API endpoints.
  *
- * <p>Defines the standard HTTP methods supported for API route matching.
+ * <p>
+ * Defines the standard HTTP methods supported for API route matching.
  *
  * @author Corwin 2026/1/23
  */
 public enum ApiMethod implements DictEnumDefinition {
+
   GET("GET", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   POST("POST", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   PUT("PUT", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),

@@ -3,21 +3,23 @@ package com.corwin.framework.util;
 /**
  * Normalizes URL/path strings to a canonical form.
  *
- * <p>Ensures the result always starts with a single '{@code /}' and has no trailing '{@code /}'.
+ * <p>
+ * Ensures the result always starts with a single '{@code /}' and has no trailing '{@code /}'.
  *
  * @author wl0180 2026/4/2
  */
 public class PathUtil {
 
-  private PathUtil() {}
+  private PathUtil() {
+  }
 
   /**
    * Normalizes the given path:
    *
    * <ul>
-   *   <li>Returns {@code "/"} for null, blank, or empty input
-   *   <li>Prepends a leading '/' if missing
-   *   <li>Removes the trailing '/' if present (unless the result would be {@code "/"})
+   * <li>Returns {@code "/"} for null, blank, or empty input
+   * <li>Prepends a leading '/' if missing
+   * <li>Removes the trailing '/' if present (unless the result would be {@code "/"})
    * </ul>
    *
    * @param path the raw path, may be null or blank

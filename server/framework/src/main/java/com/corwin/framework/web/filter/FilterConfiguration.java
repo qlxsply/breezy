@@ -11,7 +11,8 @@ import org.springframework.web.filter.CorsFilter;
 /**
  * Configuration for CORS and other servlet-level filters.
  *
- * <p>Configures public bearer-token CORS without allowing cross-origin cookies.
+ * <p>
+ * Configures public bearer-token CORS without allowing cross-origin cookies.
  *
  * @author Corwin 2025/10/11
  */

@@ -62,8 +62,7 @@ public class FrontendResourceQueryService {
       throw new BizException(BaseError.NOT_FOUND);
     }
     String fileName = targetPath.getFileName().toString();
-    String contentType =
-        fileQueryService.resolveContentType(fileName, Files.probeContentType(targetPath));
+    String contentType = fileQueryService.resolveContentType(fileName, Files.probeContentType(targetPath));
     return new FrontendResourceFileView(targetPath, fileName, contentType, Files.size(targetPath));
   }
 

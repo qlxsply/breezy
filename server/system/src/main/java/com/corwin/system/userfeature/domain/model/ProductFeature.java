@@ -8,7 +8,8 @@ import lombok.Getter;
 /**
  * 产品功能。
  *
- * <p>表示产品应用内的细粒度能力，例如页面入口、按钮、子功能或业务操作。功能可以绑定后端权限码。
+ * <p>
+ * 表示产品应用内的细粒度能力，例如页面入口、按钮、子功能或业务操作。功能可以绑定后端权限码。
  *
  * @author Corwin
  */
@@ -17,13 +18,13 @@ import lombok.Getter;
 @Table(
     name = "sys_product_feature",
     indexes = {
-      @Index(
-          name = "idx_sys_product_feature_unique",
-          columnList = "application_id,feature_code",
-          unique = true),
-      @Index(name = "idx_sys_product_feature_application_id", columnList = "application_id"),
-      @Index(name = "idx_sys_product_feature_type", columnList = "feature_type"),
-      @Index(name = "idx_sys_product_feature_enabled", columnList = "enabled")
+        @Index(
+            name = "idx_sys_product_feature_unique",
+            columnList = "application_id,feature_code",
+            unique = true),
+        @Index(name = "idx_sys_product_feature_application_id", columnList = "application_id"),
+        @Index(name = "idx_sys_product_feature_type", columnList = "feature_type"),
+        @Index(name = "idx_sys_product_feature_enabled", columnList = "enabled")
     })
 public class ProductFeature {
 
@@ -35,7 +36,8 @@ public class ProductFeature {
   /**
    * 所属应用 ID。
    *
-   * <p>逻辑引用 {@link ProductApplication#getId()}，数据库层面不创建外键。
+   * <p>
+   * 逻辑引用 {@link ProductApplication#getId()}，数据库层面不创建外键。
    */
   @Column(name = "application_id", nullable = false)
   private Long applicationId;
@@ -43,7 +45,8 @@ public class ProductFeature {
   /**
    * 功能编码。
    *
-   * <p>在同一应用下唯一，例如 VIEW、EXPORT、BATCH_ANALYZE。
+   * <p>
+   * 在同一应用下唯一，例如 VIEW、EXPORT、BATCH_ANALYZE。
    */
   @Column(name = "feature_code", nullable = false, length = 128)
   private String featureCode;
@@ -64,7 +67,8 @@ public class ProductFeature {
   /**
    * 是否全局启用。
    *
-   * <p>功能关闭后，用户包授权和用户功能特例均不生效。
+   * <p>
+   * 功能关闭后，用户包授权和用户功能特例均不生效。
    */
   @Column(name = "enabled", nullable = false)
   private Boolean enabled;
@@ -94,7 +98,8 @@ public class ProductFeature {
   private Instant updatedAt;
 
   /** JPA 构造方法。 */
-  protected ProductFeature() {}
+  protected ProductFeature() {
+  }
 
   /**
    * 创建产品功能。

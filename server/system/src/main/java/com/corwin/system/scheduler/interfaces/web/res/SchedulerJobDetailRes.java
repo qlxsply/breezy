@@ -34,4 +34,5 @@ public record SchedulerJobDetailRes(
     Long lastDurationMs,
     String currentExecutionId,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

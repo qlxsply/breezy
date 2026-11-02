@@ -13,4 +13,5 @@ public record PushHealthSubscriptionView(
     String endpointHost,
     Instant updatedAt,
     Instant lastPushAt,
-    String lastError) {}
+    String lastError) {
+}

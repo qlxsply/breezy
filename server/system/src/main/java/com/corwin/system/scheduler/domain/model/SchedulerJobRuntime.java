@@ -178,8 +178,7 @@ public class SchedulerJobRuntime {
 
   /** Transitions state to SCHEDULED or CANCELLED after successful execution. */
   public void markSuccess(Instant nextFireTime, Instant endTime, long durationMs) {
-    this.status =
-        nextFireTime == null ? SchedulerJobStatus.CANCELLED : SchedulerJobStatus.SCHEDULED;
+    this.status = nextFireTime == null ? SchedulerJobStatus.CANCELLED : SchedulerJobStatus.SCHEDULED;
     this.nextFireTime = nextFireTime;
     this.lastSuccessTime = endTime;
     this.lastDurationMs = durationMs;
@@ -197,8 +196,7 @@ public class SchedulerJobRuntime {
     this.lastFailureTime = endTime;
     this.lastDurationMs = durationMs;
     this.lastErrorMessage = errorMessage;
-    this.consecutiveFailures =
-        (this.consecutiveFailures == null ? 0L : this.consecutiveFailures) + 1L;
+    this.consecutiveFailures = (this.consecutiveFailures == null ? 0L : this.consecutiveFailures) + 1L;
     this.currentExecutionId = null;
     this.updatedAt = HighDate.realInstant();
   }

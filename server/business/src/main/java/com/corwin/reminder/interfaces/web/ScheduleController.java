@@ -37,26 +37,24 @@ public class ScheduleController {
     UpsertScheduleReq.RuleReq ruleReq = req.getRule();
     UpsertScheduleCommand.RuleCommand rule = null;
     if (ruleReq != null) {
-      rule =
-          new UpsertScheduleCommand.RuleCommand(
-              ruleReq.getFrequency(),
-              ruleReq.getInterval(),
-              ruleReq.getDaysOfWeek(),
-              ruleReq.getDayOfMonth(),
-              ruleReq.getMonthOfYear(),
-              ruleReq.getUntil(),
-              ruleReq.getCountLimit());
+      rule = new UpsertScheduleCommand.RuleCommand(
+          ruleReq.getFrequency(),
+          ruleReq.getInterval(),
+          ruleReq.getDaysOfWeek(),
+          ruleReq.getDayOfMonth(),
+          ruleReq.getMonthOfYear(),
+          ruleReq.getUntil(),
+          ruleReq.getCountLimit());
     }
-    UpsertScheduleCommand cmd =
-        new UpsertScheduleCommand(
-            req.getId(),
-            req.getTitle(),
-            req.getStartTime(),
-            req.getEndTime(),
-            req.getEventTimeZoneId(),
-            rule,
-            req.getAdvanceSecondsList(),
-            req.getNote());
+    UpsertScheduleCommand cmd = new UpsertScheduleCommand(
+        req.getId(),
+        req.getTitle(),
+        req.getStartTime(),
+        req.getEndTime(),
+        req.getEventTimeZoneId(),
+        rule,
+        req.getAdvanceSecondsList(),
+        req.getNote());
     return ApiResponse.ok(service.upsert(cmd));
   }
 
@@ -67,8 +65,7 @@ public class ScheduleController {
 
   @PostMapping("/page")
   public ApiResponse<PageResult<ScheduleRes>> page(@RequestBody SchedulePageReq req) {
-    var page =
-        service.page(req.status(), req.titleLike(), PageSpecFactory.of(req.page(), req.sort()));
+    var page = service.page(req.status(), req.titleLike(), PageSpecFactory.of(req.page(), req.sort()));
     return ApiResponse.ok(PageResult.of(page, ScheduleController::toDto));
   }
 
@@ -92,15 +89,14 @@ public class ScheduleController {
 
   private static ScheduleRes toDto(ScheduleEvent e) {
     RecurrenceRule r = e.getRule();
-    ScheduleRes.RuleRes rule =
-        new ScheduleRes.RuleRes(
-            r.getFrequency(),
-            r.getInterval(),
-            r.getDaysOfWeek(),
-            r.getDayOfMonth(),
-            r.getMonthOfYear(),
-            r.getUntil(),
-            r.getCountLimit());
+    ScheduleRes.RuleRes rule = new ScheduleRes.RuleRes(
+        r.getFrequency(),
+        r.getInterval(),
+        r.getDaysOfWeek(),
+        r.getDayOfMonth(),
+        r.getMonthOfYear(),
+        r.getUntil(),
+        r.getCountLimit());
 
     List<Integer> adv = e.getAdvanceSecondsList() == null ? List.of() : e.getAdvanceSecondsList();
     return new ScheduleRes(

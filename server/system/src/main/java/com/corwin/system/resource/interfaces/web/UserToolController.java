@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST controller for user-facing tool pages.
  *
- * <p>Provides endpoints that return the set of tools and permission codes available to the
+ * <p>
+ * Provides endpoints that return the set of tools and permission codes available to the
  * currently authenticated user. All endpoints are publicly accessible (permit-all).
  *
  * @author Corwin 2026/6/6

@@ -5,7 +5,8 @@ import com.corwin.framework.event.model.AsyncEventEnvelope;
 /**
  * Abstraction for event serialisation between {@link AsyncEventEnvelope} and byte arrays.
  *
- * <p>Used by cross-process transports (Kafka, RabbitMQ). Defines only the minimal contract and does
+ * <p>
+ * Used by cross-process transports (Kafka, RabbitMQ). Defines only the minimal contract and does
  * not prescribe a specific protocol format.
  *
  * @author Corwin 2026/4/10

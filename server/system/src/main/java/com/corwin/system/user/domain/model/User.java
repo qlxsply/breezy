@@ -74,7 +74,8 @@ public class User {
   @Column(name = "updated_by", length = 64)
   private String updatedBy;
 
-  protected User() {}
+  protected User() {
+  }
 
   public User(
       UserType userType,

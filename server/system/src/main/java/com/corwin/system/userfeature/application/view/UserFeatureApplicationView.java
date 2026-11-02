@@ -18,4 +18,5 @@ public record UserFeatureApplicationView(
     boolean enabled,
     int featureCount,
     int permissionBindingCount,
-    List<UserFeatureItemView> features) {}
+    List<UserFeatureItemView> features) {
+}

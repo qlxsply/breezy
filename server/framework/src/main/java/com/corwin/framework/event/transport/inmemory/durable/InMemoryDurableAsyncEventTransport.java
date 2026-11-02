@@ -38,12 +38,13 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Durable in-memory transport backed by {@link
  * com.corwin.framework.event.durable.store.PersistentEventStore}.
  *
- * <p>Core semantics:
+ * <p>
+ * Core semantics:
  *
  * <ol>
- *   <li>Publish persists event + delivery before enqueuing locally.
- *   <li>Consume must claim first, ensuring each delivery is processed by only one node.
- *   <li>Startup recovers incomplete deliveries; no periodic runtime recovery scan.
+ * <li>Publish persists event + delivery before enqueuing locally.
+ * <li>Consume must claim first, ensuring each delivery is processed by only one node.
+ * <li>Startup recovers incomplete deliveries; no periodic runtime recovery scan.
  * </ol>
  *
  * @author Corwin 2026/4/12
@@ -51,9 +52,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Slf4j
 public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
 
-  private static final Comparator<DelayedDeliveryTask> DELAYED_DELIVERY_COMPARATOR =
-      Comparator.comparingLong(DelayedDeliveryTask::deliverAtMillis)
-          .thenComparingLong(DelayedDeliveryTask::sequence);
+  private static final Comparator<DelayedDeliveryTask> DELAYED_DELIVERY_COMPARATOR = Comparator
+      .comparingLong(DelayedDeliveryTask::deliverAtMillis)
+      .thenComparingLong(DelayedDeliveryTask::sequence);
 
   private final AsyncEventProperties properties;
   private final PersistentEventStore eventStore;
@@ -126,6 +127,7 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
     if (TransactionSynchronizationManager.isActualTransactionActive()) {
       TransactionSynchronizationManager.registerSynchronization(
           new TransactionSynchronization() {
+
             @Override
             public void afterCommit() {
               action.run();
@@ -156,13 +158,11 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
   /** 刷新本节点订阅快照。 */
   private void refreshLocalSubscriptions() {
     List<SubscriptionDescriptor> all = registry.getAll();
-    this.subscriptionById =
-        all.stream()
-            .collect(
-                Collectors.toUnmodifiableMap(
-                    SubscriptionDescriptor::subscriptionId, value -> value, (left, right) -> left));
-    this.localConsumerGroups =
-        all.stream().map(SubscriptionDescriptor::consumerGroup).collect(Collectors.toSet());
+    this.subscriptionById = all.stream()
+        .collect(
+            Collectors.toUnmodifiableMap(
+                SubscriptionDescriptor::subscriptionId, value -> value, (left, right) -> left));
+    this.localConsumerGroups = all.stream().map(SubscriptionDescriptor::consumerGroup).collect(Collectors.toSet());
   }
 
   /** 解析匹配 source 的订阅者集合。 */
@@ -181,43 +181,40 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
       AsyncEventEnvelope<?> envelope, List<SubscriptionDescriptor> subscriptions) {
     long now = HighDate.realTimestampMillis();
     String payloadBody = encodeEnvelope(envelope);
-    PersistedEvent event =
-        new PersistedEvent(
-            envelope.eventId(),
-            envelope.eventType(),
-            envelope.source(),
-            "base64-envelope-bytes",
-            envelope.eventType(),
-            payloadBody,
-            envelope.occurredAtMillis(),
-            envelope.deliverAtMillis(),
-            EventStatus.ACTIVE,
-            subscriptions.size(),
-            0,
-            now,
-            now,
-            null,
-            0L);
-    List<PersistedDelivery> deliveries =
-        subscriptions.stream()
-            .map(
-                subscription ->
-                    new PersistedDelivery(
-                        UUID.randomUUID().toString(),
-                        envelope.eventId(),
-                        subscription.subscriptionId(),
-                        subscription.consumerGroup(),
-                        envelope.deliverAtMillis(),
-                        DeliveryStatus.PENDING,
-                        null,
-                        null,
-                        0,
-                        null,
-                        now,
-                        now,
-                        null,
-                        0L))
-            .toList();
+    PersistedEvent event = new PersistedEvent(
+        envelope.eventId(),
+        envelope.eventType(),
+        envelope.source(),
+        "base64-envelope-bytes",
+        envelope.eventType(),
+        payloadBody,
+        envelope.occurredAtMillis(),
+        envelope.deliverAtMillis(),
+        EventStatus.ACTIVE,
+        subscriptions.size(),
+        0,
+        now,
+        now,
+        null,
+        0L);
+    List<PersistedDelivery> deliveries = subscriptions.stream()
+        .map(
+            subscription -> new PersistedDelivery(
+                UUID.randomUUID().toString(),
+                envelope.eventId(),
+                subscription.subscriptionId(),
+                subscription.consumerGroup(),
+                envelope.deliverAtMillis(),
+                DeliveryStatus.PENDING,
+                null,
+                null,
+                0,
+                null,
+                now,
+                now,
+                null,
+                0L))
+        .toList();
     transactionTemplate.executeWithoutResult(status -> eventStore.saveEvent(event, deliveries));
     for (PersistedDelivery delivery : deliveries) {
       enqueueTask(
@@ -312,12 +309,10 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
     long now = HighDate.realTimestampMillis();
     long claimTimeout = Math.max(1000L, properties.getDurable().getClaimTimeoutMs());
     long claimUntil = safeAdd(now, claimTimeout);
-    boolean claimed =
-        Boolean.TRUE.equals(
-            transactionTemplate.execute(
-                status ->
-                    eventStore.claimDelivery(
-                        taskRef.deliveryId(), taskRef.deliveryVersion(), nodeId, claimUntil, now)));
+    boolean claimed = Boolean.TRUE.equals(
+        transactionTemplate.execute(
+            status -> eventStore.claimDelivery(
+                taskRef.deliveryId(), taskRef.deliveryVersion(), nodeId, claimUntil, now)));
     if (!claimed) {
       return;
     }
@@ -326,18 +321,16 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
     if (event == null) {
       long updatedAt = HighDate.realTimestampMillis();
       transactionTemplate.executeWithoutResult(
-          status ->
-              eventStore.markDeliveryCancelled(
-                  taskRef.deliveryId(), taskRef.eventId(), claimedVersion, updatedAt, updatedAt));
+          status -> eventStore.markDeliveryCancelled(
+              taskRef.deliveryId(), taskRef.eventId(), claimedVersion, updatedAt, updatedAt));
       return;
     }
     SubscriptionDescriptor subscription = subscriptionById.get(taskRef.subscriberId());
     if (subscription == null) {
       long updatedAt = HighDate.realTimestampMillis();
       transactionTemplate.executeWithoutResult(
-          status ->
-              eventStore.markDeliveryCancelled(
-                  taskRef.deliveryId(), taskRef.eventId(), claimedVersion, updatedAt, updatedAt));
+          status -> eventStore.markDeliveryCancelled(
+              taskRef.deliveryId(), taskRef.eventId(), claimedVersion, updatedAt, updatedAt));
       return;
     }
     AsyncEventEnvelope<?> envelope = decodeEnvelope(event.payloadBody());
@@ -345,13 +338,12 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
       subscription.invoker().invoke(envelope);
       long completedAt = HighDate.realTimestampMillis();
       transactionTemplate.executeWithoutResult(
-          status ->
-              eventStore.markDeliverySucceeded(
-                  taskRef.deliveryId(),
-                  taskRef.eventId(),
-                  claimedVersion,
-                  completedAt,
-                  completedAt));
+          status -> eventStore.markDeliverySucceeded(
+              taskRef.deliveryId(),
+              taskRef.eventId(),
+              claimedVersion,
+              completedAt,
+              completedAt));
     } catch (Exception ex) {
       onConsumeFailed(taskRef, claimedVersion, ex);
     }
@@ -360,14 +352,11 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
   /** 处理消费失败：标记失败并进行最小本地延时回队。 */
   private void onConsumeFailed(DeliveryTaskRef taskRef, long claimedVersion, Exception ex) {
     long now = HighDate.realTimestampMillis();
-    String errorMessage =
-        ex.getClass().getSimpleName() + ": " + Objects.toString(ex.getMessage(), "");
-    boolean marked =
-        Boolean.TRUE.equals(
-            transactionTemplate.execute(
-                status ->
-                    eventStore.markDeliveryFailed(
-                        taskRef.deliveryId(), claimedVersion, errorMessage, now)));
+    String errorMessage = ex.getClass().getSimpleName() + ": " + Objects.toString(ex.getMessage(), "");
+    boolean marked = Boolean.TRUE.equals(
+        transactionTemplate.execute(
+            status -> eventStore.markDeliveryFailed(
+                taskRef.deliveryId(), claimedVersion, errorMessage, now)));
     if (!marked) {
       return;
     }
@@ -401,8 +390,8 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
     int offset = 0;
     int totalLoaded = 0;
     while (true) {
-      List<PersistedDelivery> recoverable =
-          eventStore.loadRecoverableDeliveries(localConsumerGroups, now, offset, limit);
+      List<PersistedDelivery> recoverable = eventStore.loadRecoverableDeliveries(localConsumerGroups, now, offset,
+          limit);
       if (recoverable.isEmpty()) {
         break;
       }
@@ -433,13 +422,12 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
       return;
     }
     long intervalMs = Math.max(1000L, cleanup.getIntervalMs());
-    ScheduledExecutorService scheduler =
-        Executors.newSingleThreadScheduledExecutor(
-            r -> {
-              Thread thread = new Thread(r, "async-event-durable-cleaner");
-              thread.setDaemon(true);
-              return thread;
-            });
+    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
+        r -> {
+          Thread thread = new Thread(r, "async-event-durable-cleaner");
+          thread.setDaemon(true);
+          return thread;
+        });
     scheduler.scheduleWithFixedDelay(
         this::runCleanupSafely, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
     this.cleanerExecutor = scheduler;
@@ -466,9 +454,8 @@ public class InMemoryDurableAsyncEventTransport implements AsyncEventTransport {
       long deliveryBefore = now - Math.max(0L, cleanup.getDeliveryRetentionMs());
       long eventBefore = now - Math.max(0L, cleanup.getEventRetentionMs());
       int batchSize = Math.max(1, cleanup.getBatchSize());
-      CleanupResult result =
-          transactionTemplate.execute(
-              status -> eventStore.cleanupCompleted(deliveryBefore, eventBefore, batchSize));
+      CleanupResult result = transactionTemplate.execute(
+          status -> eventStore.cleanupCompleted(deliveryBefore, eventBefore, batchSize));
       if (result != null && (result.deletedDeliveries() > 0 || result.deletedEvents() > 0)) {
         log.info(
             "Durable cleanup deleted deliveries={}, events={}",

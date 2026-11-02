@@ -16,8 +16,8 @@ import lombok.Getter;
 @Table(
     name = "tb_user",
     indexes = {
-      @Index(name = "idx_tb_user_status", columnList = "status"),
-      @Index(name = "idx_tb_user_primary_identity", columnList = "primary_identity_id")
+        @Index(name = "idx_tb_user_status", columnList = "status"),
+        @Index(name = "idx_tb_user_primary_identity", columnList = "primary_identity_id")
     })
 public class WebUser {
 
@@ -118,7 +118,8 @@ public class WebUser {
   private String updatedBy;
 
   /** JPA required no-arg constructor. */
-  protected WebUser() {}
+  protected WebUser() {
+  }
 
   /**
    * Construct a new active web user with registration details.

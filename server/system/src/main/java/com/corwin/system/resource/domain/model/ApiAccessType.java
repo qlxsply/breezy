@@ -7,13 +7,15 @@ import com.corwin.framework.dict.DictTagType;
 /**
  * API access type enumeration.
  *
- * <p>Defines the access control level for an API endpoint: public access (PERMIT_ALL),
+ * <p>
+ * Defines the access control level for an API endpoint: public access (PERMIT_ALL),
  * authenticated-only (AUTHENTICATED), authorized with permissions (AUTHORIZED), or completely
  * denied (DENY).
  *
  * @author Corwin 2026/4/19
  */
 public enum ApiAccessType implements DictEnumDefinition {
+
   PERMIT_ALL("公开访问", DictTagColor.SUCCESS_GREEN, DictTagType.SUCCESS),
   AUTHENTICATED("已认证", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   AUTHORIZED("已授权", DictTagColor.WARNING_ORANGE, DictTagType.WARNING),

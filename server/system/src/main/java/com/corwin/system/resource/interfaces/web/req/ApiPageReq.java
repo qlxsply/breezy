@@ -17,4 +17,5 @@ public record ApiPageReq(
     String accessType,
     String userType,
     String auditDeclared,
-    String status) {}
+    String status) {
+}

@@ -6,7 +6,8 @@ import java.util.Set;
 /**
  * Authenticated principal representing the current user.
  *
- * <p>Carries the user's identity, role type, administrative flag, and permission codes. A {@link
+ * <p>
+ * Carries the user's identity, role type, administrative flag, and permission codes. A {@link
  * #guest()} factory produces an unauthenticated principal with no permissions.
  *
  * @param userId the user's ID, may be null for guests
@@ -24,6 +25,7 @@ public record AuthPrincipal(
     boolean admin,
     boolean credentialsExpired,
     Set<String> permissionCodes) {
+
   public AuthPrincipal {
     permissionCodes = permissionCodes == null ? Set.of() : Set.copyOf(permissionCodes);
     userType = userType == null ? UserType.GUEST : userType;

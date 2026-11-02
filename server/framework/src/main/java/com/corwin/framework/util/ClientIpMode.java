@@ -10,6 +10,7 @@ import com.corwin.framework.dict.DictTagType;
  * @author Corwin 2026/3/21
  */
 public enum ClientIpMode implements DictEnumDefinition {
+
   REMOTE_ADDR("REMOTE_ADDR（直连地址）", DictTagColor.PRIMARY_BLUE, DictTagType.INFO),
   X_REAL_IP("X-Real-IP", DictTagColor.SLATE, DictTagType.INFO),
   X_FORWARDED_FOR_FIRST("X-Forwarded-For（取首个）", DictTagColor.SLATE, DictTagType.INFO),

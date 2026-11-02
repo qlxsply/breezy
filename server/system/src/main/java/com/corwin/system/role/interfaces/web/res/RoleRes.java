@@ -16,4 +16,5 @@ public record RoleRes(
     @JsonLongString Long createdBy,
     Instant createdAt,
     @JsonLongString Long updatedBy,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

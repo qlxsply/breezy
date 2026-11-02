@@ -6,7 +6,8 @@ import java.util.Objects;
 /**
  * Describes a logical subscriber — the core unit of the V2 event model.
  *
- * <p>Each annotated listener method typically maps to one {@code SubscriptionDescriptor}, and
+ * <p>
+ * Each annotated listener method typically maps to one {@code SubscriptionDescriptor}, and
  * transports build their consumption topology around it.
  *
  * @author Corwin 2026/4/9

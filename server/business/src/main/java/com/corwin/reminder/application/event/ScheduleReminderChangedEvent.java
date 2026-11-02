@@ -6,6 +6,7 @@ package com.corwin.reminder.application.event;
  * @author Corwin 2026/3/16
  */
 public record ScheduleReminderChangedEvent(Long scheduleId, boolean removed) {
+
   public static ScheduleReminderChangedEvent updated(Long scheduleId) {
     return new ScheduleReminderChangedEvent(scheduleId, false);
   }

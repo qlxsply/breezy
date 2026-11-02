@@ -39,18 +39,16 @@ public final class ConfigFieldSpecs {
 
   public static <E extends Enum<E>> ConfigFieldSpec requiredEnum(
       String path, String title, E[] values, int order) {
-    List<ConfigOptionItem> options =
-        Arrays.stream(values)
-            .map(
-                value ->
-                    new ConfigOptionItem(
-                        value instanceof DictEnumDefinition definition
-                            ? definition.itemValue()
-                            : value.name(),
-                        value instanceof DictEnumDefinition definition
-                            ? definition.label()
-                            : value.name()))
-            .toList();
+    List<ConfigOptionItem> options = Arrays.stream(values)
+        .map(
+            value -> new ConfigOptionItem(
+                value instanceof DictEnumDefinition definition
+                    ? definition.itemValue()
+                    : value.name(),
+                value instanceof DictEnumDefinition definition
+                    ? definition.label()
+                    : value.name()))
+        .toList();
     return field(path, title, ConfigFieldType.ENUM, true, false, order, null, null, options);
   }
 
@@ -69,5 +67,6 @@ public final class ConfigFieldSpecs {
         options);
   }
 
-  private ConfigFieldSpecs() {}
+  private ConfigFieldSpecs() {
+  }
 }

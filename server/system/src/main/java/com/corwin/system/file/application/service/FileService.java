@@ -85,19 +85,17 @@ public class FileService implements FileCommandPort {
       OwnerType domainOwnerType = toDomainOwnerType(cmd.ownerType());
       String finalFileName = cmd.fileName();
       if (cmd.ownerType() == OwnerType.USER) {
-        finalFileName =
-            resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(), cmd.fileName());
+        finalFileName = resolveFileNameConflict(domainOwnerType, cmd.ownerId(), cmd.parentId(), cmd.fileName());
       }
 
       PhysicalFile physicalFile = handlePhysicalFile(hash, tempFile, size, cmd.contentType());
-      LogicalFile logicalFile =
-          LogicalFile.file(
-              domainOwnerType,
-              cmd.ownerId(),
-              cmd.parentId(),
-              finalFileName,
-              physicalFile.getId(),
-              purpose.name());
+      LogicalFile logicalFile = LogicalFile.file(
+          domainOwnerType,
+          cmd.ownerId(),
+          cmd.parentId(),
+          finalFileName,
+          physicalFile.getId(),
+          purpose.name());
       logicalFileRepository.save(logicalFile);
       return logicalFile.getId();
     } finally {
@@ -132,12 +130,11 @@ public class FileService implements FileCommandPort {
 
     String systemOwnerId = DefaultUser.SYSTEM.account();
     String parentId = resolveApplicationPurposeFolderId(purpose, systemOwnerId);
-    String finalFileName =
-        resolveFileNameConflict(
-            OwnerType.APPLICATION,
-            systemOwnerId,
-            parentId,
-            normalizeInternalFileName(fileName, fileType));
+    String finalFileName = resolveFileNameConflict(
+        OwnerType.APPLICATION,
+        systemOwnerId,
+        parentId,
+        normalizeInternalFileName(fileName, fileType));
 
     String hash;
     try (InputStream hashStream = new ByteArrayInputStream(content)) {
@@ -146,25 +143,23 @@ public class FileService implements FileCommandPort {
       throw new BizException("内部文件摘要计算失败", BaseError.SERVICE_ERROR);
     }
 
-    PhysicalFile physicalFile =
-        handlePhysicalFile(
-            hash,
-            content.length,
-            fileType.contentType(),
-            (relativePath, physicalFileName) -> {
-              try (InputStream writeStream = new ByteArrayInputStream(content)) {
-                storageProvider.write(relativePath, physicalFileName, writeStream);
-              }
-            });
+    PhysicalFile physicalFile = handlePhysicalFile(
+        hash,
+        content.length,
+        fileType.contentType(),
+        (relativePath, physicalFileName) -> {
+          try (InputStream writeStream = new ByteArrayInputStream(content)) {
+            storageProvider.write(relativePath, physicalFileName, writeStream);
+          }
+        });
 
-    LogicalFile logicalFile =
-        LogicalFile.file(
-            OwnerType.APPLICATION,
-            systemOwnerId,
-            parentId,
-            finalFileName,
-            physicalFile.getId(),
-            purpose.name());
+    LogicalFile logicalFile = LogicalFile.file(
+        OwnerType.APPLICATION,
+        systemOwnerId,
+        parentId,
+        finalFileName,
+        physicalFile.getId(),
+        purpose.name());
     logicalFileRepository.save(logicalFile);
     return logicalFile.getId();
   }
@@ -179,18 +174,15 @@ public class FileService implements FileCommandPort {
   public byte[] readFileContent(String fileId) {
     BizAssert.notBlank(fileId, BaseError.MISSING_PARAMETER);
 
-    LogicalFile logicalFile =
-        logicalFileRepository
-            .findById(fileId)
-            .orElseThrow(() -> new BizException("File not found: " + fileId, BaseError.NOT_FOUND));
+    LogicalFile logicalFile = logicalFileRepository
+        .findById(fileId)
+        .orElseThrow(() -> new BizException("File not found: " + fileId, BaseError.NOT_FOUND));
     assertFileNode(logicalFile);
-    PhysicalFile physicalFile =
-        physicalFileRepository
-            .findById(logicalFile.getPhysicalFileId())
-            .orElseThrow(() -> new BizException("Physical file not found", BaseError.NOT_FOUND));
+    PhysicalFile physicalFile = physicalFileRepository
+        .findById(logicalFile.getPhysicalFileId())
+        .orElseThrow(() -> new BizException("Physical file not found", BaseError.NOT_FOUND));
 
-    try (InputStream inputStream =
-        storageProvider.read(physicalFile.getRelativePath(), physicalFile.getFileName())) {
+    try (InputStream inputStream = storageProvider.read(physicalFile.getRelativePath(), physicalFile.getFileName())) {
       return inputStream.readAllBytes();
     } catch (IOException e) {
       throw new BizException("Read file content failed", BaseError.SERVICE_ERROR);
@@ -199,9 +191,8 @@ public class FileService implements FileCommandPort {
 
   private String resolveFileNameConflict(
       OwnerType ownerType, String ownerId, String parentId, String originalName) {
-    Optional<LogicalFile> existing =
-        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
-            ownerType, ownerId, parentId, LogicalNodeType.FILE, originalName);
+    Optional<LogicalFile> existing = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+        ownerType, ownerId, parentId, LogicalNodeType.FILE, originalName);
     if (existing.isEmpty()) {
       return originalName;
     }
@@ -238,8 +229,8 @@ public class FileService implements FileCommandPort {
   }
 
   private String resolveApplicationPurposeFolderId(FilePurpose purpose, String systemOwnerId) {
-    Optional<LogicalFile> existingFolder =
-        logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
+    Optional<LogicalFile> existingFolder = logicalFileRepository
+        .findByOwnerTypeAndOwnerIdAndParentIdAndNodeTypeAndFileName(
             OwnerType.APPLICATION, systemOwnerId, null, LogicalNodeType.FOLDER, purpose.name());
     if (existingFolder.isPresent()) {
       return existingFolder.get().getId();
@@ -292,10 +283,9 @@ public class FileService implements FileCommandPort {
                 return physicalFileRepository.save(pf);
               } catch (DataIntegrityViolationException e) {
                 log.info("检测到并发上传冲突，回退到增加引用计数模式: {}", hash);
-                PhysicalFile existing =
-                    physicalFileRepository
-                        .findByHash(hash)
-                        .orElseThrow(() -> new IllegalStateException("并发一致性异常"));
+                PhysicalFile existing = physicalFileRepository
+                    .findByHash(hash)
+                    .orElseThrow(() -> new IllegalStateException("并发一致性异常"));
                 physicalFileRepository.incrementRefCount(existing.getId());
                 return existing;
               }
@@ -304,6 +294,7 @@ public class FileService implements FileCommandPort {
 
   @FunctionalInterface
   private interface PhysicalFileContentWriter {
+
     void write(String relativePath, String physicalFileName) throws IOException;
   }
 
@@ -364,8 +355,7 @@ public class FileService implements FileCommandPort {
               throw new BizException("同名目录已存在", BaseError.CONFLICT);
             });
 
-    LogicalFile folder =
-        LogicalFile.folder(domainOwnerType, ownerId, normalizedParentId, normalizedName);
+    LogicalFile folder = LogicalFile.folder(domainOwnerType, ownerId, normalizedParentId, normalizedName);
     return logicalFileRepository.save(folder).getId();
   }
 
@@ -377,10 +367,9 @@ public class FileService implements FileCommandPort {
     String normalizedNewName = StrUtil.trimToNull(newName);
     BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
 
-    LogicalFile folder =
-        logicalFileRepository
-            .findById(folderId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile folder = logicalFileRepository
+        .findById(folderId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
     if (folder.getFileName().equals(normalizedNewName)) {
@@ -411,10 +400,9 @@ public class FileService implements FileCommandPort {
     String normalizedNewName = StrUtil.trimToNull(newName);
     BizAssert.notBlank(normalizedNewName, BaseError.MISSING_PARAMETER);
 
-    LogicalFile file =
-        logicalFileRepository
-            .findById(fileId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile file = logicalFileRepository
+        .findById(fileId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
     if (file.getFileName().equals(normalizedNewName)) {
@@ -423,9 +411,8 @@ public class FileService implements FileCommandPort {
 
     String finalName = normalizedNewName;
     if (file.getOwnerType() == OwnerType.USER) {
-      finalName =
-          resolveFileNameConflict(
-              file.getOwnerType(), file.getOwnerId(), file.getParentId(), normalizedNewName);
+      finalName = resolveFileNameConflict(
+          file.getOwnerType(), file.getOwnerId(), file.getParentId(), normalizedNewName);
     }
 
     file.rename(finalName);
@@ -440,10 +427,9 @@ public class FileService implements FileCommandPort {
   @Transactional
   public void deleteFolder(
       String folderId, boolean recursive, OwnerType expectedOwnerType, String expectedOwnerId) {
-    LogicalFile folder =
-        logicalFileRepository
-            .findById(folderId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile folder = logicalFileRepository
+        .findById(folderId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
     if (!recursive) {
@@ -465,9 +451,8 @@ public class FileService implements FileCommandPort {
 
     List<String> subtreeFolderIds = collectSubtreeFolderIds(folder);
     for (String currentFolderId : subtreeFolderIds) {
-      List<LogicalFile> filesInFolder =
-          logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
-              folder.getOwnerType(), folder.getOwnerId(), currentFolderId, LogicalNodeType.FILE);
+      List<LogicalFile> filesInFolder = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+          folder.getOwnerType(), folder.getOwnerId(), currentFolderId, LogicalNodeType.FILE);
       for (LogicalFile logicalFile : filesInFolder) {
         deleteLogicalFile(logicalFile);
       }
@@ -483,10 +468,9 @@ public class FileService implements FileCommandPort {
   @Transactional
   public void moveFile(
       String fileId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
-    LogicalFile file =
-        logicalFileRepository
-            .findById(fileId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile file = logicalFileRepository
+        .findById(fileId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFileOwner(file, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
     String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
@@ -498,9 +482,8 @@ public class FileService implements FileCommandPort {
 
     String finalName = file.getFileName();
     if (file.getOwnerType() == OwnerType.USER) {
-      finalName =
-          resolveFileNameConflict(
-              file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId, file.getFileName());
+      finalName = resolveFileNameConflict(
+          file.getOwnerType(), file.getOwnerId(), normalizedTargetParentId, file.getFileName());
     }
 
     if (!finalName.equals(file.getFileName())) {
@@ -518,10 +501,9 @@ public class FileService implements FileCommandPort {
   @Transactional
   public void moveFolder(
       String folderId, String targetParentId, OwnerType expectedOwnerType, String expectedOwnerId) {
-    LogicalFile folder =
-        logicalFileRepository
-            .findById(folderId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile folder = logicalFileRepository
+        .findById(folderId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFolderOwner(folder, toDomainOwnerType(expectedOwnerType), expectedOwnerId);
 
     String normalizedTargetParentId = StrUtil.trimToNull(targetParentId);
@@ -533,9 +515,8 @@ public class FileService implements FileCommandPort {
     }
 
     if (normalizedTargetParentId != null) {
-      LogicalFile targetFolder =
-          validateTargetFolder(
-              folder.getOwnerType(), folder.getOwnerId(), normalizedTargetParentId);
+      LogicalFile targetFolder = validateTargetFolder(
+          folder.getOwnerType(), folder.getOwnerId(), normalizedTargetParentId);
       BizAssert.notNull(targetFolder, BaseError.NOT_FOUND);
       if (isAncestor(folder.getId(), targetFolder.getId())) {
         throw new BizException("目录不能移动到自己的子目录", BaseError.ILLEGAL_ARGUMENT);
@@ -576,12 +557,11 @@ public class FileService implements FileCommandPort {
       cursor++;
       folderIds.add(currentFolderId);
 
-      List<LogicalFile> children =
-          logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
-              rootFolder.getOwnerType(),
-              rootFolder.getOwnerId(),
-              currentFolderId,
-              LogicalNodeType.FOLDER);
+      List<LogicalFile> children = logicalFileRepository.findByOwnerTypeAndOwnerIdAndParentIdAndNodeType(
+          rootFolder.getOwnerType(),
+          rootFolder.getOwnerId(),
+          currentFolderId,
+          LogicalNodeType.FOLDER);
       pendingFolderIds.addAll(children.stream().map(LogicalFile::getId).toList());
     }
     return folderIds;
@@ -607,14 +587,12 @@ public class FileService implements FileCommandPort {
     if (targetParentId == null) {
       return null;
     }
-    LogicalFile targetFolder =
-        logicalFileRepository
-            .findById(targetParentId)
-            .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
+    LogicalFile targetFolder = logicalFileRepository
+        .findById(targetParentId)
+        .orElseThrow(() -> new BizException(BaseError.NOT_FOUND));
     assertFolderNode(targetFolder);
-    boolean sameOwner =
-        targetFolder.getOwnerType() == ownerType
-            && Objects.equals(targetFolder.getOwnerId(), ownerId);
+    boolean sameOwner = targetFolder.getOwnerType() == ownerType
+        && Objects.equals(targetFolder.getOwnerId(), ownerId);
     if (!sameOwner) {
       throw new BizException("目标目录不属于当前所有者", BaseError.FORBIDDEN);
     }
@@ -627,9 +605,8 @@ public class FileService implements FileCommandPort {
     if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
       return;
     }
-    boolean sameOwner =
-        file.getOwnerType() == expectedOwnerType
-            && Objects.equals(file.getOwnerId(), expectedOwnerId);
+    boolean sameOwner = file.getOwnerType() == expectedOwnerType
+        && Objects.equals(file.getOwnerId(), expectedOwnerId);
     if (!sameOwner) {
       throw new BizException("无权操作该文件", BaseError.FORBIDDEN);
     }
@@ -641,9 +618,8 @@ public class FileService implements FileCommandPort {
     if (expectedOwnerType == null || StrUtil.isBlank(expectedOwnerId)) {
       return;
     }
-    boolean sameOwner =
-        folder.getOwnerType() == expectedOwnerType
-            && Objects.equals(folder.getOwnerId(), expectedOwnerId);
+    boolean sameOwner = folder.getOwnerType() == expectedOwnerType
+        && Objects.equals(folder.getOwnerId(), expectedOwnerId);
     if (!sameOwner) {
       throw new BizException("无权操作该目录", BaseError.FORBIDDEN);
     }

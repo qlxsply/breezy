@@ -16,7 +16,8 @@ import java.util.Map;
 /**
  * Parser for API sort configuration JSON.
  *
- * <p>Validates, normalizes, and parses the sort options JSON associated with an API, producing a
+ * <p>
+ * Validates, normalizes, and parses the sort options JSON associated with an API, producing a
  * {@link SortRule} that defines allowed sort fields and default sort orders.
  *
  * @author Corwin 2026/7/29
@@ -26,7 +27,8 @@ public final class ApiSortOptionsParser {
   private static final String IDENTIFIER_PATTERN = "[A-Za-z_][A-Za-z0-9_]*";
   private static final String COLUMN_PATTERN = "[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?";
 
-  private ApiSortOptionsParser() {}
+  private ApiSortOptionsParser() {
+  }
 
   /**
    * Validates and normalizes a sort options JSON string.
@@ -66,10 +68,9 @@ public final class ApiSortOptionsParser {
       throw new BizException("Sort allowed fields required", BaseError.INVALID_PARAMETER);
     }
     List<SortSpec> defaults = parseDefaults(payload.defaults(), allowed);
-    List<SortableField> allowedFields =
-        allowed.entrySet().stream()
-            .map(item -> new SortableField(item.getKey(), item.getValue()))
-            .toList();
+    List<SortableField> allowedFields = allowed.entrySet().stream()
+        .map(item -> new SortableField(item.getKey(), item.getValue()))
+        .toList();
     return new SortRule(true, allowedFields, defaults);
   }
 
@@ -171,9 +172,12 @@ public final class ApiSortOptionsParser {
   private record ApiSortOptionsPayload(
       Boolean enabled,
       List<ApiSortableFieldPayload> allowed,
-      List<ApiDefaultSortPayload> defaults) {}
+      List<ApiDefaultSortPayload> defaults) {
+  }
 
-  private record ApiSortableFieldPayload(String field, String column) {}
+  private record ApiSortableFieldPayload(String field, String column) {
+  }
 
-  private record ApiDefaultSortPayload(String field, String direction) {}
+  private record ApiDefaultSortPayload(String field, String direction) {
+  }
 }

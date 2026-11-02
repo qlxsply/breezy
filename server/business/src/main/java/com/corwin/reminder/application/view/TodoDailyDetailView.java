@@ -7,4 +7,5 @@ import java.util.List;
  * @author Corwin 2026/3/12
  */
 public record TodoDailyDetailView(
-    LocalDate date, List<TodoView> createdItems, List<TodoView> completedItems) {}
+    LocalDate date, List<TodoView> createdItems, List<TodoView> completedItems) {
+}

@@ -16,4 +16,5 @@ public record UserProfileRes(
     String status,
     boolean mustChangePassword,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt) {
+}

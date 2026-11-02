@@ -5,7 +5,8 @@ import java.util.List;
 /**
  * Registry maintaining the mapping from event type to subscriber collection.
  *
- * <p>Queried by transports during startup and publish phases.
+ * <p>
+ * Queried by transports during startup and publish phases.
  *
  * @author Corwin 2026/4/9
  */

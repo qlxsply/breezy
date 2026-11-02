@@ -3,7 +3,8 @@ package com.corwin.framework.error;
 /**
  * Defines a range of error codes (inclusive boundaries).
  *
- * <p>Codes are fixed-length numeric strings; containment is determined by lexicographic comparison.
+ * <p>
+ * Codes are fixed-length numeric strings; containment is determined by lexicographic comparison.
  *
  * @author Corwin 2026/3/30
  */

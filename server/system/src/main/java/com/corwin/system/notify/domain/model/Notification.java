@@ -16,7 +16,8 @@ import lombok.Getter;
 /**
  * Domain entity representing a notification message.
  *
- * <p>Stores notification content, metadata (type, priority, route), and read status for a specific
+ * <p>
+ * Stores notification content, metadata (type, priority, route), and read status for a specific
  * user.
  *
  * @author Corwin 2026/3/30
@@ -59,7 +60,8 @@ public class Notification {
 
   private Instant readAt;
 
-  protected Notification() {}
+  protected Notification() {
+  }
 
   /**
    * Creates a new unread notification for the given user.
